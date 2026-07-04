@@ -28,6 +28,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM || "Stemplet <login@stemplet.alius.dk>",
       name: "E-mail",
+      // Dev-hjaelp: uden Resend-noegle logges login-linket i terminalen,
+      // saa man kan logge ind lokalt. I produktion sendes en rigtig mail.
+      ...(!process.env.AUTH_RESEND_KEY && process.env.NODE_ENV !== "production"
+        ? {
+            sendVerificationRequest: async ({
+              identifier,
+              url,
+            }: {
+              identifier: string;
+              url: string;
+            }) => {
+              console.log(
+                `\n🔗 Login-link til ${identifier}:\n${url}\n`,
+              );
+            },
+          }
+        : {}),
     }),
   ],
   pages: {
