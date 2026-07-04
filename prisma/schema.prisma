@@ -1,0 +1,204 @@
+// Stemplet - digitalt stempelkort. Datamodel.
+// Neon Postgres: DATABASE_URL er pooled, DIRECT_URL bruges til migrationer.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Virksomhed
+// ─────────────────────────────────────────────────────────────
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model Business {
+  id               String     @id @default(cuid())
+  name             String
+  slug             String     @unique
+  logoUrl          String?
+  primaryColor     String     @default("#061C3D")
+  textColor        String     @default("#FFFFFF")
+  plan             Plan       @default(FREE)
+  stripeCustomerId String?
+  staffPin         String // hashet (bcrypt)
+  stampCooldownMin Int        @default(120)
+  users            User[]
+  cards            Card[]
+  auditLogs        AuditLog[]
+  createdAt        DateTime   @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Bruger (kun virksomheder logger ind, aldrig kunder)
+// Auth.js-felterne (name, emailVerified, image, accounts, sessions)
+// er tilfoejet for magic link via Resend.
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  accounts      Account[]
+  sessions      Session[]
+
+  @@index([businessId])
+}
+
+// Auth.js standardmodeller
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Stempelkort (skabelon defineret af virksomheden)
+// ─────────────────────────────────────────────────────────────
+
+model Card {
+  id             String         @id @default(cuid())
+  businessId     String
+  business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  stampsRequired Int            @default(10) // 4 til 12
+  rewardText     String
+  stampIcon      String         @default("coffee") // coffee, scissors, croissant, heart, star, custom
+  active         Boolean        @default(true)
+  customerCards  CustomerCard[]
+  campaigns      Campaign[]
+  createdAt      DateTime       @default(now())
+
+  @@index([businessId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Kundens eksemplar af et kort
+// ─────────────────────────────────────────────────────────────
+
+model CustomerCard {
+  id             String               @id @default(cuid())
+  cardId         String
+  card           Card                 @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  serial         String               @unique // bruges i pass og stregkode
+  authToken      String               @unique // hemmeligt, til Wallet web service
+  stamps         Int                  @default(0)
+  completedCount Int                  @default(0)
+  contactEmail   String? // valgfrit
+  stampsLog      Stamp[]
+  redemptions    Redemption[]
+  walletRegs     WalletRegistration[]
+  createdAt      DateTime             @default(now())
+  lastStampAt    DateTime?
+
+  @@index([cardId])
+}
+
+enum StampMethod {
+  KIOSK_QR
+  STAFF_SCAN
+  MANUAL
+}
+
+model Stamp {
+  id             String       @id @default(cuid())
+  customerCardId String
+  customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  method         StampMethod
+  tokenJti       String?      @unique
+  multiplier     Int          @default(1)
+  createdAt      DateTime     @default(now())
+
+  @@index([customerCardId])
+}
+
+model Redemption {
+  id             String       @id @default(cuid())
+  customerCardId String
+  customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([customerCardId])
+}
+
+enum CampaignType {
+  DOUBLE_STAMP
+  WELCOME_BONUS
+}
+
+model Campaign {
+  id       String       @id @default(cuid())
+  cardId   String
+  card     Card         @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  type     CampaignType
+  startsAt DateTime
+  endsAt   DateTime
+
+  @@index([cardId])
+}
+
+model WalletRegistration {
+  id              String       @id @default(cuid())
+  customerCardId  String
+  customerCard    CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  deviceLibraryId String
+  pushToken       String
+
+  @@unique([customerCardId, deviceLibraryId])
+  @@index([customerCardId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  action     String // STAMP, REDEEM, PIN_FAIL, FLAGGED
+  detail     Json
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([businessId])
+  @@index([businessId, action])
+}

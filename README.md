@@ -1,0 +1,135 @@
+# Stemplet
+
+Det digitale stempelkort. Bygget af Alius.
+
+Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple Wallet (eller et webkort paa Android). Virksomheden styrer det hele fra et enkelt dashboard. Kunder logger aldrig ind. De scanner en QR-kode og har deres kort paa fem sekunder.
+
+## Stak
+
+- Next.js 16 (App Router), React 19, TypeScript
+- Tailwind v4 (design-tokens genbrugt 1:1 fra alius.dk)
+- Prisma + PostgreSQL (Neon)
+- Auth.js (magic link via Resend, kun til virksomheder)
+- Upstash Redis (rate limiting og engangs-tokens)
+- Stripe Billing (Pro, 99 kr./md.)
+- Uploadthing (logo-upload)
+- passkit-generator + APNs (Apple Wallet, bag feature flag)
+- Vercel
+
+## Kom i gang lokalt
+
+1. Installer afhaengigheder:
+
+   ```bash
+   npm install
+   ```
+
+2. Opret `.env.local` ud fra `.env.example` og udfyld:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Som minimum for lokal udvikling skal du bruge:
+   - `DATABASE_URL` og `DIRECT_URL` (Neon Postgres)
+   - `AUTH_SECRET` (lav en: `openssl rand -base64 32`)
+   - `AUTH_RESEND_KEY` og `EMAIL_FROM` (login-mails)
+   - `UPSTASH_REDIS_REST_URL` og `UPSTASH_REDIS_REST_TOKEN` (stempler kraever Redis)
+   - `NEXT_PUBLIC_APP_URL` (fx `http://localhost:3000`)
+
+   `WALLET_ENABLED` kan blive `false`. Alt virker uden Apple Wallet via webkortet.
+
+3. Opret databaseskema og seed demo-data:
+
+   ```bash
+   npm run db:migrate     # foerste gang: opretter tabeller
+   npm run db:seed        # opretter "Demo Kaffebar" med liv i data
+   ```
+
+   Seed logger en demo-konto: login-mail `demo@stemplet.dk`, personale-PIN `1234`.
+
+4. Start udviklingsserveren:
+
+   ```bash
+   npm run dev
+   ```
+
+   - Marketing: `/`
+   - Onboarding: `/start`
+   - Login (virksomheder): `/login`
+   - Dashboard: `/app`
+   - Kundens onboarding: `/k/demo-kaffebar`
+
+## Saadan haenger det sammen
+
+- **Kunden** scanner butikkens statiske QR (`/k/[slug]`), faar et `CustomerCard` med et unikt `serial` og en device-cookie, saa samme telefon altid rammer samme kort. Webkortet ligger paa `/kort/[serial]` og kan foejes til hjemmeskaermen (PWA).
+- **Stempling** sker kun paa serveren. Kassemodus (`/app/kasse`) viser en roterende QR med et signeret engangs-token (JWT, 60 sek.). Kundens kamera rammer `/s/[token]`, som validerer, bruger jti een gang (replay umuligt via Redis), tjekker cooldown, laegger evt. kampagne-multiplier paa og skriver stemplet.
+- **Indloesning** kraever personale-PIN (bcrypt). Tre fejlforsoeg laaser enheden i 5 minutter.
+- **Anomali**: mere end 5 stempler fra samme IP paa en time markeres `FLAGGED` i audit-loggen og vises i dashboardet.
+
+## Deploy til Vercel
+
+1. Push repoet til GitHub og importer det i Vercel.
+2. Saet alle miljoevariabler fra `.env.example` i Vercel (Production + Preview). Husk at `NEXT_PUBLIC_APP_URL` skal vaere det rigtige domaene (fx `https://stemplet.alius.dk`).
+3. Neon: brug den poolede connection string som `DATABASE_URL` og den direkte som `DIRECT_URL`.
+4. Build-kommandoen er `prisma generate && next build` (allerede sat i `package.json`). Koer migrationer mod produktion:
+
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+5. Stripe: opret et recurring price paa 99 kr./md. og saet `STRIPE_PRO_PRICE_ID`. Tilfoej et webhook-endpoint til `https://<domaene>/api/stripe/webhook` med hemmeligheden i `STRIPE_WEBHOOK_SECRET`. Lyt paa `checkout.session.completed` og `customer.subscription.*`.
+6. Resend: verificer afsenderdomaenet, saa magic links kan sendes.
+
+## Aktiver Apple Wallet
+
+Alt Wallet-relateret er bygget, men gated bag `WALLET_ENABLED`. Naar din Apple Developer-konto er klar:
+
+1. **Opret et Pass Type ID** i Apple Developer (Certificates, Identifiers & Profiles -> Identifiers -> Pass Type IDs), fx `pass.dk.alius.stemplet`. Saet det som `APPLE_PASS_TYPE_ID`.
+
+2. **Generer et pass-certifikat** for det Pass Type ID og hent det. Eksporter certifikat + privat noegle fra Noeglering som en `.p12`.
+
+3. **Lav en PEM** af `.p12` (indeholder baade certifikat og noegle):
+
+   ```bash
+   openssl pkcs12 -in Certificates.p12 -out pass.pem -nodes
+   base64 -i pass.pem | tr -d '\n' > pass.pem.b64
+   ```
+
+   Indholdet af `pass.pem.b64` bliver `APPLE_PASS_CERT`. Hvis noeglen har adgangskode, saet den i `APPLE_PASS_CERT_PASSWORD`.
+
+4. **Hent Apples WWDR-certifikat** (Worldwide Developer Relations), konverter til PEM og base64:
+
+   ```bash
+   openssl x509 -inform der -in AppleWWDRCAG4.cer -out wwdr.pem
+   base64 -i wwdr.pem | tr -d '\n' > wwdr.pem.b64
+   ```
+
+   Indholdet bliver `APPLE_WWDR_CERT`.
+
+5. **Team ID**: dit 10-tegns Apple Team ID -> `APPLE_TEAM_ID`.
+
+6. **APNs-noegle** til live pass-opdateringer: opret en Auth Key (.p8) med APNs aktiveret. Base64-encode den til `APNS_KEY`, og saet `APNS_KEY_ID` (noeglens 10-tegns id):
+
+   ```bash
+   base64 -i AuthKey_XXXXXX.p8 | tr -d '\n' > apns.p8.b64
+   ```
+
+7. **Slaa flaget til**: saet `WALLET_ENABLED="true"` og redeploy.
+
+Naar flaget er slaaet fra, viser kundens onboarding kun webkortet. Naar det slaas til, vises "Laeg i Apple Wallet" som primaer mulighed, og webkortet bliver et link. Ved hvert stempel og hver indloesning sender serveren en APNs-push, saa passet opdaterer sig live i Wallet.
+
+## Kommandoer
+
+| Kommando | Hvad |
+|---|---|
+| `npm run dev` | Udviklingsserver |
+| `npm run build` | `prisma generate` + produktion-build |
+| `npm run db:migrate` | Prisma-migration (dev) |
+| `npm run db:seed` | Seed demo-data |
+| `npm run db:studio` | Prisma Studio |
+| `npm run lint` | ESLint |
+
+---
+
+Et produkt fra [Alius](https://alius.dk).
