@@ -26,6 +26,20 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Overskrifter brydes pænt (ingen enlige ord paa sidste linje, ingen midt-i-ord-brud) */
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+p {
+  text-wrap: pretty;
+}
+
 ::selection {
   background: var(--color-moss);
   color: var(--color-parchment);
@@ -101,6 +115,49 @@ body {
   }
   50% {
     box-shadow: 0 0 0 8px rgba(45, 95, 74, 0.16);
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes countPop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes growBar {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes growWidth {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
   }
 }
 

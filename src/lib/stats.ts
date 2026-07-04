@@ -13,6 +13,7 @@ export type BusinessStats = {
   revisitRate: number;
   completionRate: number;
   avgDaysToFull: number | null;
+  byMethod: { kiosk: number; staff: number; manual: number };
   perDay: { date: string; label: string; count: number }[];
 };
 
@@ -48,6 +49,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       revisitRate: 0,
       completionRate: 0,
       avgDaysToFull: null,
+      byMethod: { kiosk: 0, staff: 0, manual: 0 },
       perDay: buildPerDay([]),
     };
   }
@@ -58,8 +60,17 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
   const today = startOfToday();
   const rel = { customerCard: { cardId: { in: cardIds } } };
 
-  const [ccs, stampsTotal, stampsToday, stampsWeek, redemptionsTotal, redemptions30, recentStamps, reds] =
-    await Promise.all([
+  const [
+    ccs,
+    stampsTotal,
+    stampsToday,
+    stampsWeek,
+    redemptionsTotal,
+    redemptions30,
+    recentStamps,
+    reds,
+    methodGroups,
+  ] = await Promise.all([
       prisma.customerCard.findMany({
         where: { cardId: { in: cardIds } },
         select: {
@@ -83,7 +94,21 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
         where: rel,
         select: { createdAt: true, customerCard: { select: { createdAt: true } } },
       }),
+      prisma.stamp.groupBy({
+        by: ["method"],
+        where: rel,
+        _count: { _all: true },
+      }),
     ]);
+
+  const methodCount = new Map(
+    methodGroups.map((g) => [g.method, g._count._all]),
+  );
+  const byMethod = {
+    kiosk: methodCount.get("KIOSK_QR") ?? 0,
+    staff: methodCount.get("STAFF_SCAN") ?? 0,
+    manual: methodCount.get("MANUAL") ?? 0,
+  };
 
   const totalCustomers = ccs.length;
   const activeCustomers = ccs.filter(
@@ -124,6 +149,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     revisitRate,
     completionRate,
     avgDaysToFull,
+    byMethod,
     perDay: buildPerDay(recentStamps.map((s) => s.createdAt)),
   };
 }

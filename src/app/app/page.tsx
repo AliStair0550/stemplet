@@ -2,6 +2,7 @@ import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity } from "@/lib/stats";
 import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
 
@@ -36,21 +37,21 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           label="Aktive kunder"
-          value={formatDkNumber(stats.activeCustomers)}
+          value={<AnimatedNumber value={stats.activeCustomers} />}
           sub={`${formatDkNumber(stats.totalCustomers)} i alt`}
         />
         <StatTile
           label="Nye kunder (30 dage)"
-          value={formatDkNumber(stats.newCustomers30)}
+          value={<AnimatedNumber value={stats.newCustomers30} />}
         />
         <StatTile
           label="Stempler i dag"
-          value={formatDkNumber(stats.stampsToday)}
+          value={<AnimatedNumber value={stats.stampsToday} />}
           sub={`${formatDkNumber(stats.stampsWeek)} seneste 7 dage`}
         />
         <StatTile
           label="Indløsninger"
-          value={formatDkNumber(stats.redemptionsTotal)}
+          value={<AnimatedNumber value={stats.redemptionsTotal} />}
           sub={`${formatDkNumber(stats.redemptions30)} seneste 30 dage`}
         />
       </div>

@@ -45,16 +45,21 @@ export function StatTile({
   className,
 }: {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   sub?: string;
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-sm border border-fog bg-white p-5", className)}>
+    <div
+      className={cn(
+        "rounded-sm border border-fog bg-white p-5 transition-colors hover:border-clay",
+        className,
+      )}
+    >
       <div className="text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
         {label}
       </div>
-      <div className="mt-2 font-[300] text-[1.9rem] tabular-nums leading-none text-ink">
+      <div className="mt-2 font-[300] text-[1.9rem] leading-none text-ink">
         {value}
       </div>
       {sub ? (

@@ -2,6 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui";
+import { Celebration } from "@/components/Celebration";
+
+function haptic(pattern: number | number[]) {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // haptics er valgfrit
+  }
+}
 
 type State =
   | { phase: "loading" }
@@ -40,6 +49,7 @@ export function StampConfirm({
         });
         const data = await res.json();
         if (data.ok) {
+          haptic(data.rewardReady ? [30, 50, 30, 50, 90] : 22);
           setState({
             phase: "done",
             stamps: data.stamps,
@@ -64,6 +74,7 @@ export function StampConfirm({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 text-center">
+      <Celebration show={state.phase === "done" && state.rewardReady} />
       {state.phase === "loading" ? (
         <>
           <div className="h-20 w-20 animate-pulse rounded-full bg-moss/15" />
@@ -73,8 +84,13 @@ export function StampConfirm({
 
       {state.phase === "done" ? (
         <>
-          <div className="animate-stamp-pop flex h-24 w-24 items-center justify-center rounded-full bg-moss text-parchment">
-            <svg
+          <div className="relative flex h-24 w-24 items-center justify-center">
+            <span
+              className="absolute inset-0 rounded-full bg-moss/30"
+              style={{ animation: "stampRing 0.8s ease-out forwards" }}
+            />
+            <div className="animate-stamp-pop relative flex h-24 w-24 items-center justify-center rounded-full bg-moss text-parchment">
+              <svg
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -83,8 +99,9 @@ export function StampConfirm({
               strokeLinejoin="round"
               className="h-11 w-11"
             >
-              <path d="M5 12.5l4.5 4.5L19 7" />
-            </svg>
+                <path d="M5 12.5l4.5 4.5L19 7" />
+              </svg>
+            </div>
           </div>
           {state.rewardReady ? (
             <div className="flex flex-col gap-1">

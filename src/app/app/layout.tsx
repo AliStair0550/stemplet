@@ -3,7 +3,7 @@ import { requireBusiness } from "@/lib/session";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
-  title: { default: "Dashboard", template: "%s - Stemplet" },
+  title: { default: "Overblik", template: "%s - Stemplet" },
   robots: { index: false },
 };
 
