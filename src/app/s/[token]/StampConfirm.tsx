@@ -56,7 +56,7 @@ export function StampConfirm({
       } catch {
         setState({
           phase: "error",
-          message: "Ingen forbindelse. Proev igen.",
+          message: "Ingen forbindelse. Prøv igen.",
         });
       }
     })();
@@ -92,7 +92,7 @@ export function StampConfirm({
                 Dit kort er fuldt
               </h1>
               <p className="font-[200] text-[0.9rem] text-stone">
-                Vis dit kort ved kassen og faa din beloenning.
+                Vis dit kort ved kassen og få din belønning.
               </p>
             </div>
           ) : (
@@ -103,7 +103,7 @@ export function StampConfirm({
               <p className="font-[200] text-[0.9rem] text-stone">
                 {state.increment > 1
                   ? `Dobbeltstempel hos ${businessName}.`
-                  : `Tak for besoeget hos ${businessName}.`}
+                  : `Tak for besøget hos ${businessName}.`}
               </p>
             </div>
           )}
@@ -116,7 +116,7 @@ export function StampConfirm({
       {state.phase === "needCard" ? (
         <>
           <h1 className="font-[300] text-[1.4rem] text-ink">
-            Hent dit stempelkort foerst
+            Hent dit stempelkort først
           </h1>
           <p className="max-w-xs font-[200] text-[0.9rem] leading-relaxed text-stone">
             Du mangler et kort hos {businessName}. Det tager fem sekunder.

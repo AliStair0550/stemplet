@@ -24,7 +24,7 @@ export default function CheckMailPage() {
         </div>
         <h1 className="font-[300] text-[1.4rem] text-ink">Tjek din mail</h1>
         <p className="max-w-xs font-[200] text-[0.9rem] leading-relaxed text-stone">
-          Vi har sendt et login-link. Aabn mailen paa denne enhed, saa er du
+          Vi har sendt et login-link. Åbn mailen på denne enhed, så er du
           inde i dashboardet.
         </p>
       </div>

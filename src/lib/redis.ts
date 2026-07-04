@@ -4,14 +4,14 @@ import { Ratelimit } from "@upstash/ratelimit";
 
 let _redis: Redis | null = null;
 
-/** Upstash Redis-singleton. Kaster foerst hvis den bruges uden konfiguration. */
+/** Upstash Redis-singleton. Kaster først hvis den bruges uden konfiguration. */
 export function getRedis(): Redis {
   if (_redis) return _redis;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
     throw new Error(
-      "Upstash Redis er ikke konfigureret. Saet UPSTASH_REDIS_REST_URL og UPSTASH_REDIS_REST_TOKEN.",
+      "Upstash Redis er ikke konfigureret. Sæt UPSTASH_REDIS_REST_URL og UPSTASH_REDIS_REST_TOKEN.",
     );
   }
   _redis = new Redis({ url, token });

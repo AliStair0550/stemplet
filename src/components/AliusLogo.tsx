@@ -1,4 +1,4 @@
-// Alius-ordmaerket. Genbrugt fra alius.dk til "Et produkt fra Alius".
+// Alius-ordmærket. Genbrugt fra alius.dk til "Et produkt fra Alius".
 export default function AliusLogo({
   width = 96,
   stroke = "#1A1A1A",

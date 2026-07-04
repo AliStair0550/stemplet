@@ -85,14 +85,14 @@ export default async function ClaimPage({
 
         {fejl === "fuld" ? (
           <p className="text-center text-[0.82rem] font-[200] text-stone">
-            Butikken har naaet sit kundeloft lige nu. Proev igen senere.
+            Butikken har nået sit kundeloft lige nu. Prøv igen senere.
           </p>
         ) : null}
 
         {hasCard ? (
           <div className="flex flex-col items-center gap-3">
             <ButtonLink href={`/kort/${existing!.serial}`} variant="moss" size="lg">
-              Aabn dit kort
+              Åbn dit kort
             </ButtonLink>
             <p className="text-[0.75rem] font-[200] text-slate">
               Du har allerede et kort hos {business.name}.
@@ -101,7 +101,7 @@ export default async function ClaimPage({
         ) : (
           <form action={claimCard.bind(null, slug)}>
             <SubmitButton variant="moss" size="lg" pendingText="Opretter dit kort...">
-              {WALLET_ENABLED ? "Laeg i Apple Wallet" : "Hent dit stempelkort"}
+              {WALLET_ENABLED ? "Læg i Apple Wallet" : "Hent dit stempelkort"}
             </SubmitButton>
           </form>
         )}

@@ -31,7 +31,7 @@ export default async function StatistikPage() {
         }
       />
 
-      {/* Alle ser de to foerste tal */}
+      {/* Alle ser de to første tal */}
       <div className="grid grid-cols-2 gap-4">
         <StatTile
           label="Aktive kunder"
@@ -73,11 +73,11 @@ function FullStats({ stats }: { stats: BusinessStats }) {
           value={formatDkNumber(stats.stampsTotal)}
         />
         <StatTile
-          label="Indloesninger"
+          label="Indløsninger"
           value={formatDkNumber(stats.redemptionsTotal)}
         />
         <StatTile
-          label="Genbesoegsrate"
+          label="Genbesøgsrate"
           value={`${Math.round(stats.revisitRate * 100)}%`}
           sub="kunder der kom igen"
         />
@@ -94,7 +94,7 @@ function FullStats({ stats }: { stats: BusinessStats }) {
       </Panel>
       <div className="grid grid-cols-2 gap-4">
         <StatTile
-          label="Gennemfoerelsesrate"
+          label="Gennemførelsesrate"
           value={`${Math.round(stats.completionRate * 100)}%`}
           sub="kort der blev fyldt"
         />

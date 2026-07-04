@@ -92,20 +92,20 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     key: "status",
     label: "STATUS",
     value: rewardReady
-      ? "Beloenning klar"
+      ? "Belønning klar"
       : `Mangler ${input.required - input.stamps}`,
   });
 
   pass.backFields.push(
     {
       key: "how",
-      label: "Saadan virker det",
+      label: "Sådan virker det",
       value:
-        "Vis dette kort ved kassen, eller scan butikkens QR for at faa et stempel.",
+        "Vis dette kort ved kassen, eller scan butikkens QR for at få et stempel.",
     },
     {
       key: "reward-back",
-      label: "Din beloenning",
+      label: "Din belønning",
       value: input.rewardText,
     },
   );

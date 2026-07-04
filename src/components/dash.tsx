@@ -32,7 +32,7 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-xl border border-fog bg-white p-6", className)}>
+    <div className={cn("rounded-sm border border-fog bg-white p-6", className)}>
       {children}
     </div>
   );
@@ -50,7 +50,7 @@ export function StatTile({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-xl border border-fog bg-white p-5", className)}>
+    <div className={cn("rounded-sm border border-fog bg-white p-5", className)}>
       <div className="text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
         {label}
       </div>

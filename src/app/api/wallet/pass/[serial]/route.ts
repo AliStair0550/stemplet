@@ -5,7 +5,7 @@ import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Download af .pkpass fra webkortet ("Laeg i Apple Wallet").
+// Download af .pkpass fra webkortet ("Læg i Apple Wallet").
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ serial: string }> },

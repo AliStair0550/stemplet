@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     token = body?.token;
   } catch {
-    return apiError("BAD_REQUEST", "Ugyldig forespoergsel.");
+    return apiError("BAD_REQUEST", "Ugyldig forespørgsel.");
   }
   if (!token) return apiError("BAD_REQUEST", "Mangler token.");
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return apiError(
       "EXPIRED",
-      "Koden er udloebet. Bed personalet om at vise en ny.",
+      "Koden er udløbet. Bed personalet om at vise en ny.",
     );
   }
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!cardToken) {
     return apiError(
       "NO_CARD",
-      "Du har ikke et stempelkort endnu. Hent det foerst.",
+      "Du har ikke et stempelkort endnu. Hent det først.",
       200,
       { needCard: true, businessId: payload.businessId },
     );
@@ -63,6 +63,6 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
     console.error("Stempel-fejl", e);
-    return apiError("SERVER", "Noget gik galt. Proev igen.", 500);
+    return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
 }

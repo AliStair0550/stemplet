@@ -1,5 +1,5 @@
-// Seed: en demo-virksomhed med liv i data, saa dashboard og statistik
-// ikke er tomme fra start. Koeres med `npm run db:seed`.
+// Seed: en demo-virksomhed med liv i data, så dashboard og statistik
+// ikke er tomme fra start. Køres med `npm run db:seed`.
 import { PrismaClient, StampMethod } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
@@ -85,7 +85,7 @@ async function main() {
       },
     });
 
-    // Antal besoeg (stempler) for denne kunde
+    // Antal besøg (stempler) for denne kunde
     const visits = 1 + Math.floor(Math.random() * 16);
     let stamps = 0;
     let completed = 0;
@@ -105,7 +105,7 @@ async function main() {
       stamps++;
       if (last === null || when > last) last = when;
       if (stamps >= card.stampsRequired) {
-        // fuldt kort -> indloest
+        // fuldt kort -> indløst
         await prisma.redemption.create({
           data: { customerCardId: cc.id, createdAt: when },
         });
@@ -121,7 +121,7 @@ async function main() {
     });
   }
 
-  // En aktiv dobbeltstempel-kampagne, saa kampagnesiden har indhold
+  // En aktiv dobbeltstempel-kampagne, så kampagnesiden har indhold
   await prisma.campaign.create({
     data: {
       cardId: card.id,
@@ -132,7 +132,7 @@ async function main() {
   });
 
   console.log(
-    `Faerdig. ${firstNames.length} kunder, ${totalStamps} stempler, ${totalRedemptions} indloesninger.`,
+    `Færdig. ${firstNames.length} kunder, ${totalStamps} stempler, ${totalRedemptions} indløsninger.`,
   );
   console.log("Login-e-mail: demo@stemplet.dk  |  Personale-PIN: 1234");
 }

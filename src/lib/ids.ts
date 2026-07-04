@@ -3,7 +3,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // uden let forvekslelige tegn
 
-/** Kort, laesbart serienummer til pass, stregkode og /kort/[serial]. */
+/** Kort, læsbart serienummer til pass, stregkode og /kort/[serial]. */
 export function generateSerial(length = 10): string {
   const bytes = randomBytes(length);
   let out = "";

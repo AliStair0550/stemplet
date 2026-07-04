@@ -7,7 +7,7 @@ import { loadCardByToken } from "@/lib/stamp";
 import { generateSerial, generateAuthToken } from "@/lib/ids";
 import { withinCustomerLimit } from "@/lib/plans";
 
-/** Opretter (eller genfinder) kundens kort og saetter device-cookie. */
+/** Opretter (eller genfinder) kundens kort og sætter device-cookie. */
 export async function claimCard(slug: string, _formData?: FormData) {
   const business = await prisma.business.findUnique({
     where: { slug },
@@ -29,7 +29,7 @@ export async function claimCard(slug: string, _formData?: FormData) {
     }
   }
 
-  // Plan-loft paa Gratis.
+  // Plan-loft på Gratis.
   if (business.plan === "FREE") {
     const active = await prisma.customerCard.count({
       where: { card: { businessId: business.id } },

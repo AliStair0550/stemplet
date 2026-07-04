@@ -14,7 +14,7 @@ const adapter = {
   ...baseAdapter,
   createUser: async () => {
     throw new Error(
-      "Selvbetjent oprettelse er slaaet fra. Opret din virksomhed paa /start.",
+      "Selvbetjent oprettelse er slået fra. Opret din virksomhed på /start.",
     );
   },
 };
@@ -28,8 +28,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM || "Stemplet <login@stemplet.alius.dk>",
       name: "E-mail",
-      // Dev-hjaelp: uden Resend-noegle logges login-linket i terminalen,
-      // saa man kan logge ind lokalt. I produktion sendes en rigtig mail.
+      // Dev-hjælp: uden Resend-nøgle logges login-linket i terminalen,
+      // så man kan logge ind lokalt. I produktion sendes en rigtig mail.
       ...(!process.env.AUTH_RESEND_KEY && process.env.NODE_ENV !== "production"
         ? {
             sendVerificationRequest: async ({

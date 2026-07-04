@@ -14,7 +14,7 @@ export type StampCardProps = {
   rewardText: string;
   showPoweredBy?: boolean;
   serial?: string;
-  /** Animer det senest tilfoejede stempel (bruges i hero og ved stempling). */
+  /** Animer det senest tilføjede stempel (bruges i hero og ved stempling). */
   pop?: boolean;
   className?: string;
 };
@@ -54,7 +54,7 @@ export function StampCard({
       style={{ background: primaryColor, color: textColor }}
     >
       <div className="flex flex-col gap-5 p-6">
-        {/* Toplinje: logo + tael */}
+        {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5">
             {logoUrl ? (
@@ -91,13 +91,13 @@ export function StampCard({
           </div>
         </div>
 
-        {/* Beloenning / status */}
+        {/* Belønning / status */}
         <div>
           <div
             className="text-[0.55rem] font-[500] uppercase tracking-[0.16em]"
             style={{ color: rgba(textColor, 0.6) }}
           >
-            {rewardReady ? "Klar" : "Beloenning"}
+            {rewardReady ? "Klar" : "Belønning"}
           </div>
           <div
             className={cn(
@@ -105,7 +105,7 @@ export function StampCard({
               rewardReady && "animate-reward-glow rounded-md",
             )}
           >
-            {rewardReady ? "Din beloenning er klar" : rewardText}
+            {rewardReady ? "Din belønning er klar" : rewardText}
           </div>
         </div>
 
@@ -158,7 +158,7 @@ export function StampCard({
   );
 }
 
-/** Simpel dekorativ stregkode-glyph (den rigtige QR staar paa webkortet). */
+/** Simpel dekorativ stregkode-glyph (den rigtige QR står på webkortet). */
 function BarcodeGlyph({ value }: { value: string }) {
   const bars = value
     .split("")

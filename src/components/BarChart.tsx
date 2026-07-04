@@ -1,4 +1,4 @@
-// Simpel soejlegraf i moss. Ren CSS, server-safe.
+// Simpel søjlegraf i moss. Ren CSS, server-safe.
 export function BarChart({
   data,
   className,

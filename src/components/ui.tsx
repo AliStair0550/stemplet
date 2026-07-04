@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// ── Knapper (Alius-stil: skarpe hjoerner, uppercase, wide tracking) ────
+// ── Knapper (Alius-stil: skarpe hjørner, uppercase, wide tracking) ────
 
 type Variant = "primary" | "outline" | "moss" | "ghost";
 type Size = "md" | "lg";

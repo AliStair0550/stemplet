@@ -41,7 +41,7 @@ export function formatDkDateTime(date: Date | string): string {
   }).format(d);
 }
 
-/** "for 2 timer siden" o.l. paa dansk. */
+/** "for 2 timer siden" o.l. på dansk. */
 export function relativeDk(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const diff = Date.now() - d.getTime();

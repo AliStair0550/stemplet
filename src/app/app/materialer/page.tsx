@@ -22,7 +22,7 @@ export default async function MaterialerPage() {
     <>
       <PageHeading
         title="Materialer"
-        subtitle="Print en QR til disken. Kunder scanner og faar deres kort."
+        subtitle="Print en QR til disken. Kunder scanner og får deres kort."
       />
       <div className="grid gap-6 md:grid-cols-[1fr_1.1fr]">
         <Panel className="flex flex-col items-center gap-4">
@@ -61,7 +61,7 @@ export default async function MaterialerPage() {
               A6-diskskilt
             </h2>
             <p className="mt-2 font-[200] text-[0.85rem] leading-relaxed text-stone">
-              Lille skilt til at staa ved kassen.
+              Lille skilt til at stå ved kassen.
             </p>
             <a
               href="/api/materials/skilt"

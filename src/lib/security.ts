@@ -12,8 +12,8 @@ export async function verifyPin(pin: string, hash: string): Promise<boolean> {
   return bcrypt.compare(pin, hash);
 }
 
-// ── PIN-forsoeg og laasning pr. enhed ────────────────────────────────
-// 3 fejlforsoeg laaser indloesning i 5 minutter for den enhed.
+// ── PIN-forsøg og låsning pr. enhed ────────────────────────────────
+// 3 fejlforsøg låser indløsning i 5 minutter for den enhed.
 
 const PIN_MAX_FAILS = 3;
 const PIN_LOCK_SECONDS = 5 * 60;
@@ -64,7 +64,7 @@ export async function clearPinFails(
 }
 
 // ── Anomali-flag ──────────────────────────────────────────────────────
-// Mere end 5 stempler fra samme IP paa tvaers af kort inden for en time.
+// Mere end 5 stempler fra samme IP på tværs af kort inden for en time.
 
 const IP_STAMP_WINDOW = 60 * 60;
 const IP_STAMP_THRESHOLD = 5;

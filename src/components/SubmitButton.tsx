@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export function SubmitButton({
   children,
-  pendingText = "Et oejeblik...",
+  pendingText = "Et øjeblik...",
   variant = "primary",
   size = "md",
   className,

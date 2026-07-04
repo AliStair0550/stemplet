@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-/** Bedste bud paa klientens IP bag Vercels proxy. */
+/** Bedste bud på klientens IP bag Vercels proxy. */
 export function clientIp(req: NextRequest): string | null {
   const fwd = req.headers.get("x-forwarded-for");
   if (fwd) return fwd.split(",")[0]?.trim() ?? null;

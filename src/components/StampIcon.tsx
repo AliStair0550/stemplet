@@ -1,6 +1,6 @@
 import type { StampIconKey } from "@/lib/brand";
 
-// Tynde line-art ikoner i Alius-stil. Bruger currentColor, saa foraeldren
+// Tynde line-art ikoner i Alius-stil. Bruger currentColor, så forældren
 // styrer farven (kortets tekstfarve).
 
 export function StampIcon({

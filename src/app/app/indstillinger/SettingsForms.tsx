@@ -106,7 +106,7 @@ export function SettingsForms({
               className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-moss"
             />
             <span className="text-[0.72rem] font-[200] text-slate">
-              Kraeves ved indloesning af beloenninger.
+              Kræves ved indløsning af belønninger.
             </span>
           </label>
           <div className="flex items-center gap-3">

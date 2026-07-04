@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { randomUUID } from "node:crypto";
 import { getRedis } from "./redis";
 
-// Stempel-tokens er signerede JWT'er, der udloeber efter 60 sekunder og kun
+// Stempel-tokens er signerede JWT'er, der udløber efter 60 sekunder og kun
 // kan bruges een gang. Brugte jti'er gemmes i Redis (TTL 10 min) => replay umuligt.
 
 const STAMP_TTL_SECONDS = 60;
@@ -58,7 +58,7 @@ export async function verifyStampToken(
 
 /**
  * Markerer et jti som brugt. Returnerer false hvis det allerede var brugt
- * (replay). Bruger SET NX med TTL, saa tjek + saet er atomisk.
+ * (replay). Bruger SET NX med TTL, så tjek + sæt er atomisk.
  */
 export async function consumeJti(jti: string): Promise<boolean> {
   const redis = getRedis();

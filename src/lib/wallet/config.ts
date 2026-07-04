@@ -1,8 +1,8 @@
 import "server-only";
 import { requireEnv } from "../env";
 
-// Apple Wallet-konfiguration. Alle vaerdier laeses foerst naar Wallet bruges,
-// saa build og resten af appen fungerer uden Apple Developer-konto.
+// Apple Wallet-konfiguration. Alle værdier læses først når Wallet bruges,
+// så build og resten af appen fungerer uden Apple Developer-konto.
 
 export function walletIds() {
   return {
@@ -13,8 +13,8 @@ export function walletIds() {
 
 /**
  * Certifikater til signering. APPLE_PASS_CERT er base64 af en PEM, der
- * indeholder baade signer-certifikatet og den (evt. krypterede) private
- * noegle. APPLE_WWDR_CERT er base64 af Apples WWDR-certifikat i PEM.
+ * indeholder både signer-certifikatet og den (evt. krypterede) private
+ * nøgle. APPLE_WWDR_CERT er base64 af Apples WWDR-certifikat i PEM.
  */
 export function walletCertificates() {
   const combined = Buffer.from(requireEnv("APPLE_PASS_CERT"), "base64").toString(

@@ -51,7 +51,7 @@ export default function Problem() {
         </p>
       </div>
 
-      <div className="mt-14 grid overflow-hidden rounded-2xl border border-clay md:grid-cols-2">
+      <div className="mt-14 grid overflow-hidden rounded-sm border border-clay md:grid-cols-2">
         <div className="border-b border-clay p-8 md:border-b-0 md:border-r md:p-10">
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-slate">
             Papkortet

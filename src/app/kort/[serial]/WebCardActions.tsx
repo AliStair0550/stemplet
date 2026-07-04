@@ -21,7 +21,7 @@ export function WebCardActions({
   const [note, setNote] = useState<string | null>(null);
 
   const handleResult = useCallback((text: string) => {
-    // Kassemodus-QR peger paa /s/[token]. Foelg den for at faa et stempel.
+    // Kassemodus-QR peger på /s/[token]. Følg den for at få et stempel.
     if (text.includes("/s/")) {
       window.location.href = text;
       return;
@@ -56,7 +56,7 @@ export function WebCardActions({
           href={`/api/wallet/pass/${serial}`}
           className={btnClass("primary", "md") + " w-full"}
         >
-          Laeg i Apple Wallet
+          Læg i Apple Wallet
         </a>
       ) : null}
 
@@ -65,7 +65,7 @@ export function WebCardActions({
       ) : null}
 
       {showQr ? (
-        <div className="mt-2 flex flex-col items-center gap-2 rounded-xl border border-fog bg-white p-4">
+        <div className="mt-2 flex flex-col items-center gap-2 rounded-sm border border-fog bg-white p-4">
           <Image
             src={serialQr}
             alt={`QR for ${serial}`}

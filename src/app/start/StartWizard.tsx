@@ -6,7 +6,7 @@ import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/Card
 import { btnClass } from "@/components/ui";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
 
-const STEPS = ["Din butik", "Design kortet", "Print og gaa i gang"];
+const STEPS = ["Din butik", "Design kortet", "Print og gå i gang"];
 
 export function StartWizard() {
   const [step, setStep] = useState(0);
@@ -23,7 +23,7 @@ export function StartWizard() {
     if (step === 0) {
       if (name.trim().length < 2) return setError("Skriv virksomhedens navn.");
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setError("Skriv en gyldig e-mail.");
-      if (!/^\d{4,6}$/.test(pin)) return setError("PIN skal vaere 4 til 6 cifre.");
+      if (!/^\d{4,6}$/.test(pin)) return setError("PIN skal være 4 til 6 cifre.");
     }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
@@ -93,7 +93,7 @@ export function StartWizard() {
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Personale-PIN (til indloesning)
+              Personale-PIN (til indløsning)
             </span>
             <input
               inputMode="numeric"
@@ -117,7 +117,7 @@ export function StartWizard() {
             showPoweredBy
           />
           <p className="text-[0.75rem] font-[200] text-slate">
-            Du kan tilfoeje dit logo og aendre alt bagefter i dashboardet.
+            Du kan tilføje dit logo og ændre alt bagefter i dashboardet.
           </p>
         </div>
       ) : null}
@@ -128,10 +128,10 @@ export function StartWizard() {
             Din butik er klar
           </h2>
           <p className="max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
-            Print denne QR-kode og saet den ved kassen. Dine kunder scanner den
-            og har deres stempelkort paa fem sekunder.
+            Print denne QR-kode og sæt den ved kassen. Dine kunder scanner den
+            og har deres stempelkort på fem sekunder.
           </p>
-          <div className="rounded-xl border border-fog bg-white p-5">
+          <div className="rounded-sm border border-fog bg-white p-5">
             <Image
               src={created.qrDataUrl}
               alt="QR til dit stempelkort"
@@ -150,7 +150,7 @@ export function StartWizard() {
           <form action={sendOnboardingLogin}>
             <input type="hidden" name="email" value={email} />
             <button className={btnClass("primary", "lg")}>
-              Log ind paa dashboardet
+              Log ind på dashboardet
             </button>
           </form>
         </div>
@@ -174,7 +174,7 @@ export function StartWizard() {
           </button>
           {step === 0 ? (
             <button onClick={next} className={btnClass("primary")}>
-              Fortsaet
+              Fortsæt
             </button>
           ) : (
             <button

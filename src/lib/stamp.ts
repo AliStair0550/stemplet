@@ -38,8 +38,8 @@ export function loadCardByToken(authToken: string) {
 }
 
 /**
- * Kernen. Al stempel-logik sker paa serveren, aldrig paa klienten.
- * Tjekker cooldown, laegger kampagne-multiplier paa, haandterer fuldt kort,
+ * Kernen. Al stempel-logik sker på serveren, aldrig på klienten.
+ * Tjekker cooldown, lægger kampagne-multiplier på, håndterer fuldt kort,
  * skriver Stamp + AuditLog og skubber Wallet-opdatering.
  */
 export async function applyStamp(opts: {
@@ -63,11 +63,11 @@ export async function applyStamp(opts: {
     const required = cc.card.stampsRequired;
     const business = cc.card.business;
 
-    // Fuldt kort: bloker flere stempler indtil beloenningen er indloest.
+    // Fuldt kort: bloker flere stempler indtil belønningen er indløst.
     if (cc.stamps >= required) {
       throw new StampError(
         "FULL",
-        "Kortet er fuldt. Bed personalet indloese din beloenning.",
+        "Kortet er fuldt. Bed personalet indløse din belønning.",
       );
     }
 
@@ -79,7 +79,7 @@ export async function applyStamp(opts: {
         const wait = Math.ceil(business.stampCooldownMin - minutesSince);
         throw new StampError(
           "COOLDOWN",
-          `Du har lige faaet et stempel. Proev igen om ${wait} min.`,
+          `Du har lige fået et stempel. Prøv igen om ${wait} min.`,
         );
       }
     }
@@ -155,7 +155,7 @@ export async function applyStamp(opts: {
   };
 }
 
-/** Indloesning kraever PIN (tjekkes af kalderen). Nulstiller til ny runde. */
+/** Indløsning kræver PIN (tjekkes af kalderen). Nulstiller til ny runde. */
 export async function redeemReward(opts: {
   customerCardId: string;
   ip?: string | null;
@@ -212,11 +212,11 @@ async function flagIfAnomalous(
       });
     }
   } catch {
-    // Anomali-sporing maa aldrig blokere et stempel.
+    // Anomali-sporing må aldrig blokere et stempel.
   }
 }
 
-/** Skub Wallet-opdatering (kun naar flaget er slaaet til). Non-blocking. */
+/** Skub Wallet-opdatering (kun når flaget er slået til). Non-blocking. */
 async function pushWallet(customerCardId: string) {
   if (!WALLET_ENABLED) return;
   try {

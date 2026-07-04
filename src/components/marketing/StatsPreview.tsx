@@ -22,7 +22,7 @@ export default function StatsPreview() {
         </p>
       </div>
 
-      <div className="mt-14 rounded-2xl border border-fog bg-parchment p-6 shadow-[0_24px_70px_-32px_rgba(26,26,26,0.28)] md:p-8">
+      <div className="mt-14 rounded-sm border border-fog bg-parchment p-6 shadow-[0_24px_70px_-32px_rgba(26,26,26,0.28)] md:p-8">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <span className="font-[400] text-[0.95rem] tracking-[0.02em] text-ink">
@@ -39,7 +39,7 @@ export default function StatsPreview() {
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {TILES.map((t) => (
-            <div key={t.label} className="rounded-xl border border-fog p-5">
+            <div key={t.label} className="rounded-sm border border-fog p-5">
               <span className="font-[400] text-[0.62rem] uppercase tracking-[0.12em] text-slate">
                 {t.label}
               </span>
@@ -60,7 +60,7 @@ export default function StatsPreview() {
           ))}
         </div>
 
-        <div className="mt-4 rounded-xl border border-fog p-5">
+        <div className="mt-4 rounded-sm border border-fog p-5">
           <div className="flex items-center justify-between">
             <span className="font-[400] text-[0.62rem] uppercase tracking-[0.12em] text-slate">
               Stempler pr. uge

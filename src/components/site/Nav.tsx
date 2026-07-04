@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/ui";
 
 const LINKS = [
-  { href: "#saadan", label: "Sådan virker det" },
+  { href: "#sådan", label: "Sådan virker det" },
   { href: "#pris", label: "Pris" },
   { href: "/login", label: "Log ind" },
 ];

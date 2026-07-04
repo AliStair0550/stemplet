@@ -4,7 +4,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import { prisma } from "../prisma";
 import { apnsConfig } from "./config";
 
-// Token-baseret APNs (p8-noegle). Push til Wallet er en tom payload {} -
+// Token-baseret APNs (p8-nøgle). Push til Wallet er en tom payload {} -
 // den beder blot enheden hente det opdaterede pass fra web-servicen.
 
 let cached: { jwt: string; createdAt: number } | null = null;

@@ -32,7 +32,7 @@ export async function createBusinessAction(input: {
   }
   const pinParsed = pinSchema.safeParse(input.pin);
   if (!pinParsed.success) {
-    return { ok: false, error: "Personale-PIN skal vaere 4 til 6 cifre." };
+    return { ok: false, error: "Personale-PIN skal være 4 til 6 cifre." };
   }
   const design = cardDesignSchema.safeParse(input.design);
   if (!design.success) {

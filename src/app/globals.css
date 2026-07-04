@@ -145,7 +145,7 @@ body {
   animation-delay: 0.9s;
 }
 
-/* Skjul scrollbars paa vandrette spor */
+/* Skjul scrollbars på vandrette spor */
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -154,7 +154,7 @@ body {
   display: none;
 }
 
-/* ── Respekter reduceret bevaegelse ────────────────────────────────── */
+/* ── Respekter reduceret bevægelse ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

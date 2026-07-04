@@ -11,16 +11,16 @@ export async function uploadLogoAction(
 
   const file = formData.get("logo");
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "Vaelg en billedfil." };
+    return { error: "Vælg en billedfil." };
   }
   if (file.size > 4 * 1024 * 1024) {
-    return { error: "Filen maa hoejst vaere 4 MB." };
+    return { error: "Filen må højst være 4 MB." };
   }
 
   try {
     const url = await uploadLogoFile(file);
     return { url };
   } catch {
-    return { error: "Upload fejlede. Proev igen." };
+    return { error: "Upload fejlede. Prøv igen." };
   }
 }

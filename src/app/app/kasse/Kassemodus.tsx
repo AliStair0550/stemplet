@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Scanner } from "@/components/Scanner";
+import { StampCard } from "@/components/StampCard";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import type { StampIconKey } from "@/lib/brand";
 
 type Tab = "stempel" | "scan";
 
@@ -13,7 +15,7 @@ export function Kassemodus() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex gap-1 rounded-lg border border-fog bg-white p-1 self-start">
+      <div className="flex gap-1 self-start rounded-lg border border-fog bg-white p-1">
         {(
           [
             ["stempel", "Stempel-QR"],
@@ -82,7 +84,7 @@ function StempelQr() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-fog bg-white p-8">
+      <div className="flex flex-col items-center gap-4 rounded-sm border border-fog bg-white p-8">
         {error ? (
           <p className="max-w-xs text-center font-[200] text-[0.9rem] text-stone">
             {error}
@@ -98,18 +100,18 @@ function StempelQr() {
             priority
           />
         ) : (
-          <div className="h-[340px] w-[340px] animate-pulse rounded-xl bg-fog" />
+          <div className="h-[340px] w-[340px] animate-pulse rounded-sm bg-fog" />
         )}
         <p className="text-[0.8rem] font-[200] text-slate">
           Kunden scanner med kameraet. Ny kode om {seconds} sek.
         </p>
       </div>
       <p className="max-w-md text-center font-[200] text-[0.85rem] leading-relaxed text-stone">
-        Stil enheden ved disken. Koden skifter hvert minut, saa et foto af
-        skaermen er vaerdiloest bagefter.
+        Stil enheden ved disken. Koden skifter hvert minut, så et foto af
+        skærmen er værdiløst bagefter.
       </p>
       <button onClick={fullscreen} className={btnClass("outline", "md")}>
-        Fuldskaerm
+        Fuldskærm
       </button>
     </div>
   );
@@ -117,143 +119,177 @@ function StempelQr() {
 
 // ── Scan-modus: personalet scanner kundens kort ──────────────────────
 
-type ActionResult = {
-  ok: boolean;
-  message?: string;
-  stamps?: number;
-  required?: number;
-  rewardReady?: boolean;
+type CardState = {
+  serial: string;
+  stamps: number;
+  required: number;
+  rewardReady: boolean;
+  rewardText: string;
+  stampIcon: string;
+  primaryColor: string;
+  textColor: string;
+  businessName: string;
 };
 
 function ScanMode() {
   const [scanning, setScanning] = useState(false);
-  const [serial, setSerial] = useState<string | null>(null);
-  const [result, setResult] = useState<ActionResult | null>(null);
+  const [card, setCard] = useState<CardState | null>(null);
+  const [loading, setLoading] = useState(false);
   const [pin, setPin] = useState("");
-  const [showPin, setShowPin] = useState(false);
+  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   function reset() {
-    setSerial(null);
-    setResult(null);
+    setCard(null);
     setPin("");
-    setShowPin(false);
+    setNote(null);
   }
 
-  const onResult = useCallback((text: string) => {
-    // Kortets QR indeholder serienummeret direkte.
-    const value = text.includes("/kort/")
-      ? (text.split("/kort/")[1]?.split(/[/?#]/)[0] ?? text)
-      : text.trim();
-    setSerial(value);
-    setResult(null);
-    setScanning(false);
+  const loadCard = useCallback(async (serial: string) => {
+    setLoading(true);
+    setNote(null);
+    try {
+      const res = await fetch(
+        `/api/staff/card?serial=${encodeURIComponent(serial)}`,
+        { cache: "no-store" },
+      );
+      const data = await res.json();
+      if (res.ok) setCard(data as CardState);
+      else setNote({ ok: false, text: data.message ?? "Kortet blev ikke fundet." });
+    } catch {
+      setNote({ ok: false, text: "Ingen forbindelse." });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  const onResult = useCallback(
+    (text: string) => {
+      // Kortets QR indeholder serienummeret direkte.
+      const value = text.includes("/kort/")
+        ? (text.split("/kort/")[1]?.split(/[/?#]/)[0] ?? text)
+        : text.trim();
+      setScanning(false);
+      loadCard(value);
+    },
+    [loadCard],
+  );
+
   async function giveStamp() {
-    if (!serial) return;
+    if (!card) return;
     setBusy(true);
+    setNote(null);
     try {
       const res = await fetch("/api/staff/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial }),
+        body: JSON.stringify({ serial: card.serial }),
       });
       const data = await res.json();
-      setResult(
-        res.ok
-          ? {
-              ok: true,
-              stamps: data.stamps,
-              required: data.required,
-              rewardReady: data.rewardReady,
-              message: data.rewardReady
-                ? "Kortet er fuldt. Beloenning klar."
-                : `Stempel ${data.stamps} af ${data.required}.`,
-            }
-          : { ok: false, message: data.message },
-      );
+      if (res.ok) {
+        setNote({
+          ok: true,
+          text: data.rewardReady
+            ? "Kortet er nu fuldt. Belønning klar."
+            : `Stempel givet. ${data.stamps} af ${data.required}.`,
+        });
+        await loadCard(card.serial);
+      } else {
+        setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
+      }
     } finally {
       setBusy(false);
     }
   }
 
   async function redeem() {
-    if (!serial) return;
+    if (!card) return;
     setBusy(true);
+    setNote(null);
     try {
       const res = await fetch("/api/staff/redeem", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial, pin }),
+        body: JSON.stringify({ serial: card.serial, pin }),
       });
       const data = await res.json();
-      setResult(
-        res.ok
-          ? { ok: true, message: "Beloenning indloest. Kortet er nulstillet." }
-          : { ok: false, message: data.message },
-      );
-      if (res.ok) setShowPin(false);
+      if (res.ok) {
+        setNote({ ok: true, text: "Belønning indløst. Kortet er nulstillet." });
+        setPin("");
+        await loadCard(card.serial);
+      } else {
+        setNote({ ok: false, text: data.message ?? "Kunne ikke indløse." });
+        setPin("");
+      }
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="flex max-w-md flex-col gap-5">
-      {!serial ? (
+    <div className="flex w-full max-w-sm flex-col gap-5">
+      {!card && !loading ? (
         <button
-          onClick={() => setScanning(true)}
+          onClick={() => {
+            setNote(null);
+            setScanning(true);
+          }}
           className={btnClass("moss", "lg")}
         >
           Scan kundens kort
         </button>
-      ) : (
-        <div className="flex flex-col gap-4 rounded-xl border border-fog bg-white p-6">
-          <div>
-            <div className="text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
-              Kort
-            </div>
-            <div className="font-[400] text-[1rem] tracking-[0.2em] text-ink">
-              {serial}
-            </div>
-          </div>
+      ) : null}
 
-          {result ? (
+      {loading ? (
+        <p className="font-[200] text-[0.9rem] text-stone">Henter kort...</p>
+      ) : null}
+
+      {note && !card ? (
+        <p
+          className={cn(
+            "font-[200] text-[0.85rem]",
+            note.ok ? "text-moss" : "text-ink",
+          )}
+        >
+          {note.text}
+        </p>
+      ) : null}
+
+      {card ? (
+        <div className="flex flex-col gap-5">
+          <StampCard
+            businessName={card.businessName}
+            primaryColor={card.primaryColor}
+            textColor={card.textColor}
+            stampIcon={card.stampIcon as StampIconKey}
+            stamps={card.stamps}
+            required={card.required}
+            rewardText={card.rewardText}
+            serial={card.serial}
+          />
+
+          {note ? (
             <p
               className={cn(
-                "text-[0.85rem] font-[200]",
-                result.ok ? "text-moss" : "text-ink",
+                "font-[200] text-[0.85rem]",
+                note.ok ? "text-moss" : "text-ink",
               )}
             >
-              {result.message}
+              {note.text}
             </p>
           ) : null}
 
-          {!showPin ? (
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={giveStamp}
-                disabled={busy}
-                className={btnClass("primary")}
-              >
-                {busy ? "Et oejeblik..." : "Giv stempel"}
-              </button>
-              <button
-                onClick={() => {
-                  setResult(null);
-                  setShowPin(true);
-                }}
-                className={btnClass("outline")}
-              >
-                Indloes beloenning
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
+          {card.rewardReady ? (
+            <div className="flex flex-col gap-3 rounded-sm border border-moss bg-moss/5 p-5">
+              <div>
+                <p className="font-[300] text-[1rem] text-ink">Belønning klar</p>
+                <p className="font-[200] text-[0.85rem] text-stone">
+                  {card.rewardText}
+                </p>
+              </div>
               <label className="flex flex-col gap-1.5">
-                <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                  Personale-PIN
+                <span className="text-[0.66rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                  Personale-PIN for at indløse
                 </span>
                 <input
                   inputMode="numeric"
@@ -261,26 +297,27 @@ function ScanMode() {
                   onChange={(e) =>
                     setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
                   }
-                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-moss"
+                  placeholder="****"
                   autoFocus
+                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-moss"
                 />
               </label>
-              <div className="flex gap-3">
-                <button
-                  onClick={redeem}
-                  disabled={busy || pin.length < 4}
-                  className={btnClass("moss")}
-                >
-                  {busy ? "Indloeser..." : "Bekraeft indloesning"}
-                </button>
-                <button
-                  onClick={() => setShowPin(false)}
-                  className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate hover:text-ink"
-                >
-                  Annuller
-                </button>
-              </div>
+              <button
+                onClick={redeem}
+                disabled={busy || pin.length < 4}
+                className={btnClass("moss") + " self-start"}
+              >
+                {busy ? "Indløser..." : "Indløs belønning"}
+              </button>
             </div>
+          ) : (
+            <button
+              onClick={giveStamp}
+              disabled={busy}
+              className={btnClass("primary")}
+            >
+              {busy ? "Et øjeblik..." : "Giv stempel"}
+            </button>
           )}
 
           <button
@@ -290,7 +327,7 @@ function ScanMode() {
             Scan nyt kort
           </button>
         </div>
-      )}
+      ) : null}
 
       {scanning ? (
         <Scanner

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const ACTION_LABEL: Record<string, string> = {
   STAMP: "Stempel",
-  REDEEM: "Indloesning",
+  REDEEM: "Indløsning",
   PIN_FAIL: "Forkert PIN",
   FLAGGED: "Markeret",
 };
@@ -60,19 +60,19 @@ export default async function IndstillingerPage({
               </p>
               <p className="font-[200] text-[0.82rem] text-stone">
                 {business.plan === "PRO"
-                  ? `${PRO_PRICE_DKK} kr./md. Ubegraenset kort, kampagner og fuld statistik.`
+                  ? `${PRO_PRICE_DKK} kr./md. Ubegrænset kort, kampagner og fuld statistik.`
                   : "1 kort, 50 aktive kunder. Opgrader for kampagner og fuld statistik."}
               </p>
             </div>
             {business.plan === "PRO" ? (
               <form action={openPortal}>
-                <SubmitButton variant="outline" pendingText="Aabner...">
+                <SubmitButton variant="outline" pendingText="Åbner...">
                   Administrer abonnement
                 </SubmitButton>
               </form>
             ) : (
               <form action={startCheckout}>
-                <SubmitButton variant="moss" pendingText="Aabner Stripe...">
+                <SubmitButton variant="moss" pendingText="Åbner Stripe...">
                   Opgrader til Pro
                 </SubmitButton>
               </form>
@@ -89,7 +89,7 @@ export default async function IndstillingerPage({
           </h2>
           {logs.length === 0 ? (
             <p className="font-[200] text-[0.85rem] text-slate">
-              Ingen haendelser endnu.
+              Ingen hændelser endnu.
             </p>
           ) : (
             <div className="overflow-x-auto">

@@ -70,7 +70,7 @@ export function MaterialsPdf({
         <View style={styles.inner}>
           {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
           <Text style={styles.brand}>{businessName}</Text>
-          <Text style={styles.head}>Scan og faa dit stempelkort</Text>
+          <Text style={styles.head}>Scan og få dit stempelkort</Text>
           <Image src={qrDataUrl} style={styles.qr} />
           {rewardText ? <Text style={styles.reward}>{rewardText}</Text> : null}
           <Text style={styles.foot}>

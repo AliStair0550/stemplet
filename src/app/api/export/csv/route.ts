@@ -18,7 +18,7 @@ export async function GET() {
     where: { id: businessId },
   });
   if (business?.plan !== "PRO") {
-    return new Response("CSV-eksport kraever Pro.", { status: 403 });
+    return new Response("CSV-eksport kræver Pro.", { status: 403 });
   }
 
   const cards = await prisma.card.findMany({

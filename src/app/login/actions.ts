@@ -20,7 +20,7 @@ export async function requestMagicLink(
   if (!user) {
     return {
       error:
-        "Vi kan ikke finde en konto med den e-mail. Opret din virksomhed paa /start.",
+        "Vi kan ikke finde en konto med den e-mail. Opret din virksomhed på /start.",
     };
   }
 

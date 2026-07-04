@@ -3,7 +3,7 @@ import type { Plan } from "@prisma/client";
 export const PRO_PRICE_DKK = 99;
 
 export type PlanLimits = {
-  maxCards: number | null; // null = ubegraenset
+  maxCards: number | null; // null = ubegrænset
   maxActiveCustomers: number | null;
   campaigns: boolean;
   fullStats: boolean;

@@ -33,7 +33,7 @@ export default async function StampPage({
   if (!valid) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-parchment px-6 text-center">
-        <h1 className="font-[300] text-[1.4rem] text-ink">Koden er udloebet</h1>
+        <h1 className="font-[300] text-[1.4rem] text-ink">Koden er udløbet</h1>
         <p className="max-w-xs font-[200] text-[0.9rem] leading-relaxed text-stone">
           Stempel-koder er kun gyldige et minut ad gangen. Bed personalet om at
           vise en ny.

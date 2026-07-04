@@ -1,5 +1,5 @@
-// Brand-hjaelpere for kundekortene: stempel-ikoner, farver, kontrast.
-// Ren logik uden server-afhaengigheder, saa den kan bruges paa klienten.
+// Brand-hjælpere for kundekortene: stempel-ikoner, farver, kontrast.
+// Ren logik uden server-afhængigheder, så den kan bruges på klienten.
 
 export const DEFAULT_PRIMARY = "#061C3D";
 export const DEFAULT_TEXT = "#FFFFFF";
@@ -50,14 +50,14 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   };
 }
 
-/** Vaelg laesbar tekstfarve (ink eller hvid) oven paa en baggrundsfarve. */
+/** Vælg læsbar tekstfarve (ink eller hvid) oven på en baggrundsfarve. */
 export function contrastText(bgHex: string): "#FFFFFF" | "#1A1A1A" {
   const { r, g, b } = hexToRgb(bgHex);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 150 ? "#1A1A1A" : "#FFFFFF";
 }
 
-/** Let variation af en farve, til gradient/skygge paa kortet. */
+/** Let variation af en farve, til gradient/skygge på kortet. */
 export function shade(hex: string, amount: number): string {
   const { r, g, b } = hexToRgb(hex);
   const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));

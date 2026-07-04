@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   const cc = await loadCardBySerial(parsed.data.serial);
   if (!cc || cc.card.businessId !== businessId) {
-    return apiError("NOT_FOUND", "Kortet hoerer ikke til din butik.");
+    return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
   try {

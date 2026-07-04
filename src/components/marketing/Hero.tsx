@@ -25,7 +25,7 @@ export default function Hero() {
               <ButtonLink href="/start" variant="primary" size="lg">
                 Kom gratis i gang
               </ButtonLink>
-              <ButtonLink href="#saadan" variant="outline" size="lg">
+              <ButtonLink href="#sådan" variant="outline" size="lg">
                 Se hvordan det virker
               </ButtonLink>
             </div>

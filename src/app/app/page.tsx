@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 
 const ACTION_LABEL: Record<string, string> = {
   STAMP: "Stempel givet",
-  REDEEM: "Beloenning indloest",
+  REDEEM: "Belønning indløst",
   PIN_FAIL: "Forkert PIN",
-  FLAGGED: "Mistaenkelig aktivitet",
+  FLAGGED: "Mistænkelig aktivitet",
 };
 
 export default async function OverviewPage() {
@@ -28,7 +28,7 @@ export default async function OverviewPage() {
         subtitle="Her er, hvordan dit stempelkort klarer sig."
         action={
           <ButtonLink href="/app/kasse" variant="moss" size="md">
-            Aabn kasse
+            Åbn kasse
           </ButtonLink>
         }
       />
@@ -49,7 +49,7 @@ export default async function OverviewPage() {
           sub={`${formatDkNumber(stats.stampsWeek)} seneste 7 dage`}
         />
         <StatTile
-          label="Indloesninger"
+          label="Indløsninger"
           value={formatDkNumber(stats.redemptionsTotal)}
           sub={`${formatDkNumber(stats.redemptions30)} seneste 30 dage`}
         />
@@ -69,7 +69,7 @@ export default async function OverviewPage() {
           </h2>
           {activity.length === 0 ? (
             <p className="font-[200] text-[0.85rem] text-slate">
-              Ingen aktivitet endnu. Saet din QR op ved kassen.
+              Ingen aktivitet endnu. Sæt din QR op ved kassen.
             </p>
           ) : (
             <ul className="flex flex-col gap-3">

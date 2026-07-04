@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Hent serienumre for pass, der er aendret siden sidst (til denne enhed).
+// Hent serienumre for pass, der er ændret siden sidst (til denne enhed).
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ deviceLibraryId: string; passTypeId: string }> },

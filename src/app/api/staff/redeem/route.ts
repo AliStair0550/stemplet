@@ -15,7 +15,7 @@ import { clientIp, apiError } from "@/lib/http";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Indloesning kraever personale-PIN. 3 fejl laaser enheden i 5 minutter.
+// Indløsning kræver personale-PIN. 3 fejl låser enheden i 5 minutter.
 export async function POST(req: NextRequest) {
   const session = await auth();
   const businessId = session?.user?.businessId;
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (locked > 0) {
     return apiError(
       "LOCKED",
-      `For mange forkerte forsoeg. Proev igen om ${Math.ceil(locked / 60)} min.`,
+      `For mange forkerte forsøg. Prøv igen om ${Math.ceil(locked / 60)} min.`,
     );
   }
 
@@ -53,15 +53,15 @@ export async function POST(req: NextRequest) {
     return apiError(
       "PIN",
       fail.locked
-        ? "Indloesning laast i 5 minutter."
-        : "Forkert PIN. Proev igen.",
+        ? "Indløsning låst i 5 minutter."
+        : "Forkert PIN. Prøv igen.",
     );
   }
   await clearPinFails(businessId, deviceId);
 
   const cc = await loadCardBySerial(parsed.data.serial);
   if (!cc || cc.card.businessId !== businessId) {
-    return apiError("NOT_FOUND", "Kortet hoerer ikke til din butik.");
+    return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
   try {

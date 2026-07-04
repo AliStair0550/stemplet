@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const hex = z
   .string()
-  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal vaere en hex-vaerdi, fx #2D5F4A");
+  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #2D5F4A");
 
 export const stampIconEnum = z.enum([
   "coffee",
@@ -15,7 +15,7 @@ export const stampIconEnum = z.enum([
 
 export const pinSchema = z
   .string()
-  .regex(/^\d{4,6}$/, "PIN skal vaere 4 til 6 cifre");
+  .regex(/^\d{4,6}$/, "PIN skal være 4 til 6 cifre");
 
 export const emailSchema = z
   .string()
@@ -32,7 +32,7 @@ export const onboardingStartSchema = z.object({
 // Kortdesign (bruges i onboarding trin 2 og i kortdesigneren)
 export const cardDesignSchema = z.object({
   stampsRequired: z.coerce.number().int().min(4).max(12),
-  rewardText: z.string().trim().min(2, "Skriv en beloenning").max(80),
+  rewardText: z.string().trim().min(2, "Skriv en belønning").max(80),
   stampIcon: stampIconEnum,
   primaryColor: hex,
   textColor: hex,
@@ -61,7 +61,7 @@ export const campaignSchema = z
     path: ["endsAt"],
   });
 
-// Indloesning kraever PIN
+// Indløsning kræver PIN
 export const redeemSchema = z.object({
   serial: z.string().min(4),
   pin: pinSchema,

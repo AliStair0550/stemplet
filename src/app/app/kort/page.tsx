@@ -29,7 +29,7 @@ export default async function KortPage() {
     <>
       <PageHeading
         title="Dit kort"
-        subtitle="Design kortet. Aendringer gaelder med det samme paa nye stempler."
+        subtitle="Design kortet. Ændringer gælder med det samme på nye stempler."
       />
       <KortEditor
         initial={initial}

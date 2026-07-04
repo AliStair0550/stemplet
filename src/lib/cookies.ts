@@ -31,7 +31,7 @@ export async function setCardToken(
   });
 }
 
-/** Stabil enheds-id til PIN-laasning i kassemodus. Oprettes ved behov. */
+/** Stabil enheds-id til PIN-låsning i kassemodus. Oprettes ved behov. */
 export async function ensureDeviceId(): Promise<string> {
   const c = await cookies();
   const existing = c.get(DEVICE_ID_COOKIE)?.value;

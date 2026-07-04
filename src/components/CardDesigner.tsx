@@ -151,7 +151,7 @@ export function CardDesigner({
           />
         </Field>
 
-        <Field label="Beloenningstekst">
+        <Field label="Belønningstekst">
           <input
             type="text"
             value={value.rewardText}
@@ -234,7 +234,7 @@ export function CardDesigner({
             </span>
             <div className="flex items-center gap-3">
               <label className="cursor-pointer border border-clay px-4 py-2 text-[0.78rem] font-[300] uppercase tracking-[0.08em] text-ink hover:border-moss hover:text-moss">
-                {uploading ? "Uploader..." : "Vaelg fil"}
+                {uploading ? "Uploader..." : "Vælg fil"}
                 <input
                   type="file"
                   accept="image/*"

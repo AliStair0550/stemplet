@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     where: { businessId, active: true },
     orderBy: { createdAt: "asc" },
   });
-  if (!card) return apiError("NO_CARD", "Opret et kort foerst.", 400);
+  if (!card) return apiError("NO_CARD", "Opret et kort først.", 400);
 
   const { token, expiresInSeconds } = await signStampToken({
     businessId,

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s - Stemplet",
   },
   description:
-    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet paa fem sekunder. Ingen app. Ingen tilmelding. Et produkt fra Alius.",
+    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på fem sekunder. Ingen app. Ingen tilmelding. Et produkt fra Alius.",
   applicationName: "Stemplet",
   appleWebApp: {
     capable: true,
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   openGraph: {
-    title: "Stemplet - stempelkortet, der aldrig bliver vaek",
+    title: "Stemplet - stempelkortet, der aldrig bliver væk",
     description:
       "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding. Et produkt fra Alius.",
     url: appUrl,

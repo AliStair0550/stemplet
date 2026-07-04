@@ -50,7 +50,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
     <div className="flex flex-col gap-8">
       <form
         onSubmit={onCreate}
-        className="flex flex-col gap-4 rounded-xl border border-fog bg-white p-6"
+        className="flex flex-col gap-4 rounded-sm border border-fog bg-white p-6"
       >
         <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
           Ny kampagne

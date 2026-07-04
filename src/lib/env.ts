@@ -1,6 +1,6 @@
-// Centraliseret adgang til miljoevariabler og feature flags.
-// Bemaerk: hemmeligheder laeses kun server-side. Intet her rammer klienten
-// medmindre det har NEXT_PUBLIC_-praefiks.
+// Centraliseret adgang til miljøvariabler og feature flags.
+// Bemærk: hemmeligheder læses kun server-side. Intet her rammer klienten
+// medmindre det har NEXT_PUBLIC_-præfiks.
 
 export const WALLET_ENABLED = process.env.WALLET_ENABLED === "true";
 
@@ -9,11 +9,11 @@ export const APP_URL =
 
 export const IS_PROD = process.env.NODE_ENV === "production";
 
-/** Kaster hvis en paakraevet variabel mangler paa runtime (aldrig i build). */
+/** Kaster hvis en påkrævet variabel mangler på runtime (aldrig i build). */
 export function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`Miljoevariabel ${name} mangler.`);
+    throw new Error(`Miljøvariabel ${name} mangler.`);
   }
   return value;
 }

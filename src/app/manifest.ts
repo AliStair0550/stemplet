@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
 
-// PWA-manifest. Gaelder webkortet, saa kunden kan foeje det til hjemmeskaermen.
+// PWA-manifest. Gælder webkortet, så kunden kan føje det til hjemmeskærmen.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Stemplet",
     short_name: "Stemplet",
-    description: "Dit stempelkort. Altid ved haanden.",
+    description: "Dit stempelkort. Altid ved hånden.",
     start_url: "/",
     display: "standalone",
     background_color: "#FAF8F4",

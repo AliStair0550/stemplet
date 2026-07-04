@@ -1,7 +1,7 @@
 import "server-only";
 import { PrismaClient } from "@prisma/client";
 
-// Prisma-singleton. Undgaar mange klienter under hot reload i dev.
+// Prisma-singleton. Undgår mange klienter under hot reload i dev.
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };

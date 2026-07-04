@@ -4,7 +4,7 @@ import { StartWizard } from "./StartWizard";
 
 export const metadata: Metadata = {
   title: "Kom gratis i gang",
-  description: "Opret dit digitale stempelkort paa ti minutter. Intet kreditkort.",
+  description: "Opret dit digitale stempelkort på ti minutter. Intet kreditkort.",
 };
 
 export default function StartPage() {
