@@ -64,20 +64,60 @@ export async function clearPinFails(
 }
 
 // ── Anomali-flag ──────────────────────────────────────────────────────
-// Mere end 5 stempler fra samme IP på tværs af kort inden for en time.
+// Café-gæstewifi deler EEN offentlig IP, saa rene volumen-spikes fra én IP mod
+// én butik er IKKE mistænkelige (en travl fredag ligner det). Vi flager derfor:
+//   1) KORT-niveau: samme kundekort faar unormalt mange stempler paa en time.
+//   2) IP-niveau: KUN naar samme IP rammer mange FORSKELLIGE kort OG flere
+//      FORSKELLIGE butikker (det moenster er reelt scriptet misbrug).
+// En enkelt café (mange kort, samme IP, samme butik) flager aldrig.
 
-const IP_STAMP_WINDOW = 60 * 60;
-const IP_STAMP_THRESHOLD = 5;
+const ANOM_WINDOW = 60 * 60; // 1 time
+const CARD_STAMP_LIMIT = 15; // ét kort bør ikke faa saa mange stempler paa en time
+const IP_DISTINCT_CARDS = 10; // mange forskellige kort fra samme IP ...
+const IP_DISTINCT_BIZ = 3; // ... OG paa tvaers af flere butikker
 
-export async function trackIpStamp(
-  ip: string | null,
-): Promise<{ count: number; flagged: boolean }> {
-  if (!ip) return { count: 0, flagged: false };
-  const redis = getRedis();
-  const key = `ipstamp:${ip}`;
-  const count = await redis.incr(key);
-  if (count === 1) {
-    await redis.expire(key, IP_STAMP_WINDOW);
+// Minimalt Redis-interface, saa detektionen kan testes med en fake.
+type AnomalyStore = {
+  incr: (key: string) => Promise<number>;
+  expire: (key: string, seconds: number) => Promise<unknown>;
+  sadd: (key: string, member: string) => Promise<unknown>;
+  scard: (key: string) => Promise<number>;
+};
+
+export type AnomalyResult = {
+  flagged: boolean;
+  reason: "card-volume" | "ip-cross-business" | null;
+};
+
+export async function trackStampAnomaly(
+  input: { businessId: string; customerCardId: string; ip: string | null },
+  store?: AnomalyStore,
+): Promise<AnomalyResult> {
+  const redis = store ?? (getRedis() as unknown as AnomalyStore);
+
+  // 1) Samme kort, unormalt mange stempler paa en time.
+  const cardKey = `anomcard:${input.customerCardId}`;
+  const cardCount = await redis.incr(cardKey);
+  if (cardCount === 1) await redis.expire(cardKey, ANOM_WINDOW);
+  if (cardCount > CARD_STAMP_LIMIT) {
+    return { flagged: true, reason: "card-volume" };
   }
-  return { count, flagged: count > IP_STAMP_THRESHOLD };
+
+  // 2) Samme IP paa tvaers af mange kort OG flere butikker. En enkelt butik
+  //    giver distinctBiz = 1, saa café-volumen mod én butik flager aldrig.
+  if (input.ip) {
+    const cardsKey = `anomip:cards:${input.ip}`;
+    const bizKey = `anomip:biz:${input.ip}`;
+    await redis.sadd(cardsKey, input.customerCardId);
+    await redis.expire(cardsKey, ANOM_WINDOW);
+    await redis.sadd(bizKey, input.businessId);
+    await redis.expire(bizKey, ANOM_WINDOW);
+    const distinctCards = await redis.scard(cardsKey);
+    const distinctBiz = await redis.scard(bizKey);
+    if (distinctCards > IP_DISTINCT_CARDS && distinctBiz > IP_DISTINCT_BIZ) {
+      return { flagged: true, reason: "ip-cross-business" };
+    }
+  }
+
+  return { flagged: false, reason: null };
 }

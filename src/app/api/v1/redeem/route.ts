@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { businessByApiKey } from "@/lib/integrations";
 import { loadCardBySerial, redeemReward, StampError } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
+import { checkRateLimit } from "@/lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,11 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const business = await businessByApiKey(req.headers.get("authorization"));
   if (!business) return apiError("UNAUTHORIZED", "Ugyldig API-nøgle.", 401);
+
+  // Indløsning er sjældnere end stempling: strammere loft pr. virksomhed.
+  if (!(await checkRateLimit("api-v1-redeem", 60, "1 m", business.id))) {
+    return apiError("RATE_LIMIT", "For mange kald. Prøv igen om lidt.", 429);
+  }
 
   const body = await req.json().catch(() => ({}));
   const serial = String(body?.serial ?? "").trim();

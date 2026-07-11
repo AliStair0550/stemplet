@@ -43,11 +43,13 @@ export async function POST(req: NextRequest) {
     return apiError("NO_CARD", "Kortet passer ikke til denne butik.");
   }
 
-  // Replay-beskyttelse: jti kan kun bruges een gang. Redis er primaer, men
-  // Stamp.tokenJti @unique i databasen er backstop, hvis Redis skulle fejle.
+  // Replay-beskyttelse PR. KORT: samme kort kan ikke bruge samme token to
+  // gange, men en kø af forskellige kort kan dele samme skærm-QR. Redis er
+  // primaer, den sammensatte unik [tokenJti, customerCardId] i databasen er
+  // backstop, hvis Redis skulle fejle.
   let fresh = true;
   try {
-    fresh = await consumeJti(payload.jti);
+    fresh = await consumeJti(payload.jti, cc.id);
   } catch (e) {
     console.error("Redis (jti) fejlede, stoler paa DB-unik:", e);
   }

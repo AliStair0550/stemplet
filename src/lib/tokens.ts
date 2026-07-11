@@ -3,8 +3,11 @@ import { SignJWT, jwtVerify } from "jose";
 import { randomUUID } from "node:crypto";
 import { getRedis } from "./redis";
 
-// Stempel-tokens er signerede JWT'er, der udløber efter 60 sekunder og kun
-// kan bruges een gang. Brugte jti'er gemmes i Redis (TTL 10 min) => replay umuligt.
+// Stempel-tokens er signerede JWT'er, der udløber efter 60 sekunder. Et token
+// maa bruges EEN gang PR. KORT (ikke globalt): tre kunder i en kø kan scanne
+// samme skærm-QR inden for dens levetid og faa hver deres stempel, men det
+// samme kort kan aldrig bruge samme token to gange. Brugte (jti, kort)-par
+// gemmes i Redis (TTL 10 min) => replay umuligt.
 
 const STAMP_TTL_SECONDS = 60;
 const JTI_TTL_SECONDS = 10 * 60;
@@ -56,13 +59,32 @@ export async function verifyStampToken(
   };
 }
 
+/** Redis-noeglen for et forbrugt token: unik pr. (token, kort). */
+export function jtiKey(jti: string, customerCardId: string): string {
+  return `stamp:${jti}:${customerCardId}`;
+}
+
+// Minimalt Redis-interface, saa consumeJti kan testes med en fake.
+type NxSetter = {
+  set: (
+    key: string,
+    value: string,
+    opts: { nx: true; ex: number },
+  ) => Promise<unknown>;
+};
+
 /**
- * Markerer et jti som brugt. Returnerer false hvis det allerede var brugt
- * (replay). Bruger SET NX med TTL, så tjek + sæt er atomisk.
+ * Markerer et token som brugt AF ET BESTEMT KORT. Returnerer false, hvis netop
+ * dette kort allerede har brugt tokenet (replay). Forskellige kort kan bruge
+ * samme token inden for dets levetid. SET NX + TTL gør tjek + sæt atomisk.
  */
-export async function consumeJti(jti: string): Promise<boolean> {
-  const redis = getRedis();
-  const res = await redis.set(`stampjti:${jti}`, "1", {
+export async function consumeJti(
+  jti: string,
+  customerCardId: string,
+  store?: NxSetter,
+): Promise<boolean> {
+  const redis = store ?? (getRedis() as unknown as NxSetter);
+  const res = await redis.set(jtiKey(jti, customerCardId), "1", {
     nx: true,
     ex: JTI_TTL_SECONDS,
   });

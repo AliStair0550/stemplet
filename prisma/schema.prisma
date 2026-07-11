@@ -149,10 +149,13 @@ model Stamp {
   customerCardId String
   customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
   method         StampMethod
-  tokenJti       String?      @unique
+  tokenJti       String?
   multiplier     Int          @default(1)
   createdAt      DateTime     @default(now())
 
+  // Et token maa bruges een gang PR. KORT. NULL-jti'er (personale/API) kolliderer
+  // aldrig, da NULL regnes som distinkt i Postgres.
+  @@unique([tokenJti, customerCardId])
   @@index([customerCardId])
 }
 

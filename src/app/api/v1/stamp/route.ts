@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { businessByApiKey } from "@/lib/integrations";
 import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
+import { checkRateLimit } from "@/lib/redis";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,6 +13,12 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const business = await businessByApiKey(req.headers.get("authorization"));
   if (!business) return apiError("UNAUTHORIZED", "Ugyldig API-nøgle.", 401);
+
+  // Rate limit pr. virksomhed: rigeligt til travle kasser, men stopper løbske
+  // scripts. Fail-open hvis Redis ikke svarer.
+  if (!(await checkRateLimit("api-v1-stamp", 300, "1 m", business.id))) {
+    return apiError("RATE_LIMIT", "For mange kald. Prøv igen om lidt.", 429);
+  }
 
   const body = await req.json().catch(() => ({}));
   const serial = String(body?.serial ?? "").trim();

@@ -1,7 +1,7 @@
 import "server-only";
 import type { StampMethod } from "@prisma/client";
 import { prisma } from "./prisma";
-import { trackIpStamp } from "./security";
+import { trackStampAnomaly } from "./security";
 import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
 
@@ -160,7 +160,12 @@ export async function applyStamp(opts: {
   });
 
   // Bivirkninger efter commit.
-  await flagIfAnomalous(result.businessId, opts.ip ?? null, result.serial);
+  await flagIfAnomalous(
+    result.businessId,
+    opts.customerCardId,
+    opts.ip ?? null,
+    result.serial,
+  );
   void fireWebhook(
     {
       id: result.businessId,
@@ -244,11 +249,16 @@ export async function redeemReward(opts: {
 
 async function flagIfAnomalous(
   businessId: string,
+  customerCardId: string,
   ip: string | null,
   serial: string,
 ) {
   try {
-    const { count, flagged } = await trackIpStamp(ip);
+    const { flagged, reason } = await trackStampAnomaly({
+      businessId,
+      customerCardId,
+      ip,
+    });
     if (flagged) {
       await prisma.auditLog.create({
         data: {
@@ -256,8 +266,11 @@ async function flagIfAnomalous(
           action: "FLAGGED",
           ip,
           detail: {
-            reason: "Mange stempler fra samme IP inden for en time",
-            count,
+            reason:
+              reason === "card-volume"
+                ? "Usaedvanligt mange stempler paa samme kort inden for en time"
+                : "Samme IP stempler mange forskellige kort paa tvaers af flere butikker",
+            code: reason,
             serial,
           },
         },
