@@ -18,7 +18,7 @@ const FAQS = [
   },
   {
     q: "Hvad sker der, hvis kunden skifter telefon?",
-    a: "Kortet følger med. Så længe kunden tilføjer det igen fra samme link eller QR-kode, er alle stempler bevaret.",
+    a: "Har kunden kortet i Apple Wallet, følger det med til den nye telefon. Ellers kan personalet overføre stemplerne ved kassen.",
   },
   {
     q: "Er der binding?",
