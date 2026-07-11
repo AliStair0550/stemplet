@@ -9,6 +9,10 @@ const FAQS = [
     a: "Nej. Kortet ligger direkte i Apple Wallet, som allerede findes på alle iPhones. Kunden scanner en QR-kode, trykker Tilføj, og kortet er der.",
   },
   {
+    q: "Kan en kunde få flere stempler på én gang — fx tre kaffe, tre stempler?",
+    a: "Ja. Ved kassen scanner personalet kundens kort én gang pr. kop — der er ingen ventetid på personalets stempler. Kundens egen QR-scanning er derimod begrænset til ét stempel ad gangen, så ingen kan stå og scanne sig selv til gratis kaffe. Du bestemmer selv intervallet i indstillinger.",
+  },
+  {
     q: "Virker det på Android?",
     a: "Ja. Android-brugere får et webkort, der åbner i browseren og fungerer på samme måde. Det kan gemmes på hjemmeskærmen som en genvej.",
   },
