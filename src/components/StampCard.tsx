@@ -18,6 +18,12 @@ export type StampCardProps = {
   pop?: boolean;
   /** Blødt lys-sweep henover kortet (bruges i hero for at gøre det levende). */
   shine?: boolean;
+  /** Bredere og lavere kort (mere landskab, som et rigtigt Wallet-pass). */
+  landscape?: boolean;
+  /** Ekstra klasser paa logoet (fx invert til lyst logo paa moerkt kort). */
+  logoClassName?: string;
+  /** Skjul virksomhedsnavnet (fx naar logoet allerede er et ordmaerke). */
+  hideName?: boolean;
   className?: string;
 };
 
@@ -43,6 +49,9 @@ export function StampCard({
   serial,
   pop = false,
   shine = false,
+  landscape = false,
+  logoClassName,
+  hideName = false,
   className,
 }: StampCardProps) {
   const rewardReady = stamps >= required;
@@ -51,7 +60,8 @@ export function StampCard({
   return (
     <div
       className={cn(
-        "relative w-full max-w-sm select-none overflow-hidden rounded-[1.4rem] shadow-[0_22px_60px_-14px_rgba(26,26,26,0.45)] ring-1 ring-black/5",
+        "relative w-full select-none overflow-hidden rounded-[1.4rem] shadow-[0_22px_60px_-14px_rgba(26,26,26,0.45)] ring-1 ring-black/5",
+        landscape ? "max-w-md" : "max-w-sm",
         className,
       )}
       style={{ background: primaryColor, color: textColor }}
@@ -72,11 +82,16 @@ export function StampCard({
           style={{
             background:
               "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%)",
-            animation: "sheenSweep 5s ease-in-out 1.5s infinite",
+            animation: "sheenSweep 3.5s ease-in-out 1s infinite",
           }}
         />
       ) : null}
-      <div className="relative flex flex-col gap-5 p-6">
+      <div
+        className={cn(
+          "relative flex flex-col",
+          landscape ? "gap-4 p-5" : "gap-5 p-6",
+        )}
+      >
         {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5">
@@ -84,10 +99,13 @@ export function StampCard({
               <Image
                 src={logoUrl}
                 alt={businessName}
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-md object-contain"
-                style={{ background: rgba(textColor, 0.12) }}
+                width={609}
+                height={177}
+                className={cn(
+                  "h-8 w-auto max-w-[62%] object-contain object-left",
+                  logoClassName,
+                )}
+                unoptimized
               />
             ) : (
               <div
@@ -97,9 +115,11 @@ export function StampCard({
                 {businessName.slice(0, 2).toUpperCase()}
               </div>
             )}
-            <span className="text-[0.82rem] font-[400] tracking-[0.02em]">
-              {businessName}
-            </span>
+            {!hideName ? (
+              <span className="text-[0.82rem] font-[400] tracking-[0.02em]">
+                {businessName}
+              </span>
+            ) : null}
           </div>
           <div className="text-right">
             <div
@@ -135,7 +155,7 @@ export function StampCard({
         </div>
 
         {/* Stempelfelter */}
-        <div className="flex flex-wrap gap-2.5">
+        <div className={cn("flex flex-wrap", landscape ? "gap-2" : "gap-2.5")}>
           {slots.map((_, i) => {
             const filled = i < stamps;
             const chipStyle = filled
@@ -153,12 +173,16 @@ export function StampCard({
               <div
                 key={`${i}-${filled}`}
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full",
+                  "flex items-center justify-center rounded-full",
+                  landscape ? "h-9 w-9" : "h-10 w-10",
                   filled && pop && i === stamps - 1 && "animate-stamp-pop",
                 )}
                 style={chipStyle}
               >
-                <StampIcon icon={stampIcon} className="h-5 w-5" />
+                <StampIcon
+                  icon={stampIcon}
+                  className={landscape ? "h-[1.05rem] w-[1.05rem]" : "h-5 w-5"}
+                />
               </div>
             );
           })}
@@ -166,9 +190,19 @@ export function StampCard({
 
         {/* Stregkode-strip */}
         {serial ? (
-          <div className="mt-1 flex flex-col items-center gap-1.5 rounded-lg bg-white px-4 py-3">
-            <BarcodeGlyph value={serial} />
-            <span className="text-[0.6rem] font-[400] tracking-[0.3em] text-ink">
+          <div
+            className={cn(
+              "flex flex-col items-center rounded-lg bg-white px-4",
+              landscape ? "gap-1 py-2" : "mt-1 gap-1.5 py-3",
+            )}
+          >
+            <BarcodeGlyph value={serial} compact={landscape} />
+            <span
+              className={cn(
+                "font-[400] tracking-[0.3em] text-ink",
+                landscape ? "text-[0.55rem]" : "text-[0.6rem]",
+              )}
+            >
               {serial}
             </span>
           </div>
@@ -188,12 +222,18 @@ export function StampCard({
 }
 
 /** Simpel dekorativ stregkode-glyph (den rigtige QR står på webkortet). */
-function BarcodeGlyph({ value }: { value: string }) {
+function BarcodeGlyph({
+  value,
+  compact = false,
+}: {
+  value: string;
+  compact?: boolean;
+}) {
   const bars = value
     .split("")
     .map((ch) => (ch.charCodeAt(0) % 4) + 1);
   return (
-    <div className="flex h-8 items-end gap-[2px]">
+    <div className={cn("flex items-end gap-[2px]", compact ? "h-6" : "h-8")}>
       {bars.map((w, i) => (
         <span
           key={i}

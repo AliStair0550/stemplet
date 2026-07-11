@@ -172,7 +172,7 @@ p {
 }
 
 .animate-float {
-  animation: floatCard 5.5s ease-in-out infinite;
+  animation: floatCard 3.8s ease-in-out infinite;
 }
 
 @keyframes sheenSweep {

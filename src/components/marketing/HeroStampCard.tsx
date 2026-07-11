@@ -31,7 +31,7 @@ export default function HeroStampCard() {
       (entries) => {
         if (entries[0]?.isIntersecting && !started.current) {
           started.current = true;
-          let delay = 500;
+          let delay = 320;
           for (let value = START + 1; value <= AUTO_TARGET; value++) {
             const target = value;
             const id = window.setTimeout(() => {
@@ -39,7 +39,7 @@ export default function HeroStampCard() {
               setStamps(target);
             }, delay);
             timeouts.current.push(id);
-            delay += 640;
+            delay += 320;
           }
           observer.disconnect();
         }
@@ -79,7 +79,11 @@ export default function HeroStampCard() {
           className="cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50"
         >
           <StampCard
-            businessName="Coffee Lab"
+            businessName="Copenhagen Coffee Lab"
+            logoUrl="/coffeelab.png"
+            logoClassName="!h-9 opacity-90 [filter:brightness(0)_invert(1)]"
+            hideName
+            landscape
             primaryColor="#2A1A10"
             textColor="#F6EEE4"
             stampIcon="coffee"
