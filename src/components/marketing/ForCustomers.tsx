@@ -4,7 +4,7 @@ import { RelationshipGraphic } from "@/components/marketing/RelationshipGraphic"
 const CUSTOMER = [
   "Ingen app, ingen konto, intet at installere.",
   "Bliver aldrig væk, det ligger altid i Wallet.",
-  "Minder dem om dig fra låseskærmen, når de er i nærheden.",
+  "Dukker op på låseskærmen, når de er i nærheden af butikken.",
   "De ser præcis, hvor tæt de er på næste gratis.",
   "Helt anonymt, hvis de vil. Data ligger i EU.",
 ];
@@ -63,8 +63,7 @@ export default function ForCustomers() {
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
           Kortet ligger i kundens Apple Wallet, altid ved hånden. Hver gang de
-          åbner telefonen, er du der. Sådan skaber du kunder, der kommer igen,
-          og en forretning, der kan se det.
+          åbner telefonen, er du der. Sådan skaber du kunder, der kommer igen.
         </p>
       </div>
 

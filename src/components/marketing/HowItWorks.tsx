@@ -13,7 +13,7 @@ const FIRST_VISIT: Step[] = [
   },
   {
     title: "Få det første stempel",
-    body: "Ved købet lander det første stempel med det samme. Kunden er i gang, og kortet begynder at fylde.",
+    body: "Kunden scanner butikkens stempel-QR, eller personalet scanner kundens kort. Det første stempel lander med det samme.",
   },
 ];
 
