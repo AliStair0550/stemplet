@@ -41,8 +41,8 @@ export default function Problem() {
     <Section className="bg-sand">
       <div className="max-w-xl">
         <h2 className="font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Et papkort er nemt at{" "}
-          <span className="font-fraunces font-light italic">tabe</span>.
+          Stemplet ligger altid i din kundes{" "}
+          <span className="font-fraunces font-light italic">Apple Wallet</span>.
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
           Det fysiske kommer hurtigt i en skuffe. Eller smidt ud. Med Stemplet

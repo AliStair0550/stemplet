@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui";
 
 const LINKS = [
   { href: "#sådan", label: "Sådan virker det" },
@@ -47,9 +46,6 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          <ButtonLink href="/start" variant="primary">
-            Kom gratis i gang
-          </ButtonLink>
         </nav>
       </div>
     </header>

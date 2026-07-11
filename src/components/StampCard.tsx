@@ -59,6 +59,8 @@ export function StampCard({
 }: StampCardProps) {
   const rewardReady = stamps >= required;
   const slots = Array.from({ length: required });
+  // Balancerede raekker: 10 stempler bliver 5+5, 8 bliver 4+4 osv.
+  const columns = required <= 5 ? required : Math.ceil(required / 2);
 
   return (
     <div
@@ -157,8 +159,11 @@ export function StampCard({
           </div>
         </div>
 
-        {/* Stempelfelter */}
-        <div className={cn("flex flex-wrap", landscape ? "gap-2" : "gap-2.5")}>
+        {/* Stempelfelter - balancerede raekker (fx 5+5) */}
+        <div
+          className={cn("grid w-fit", landscape ? "gap-2" : "gap-2.5")}
+          style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
+        >
           {slots.map((_, i) => {
             const filled = i < stamps;
             const chipStyle = filled
