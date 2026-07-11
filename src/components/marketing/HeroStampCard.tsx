@@ -126,7 +126,6 @@ export default function HeroStampCard() {
             rewardText="10. kop er gratis"
             serial="COFFEELAB1"
             serialLabel="Coffee Lab"
-            showPoweredBy
             pop={pop}
             shine
           />

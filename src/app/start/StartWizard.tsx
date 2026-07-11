@@ -114,7 +114,6 @@ export function StartWizard() {
             onChange={setDesign}
             businessName={name || "Din butik"}
             allowLogo
-            showPoweredBy
           />
           <p className="text-[0.75rem] font-[200] text-slate">
             Tilføj dit logo nu, så henter vi automatisk dine farver. Du kan

@@ -1,6 +1,4 @@
-import { StampIcon } from "@/components/StampIcon";
-
-// Relations-visuelt: din forretning i centrum (loyalitet), forbundet til
+// Relations-visuelt: stempelkortet i centrum, forbundet til
 // kunder, der kommer igen. Glødende linjer flyder ind mod midten, en langsom
 // bane kredser om centrum, og en puls viser, at du bliver set. Ren CSS -
 // reduceret bevægelse respekteres via globals.css.
@@ -99,11 +97,11 @@ export function RelationshipGraphic() {
         </div>
       ))}
 
-      {/* Centrum: din forretning, loyalitet der bliver set */}
+      {/* Centrum: selve stempelkortet, som relationen bygges omkring */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <span
           aria-hidden
-          className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/20 blur-md"
+          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/18 blur-lg"
         />
         <span
           className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/25"
@@ -113,8 +111,33 @@ export function RelationshipGraphic() {
           className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/25"
           style={{ animation: "presencePulse 3s ease-out 1.5s infinite" }}
         />
-        <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-moss text-parchment shadow-[0_12px_34px_-8px_rgba(45,95,74,0.7)] ring-1 ring-white/10">
-          <StampIcon icon="heart" className="h-7 w-7" />
+        <div
+          className="relative flex flex-col gap-1.5 rounded-md px-3 py-2.5 shadow-[0_14px_34px_-8px_rgba(26,26,26,0.55)] ring-1 ring-black/10"
+          style={{
+            background: "#2A1A10",
+            color: "#F6EEE4",
+            transform: "rotate(-4deg)",
+          }}
+        >
+          <span
+            className="text-[0.44rem] font-[500] uppercase tracking-[0.12em]"
+            style={{ color: "rgba(246,238,228,0.7)" }}
+          >
+            Coffee Lab
+          </span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {[true, true, true, true, false, false].map((filled, i) => (
+              <span
+                key={i}
+                className="h-2.5 w-2.5 rounded-full"
+                style={
+                  filled
+                    ? { background: "#F6EEE4" }
+                    : { border: "1px solid rgba(246,238,228,0.35)" }
+                }
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

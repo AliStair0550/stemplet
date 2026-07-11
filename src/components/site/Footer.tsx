@@ -1,5 +1,4 @@
 import Link from "next/link";
-import AliusLogo from "@/components/AliusLogo";
 
 export default function Footer() {
   return (
@@ -11,7 +10,7 @@ export default function Footer() {
               Stemplet<span className="text-moss">.</span>
             </span>
             <span className="font-[200] text-[0.7rem] tracking-[0.02em] text-stone">
-              Et produkt fra Alius
+              Stempelkortet, der skaber flere gensyn.
             </span>
           </div>
 
@@ -32,10 +31,9 @@ export default function Footer() {
               href="https://alius.dk"
               target="_blank"
               rel="noreferrer"
-              aria-label="Alius"
-              className="opacity-80 transition-opacity hover:opacity-100"
+              className="font-[300] text-[0.72rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
             >
-              <AliusLogo width={72} />
+              Alius
             </a>
           </nav>
         </div>

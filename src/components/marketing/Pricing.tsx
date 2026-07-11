@@ -1,5 +1,5 @@
 import { Section, Eyebrow, ButtonLink } from "@/components/ui";
-import { PRO_PRICE_DKK } from "@/lib/plans";
+import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
 
 function Check() {
   return (
@@ -18,18 +18,17 @@ function Check() {
 }
 
 const FREE = [
-  "1 stempelkort",
-  "Op til 50 aktive kunder",
+  `Op til ${FREE_CUSTOMER_LIMIT} aktive kunder`,
+  "Alle funktioner fra dag ét",
+  "Dit eget brand, uden Stemplet-logo",
+  "Kampagner og fuld statistik",
   "Stempler i Apple Wallet",
-  "Drevet af Stemplet på kortet",
 ];
 
 const PRO = [
-  "Ubegrænset antal kort",
   "Ubegrænset antal kunder",
-  "Dit eget brand, uden Stemplet-logo",
-  "Kampagner og bonusstempler",
-  "Fuld statistik",
+  "Alt det samme som Gratis, uden loft",
+  `Aktiveres automatisk over ${FREE_CUSTOMER_LIMIT} kunder`,
 ];
 
 function Features({ items }: { items: string[] }) {
@@ -53,14 +52,14 @@ export default function Pricing() {
       <div className="max-w-xl">
         <Eyebrow>Pris</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Enkel pris. Ingen binding.
+          Gratis op til {FREE_CUSTOMER_LIMIT} kunder. Alt er med.
         </h2>
       </div>
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Gratis */}
-        <div className="flex flex-col border border-clay bg-parchment p-8 md:p-10">
-          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-slate">
+        <div className="flex flex-col border border-moss bg-parchment p-8 md:p-10">
+          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-moss">
             Gratis
           </span>
           <div className="mt-5 flex items-baseline gap-2">
@@ -70,13 +69,14 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Alt du skal bruge for at komme i gang med dit første kort.
+            Alle funktioner, dit eget brand og fuld indsigt. Op til{" "}
+            {FREE_CUSTOMER_LIMIT} aktive kunder.
           </p>
           <Features items={FREE} />
           <div className="mt-8 pt-2">
             <ButtonLink
               href="/start"
-              variant="outline"
+              variant="primary"
               size="lg"
               className="w-full"
             >
@@ -86,13 +86,8 @@ export default function Pricing() {
         </div>
 
         {/* Pro */}
-        <div className="relative flex flex-col border border-moss bg-parchment p-8 md:p-10">
-          <span className="absolute right-8 top-8 md:right-10 md:top-10">
-            <span className="bg-moss px-3 py-1 font-[300] text-[0.62rem] uppercase tracking-[0.12em] text-parchment">
-              Anbefalet
-            </span>
-          </span>
-          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-moss">
+        <div className="flex flex-col border border-clay bg-parchment p-8 md:p-10">
+          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-slate">
             Pro
           </span>
           <div className="mt-5 flex items-baseline gap-2">
@@ -102,25 +97,27 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Dit eget brand, ubegrænset vækst og fuld indsigt.
+            Samme produkt, uden kundeloft. Du overgår automatisk, når du
+            passerer {FREE_CUSTOMER_LIMIT} aktive kunder.
           </p>
           <Features items={PRO} />
           <div className="mt-8 pt-2">
             <ButtonLink
               href="/start"
-              variant="primary"
+              variant="outline"
               size="lg"
               className="w-full"
             >
-              Vælg Pro
+              Kom i gang
             </ButtonLink>
           </div>
         </div>
       </div>
 
       <p className="mx-auto mt-10 max-w-xl text-center font-[200] text-[0.85rem] leading-[1.8] text-stone">
-        Ingen binding. Intet kreditkort for at starte. {PRO_PRICE_DKK} kr. er
-        mindre end én genkøbt kunde om måneden.
+        Ingen binding. Intet kreditkort for at starte. Du betaler først{" "}
+        {PRO_PRICE_DKK} kr./md., hvis du passerer {FREE_CUSTOMER_LIMIT} aktive
+        kunder. Mindre end én genkøbt kunde om måneden.
       </p>
     </Section>
   );

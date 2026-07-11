@@ -11,13 +11,17 @@ export type PlanLimits = {
   ownBrand: boolean;
 };
 
+// Gratis giver ALLE funktioner (eget brand, kampagner, fuld statistik) op til
+// 25 aktive kunder. Man overgaar til Pro, naar man passerer 25 kunder.
+export const FREE_CUSTOMER_LIMIT = 25;
+
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   FREE: {
-    maxCards: 1,
-    maxActiveCustomers: 50,
-    campaigns: false,
-    fullStats: false,
-    showPoweredBy: true,
+    maxCards: null,
+    maxActiveCustomers: FREE_CUSTOMER_LIMIT,
+    campaigns: true,
+    fullStats: true,
+    showPoweredBy: false,
     ownBrand: true,
   },
   PRO: {

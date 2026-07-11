@@ -14,13 +14,6 @@ export async function GET() {
   const businessId = session?.user?.businessId;
   if (!businessId) return new Response("Ikke logget ind.", { status: 401 });
 
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
-  });
-  if (business?.plan !== "PRO") {
-    return new Response("CSV-eksport kræver Pro.", { status: 403 });
-  }
-
   const cards = await prisma.card.findMany({
     where: { businessId },
     select: { id: true },

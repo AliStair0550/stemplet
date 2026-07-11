@@ -34,7 +34,7 @@ export default async function KortPage() {
       <KortEditor
         initial={initial}
         businessName={business.name}
-        showPoweredBy={business.plan === "FREE"}
+        showPoweredBy={false}
       />
     </>
   );

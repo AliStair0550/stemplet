@@ -5,7 +5,7 @@ import { PageHeading, Panel } from "@/components/dash";
 import { SettingsForms } from "./SettingsForms";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
-import { PRO_PRICE_DKK } from "@/lib/plans";
+import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
 import { stripeConfigured } from "@/lib/stripe";
 import { formatDkDateTime } from "@/lib/utils";
 
@@ -67,8 +67,8 @@ export default async function IndstillingerPage({
               </p>
               <p className="font-[200] text-[0.82rem] text-stone">
                 {business.plan === "PRO"
-                  ? `${PRO_PRICE_DKK} kr./md. Ubegrænset kort, kampagner og fuld statistik.`
-                  : "1 kort, 50 aktive kunder. Opgrader for kampagner og fuld statistik."}
+                  ? `${PRO_PRICE_DKK} kr./md. Ubegrænset antal kunder.`
+                  : `Alle funktioner, op til ${FREE_CUSTOMER_LIMIT} aktive kunder. Opgrader for ubegrænset.`}
               </p>
             </div>
             {business.plan === "PRO" ? (

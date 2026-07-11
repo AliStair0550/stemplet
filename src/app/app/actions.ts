@@ -95,9 +95,6 @@ export async function setPin(formData: FormData): Promise<Result> {
 
 export async function createCampaign(formData: FormData): Promise<Result> {
   const { business } = await requireBusiness();
-  if (business.plan !== "PRO") {
-    return { ok: false, error: "Kampagner kræver Pro." };
-  }
   const parsed = campaignSchema.safeParse({
     type: formData.get("type"),
     startsAt: formData.get("startsAt"),

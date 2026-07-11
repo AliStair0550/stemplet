@@ -73,10 +73,14 @@ export default function StatsPreview() {
             {BARS.map((h, i) => (
               <div
                 key={i}
-                className={`flex-1 rounded-t-[3px] ${
-                  i === BARS.length - 1 ? "bg-moss-light" : "bg-moss/85"
-                }`}
-                style={{ height: `${h}%` }}
+                className="flex-1 rounded-t-[3px]"
+                style={{
+                  height: `${h}%`,
+                  background:
+                    i === BARS.length - 1
+                      ? "repeating-linear-gradient(135deg, #4A7D68 0 5px, #3a6252 5px 6px)"
+                      : "repeating-linear-gradient(135deg, #2D5F4A 0 5px, #21483795 5px 6px)",
+                }}
               />
             ))}
           </div>
