@@ -5,9 +5,13 @@ import { saveSettings, setPin } from "../actions";
 import { btnClass } from "@/components/ui";
 import { Panel } from "@/components/dash";
 
-function Msg({ text }: { text: string | null }) {
+function Msg({ text, ok = true }: { text: string | null; ok?: boolean }) {
   if (!text) return null;
-  return <span className="text-[0.8rem] font-[200] text-moss">{text}</span>;
+  return (
+    <span className={`text-[0.8rem] font-[200] ${ok ? "text-moss" : "text-rust"}`}>
+      {text}
+    </span>
+  );
 }
 
 export function SettingsForms({
@@ -18,9 +22,11 @@ export function SettingsForms({
   cooldown: number;
 }) {
   const [pending, start] = useTransition();
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pinPending, startPin] = useTransition();
-  const [pinMsg, setPinMsg] = useState<string | null>(null);
+  const [pinMsg, setPinMsg] = useState<{ ok: boolean; text: string } | null>(
+    null,
+  );
 
   function onSettings(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,7 +34,11 @@ export function SettingsForms({
     const fd = new FormData(e.currentTarget);
     start(async () => {
       const res = await saveSettings(fd);
-      setMsg(res.ok ? "Gemt" : (res.error ?? "Fejl"));
+      setMsg(
+        res.ok
+          ? { ok: true, text: "Gemt" }
+          : { ok: false, text: res.error ?? "Fejl" },
+      );
     });
   }
 
@@ -39,7 +49,11 @@ export function SettingsForms({
     const form = e.currentTarget;
     startPin(async () => {
       const res = await setPin(fd);
-      setPinMsg(res.ok ? "PIN opdateret" : (res.error ?? "Fejl"));
+      setPinMsg(
+        res.ok
+          ? { ok: true, text: "PIN opdateret" }
+          : { ok: false, text: res.error ?? "Fejl" },
+      );
       if (res.ok) form.reset();
     });
   }
@@ -85,7 +99,7 @@ export function SettingsForms({
             >
               {pending ? "Gemmer..." : "Gem"}
             </button>
-            <Msg text={msg} />
+            <Msg text={msg?.text ?? null} ok={msg?.ok} />
           </div>
         </form>
       </Panel>
@@ -117,7 +131,7 @@ export function SettingsForms({
             >
               {pinPending ? "Gemmer..." : "Opdater PIN"}
             </button>
-            <Msg text={pinMsg} />
+            <Msg text={pinMsg?.text ?? null} ok={pinMsg?.ok} />
           </div>
         </form>
       </Panel>

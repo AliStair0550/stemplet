@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { requestMagicLink, type LoginState } from "./actions";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -26,7 +27,21 @@ export function LoginForm() {
         />
       </label>
       {state.error ? (
-        <p className="text-[0.8rem] font-[200] text-moss">{state.error}</p>
+        <p className="text-[0.8rem] font-[200] text-rust">
+          {state.error}
+          {state.notFound ? (
+            <>
+              {" "}
+              <Link
+                href="/start"
+                className="font-[400] text-moss underline underline-offset-2 hover:text-moss-light"
+              >
+                Opret din butik gratis
+              </Link>
+              .
+            </>
+          ) : null}
+        </p>
       ) : null}
       <SubmitButton variant="primary" size="lg" pendingText="Sender link...">
         Send login-link

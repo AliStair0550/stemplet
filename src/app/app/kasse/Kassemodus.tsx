@@ -35,6 +35,12 @@ export function Kassemodus() {
         ))}
       </div>
 
+      <p className="-mt-4 max-w-md text-[0.8rem] font-[200] leading-relaxed text-slate">
+        {tab === "stempel"
+          ? "Vis denne skærm til kunden — de scanner QR-koden med deres eget kamera og får stemplet selv."
+          : "Brug kameraet til at scanne kundens kort, når du selv vil give et stempel eller indløse en belønning."}
+      </p>
+
       {tab === "stempel" ? <StempelQr /> : <ScanMode />}
     </div>
   );
@@ -248,7 +254,7 @@ function ScanMode() {
         <p
           className={cn(
             "font-[200] text-[0.85rem]",
-            note.ok ? "text-moss" : "text-ink",
+            note.ok ? "text-moss" : "text-rust",
           )}
         >
           {note.text}

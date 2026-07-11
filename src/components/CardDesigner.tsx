@@ -326,7 +326,7 @@ export function CardDesigner({
               Vi henter automatisk et farveforslag fra dit logo.
             </p>
             {logoError ? (
-              <p className="text-[0.75rem] font-[200] text-moss">{logoError}</p>
+              <p className="text-[0.75rem] font-[200] text-rust">{logoError}</p>
             ) : null}
           </div>
         ) : null}

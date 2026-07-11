@@ -28,7 +28,7 @@ const FREE = [
 const PRO = [
   "Ubegrænset antal kunder",
   "Alt det samme som Gratis, uden loft",
-  `Aktiveres automatisk over ${FREE_CUSTOMER_LIMIT} kunder`,
+  `Aktiveres først ved over ${FREE_CUSTOMER_LIMIT} kunder`,
 ];
 
 function Features({ items }: { items: string[] }) {
@@ -73,7 +73,7 @@ export default function Pricing() {
             {FREE_CUSTOMER_LIMIT} aktive kunder.
           </p>
           <Features items={FREE} />
-          <div className="mt-8 pt-2">
+          <div className="mt-auto pt-8">
             <ButtonLink
               href="/start"
               variant="primary"

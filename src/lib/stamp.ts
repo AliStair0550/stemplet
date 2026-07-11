@@ -2,6 +2,7 @@ import "server-only";
 import type { StampMethod } from "@prisma/client";
 import { prisma } from "./prisma";
 import { trackIpStamp } from "./security";
+import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
 
 export class StampError extends Error {
@@ -153,11 +154,27 @@ export async function applyStamp(opts: {
       rewardReady,
       justCompleted: rewardReady,
       increment,
+      webhookUrl: business.webhookUrl,
+      apiKey: business.apiKey,
     };
   });
 
   // Bivirkninger efter commit.
   await flagIfAnomalous(result.businessId, opts.ip ?? null, result.serial);
+  void fireWebhook(
+    {
+      id: result.businessId,
+      webhookUrl: result.webhookUrl,
+      apiKey: result.apiKey,
+    },
+    result.justCompleted ? "reward.ready" : "stamp.created",
+    {
+      serial: result.serial,
+      stamps: result.stamps,
+      required: result.required,
+      rewardReady: result.rewardReady,
+    },
+  );
   void pushWallet(opts.customerCardId);
 
   return {
@@ -207,11 +224,22 @@ export async function redeemReward(opts: {
         detail: { serial: cc.serial, completedCount },
       },
     });
-    return { serial: cc.serial, completedCount };
+    return {
+      serial: cc.serial,
+      completedCount,
+      businessId: cc.card.business.id,
+      webhookUrl: cc.card.business.webhookUrl,
+      apiKey: cc.card.business.apiKey,
+    };
   });
 
+  void fireWebhook(
+    { id: res.businessId, webhookUrl: res.webhookUrl, apiKey: res.apiKey },
+    "reward.redeemed",
+    { serial: res.serial, completedCount: res.completedCount },
+  );
   void pushWallet(opts.customerCardId);
-  return res;
+  return { serial: res.serial, completedCount: res.completedCount };
 }
 
 async function flagIfAnomalous(

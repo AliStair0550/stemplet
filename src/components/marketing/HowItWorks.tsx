@@ -76,9 +76,9 @@ export default function HowItWorks() {
   return (
     <Section id="sådan" className="scroll-mt-24">
       <div className="max-w-xl">
-        <Eyebrow>Sådan virker det</Eyebrow>
+        <Eyebrow>Få flere stamkunder</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Præcis hvad der sker. Første gang og hver gang.
+          Så enkelt fungerer det.
         </h2>
         <p className="mt-4 font-[200] text-[0.95rem] leading-[1.8] text-stone">
           Ingen app, ingen tilmelding, ingen forvirring. Sådan ser det ud for

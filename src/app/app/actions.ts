@@ -8,6 +8,7 @@ import { signOut } from "@/lib/auth";
 import { getStripe, proPriceId } from "@/lib/stripe";
 import { APP_URL } from "@/lib/env";
 import { hashPin } from "@/lib/security";
+import { generateApiKey } from "@/lib/integrations";
 import {
   cardDesignSchema,
   businessSettingsSchema,
@@ -90,6 +91,54 @@ export async function setPin(formData: FormData): Promise<Result> {
     data: { staffPin },
   });
   revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
+/** Danner (eller fornyer) API-nøglen. Vises kun her - opbevar den sikkert. */
+export async function generateApiKeyAction(): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { apiKey: generateApiKey() },
+  });
+  revalidatePath("/app/integrationer");
+  return { ok: true };
+}
+
+/** Slaar API-adgang fra. Webhooks stopper ogsaa (de kraever en nøgle). */
+export async function revokeApiKeyAction(): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { apiKey: null },
+  });
+  revalidatePath("/app/integrationer");
+  return { ok: true };
+}
+
+export async function saveWebhookUrl(formData: FormData): Promise<Result> {
+  const { business } = await requireBusiness();
+  const raw = String(formData.get("webhookUrl") ?? "").trim();
+
+  let webhookUrl: string | null = null;
+  if (raw) {
+    let url: URL;
+    try {
+      url = new URL(raw);
+    } catch {
+      return { ok: false, error: "Ugyldig URL. Brug fx https://minbutik.dk/webhook" };
+    }
+    if (url.protocol !== "https:") {
+      return { ok: false, error: "URL'en skal bruge https." };
+    }
+    webhookUrl = url.toString();
+  }
+
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { webhookUrl },
+  });
+  revalidatePath("/app/integrationer");
   return { ok: true };
 }
 

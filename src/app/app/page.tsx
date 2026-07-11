@@ -5,10 +5,13 @@ import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
+import { CopyInline } from "@/components/CopyInline";
 import { APP_URL } from "@/lib/env";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
 
 function GettingStarted({ slug }: { slug: string }) {
+  const customerUrl = `${APP_URL}/k/${slug}`;
+  const customerUrlShort = `${APP_URL.replace(/^https?:\/\//, "")}/k/${slug}`;
   const steps = [
     {
       title: "Print din QR",
@@ -24,7 +27,8 @@ function GettingStarted({ slug }: { slug: string }) {
     },
     {
       title: "Del dit kort",
-      body: `Kundens link: ${APP_URL.replace(/^https?:\/\//, "")}/k/${slug}`,
+      body: "Send linket, eller læg det på sociale medier.",
+      copy: { value: customerUrl, display: customerUrlShort },
       href: `/k/${slug}`,
       link: "Se kundesiden",
     },
@@ -44,6 +48,9 @@ function GettingStarted({ slug }: { slug: string }) {
             <span className="break-words font-[200] text-[0.82rem] leading-relaxed text-stone">
               {s.body}
             </span>
+            {s.copy ? (
+              <CopyInline value={s.copy.value} display={s.copy.display} />
+            ) : null}
             <Link
               href={s.href}
               className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-moss hover:opacity-70"

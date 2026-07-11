@@ -93,7 +93,7 @@ export function StartWizard() {
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Personale-PIN (til indløsning)
+              Personale-PIN
             </span>
             <input
               inputMode="numeric"
@@ -102,6 +102,10 @@ export function StartWizard() {
               placeholder="4 til 6 cifre"
               className="w-40 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-moss"
             />
+            <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
+              Bruges når personalet indløser en fyldt belønning ved kassen. Du
+              kan altid ændre den senere.
+            </span>
           </label>
         </div>
       ) : null}
@@ -129,7 +133,8 @@ export function StartWizard() {
           </h2>
           <p className="max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
             Print denne QR-kode og sæt den ved kassen. Dine kunder scanner den
-            og har deres stempelkort på fem sekunder.
+            og har deres stempelkort på fem sekunder. QR-koden ligger også altid
+            klar i dashboardet.
           </p>
           <div className="rounded-sm border border-fog bg-white p-5">
             <Image
@@ -142,12 +147,19 @@ export function StartWizard() {
             />
           </div>
           <a
+            href={created.qrDataUrl}
+            download={`stemplet-qr-${created.slug}.png`}
+            className={btnClass("outline")}
+          >
+            Download QR-kode
+          </a>
+          <a
             href={created.cardUrl}
             className="text-[0.8rem] font-[200] text-moss hover:opacity-70"
           >
             {created.cardUrl}
           </a>
-          <div className="flex flex-col items-center gap-2">
+          <div className="mt-2 flex flex-col items-center gap-2 border-t border-fog pt-6">
             <form action={sendOnboardingLogin}>
               <input type="hidden" name="email" value={email} />
               <button className={btnClass("primary", "lg")}>
@@ -156,14 +168,14 @@ export function StartWizard() {
             </form>
             <p className="max-w-xs text-[0.72rem] font-[200] leading-relaxed text-slate">
               Vi sender et login-link til {email}. Klik det, og du er inde i
-              dashboardet.
+              dashboardet. Husk at tjekke spam-mappen, hvis det ikke dukker op.
             </p>
           </div>
         </div>
       ) : null}
 
       {error ? (
-        <p className="text-[0.82rem] font-[200] text-moss">{error}</p>
+        <p className="text-[0.82rem] font-[200] text-rust">{error}</p>
       ) : null}
 
       {/* Navigation */}

@@ -31,6 +31,19 @@ export default async function StatistikPage() {
         }
       />
 
+      {stats.stampsTotal === 0 ? (
+        <div className="mb-6 rounded-sm border border-moss/30 bg-moss/5 px-5 py-4">
+          <p className="text-[0.9rem] font-[300] text-moss">
+            Her kommer dine tal, så snart der bliver stemplet.
+          </p>
+          <p className="mt-1 text-[0.82rem] font-[200] leading-relaxed text-stone">
+            Sæt din QR-kode op ved kassen og giv de første stempler — så fyldes
+            grafer og nøgletal automatisk. Der er ikke noget galt; du er bare
+            lige startet.
+          </p>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-2 gap-4">
         <StatTile
           label="Aktive kunder"

@@ -14,6 +14,7 @@ const LINKS: { href: string; label: string; proOnly?: boolean }[] = [
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/materialer", label: "Materialer" },
+  { href: "/app/integrationer", label: "Integrationer" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 

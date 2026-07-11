@@ -31,6 +31,8 @@ model Business {
   stripeCustomerId String?
   staffPin         String // hashet (bcrypt)
   stampCooldownMin Int        @default(120)
+  apiKey           String?    @unique // til det offentlige API (Bearer + webhook-signatur)
+  webhookUrl       String? // POST'es ved stempel/beloenning/indloesning
   users            User[]
   cards            Card[]
   auditLogs        AuditLog[]

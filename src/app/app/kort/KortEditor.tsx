@@ -19,7 +19,7 @@ export function KortEditor({
 }) {
   const [design, setDesign] = useState<CardDesign>(initial);
   const [pending, start] = useTransition();
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [downloading, setDownloading] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +27,11 @@ export function KortEditor({
     setMsg(null);
     start(async () => {
       const res = await saveCardDesign(design);
-      setMsg(res.ok ? "Gemt" : (res.error ?? "Noget gik galt."));
+      setMsg(
+        res.ok
+          ? { ok: true, text: "Gemt" }
+          : { ok: false, text: res.error ?? "Noget gik galt." },
+      );
     });
   }
 
@@ -51,7 +55,7 @@ export function KortEditor({
       a.click();
     } catch (e) {
       console.error(e);
-      setMsg("Kunne ikke lave billedet. Prøv igen.");
+      setMsg({ ok: false, text: "Kunne ikke lave billedet. Prøv igen." });
     } finally {
       setDownloading(false);
     }
@@ -77,7 +81,13 @@ export function KortEditor({
           {downloading ? "Laver billede..." : "Download som PNG"}
         </button>
         {msg ? (
-          <span className="text-[0.82rem] font-[200] text-moss">{msg}</span>
+          <span
+            className={`text-[0.82rem] font-[200] ${
+              msg.ok ? "text-moss" : "text-rust"
+            }`}
+          >
+            {msg.text}
+          </span>
         ) : null}
       </div>
 

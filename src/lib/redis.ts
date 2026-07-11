@@ -4,6 +4,13 @@ import { Ratelimit } from "@upstash/ratelimit";
 
 let _redis: Redis | null = null;
 
+/** Er Upstash konfigureret? Bruges til at "fail-open" i dev uden Redis. */
+export function redisConfigured(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
+  );
+}
+
 /** Upstash Redis-singleton. Kaster først hvis den bruges uden konfiguration. */
 export function getRedis(): Redis {
   if (_redis) return _redis;
@@ -37,4 +44,24 @@ export function getRatelimit(
   });
   _limiters.set(key, rl);
   return rl;
+}
+
+/**
+ * Rate limit-tjek der aldrig vaelter flowet. Returnerer true (tilladt) hvis
+ * Redis ikke er sat op eller fejler - saa en Redis-hikke aldrig laaser
+ * legitime brugere ude. Returnerer false naar graensen faktisk er naaet.
+ */
+export async function checkRateLimit(
+  prefix: string,
+  tokens: number,
+  window: Parameters<typeof Ratelimit.slidingWindow>[1],
+  id: string,
+): Promise<boolean> {
+  if (!redisConfigured()) return true;
+  try {
+    const { success } = await getRatelimit(prefix, tokens, window).limit(id);
+    return success;
+  } catch {
+    return true;
+  }
 }
