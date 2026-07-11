@@ -16,6 +16,8 @@ export type StampCardProps = {
   serial?: string;
   /** Animer det senest tilføjede stempel (bruges i hero og ved stempling). */
   pop?: boolean;
+  /** Blødt lys-sweep henover kortet (bruges i hero for at gøre det levende). */
+  shine?: boolean;
   className?: string;
 };
 
@@ -40,6 +42,7 @@ export function StampCard({
   showPoweredBy = false,
   serial,
   pop = false,
+  shine = false,
   className,
 }: StampCardProps) {
   const rewardReady = stamps >= required;
@@ -48,12 +51,32 @@ export function StampCard({
   return (
     <div
       className={cn(
-        "w-full max-w-sm select-none overflow-hidden rounded-[1.4rem] shadow-[0_18px_50px_-12px_rgba(26,26,26,0.35)] ring-1 ring-black/5",
+        "relative w-full max-w-sm select-none overflow-hidden rounded-[1.4rem] shadow-[0_22px_60px_-14px_rgba(26,26,26,0.45)] ring-1 ring-black/5",
         className,
       )}
       style={{ background: primaryColor, color: textColor }}
     >
-      <div className="flex flex-col gap-5 p-6">
+      {/* blødt top-lys for dybde */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.04) 32%, rgba(0,0,0,0) 62%)",
+        }}
+      />
+      {shine ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%)",
+            animation: "sheenSweep 5s ease-in-out 1.5s infinite",
+          }}
+        />
+      ) : null}
+      <div className="relative flex flex-col gap-5 p-6">
         {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5">
@@ -91,21 +114,23 @@ export function StampCard({
           </div>
         </div>
 
-        {/* Belønning / status */}
-        <div>
-          <div
-            className="text-[0.55rem] font-[500] uppercase tracking-[0.16em]"
-            style={{ color: rgba(textColor, 0.6) }}
-          >
-            {rewardReady ? "Klar" : "Belønning"}
-          </div>
+        {/* Beløn - teksten forklarer sig selv, ingen label */}
+        <div className="flex items-center gap-2">
+          {rewardReady ? (
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-[500] uppercase tracking-[0.14em]"
+              style={{ background: textColor, color: primaryColor }}
+            >
+              Klar
+            </span>
+          ) : null}
           <div
             className={cn(
-              "text-[1.05rem] font-[300] leading-snug",
+              "text-[1.1rem] font-[300] leading-snug",
               rewardReady && "animate-reward-glow rounded-md",
             )}
           >
-            {rewardReady ? "Din belønning er klar" : rewardText}
+            {rewardText}
           </div>
         </div>
 
@@ -114,7 +139,11 @@ export function StampCard({
           {slots.map((_, i) => {
             const filled = i < stamps;
             const chipStyle = filled
-              ? { background: textColor, color: primaryColor }
+              ? {
+                  background: textColor,
+                  color: primaryColor,
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.18)",
+                }
               : {
                   background: rgba(textColor, 0.06),
                   color: rgba(textColor, 0.35),

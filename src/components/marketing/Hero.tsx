@@ -11,7 +11,7 @@ export default function Hero() {
       <Container className="relative">
         <div className="grid items-center gap-14 md:grid-cols-2 md:gap-12">
           <div className="animate-fade-up">
-            <Eyebrow>Digitalt stempelkort</Eyebrow>
+            <Eyebrow>Det digitale stempelkort</Eyebrow>
             <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.12] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der{" "}
               <span className="font-fraunces font-light italic">aldrig</span>{" "}

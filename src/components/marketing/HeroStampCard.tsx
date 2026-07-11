@@ -62,33 +62,36 @@ export default function HeroStampCard() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div
-        ref={ref}
-        role="button"
-        tabIndex={0}
-        aria-label="Demo-stempelkort. Tryk for at stemple."
-        onClick={handleTap}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleTap();
-          }
-        }}
-        className="cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50"
-      >
-        <StampCard
-          businessName="Demo Kaffebar"
-          primaryColor="#1F3A2E"
-          textColor="#FFFFFF"
-          stampIcon="coffee"
-          stamps={stamps}
-          required={REQUIRED}
-          rewardText="10. kop er gratis"
-          serial="STEMPLETXX"
-          showPoweredBy
-          pop={pop}
-        />
+    <div className="flex flex-col items-center gap-5">
+      <div className="animate-float">
+        <div
+          ref={ref}
+          role="button"
+          tabIndex={0}
+          aria-label="Coffee Lab stempelkort. Tryk for at stemple."
+          onClick={handleTap}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleTap();
+            }
+          }}
+          className="cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50"
+        >
+          <StampCard
+            businessName="Coffee Lab"
+            primaryColor="#2A1A10"
+            textColor="#F6EEE4"
+            stampIcon="coffee"
+            stamps={stamps}
+            required={REQUIRED}
+            rewardText="10. kop er gratis"
+            serial="COFFEELAB1"
+            showPoweredBy
+            pop={pop}
+            shine
+          />
+        </div>
       </div>
       <span className="font-[300] text-[0.72rem] uppercase tracking-[0.1em] text-slate">
         Tryk på kortet
