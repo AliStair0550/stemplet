@@ -85,7 +85,8 @@ export default async function ClaimPage({
 
         {fejl === "fuld" ? (
           <p className="text-center text-[0.82rem] font-[200] text-stone">
-            Butikken har nået sit kundeloft lige nu. Prøv igen senere.
+            Butikken tager ikke imod nye stempelkort lige nu. Spørg personalet —
+            de kan hurtigt åbne for flere.
           </p>
         ) : null}
 

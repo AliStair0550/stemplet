@@ -68,7 +68,7 @@ export default async function IndstillingerPage({
               <p className="font-[200] text-[0.82rem] text-stone">
                 {business.plan === "PRO"
                   ? `${PRO_PRICE_DKK} kr./md. Ubegrænset antal kunder.`
-                  : `Alle funktioner, op til ${FREE_CUSTOMER_LIMIT} aktive kunder. Opgrader for ubegrænset.`}
+                  : `Alle funktioner, op til ${FREE_CUSTOMER_LIMIT} kunder. Opgrader for ubegrænset antal.`}
               </p>
             </div>
             {business.plan === "PRO" ? (

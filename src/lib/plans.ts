@@ -4,21 +4,24 @@ export const PRO_PRICE_DKK = 99;
 
 export type PlanLimits = {
   maxCards: number | null; // null = ubegrænset
-  maxActiveCustomers: number | null;
+  maxCustomers: number | null; // samlede kundekort - null = ubegrænset
   campaigns: boolean;
   fullStats: boolean;
   showPoweredBy: boolean;
   ownBrand: boolean;
 };
 
-// Gratis giver ALLE funktioner (eget brand, kampagner, fuld statistik) op til
-// 25 aktive kunder. Man overgaar til Pro, naar man passerer 25 kunder.
-export const FREE_CUSTOMER_LIMIT = 25;
+// Gratis er et fuldt brugbart produkt op til 100 kundekort. Loftet er en
+// VAEKSTMUR, ikke en straf: eksisterende kunder kan altid stemple og indløse -
+// der kan bare ikke oprettes NYE kort ved loftet. Vi varsler allerede ved 80,
+// saa opgraderingen sker paa vaerdi (se hvad kunderne har givet dig), ikke tvang.
+export const FREE_CUSTOMER_LIMIT = 100;
+export const FREE_CUSTOMER_WARN = 80;
 
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   FREE: {
     maxCards: null,
-    maxActiveCustomers: FREE_CUSTOMER_LIMIT,
+    maxCustomers: FREE_CUSTOMER_LIMIT,
     campaigns: true,
     fullStats: true,
     showPoweredBy: false,
@@ -26,7 +29,7 @@ export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
   },
   PRO: {
     maxCards: null,
-    maxActiveCustomers: null,
+    maxCustomers: null,
     campaigns: true,
     fullStats: true,
     showPoweredBy: false,
@@ -43,7 +46,11 @@ export function canCreateCard(plan: Plan, currentCards: number): boolean {
   return max === null || currentCards < max;
 }
 
-export function withinCustomerLimit(plan: Plan, activeCustomers: number): boolean {
-  const max = PLAN_LIMITS[plan].maxActiveCustomers;
-  return max === null || activeCustomers < max;
+/**
+ * Kan der oprettes ET nyt kundekort? Loftet tæller ALLE oprettede kort, ikke
+ * kun aktive - muren handler om, hvor mange kunder du har taget imod.
+ */
+export function canCreateCustomer(plan: Plan, totalCustomers: number): boolean {
+  const max = PLAN_LIMITS[plan].maxCustomers;
+  return max === null || totalCustomers < max;
 }

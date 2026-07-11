@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCardToken, setCardToken } from "@/lib/cookies";
 import { loadCardByToken } from "@/lib/stamp";
 import { generateSerial, generateAuthToken } from "@/lib/ids";
-import { withinCustomerLimit } from "@/lib/plans";
+import { canCreateCustomer } from "@/lib/plans";
 
 /** Opretter (eller genfinder) kundens kort og sætter device-cookie. */
 export async function claimCard(slug: string, _formData?: FormData) {
@@ -29,18 +29,14 @@ export async function claimCard(slug: string, _formData?: FormData) {
     }
   }
 
-  // Plan-loft på Gratis: tæller aktive kunder (stemplet inden for 60 dage),
-  // så gamle engangskunder ikke blokerer for nye.
+  // Vaekstmur paa Gratis: loftet tæller ALLE oprettede kort. Kun oprettelse af
+  // NYE kort spærres ved loftet - eksisterende kunder stempler og indløser
+  // uhindret (det haandteres helt andre steder end her).
   if (business.plan === "FREE") {
-    const d60 = new Date();
-    d60.setDate(d60.getDate() - 60);
-    const active = await prisma.customerCard.count({
-      where: {
-        card: { businessId: business.id },
-        lastStampAt: { gte: d60 },
-      },
+    const total = await prisma.customerCard.count({
+      where: { card: { businessId: business.id } },
     });
-    if (!withinCustomerLimit("FREE", active)) {
+    if (!canCreateCustomer("FREE", total)) {
       redirect(`/k/${slug}?fejl=fuld`);
     }
   }

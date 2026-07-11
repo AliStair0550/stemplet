@@ -18,17 +18,18 @@ function Check() {
 }
 
 const FREE = [
-  `Op til ${FREE_CUSTOMER_LIMIT} aktive kunder`,
+  `Op til ${FREE_CUSTOMER_LIMIT} kunder — helt gratis`,
   "Alle funktioner fra dag ét",
   "Dit eget brand, uden Stemplet-logo",
-  "Kampagner og fuld statistik",
-  "Stempler i Apple Wallet",
+  "Ser flot ud i kundens Apple Wallet",
+  "Kampagner og statistik",
 ];
 
 const PRO = [
   "Ubegrænset antal kunder",
-  "Alt det samme som Gratis, uden loft",
-  `Aktiveres først ved over ${FREE_CUSTOMER_LIMIT} kunder`,
+  "Se dine stamkunder — hvem kommer igen",
+  "Fang dem, der er ved at falde fra",
+  "Alt fra Gratis, uden loft",
 ];
 
 function Features({ items }: { items: string[] }) {
@@ -69,8 +70,9 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Alle funktioner, dit eget brand og fuld indsigt. Op til{" "}
-            {FREE_CUSTOMER_LIMIT} aktive kunder.
+            Et fuldt brugbart stempelkort med dit eget brand. Det ser godt ud i
+            kundens Wallet og reklamerer for dig — gratis op til{" "}
+            {FREE_CUSTOMER_LIMIT} kunder.
           </p>
           <Features items={FREE} />
           <div className="mt-auto pt-8">
@@ -97,11 +99,12 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Samme produkt, uden kundeloft. Du overgår automatisk, når du
-            passerer {FREE_CUSTOMER_LIMIT} aktive kunder.
+            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kunder. Ubegrænsede kort —
+            plus svaret på, hvem der er dine stamkunder, og hvem der er ved at
+            forsvinde.
           </p>
           <Features items={PRO} />
-          <div className="mt-8 pt-2">
+          <div className="mt-auto pt-8">
             <ButtonLink
               href="/start"
               variant="outline"
@@ -115,9 +118,9 @@ export default function Pricing() {
       </div>
 
       <p className="mx-auto mt-10 max-w-xl text-center font-[200] text-[0.85rem] leading-[1.8] text-stone">
-        Ingen binding. Intet kreditkort for at starte. Du betaler først{" "}
-        {PRO_PRICE_DKK} kr./md., hvis du passerer {FREE_CUSTOMER_LIMIT} aktive
-        kunder. Mindre end én genkøbt kunde om måneden.
+        Ingen binding. Intet kreditkort for at starte. Pro koster{" "}
+        {PRO_PRICE_DKK} kr./md. — mindre end én fastholdt kunde om måneden. Skift
+        når som helst.
       </p>
     </Section>
   );
