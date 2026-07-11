@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -12,6 +13,13 @@ export default function Footer() {
             <span className="font-[200] text-[0.7rem] tracking-[0.02em] text-stone">
               Stempelkortet, der skaber flere gensyn.
             </span>
+            <Image
+              src="/stemplet-badge-moss.png"
+              alt="Stemplet"
+              width={64}
+              height={64}
+              className="mt-3 h-14 w-14"
+            />
           </div>
 
           <nav className="flex items-center gap-7">
