@@ -37,7 +37,7 @@ export function Kassemodus() {
 
       <p className="-mt-4 max-w-md text-[0.8rem] font-[200] leading-relaxed text-slate">
         {tab === "stempel"
-          ? "Vis denne skærm til kunden — de scanner QR-koden med deres eget kamera og får stemplet selv."
+          ? "Vis denne skærm til kunden. De scanner QR-koden med deres eget kamera og får stemplet selv."
           : "Brug kameraet til at scanne kundens kort, når du selv vil give et stempel eller indløse en belønning."}
       </p>
 

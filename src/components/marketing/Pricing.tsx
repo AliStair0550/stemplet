@@ -18,7 +18,7 @@ function Check() {
 }
 
 const FREE = [
-  `Op til ${FREE_CUSTOMER_LIMIT} kunder — helt gratis`,
+  `Op til ${FREE_CUSTOMER_LIMIT} kunder, helt gratis`,
   "Alle funktioner fra dag ét",
   "Dit eget brand, uden Stemplet-logo",
   "Ser flot ud i kundens Apple Wallet",
@@ -27,7 +27,7 @@ const FREE = [
 
 const PRO = [
   "Ubegrænset antal kunder",
-  "Se dine stamkunder — hvem kommer igen",
+  "Se dine stamkunder: hvem kommer igen",
   "Fang dem, der er ved at falde fra",
   "Alt fra Gratis, uden loft",
 ];
@@ -71,7 +71,7 @@ export default function Pricing() {
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
             Et fuldt brugbart stempelkort med dit eget brand. Det ser godt ud i
-            kundens Wallet og reklamerer for dig — gratis op til{" "}
+            kundens Wallet og reklamerer for dig. Gratis op til{" "}
             {FREE_CUSTOMER_LIMIT} kunder.
           </p>
           <Features items={FREE} />
@@ -99,7 +99,7 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kunder. Ubegrænsede kort —
+            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kunder. Ubegrænsede kort,
             plus svaret på, hvem der er dine stamkunder, og hvem der er ved at
             forsvinde.
           </p>
@@ -118,9 +118,7 @@ export default function Pricing() {
       </div>
 
       <p className="mx-auto mt-10 max-w-xl text-center font-[200] text-[0.85rem] leading-[1.8] text-stone">
-        Ingen binding. Intet kreditkort for at starte. Pro koster{" "}
-        {PRO_PRICE_DKK} kr./md. — mindre end én fastholdt kunde om måneden. Skift
-        når som helst.
+        Ingen binding. Intet kreditkort for at starte.
       </p>
     </Section>
   );

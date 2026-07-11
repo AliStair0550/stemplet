@@ -14,7 +14,7 @@ export default async function IntegrationerPage() {
     <>
       <PageHeading
         title="Integrationer"
-        subtitle="Forbind Stemplet til dit kassesystem, din webshop eller Zapier — så det kører af sig selv."
+        subtitle="Forbind Stemplet til dit kassesystem, din webshop eller Zapier, så det kører af sig selv."
       />
       <IntegrationsClient
         apiKey={business.apiKey}

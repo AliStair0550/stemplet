@@ -192,7 +192,7 @@ export function IntegrationsClient({
           Webhook
         </h2>
         <p className="mt-2 max-w-lg text-[0.85rem] font-[200] text-stone">
-          Vi sender en besked til din URL, hver gang der sker noget — så dine
+          Vi sender en besked til din URL, hver gang der sker noget, så dine
           egne systemer opdateres automatisk. Hver besked er signeret med din
           API-nøgle i headeren{" "}
           <code className="text-[0.8rem] text-ink">x-stemplet-signature</code>.
@@ -244,7 +244,7 @@ export function IntegrationsClient({
             <EndpointRow
               method="event"
               path="reward.ready"
-              desc="Kortet er fuldt — belønning klar"
+              desc="Kortet er fuldt, belønning klar"
             />
             <EndpointRow
               method="event"
@@ -258,7 +258,7 @@ export function IntegrationsClient({
       {/* API-dokumentation */}
       <Panel>
         <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-          API — sådan gør du
+          API, sådan gør du
         </h2>
         <p className="mt-2 max-w-lg text-[0.85rem] font-[200] text-stone">
           Alle kald bruger din nøgle som{" "}
@@ -300,7 +300,7 @@ export function IntegrationsClient({
         </div>
 
         <p className="mt-5 mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
-          Eksempel — giv et stempel
+          Eksempel: giv et stempel
         </p>
         <Code>{`curl -X POST ${baseUrl}/api/v1/stamp \\
   -H "Authorization: Bearer ${sampleKey}" \\
@@ -323,7 +323,7 @@ export function IntegrationsClient({
         <p className="mt-4 text-[0.78rem] font-[200] text-slate">
           Kundens{" "}
           <code className="text-[0.8rem] text-ink">serial</code> står på kortets
-          stregkode og i kundelisten. Serienummeret hører kun til din butik —
+          stregkode og i kundelisten. Serienummeret hører kun til din butik,
           nøgler fra andre butikker kan ikke røre det.
         </p>
       </Panel>

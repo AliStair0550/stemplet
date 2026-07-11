@@ -34,7 +34,7 @@ export async function requestMagicLink(
   if (!emailOk || !ipOk) {
     return {
       error:
-        "Du har bedt om mange links på kort tid. Vent lidt, og tjek din indbakke — også spam.",
+        "Du har bedt om mange links på kort tid. Vent lidt, og tjek din indbakke, også spam.",
     };
   }
 

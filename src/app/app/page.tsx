@@ -23,12 +23,12 @@ function CustomerLimitNotice({ plan, total }: { plan: Plan; total: number }) {
           <p className="font-[400] text-[1rem] text-ink">
             {atWall
               ? `Du har taget imod ${FREE_CUSTOMER_LIMIT} kunder 🎉`
-              : `Du nærmer dig ${FREE_CUSTOMER_LIMIT} kunder — flot!`}
+              : `Du nærmer dig ${FREE_CUSTOMER_LIMIT} kunder. Flot!`}
           </p>
           <p className="mt-1 max-w-xl font-[200] text-[0.85rem] leading-relaxed text-stone">
             {atWall
-              ? "Dine nuværende kunder stempler og indløser videre præcis som før. Vil du tage imod endnu flere, åbner Pro for ubegrænset antal kort — og viser dig, hvem der er dine stamkunder, og hvem der er ved at forsvinde."
-              : `Du har ${formatDkNumber(total)} kunder. Se hvad de allerede har givet dig — og lås op for ubegrænset antal kort med Pro, når du er klar.`}
+              ? "Dine nuværende kunder stempler og indløser videre præcis som før. Vil du tage imod endnu flere, åbner Pro for ubegrænset antal kort, og viser dig, hvem der er dine stamkunder, og hvem der er ved at forsvinde."
+              : `Du har ${formatDkNumber(total)} kunder. Se hvad de allerede har givet dig, og lås op for ubegrænset antal kort med Pro, når du er klar.`}
           </p>
         </div>
         <ButtonLink href="/app/indstillinger" variant="moss" size="md">

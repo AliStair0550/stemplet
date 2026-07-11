@@ -4,7 +4,7 @@ import { RelationshipGraphic } from "@/components/marketing/RelationshipGraphic"
 const CUSTOMER = [
   "Ingen app, ingen konto, intet at installere.",
   "Bliver aldrig væk, det ligger altid i Wallet.",
-  "Klar ved kassen på et øjeblik — intet papkort at lede efter.",
+  "Klar ved kassen på et øjeblik. Intet papkort at lede efter.",
   "De ser præcis, hvor tæt de er på næste gratis.",
   "Helt anonymt, hvis de vil. Data ligger i EU.",
 ];

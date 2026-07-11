@@ -37,7 +37,7 @@ export default async function StatistikPage() {
             Her kommer dine tal, så snart der bliver stemplet.
           </p>
           <p className="mt-1 text-[0.82rem] font-[200] leading-relaxed text-stone">
-            Sæt din QR-kode op ved kassen og giv de første stempler — så fyldes
+            Sæt din QR-kode op ved kassen og giv de første stempler, så fyldes
             grafer og nøgletal automatisk. Der er ikke noget galt; du er bare
             lige startet.
           </p>
