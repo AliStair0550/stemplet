@@ -29,7 +29,7 @@ export default function StatsPreview() {
               Overblik
             </span>
             <span className="font-[200] text-[0.72rem] text-slate">
-              Demo Kaffebar
+              Coffee Lab
             </span>
           </div>
           <span className="rounded-full border border-fog px-3.5 py-1.5 font-[300] text-[0.68rem] uppercase tracking-[0.1em] text-slate">

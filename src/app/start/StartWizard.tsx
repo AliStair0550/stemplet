@@ -75,7 +75,7 @@ export function StartWizard() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Demo Kaffebar"
+              placeholder="Coffee Lab"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
             />
           </label>
