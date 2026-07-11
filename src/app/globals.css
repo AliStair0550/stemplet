@@ -27,6 +27,22 @@ body {
   font-family: var(--font-sans);
 }
 
+/* ── Print: personale-guiden paa A4, sort/hvid ─────────────────────── */
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+  html,
+  body {
+    background: #fff;
+  }
+  /* Undgaa at kort/paneler braekkes midt over paa tvaers af sider. */
+  [class*="rounded-lg"],
+  section {
+    break-inside: avoid;
+  }
+}
+
 /* Overskrifter brydes pænt (ingen enlige ord paa sidste linje, ingen midt-i-ord-brud) */
 h1,
 h2,

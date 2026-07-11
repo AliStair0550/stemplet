@@ -119,12 +119,25 @@ Alt Wallet-relateret er bygget, men gated bag `WALLET_ENABLED`. Når din Apple D
 
 Når flaget er slået fra, viser kundens onboarding kun webkortet. Når det slås til, vises "Læg i Apple Wallet" som primær mulighed, og webkortet bliver et link. Ved hvert stempel og hver indløsning sender serveren en APNs-push, så passet opdaterer sig live i Wallet.
 
+## Personale-guiden
+
+En side, der forklarer personalet præcis, hvordan stempling og indløsning virker:
+
+- I dashboardet under **Sådan virker det** (`/app/guide`).
+- En delbar, læse-kun version på `/guide/<slug>`, som ejeren kan sende eller lave en QR til, uden at give dashboard-login. Den viser aldrig følsomme data (ingen PIN, nøgler eller kundedata).
+- En **Print guide**-knap laver en A4-venlig sort/hvid version til bag disken (styret af `@media print` i `globals.css`).
+
+**Én sandhedskilde.** Guiden må aldrig indeholde hardcodede systemværdier. Alle faste tal (kodens levetid, standard-cooldown, PIN-låsning, min/max stempler) bor i [`src/lib/system-config.ts`](src/lib/system-config.ts), som både stempel-motoren og guiden importerer fra. Butiksspecifikke værdier (cooldown, antal stempler, belønning, kampagner, Wallet til/fra) hentes live fra databasen via [`src/lib/guide.ts`](src/lib/guide.ts) og renderes server-side.
+
+**Vedligehold:** Når stempel-motorens adfærd ændres, skal `src/lib/system-config.ts` og guide-teksten i [`src/components/guide/GuideContent.tsx`](src/components/guide/GuideContent.tsx) gennemgås i samme PR. `npm test` indeholder en test, der fejler, hvis guiden renderer uden værdierne fra `system-config` (fx at cooldown-teksten matcher den konfigurerede værdi).
+
 ## Kommandoer
 
 | Kommando | Hvad |
 |---|---|
 | `npm run dev` | Udviklingsserver |
 | `npm run build` | `prisma generate` + produktion-build |
+| `npm test` | Kør tests (sikkerhed + personale-guide) |
 | `npm run db:migrate` | Prisma-migration (dev) |
 | `npm run db:seed` | Seed demo-data |
 | `npm run db:studio` | Prisma Studio |

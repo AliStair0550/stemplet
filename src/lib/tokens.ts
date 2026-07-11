@@ -2,15 +2,16 @@ import "server-only";
 import { SignJWT, jwtVerify } from "jose";
 import { randomUUID } from "node:crypto";
 import { getRedis } from "./redis";
+import {
+  STAMP_TOKEN_TTL_SECONDS,
+  STAMP_JTI_TTL_SECONDS,
+} from "./system-config";
 
 // Stempel-tokens er signerede JWT'er, der udløber efter 60 sekunder. Et token
 // maa bruges EEN gang PR. KORT (ikke globalt): tre kunder i en kø kan scanne
 // samme skærm-QR inden for dens levetid og faa hver deres stempel, men det
 // samme kort kan aldrig bruge samme token to gange. Brugte (jti, kort)-par
 // gemmes i Redis (TTL 10 min) => replay umuligt.
-
-const STAMP_TTL_SECONDS = 60;
-const JTI_TTL_SECONDS = 10 * 60;
 
 function secretKey(): Uint8Array {
   const s = process.env.STAMP_TOKEN_SECRET || process.env.AUTH_SECRET;
@@ -38,9 +39,9 @@ export async function signStampToken(input: {
     .setProtectedHeader({ alg: "HS256" })
     .setJti(jti)
     .setIssuedAt()
-    .setExpirationTime(`${STAMP_TTL_SECONDS}s`)
+    .setExpirationTime(`${STAMP_TOKEN_TTL_SECONDS}s`)
     .sign(secretKey());
-  return { token, jti, expiresInSeconds: STAMP_TTL_SECONDS };
+  return { token, jti, expiresInSeconds: STAMP_TOKEN_TTL_SECONDS };
 }
 
 export async function verifyStampToken(
@@ -86,7 +87,7 @@ export async function consumeJti(
   const redis = store ?? (getRedis() as unknown as NxSetter);
   const res = await redis.set(jtiKey(jti, customerCardId), "1", {
     nx: true,
-    ex: JTI_TTL_SECONDS,
+    ex: STAMP_JTI_TTL_SECONDS,
   });
   return res === "OK";
 }

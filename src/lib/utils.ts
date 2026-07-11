@@ -41,6 +41,23 @@ export function formatDkDateTime(date: Date | string): string {
   }).format(d);
 }
 
+/** Minutter pænt paa dansk til personale-guiden: 120 -> "2 timer", 30 -> "30 minutter". */
+export function formatCooldown(min: number): string {
+  if (min <= 0) return "uden ventetid";
+  if (min < 60) return `${min} ${min === 1 ? "minut" : "minutter"}`;
+  const hours = Math.floor(min / 60);
+  const rem = min % 60;
+  const h = `${hours} ${hours === 1 ? "time" : "timer"}`;
+  if (rem === 0) return h;
+  return `${h} og ${rem} ${rem === 1 ? "minut" : "minutter"}`;
+}
+
+/** Sekunder til hele minutter i tekst: 300 -> "5 minutter". */
+export function formatMinutes(seconds: number): string {
+  const min = Math.round(seconds / 60);
+  return `${min} ${min === 1 ? "minut" : "minutter"}`;
+}
+
 /** "for 2 timer siden" o.l. på dansk. */
 export function relativeDk(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;

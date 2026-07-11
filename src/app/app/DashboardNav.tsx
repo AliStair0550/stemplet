@@ -11,6 +11,7 @@ const LINKS: { href: string; label: string; proOnly?: boolean }[] = [
   { href: "/app", label: "Overblik" },
   { href: "/app/kort", label: "Kort" },
   { href: "/app/kasse", label: "Kasse" },
+  { href: "/app/guide", label: "Sådan virker det" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/materialer", label: "Materialer" },
@@ -33,7 +34,7 @@ export function DashboardNav({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex print:hidden">
         <Wordmark />
         <div className="mt-1 flex items-center gap-2">
           <span className="truncate text-[0.75rem] font-[200] text-slate">
@@ -72,7 +73,7 @@ export function DashboardNav({
       </aside>
 
       {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 backdrop-blur-md md:hidden">
+      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 backdrop-blur-md md:hidden print:hidden">
         <div className="flex items-center justify-between px-6 py-4">
           <Wordmark />
           <div className="flex items-center gap-3">

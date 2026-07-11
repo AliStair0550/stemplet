@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { STAMPS_MIN, STAMPS_MAX } from "./system-config";
 
 const hex = z
   .string()
@@ -31,7 +32,7 @@ export const onboardingStartSchema = z.object({
 
 // Kortdesign (bruges i onboarding trin 2 og i kortdesigneren)
 export const cardDesignSchema = z.object({
-  stampsRequired: z.coerce.number().int().min(4).max(12),
+  stampsRequired: z.coerce.number().int().min(STAMPS_MIN).max(STAMPS_MAX),
   rewardText: z.string().trim().min(2, "Skriv en belønning").max(80),
   stampIcon: stampIconEnum,
   primaryColor: hex,

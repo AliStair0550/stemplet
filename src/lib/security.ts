@@ -1,6 +1,7 @@
 import "server-only";
 import bcrypt from "bcryptjs";
 import { getRedis } from "./redis";
+import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "./system-config";
 
 // ── Personale-PIN ─────────────────────────────────────────────────────
 
@@ -14,9 +15,6 @@ export async function verifyPin(pin: string, hash: string): Promise<boolean> {
 
 // ── PIN-forsøg og låsning pr. enhed ────────────────────────────────
 // 3 fejlforsøg låser indløsning i 5 minutter for den enhed.
-
-const PIN_MAX_FAILS = 3;
-const PIN_LOCK_SECONDS = 5 * 60;
 
 function failKey(businessId: string, deviceId: string) {
   return `pinfail:${businessId}:${deviceId}`;
@@ -44,7 +42,7 @@ export async function recordPinFail(
   if (fails === 1) {
     await redis.expire(key, PIN_LOCK_SECONDS);
   }
-  if (fails >= PIN_MAX_FAILS) {
+  if (fails >= PIN_MAX_ATTEMPTS) {
     await redis.set(lockKey(businessId, deviceId), "1", {
       ex: PIN_LOCK_SECONDS,
     });
