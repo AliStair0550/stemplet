@@ -1,7 +1,7 @@
-import { Section, Eyebrow } from "@/components/ui";
+import { Section } from "@/components/ui";
 
 const OLD = [
-  "Ligger i en skuffe. Eller er smidt ud.",
+  "Bliver væk, længe før det er fyldt.",
   "Et håndstempel kan alle kopiere.",
   "Du ved intet om dine kunder.",
 ];
@@ -40,14 +40,14 @@ export default function Problem() {
   return (
     <Section className="bg-sand">
       <div className="max-w-xl">
-        <Eyebrow>Problemet</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Et papkort er nemt at tabe. Og nemt at{" "}
-          <span className="font-fraunces font-light italic">snyde</span>.
+        <h2 className="font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+          Et papkort er nemt at{" "}
+          <span className="font-fraunces font-light italic">tabe</span>.
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
-          Det fysiske stempelkort har tre problemer. Alle tre forsvinder, når
-          kortet bliver digitalt.
+          Det fysiske kommer hurtigt i en skuffe. Eller smidt ud. Med Stemplet
+          ligger det altid i dine kunders Wallet. Du ser genbesøg, stempler og
+          indløsninger.
         </p>
       </div>
 
