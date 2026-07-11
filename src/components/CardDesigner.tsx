@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
-import { STAMP_ICONS, contrastText, normalizeHex, type StampIconKey } from "@/lib/brand";
+import {
+  STAMP_ICONS,
+  CARD_THEMES,
+  contrastText,
+  normalizeHex,
+  type StampIconKey,
+} from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 export type CardDesign = {
@@ -204,6 +210,45 @@ export function CardDesigner({
                 <StampIcon icon={icon.key} className="h-5 w-5" />
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+            Farvetema
+          </span>
+          <div className="flex flex-wrap gap-2.5">
+            {CARD_THEMES.map((t) => {
+              const active =
+                value.primaryColor === t.primary && value.textColor === t.text;
+              return (
+                <button
+                  key={t.name}
+                  type="button"
+                  title={t.name}
+                  aria-label={t.name}
+                  onClick={() =>
+                    onChange({
+                      ...value,
+                      primaryColor: t.primary,
+                      textColor: t.text,
+                    })
+                  }
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-full transition",
+                    active
+                      ? "ring-2 ring-moss ring-offset-2 ring-offset-parchment"
+                      : "ring-1 ring-clay hover:ring-moss",
+                  )}
+                  style={{ background: t.primary }}
+                >
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: t.text }}
+                  />
+                </button>
+              );
+            })}
           </div>
         </div>
 

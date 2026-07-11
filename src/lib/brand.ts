@@ -25,6 +25,18 @@ export function isStampIcon(v: string): v is StampIconKey {
   return STAMP_ICONS.some((i) => i.key === v);
 }
 
+// Faerdige, gennemtaenkte farvetemaer, saa alle kan lave et flot kort i eet klik.
+export const CARD_THEMES: { name: string; primary: string; text: string }[] = [
+  { name: "Espresso", primary: "#2A1A10", text: "#F6EEE4" },
+  { name: "Skov", primary: "#1F3A2E", text: "#F3F7F4" },
+  { name: "Midnat", primary: "#101F33", text: "#EAF0F8" },
+  { name: "Terrakotta", primary: "#7A3B2A", text: "#FBEDE6" },
+  { name: "Vin", primary: "#5E2438", text: "#F7E7EE" },
+  { name: "Kul", primary: "#1A1A1A", text: "#F5F3EF" },
+  { name: "Hav", primary: "#123B47", text: "#E6F3F6" },
+  { name: "Sand", primary: "#E8E2D6", text: "#2A2118" },
+];
+
 const HEX_RE = /^#([0-9a-fA-F]{6})$/;
 
 export function isHex(v: string): boolean {
