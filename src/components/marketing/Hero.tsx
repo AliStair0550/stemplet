@@ -14,7 +14,9 @@ export default function Hero() {
             <Eyebrow>Det digitale stempelkort</Eyebrow>
             <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.12] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
-              <span className="font-fraunces font-light italic">flere gensyn</span>
+              <span className="whitespace-nowrap font-fraunces font-[600] italic">
+                flere gensyn
+              </span>
               .
             </h1>
             <p className="mt-6 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
@@ -31,7 +33,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="flex animate-fade-up justify-center delay-200 md:justify-end">
+          <div className="flex animate-fade-up justify-center delay-200 md:mt-20 md:justify-end">
             <HeroStampCard />
           </div>
         </div>
