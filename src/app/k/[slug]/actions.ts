@@ -29,10 +29,16 @@ export async function claimCard(slug: string, _formData?: FormData) {
     }
   }
 
-  // Plan-loft på Gratis.
+  // Plan-loft på Gratis: tæller aktive kunder (stemplet inden for 60 dage),
+  // så gamle engangskunder ikke blokerer for nye.
   if (business.plan === "FREE") {
+    const d60 = new Date();
+    d60.setDate(d60.getDate() - 60);
     const active = await prisma.customerCard.count({
-      where: { card: { businessId: business.id } },
+      where: {
+        card: { businessId: business.id },
+        lastStampAt: { gte: d60 },
+      },
     });
     if (!withinCustomerLimit("FREE", active)) {
       redirect(`/k/${slug}?fejl=fuld`);

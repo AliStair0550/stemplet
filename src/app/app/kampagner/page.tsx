@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import { CampaignManager } from "./CampaignManager";
 import { UpgradePanel } from "../UpgradePanel";
+import { stripeConfigured } from "@/lib/stripe";
 
 export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function KampagnerPage() {
           title="Kampagner"
           subtitle="Dobbeltstempel og velkomstbonus. En del af Pro."
         />
-        <UpgradePanel feature="Kampagner" />
+        <UpgradePanel feature="Kampagner" enabled={stripeConfigured()} />
       </>
     );
   }

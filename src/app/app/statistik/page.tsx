@@ -6,6 +6,7 @@ import { BarChart } from "@/components/BarChart";
 import { CategoryBars } from "@/components/CategoryBars";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { UpgradePanel } from "../UpgradePanel";
+import { stripeConfigured } from "@/lib/stripe";
 import { formatDkNumber } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Statistik" };
@@ -17,6 +18,21 @@ export default async function StatistikPage() {
   const { business } = await requireBusiness();
   const stats = await getBusinessStats(business.id);
   const isPro = business.plan === "PRO";
+
+  // Gratis-planen ser kun de to øverste tal. Resten sløres OG nulstilles,
+  // saa de rigtige Pro-tal aldrig ligger i HTML'en.
+  const previewStats: BusinessStats = {
+    ...stats,
+    stampsTotal: 0,
+    redemptionsTotal: 0,
+    redemptions30: 0,
+    revisitRate: 0,
+    completionRate: 0,
+    avgDaysToFull: null,
+    stampsWeek: 0,
+    byMethod: { kiosk: 0, staff: 0, manual: 0 },
+    perDay: stats.perDay.map((p) => ({ ...p, count: 0 })),
+  };
 
   return (
     <>
@@ -55,11 +71,11 @@ export default async function StatistikPage() {
       ) : (
         <div className="relative mt-6">
           <div className="pointer-events-none select-none blur-[6px]" aria-hidden>
-            <FullStats stats={stats} />
+            <FullStats stats={previewStats} />
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-full max-w-md">
-              <UpgradePanel feature="Fuld statistik" />
+              <UpgradePanel feature="Fuld statistik" enabled={stripeConfigured()} />
             </div>
           </div>
         </div>

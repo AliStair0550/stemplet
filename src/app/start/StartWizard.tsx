@@ -113,11 +113,12 @@ export function StartWizard() {
             value={design}
             onChange={setDesign}
             businessName={name || "Din butik"}
-            allowLogo={false}
+            allowLogo
             showPoweredBy
           />
           <p className="text-[0.75rem] font-[200] text-slate">
-            Du kan tilføje dit logo og ændre alt bagefter i dashboardet.
+            Tilføj dit logo nu, så henter vi automatisk dine farver. Du kan
+            ændre alt bagefter i dashboardet.
           </p>
         </div>
       ) : null}
@@ -147,12 +148,18 @@ export function StartWizard() {
           >
             {created.cardUrl}
           </a>
-          <form action={sendOnboardingLogin}>
-            <input type="hidden" name="email" value={email} />
-            <button className={btnClass("primary", "lg")}>
-              Log ind på dashboardet
-            </button>
-          </form>
+          <div className="flex flex-col items-center gap-2">
+            <form action={sendOnboardingLogin}>
+              <input type="hidden" name="email" value={email} />
+              <button className={btnClass("primary", "lg")}>
+                Log ind på dashboardet
+              </button>
+            </form>
+            <p className="max-w-xs text-[0.72rem] font-[200] leading-relaxed text-slate">
+              Vi sender et login-link til {email}. Klik det, og du er inde i
+              dashboardet.
+            </p>
+          </div>
         </div>
       ) : null}
 

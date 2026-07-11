@@ -6,6 +6,7 @@ import { SettingsForms } from "./SettingsForms";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
 import { PRO_PRICE_DKK } from "@/lib/plans";
+import { stripeConfigured } from "@/lib/stripe";
 import { formatDkDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Indstillinger" };
@@ -21,10 +22,11 @@ const ACTION_LABEL: Record<string, string> = {
 export default async function IndstillingerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ betaling?: string }>;
+  searchParams: Promise<{ betaling?: string; fejl?: string }>;
 }) {
   const { business } = await requireBusiness();
-  const { betaling } = await searchParams;
+  const { betaling, fejl } = await searchParams;
+  const stripeOn = stripeConfigured();
 
   const logs = await prisma.auditLog.findMany({
     where: { businessId: business.id },
@@ -37,8 +39,13 @@ export default async function IndstillingerPage({
       <PageHeading title="Indstillinger" subtitle="Profil, PIN, abonnement og log." />
 
       {betaling === "ok" ? (
-        <div className="mb-6 rounded-lg border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
+        <div className="mb-6 rounded-sm border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
           Tak. Din betaling er registreret.
+        </div>
+      ) : null}
+      {fejl === "stripe" ? (
+        <div className="mb-6 rounded-sm border border-clay bg-sand px-5 py-3 text-[0.85rem] font-[200] text-stone">
+          Betaling er ikke sat op endnu. Alt andet virker på Gratis-planen.
         </div>
       ) : null}
 
@@ -70,12 +77,16 @@ export default async function IndstillingerPage({
                   Administrer abonnement
                 </SubmitButton>
               </form>
-            ) : (
+            ) : stripeOn ? (
               <form action={startCheckout}>
                 <SubmitButton variant="moss" pendingText="Åbner Stripe...">
                   Opgrader til Pro
                 </SubmitButton>
               </form>
+            ) : (
+              <span className="text-[0.78rem] font-[200] text-slate">
+                Betaling sættes op snart
+              </span>
             )}
           </div>
         </Panel>

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
 import { STAMP_ICONS, contrastText, normalizeHex, type StampIconKey } from "@/lib/brand";
-import { uploadLogoAction } from "@/app/actions/logo";
 import { cn } from "@/lib/utils";
 
 export type CardDesign = {
@@ -25,49 +24,68 @@ export const DEFAULT_DESIGN: CardDesign = {
   logoUrl: null,
 };
 
-/** Uddrag dominerende farve fra et logo (klient-side, ingen server). */
-function dominantColor(file: File): Promise<string> {
+/**
+ * Læser logoet én gang i browseren: skalerer det ned og giver både en
+ * komprimeret data-URL (gemmes direkte, ingen ekstern tjeneste) og et
+ * dominerende farveforslag.
+ */
+function processLogo(
+  file: File,
+  maxDim = 240,
+): Promise<{ dataUrl: string; color: string | null }> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const size = 48;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
+      try {
+        const scale = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+        const w = Math.max(1, Math.round((img.width || maxDim) * scale));
+        const h = Math.max(1, Math.round((img.height || maxDim) * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) throw new Error("canvas");
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const { data } = ctx.getImageData(0, 0, w, h);
+        let r = 0,
+          g = 0,
+          b = 0,
+          count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 128) continue;
+          const rr = data[i],
+            gg = data[i + 1],
+            bb = data[i + 2];
+          const mx = Math.max(rr, gg, bb);
+          const mn = Math.min(rr, gg, bb);
+          const sat = mx === 0 ? 0 : (mx - mn) / mx;
+          const weight = sat * sat + 0.08;
+          r += rr * weight;
+          g += gg * weight;
+          b += bb * weight;
+          count += weight;
+        }
+        const color =
+          count === 0
+            ? null
+            : (
+                "#" +
+                [r, g, b]
+                  .map((v) =>
+                    Math.round(v / count).toString(16).padStart(2, "0"),
+                  )
+                  .join("")
+              ).toUpperCase();
+
+        const dataUrl = canvas.toDataURL("image/png");
         URL.revokeObjectURL(url);
-        return reject(new Error("canvas"));
+        resolve({ dataUrl, color });
+      } catch (e) {
+        URL.revokeObjectURL(url);
+        reject(e);
       }
-      ctx.drawImage(img, 0, 0, size, size);
-      const { data } = ctx.getImageData(0, 0, size, size);
-      let r = 0,
-        g = 0,
-        b = 0,
-        count = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i + 3] < 128) continue;
-        const rr = data[i],
-          gg = data[i + 1],
-          bb = data[i + 2];
-        const max = Math.max(rr, gg, bb);
-        const min = Math.min(rr, gg, bb);
-        const sat = max === 0 ? 0 : (max - min) / max;
-        const weight = sat * sat + 0.08;
-        r += rr * weight;
-        g += gg * weight;
-        b += bb * weight;
-        count += weight;
-      }
-      URL.revokeObjectURL(url);
-      if (count === 0) return resolve("#061C3D");
-      const hex =
-        "#" +
-        [r, g, b]
-          .map((v) => Math.round(v / count).toString(16).padStart(2, "0"))
-          .join("");
-      resolve(hex.toUpperCase());
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -116,24 +134,27 @@ export function CardDesigner({
 
   async function handleLogo(file: File) {
     setLogoError(null);
-    // Auto-forslag til farve fra logoet.
-    try {
-      const color = await dominantColor(file);
-      onChange({
-        ...value,
-        primaryColor: color,
-        textColor: contrastText(color),
-      });
-    } catch {
-      // ignorer - beholder valgte farver
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Vælg en billedfil (PNG, JPG eller SVG).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setLogoError("Filen er for stor. Vælg en under 8 MB.");
+      return;
     }
     setUploading(true);
-    const fd = new FormData();
-    fd.append("logo", file);
-    const res = await uploadLogoAction(fd);
-    setUploading(false);
-    if (res.error) setLogoError(res.error);
-    else if (res.url) set("logoUrl", res.url);
+    try {
+      const { dataUrl, color } = await processLogo(file);
+      onChange({
+        ...value,
+        logoUrl: dataUrl,
+        ...(color ? { primaryColor: color, textColor: contrastText(color) } : {}),
+      });
+    } catch {
+      setLogoError("Kunne ikke læse billedet. Prøv et andet.");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -234,7 +255,7 @@ export function CardDesigner({
             </span>
             <div className="flex items-center gap-3">
               <label className="cursor-pointer border border-clay px-4 py-2 text-[0.78rem] font-[300] uppercase tracking-[0.08em] text-ink hover:border-moss hover:text-moss">
-                {uploading ? "Uploader..." : "Vælg fil"}
+                {uploading ? "Behandler..." : "Vælg fil"}
                 <input
                   type="file"
                   accept="image/*"

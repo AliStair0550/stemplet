@@ -47,6 +47,8 @@ export async function applyStamp(opts: {
   method: StampMethod;
   tokenJti?: string;
   ip?: string | null;
+  /** Personalet staar ved disken og bestemmer selv - spring cooldown over. */
+  skipCooldown?: boolean;
 }): Promise<StampResult> {
   const now = new Date();
 
@@ -71,8 +73,9 @@ export async function applyStamp(opts: {
       );
     }
 
-    // Rate limit pr. kunde (undtagen manuelt stempel fra personalet).
-    if (opts.method !== "MANUAL" && cc.lastStampAt) {
+    // Rate limit pr. kunde. Gaelder den ubemandede kunde-QR, ikke personalet
+    // ved disken (skipCooldown) eller manuelle stempler.
+    if (!opts.skipCooldown && opts.method !== "MANUAL" && cc.lastStampAt) {
       const minutesSince =
         (now.getTime() - cc.lastStampAt.getTime()) / 60000;
       if (minutesSince < business.stampCooldownMin) {
@@ -98,8 +101,18 @@ export async function applyStamp(opts: {
       if (isFirstEver) increment += 1;
     }
 
-    const newStamps = Math.min(cc.stamps + increment, required);
-    const rewardReady = newStamps >= required;
+    // Atomisk optaelling: opdaterer kun hvis kortet ikke allerede er fuldt.
+    // Forhindrer tabte stempler ved to samtidige stempler paa samme kort.
+    const applied = await tx.customerCard.updateMany({
+      where: { id: cc.id, stamps: { lt: required } },
+      data: { stamps: { increment }, lastStampAt: now },
+    });
+    if (applied.count === 0) {
+      throw new StampError(
+        "FULL",
+        "Kortet er fuldt. Bed personalet indløse din belønning.",
+      );
+    }
 
     await tx.stamp.create({
       data: {
@@ -110,10 +123,12 @@ export async function applyStamp(opts: {
       },
     });
 
-    await tx.customerCard.update({
+    const after = await tx.customerCard.findUnique({
       where: { id: cc.id },
-      data: { stamps: newStamps, lastStampAt: now },
+      select: { stamps: true },
     });
+    const newStamps = Math.min(after?.stamps ?? cc.stamps + increment, required);
+    const rewardReady = newStamps >= required;
 
     await tx.auditLog.create({
       data: {
@@ -166,24 +181,33 @@ export async function redeemReward(opts: {
       include: { card: { include: { business: true } } },
     });
     if (!cc) throw new StampError("NOT_FOUND", "Kortet blev ikke fundet.");
-    if (cc.stamps < cc.card.stampsRequired) {
+    const required = cc.card.stampsRequired;
+
+    // Atomisk: nulstil kun hvis kortet stadig er fuldt. To samtidige
+    // indløsninger paa samme kort giver kun een indløsning.
+    const reset = await tx.customerCard.updateMany({
+      where: { id: cc.id, stamps: { gte: required } },
+      data: { stamps: 0, completedCount: { increment: 1 } },
+    });
+    if (reset.count === 0) {
       throw new StampError("FULL", "Kortet er ikke fuldt endnu.");
     }
 
     await tx.redemption.create({ data: { customerCardId: cc.id } });
-    const updated = await tx.customerCard.update({
+    const after = await tx.customerCard.findUnique({
       where: { id: cc.id },
-      data: { stamps: 0, completedCount: { increment: 1 } },
+      select: { completedCount: true },
     });
+    const completedCount = after?.completedCount ?? cc.completedCount + 1;
     await tx.auditLog.create({
       data: {
         businessId: cc.card.business.id,
         action: "REDEEM",
         ip: opts.ip ?? null,
-        detail: { serial: cc.serial, completedCount: updated.completedCount },
+        detail: { serial: cc.serial, completedCount },
       },
     });
-    return { serial: cc.serial, completedCount: updated.completedCount };
+    return { serial: cc.serial, completedCount };
   });
 
   void pushWallet(opts.customerCardId);

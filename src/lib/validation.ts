@@ -36,7 +36,17 @@ export const cardDesignSchema = z.object({
   stampIcon: stampIconEnum,
   primaryColor: hex,
   textColor: hex,
-  logoUrl: z.string().url().nullable().optional(),
+  // Logo er enten en data-URL (gemt direkte, ingen ekstern tjeneste) eller
+  // en http(s)-URL. Maks ca. 800 KB som base64.
+  logoUrl: z
+    .string()
+    .max(800_000, "Logoet er for stort")
+    .refine(
+      (v) => v.startsWith("data:image/") || /^https?:\/\//.test(v),
+      "Ugyldigt logo",
+    )
+    .nullable()
+    .optional(),
 });
 
 // Virksomhedsindstillinger

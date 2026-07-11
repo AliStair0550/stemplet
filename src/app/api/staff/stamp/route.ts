@@ -26,6 +26,8 @@ export async function POST(req: NextRequest) {
       customerCardId: cc.id,
       method: "STAFF_SCAN",
       ip: clientIp(req),
+      // Personalet staar ved disken - ingen cooldown paa manuel stempling.
+      skipCooldown: true,
     });
     return Response.json({ ok: true, ...res });
   } catch (e) {

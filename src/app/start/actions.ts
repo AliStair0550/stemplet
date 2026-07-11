@@ -63,25 +63,41 @@ export async function createBusinessAction(input: {
 
   const staffPin = await hashPin(pinParsed.data);
 
-  await prisma.business.create({
-    data: {
-      name: base.data.name,
-      slug,
-      primaryColor: design.data.primaryColor,
-      textColor: design.data.textColor,
-      logoUrl: design.data.logoUrl ?? null,
-      staffPin,
-      users: { create: { email: base.data.email, name: base.data.name } },
-      cards: {
-        create: {
-          stampsRequired: design.data.stampsRequired,
-          rewardText: design.data.rewardText,
-          stampIcon: design.data.stampIcon,
-          active: true,
+  try {
+    await prisma.business.create({
+      data: {
+        name: base.data.name,
+        slug,
+        primaryColor: design.data.primaryColor,
+        textColor: design.data.textColor,
+        logoUrl: design.data.logoUrl ?? null,
+        staffPin,
+        users: { create: { email: base.data.email, name: base.data.name } },
+        cards: {
+          create: {
+            stampsRequired: design.data.stampsRequired,
+            rewardText: design.data.rewardText,
+            stampIcon: design.data.stampIcon,
+            active: true,
+          },
         },
       },
-    },
-  });
+    });
+  } catch (e) {
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2002"
+    ) {
+      return {
+        ok: false,
+        error:
+          "Der findes allerede en konto med den e-mail, eller navnet er lige blevet taget. Prøv igen.",
+      };
+    }
+    throw e;
+  }
 
   const cardUrl = `${APP_URL}/k/${slug}`;
   const qrDataUrl = await QRCode.toDataURL(cardUrl, {

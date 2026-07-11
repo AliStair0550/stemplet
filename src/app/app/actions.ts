@@ -137,6 +137,9 @@ export async function deleteCampaign(id: string): Promise<Result> {
 
 export async function startCheckout() {
   const { business } = await requireBusiness();
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRO_PRICE_ID) {
+    redirect("/app/indstillinger?fejl=stripe");
+  }
   const stripe = getStripe();
 
   let customerId = business.stripeCustomerId;
@@ -170,6 +173,7 @@ export async function startCheckout() {
 
 export async function openPortal() {
   const { business } = await requireBusiness();
+  if (!process.env.STRIPE_SECRET_KEY) redirect("/app/indstillinger?fejl=stripe");
   if (!business.stripeCustomerId) redirect("/app/indstillinger");
   const stripe = getStripe();
   const portal = await stripe.billingPortal.sessions.create({

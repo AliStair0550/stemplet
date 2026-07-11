@@ -92,7 +92,11 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       }),
       prisma.redemption.findMany({
         where: rel,
-        select: { createdAt: true, customerCard: { select: { createdAt: true } } },
+        select: {
+          createdAt: true,
+          customerCardId: true,
+          customerCard: { select: { createdAt: true } },
+        },
       }),
       prisma.stamp.groupBy({
         by: ["method"],
@@ -124,7 +128,10 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     if (totalEver >= 2) atLeast2 += 1;
   }
   const revisitRate = atLeast1 ? atLeast2 / atLeast1 : 0;
-  const completionRate = totalCustomers ? redemptionsTotal / totalCustomers : 0;
+  // Andel af kunder der har fyldt mindst eet kort (distinkt, saa den aldrig
+  // overstiger 100 %).
+  const distinctRedeemers = new Set(reds.map((r) => r.customerCardId)).size;
+  const completionRate = totalCustomers ? distinctRedeemers / totalCustomers : 0;
 
   let avgDaysToFull: number | null = null;
   if (reds.length > 0) {
@@ -155,17 +162,26 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
 }
 
 function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
+  // Bucket OG etiket i dansk tidszone, saa stempler ved midnat lander paa
+  // den rigtige dag (ikke UTC-dagen).
+  const keyFmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Copenhagen",
+  });
+  const labelFmt = new Intl.DateTimeFormat("da-DK", {
+    timeZone: "Europe/Copenhagen",
+    day: "numeric",
+    month: "short",
+  });
   const buckets = new Map<string, number>();
   const days: { date: string; label: string; count: number }[] = [];
-  const fmt = new Intl.DateTimeFormat("da-DK", { day: "numeric", month: "short" });
   for (let i = 13; i >= 0; i--) {
     const d = daysAgo(i);
-    const key = d.toISOString().slice(0, 10);
+    const key = keyFmt.format(d);
     buckets.set(key, 0);
-    days.push({ date: key, label: fmt.format(d), count: 0 });
+    days.push({ date: key, label: labelFmt.format(d), count: 0 });
   }
   for (const dt of dates) {
-    const key = dt.toISOString().slice(0, 10);
+    const key = keyFmt.format(dt);
     if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
   }
   return days.map((d) => ({ ...d, count: buckets.get(d.date) ?? 0 }));

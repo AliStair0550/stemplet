@@ -25,8 +25,16 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return apiError("BAD_REQUEST", "Udfyld kort og PIN.");
 
   const deviceId = await ensureDeviceId();
+  const ip = clientIp(req);
+  // Laas paa IP (svaerere at rotere end en cookie), ellers enheds-id.
+  const lockId = ip ?? deviceId;
 
-  const locked = await pinLockRemaining(businessId, deviceId);
+  let locked = 0;
+  try {
+    locked = await pinLockRemaining(businessId, lockId);
+  } catch (e) {
+    console.error("Redis (pin-lock) fejlede:", e);
+  }
   if (locked > 0) {
     return apiError(
       "LOCKED",
@@ -41,23 +49,31 @@ export async function POST(req: NextRequest) {
 
   const ok = await verifyPin(parsed.data.pin, business.staffPin);
   if (!ok) {
-    const fail = await recordPinFail(businessId, deviceId);
+    let failLocked = false;
+    try {
+      const fail = await recordPinFail(businessId, lockId);
+      failLocked = fail.locked;
+    } catch (e) {
+      console.error("Redis (pin-fail) fejlede:", e);
+    }
     await prisma.auditLog.create({
       data: {
         businessId,
         action: "PIN_FAIL",
-        ip: clientIp(req),
-        detail: { serial: parsed.data.serial, locked: fail.locked },
+        ip,
+        detail: { serial: parsed.data.serial, locked: failLocked },
       },
     });
     return apiError(
       "PIN",
-      fail.locked
-        ? "Indløsning låst i 5 minutter."
-        : "Forkert PIN. Prøv igen.",
+      failLocked ? "Indløsning låst i 5 minutter." : "Forkert PIN. Prøv igen.",
     );
   }
-  await clearPinFails(businessId, deviceId);
+  try {
+    await clearPinFails(businessId, lockId);
+  } catch {
+    // ignorer - laasning er ekstra beskyttelse, ikke kritisk
+  }
 
   const cc = await loadCardBySerial(parsed.data.serial);
   if (!cc || cc.card.businessId !== businessId) {
@@ -67,7 +83,7 @@ export async function POST(req: NextRequest) {
   try {
     const res = await redeemReward({
       customerCardId: cc.id,
-      ip: clientIp(req),
+      ip,
     });
     return Response.json({ ok: true, ...res });
   } catch (e) {

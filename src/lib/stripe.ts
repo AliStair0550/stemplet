@@ -16,3 +16,10 @@ export function proPriceId(): string {
   if (!id) throw new Error("STRIPE_PRO_PRICE_ID mangler.");
   return id;
 }
+
+/** Er Stripe sat op, saa Pro-checkout kan koere? */
+export function stripeConfigured(): boolean {
+  return Boolean(
+    process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRO_PRICE_ID,
+  );
+}

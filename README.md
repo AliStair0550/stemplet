@@ -11,8 +11,8 @@ Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple 
 - Prisma + PostgreSQL (Neon)
 - Auth.js (magic link via Resend, kun til virksomheder)
 - Upstash Redis (rate limiting og engangs-tokens)
-- Stripe Billing (Pro, 99 kr./md.)
-- Uploadthing (logo-upload)
+- Stripe Billing (Pro, 99 kr./md., valgfrit)
+- Logo gemmes direkte som data-URL (ingen ekstern billed-tjeneste)
 - passkit-generator + APNs (Apple Wallet, bag feature flag)
 - Vercel
 

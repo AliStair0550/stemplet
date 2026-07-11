@@ -43,8 +43,14 @@ export async function POST(req: NextRequest) {
     return apiError("NO_CARD", "Kortet passer ikke til denne butik.");
   }
 
-  // Replay-beskyttelse: jti kan kun bruges een gang.
-  const fresh = await consumeJti(payload.jti);
+  // Replay-beskyttelse: jti kan kun bruges een gang. Redis er primaer, men
+  // Stamp.tokenJti @unique i databasen er backstop, hvis Redis skulle fejle.
+  let fresh = true;
+  try {
+    fresh = await consumeJti(payload.jti);
+  } catch (e) {
+    console.error("Redis (jti) fejlede, stoler paa DB-unik:", e);
+  }
   if (!fresh) {
     return apiError(
       "REPLAY",
@@ -62,6 +68,18 @@ export async function POST(req: NextRequest) {
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
+    // DB-backstop: samme jti to gange rammer @unique (P2002) = replay.
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2002"
+    ) {
+      return apiError(
+        "REPLAY",
+        "Koden er allerede brugt. Bed personalet om at vise en ny.",
+      );
+    }
     console.error("Stempel-fejl", e);
     return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
