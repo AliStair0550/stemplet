@@ -24,6 +24,8 @@ export type StampCardProps = {
   logoClassName?: string;
   /** Skjul virksomhedsnavnet (fx naar logoet allerede er et ordmaerke). */
   hideName?: boolean;
+  /** Vis en pæn etiket under stregkoden i stedet for det raa serienummer. */
+  serialLabel?: string;
   className?: string;
 };
 
@@ -52,6 +54,7 @@ export function StampCard({
   landscape = false,
   logoClassName,
   hideName = false,
+  serialLabel,
   className,
 }: StampCardProps) {
   const rewardReady = stamps >= required;
@@ -199,11 +202,12 @@ export function StampCard({
             <BarcodeGlyph value={serial} compact={landscape} />
             <span
               className={cn(
-                "font-[400] tracking-[0.3em] text-ink",
+                "font-[400] text-ink",
+                serialLabel ? "tracking-[0.12em]" : "tracking-[0.3em]",
                 landscape ? "text-[0.55rem]" : "text-[0.6rem]",
               )}
             >
-              {serial}
+              {serialLabel ?? serial}
             </span>
           </div>
         ) : null}

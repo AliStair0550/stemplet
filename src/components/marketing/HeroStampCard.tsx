@@ -2,14 +2,25 @@
 
 import { useEffect, useRef, useState } from "react";
 import { StampCard } from "@/components/StampCard";
+import { Celebration } from "@/components/Celebration";
+import { cn } from "@/lib/utils";
 
 const REQUIRED = 10;
 const START = 3;
 const AUTO_TARGET = 7;
 
+function haptic(pattern: number | number[]) {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // haptik er valgfrit
+  }
+}
+
 export default function HeroStampCard() {
   const [stamps, setStamps] = useState(START);
   const [pop, setPop] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const timeouts = useRef<number[]>([]);
   const started = useRef(false);
@@ -58,17 +69,30 @@ export default function HeroStampCard() {
 
   function handleTap() {
     setPop(true);
-    setStamps((s) => (s >= REQUIRED ? 0 : s + 1));
+    if (stamps >= REQUIRED) {
+      setStamps(0);
+      setCelebrate(false);
+      return;
+    }
+    const next = stamps + 1;
+    setStamps(next);
+    if (next >= REQUIRED) {
+      setCelebrate(true);
+      haptic([25, 40, 25, 40, 90]);
+    } else {
+      haptic(16);
+    }
   }
 
   return (
     <div className="flex flex-col items-center gap-5">
+      <Celebration show={celebrate} />
       <div className="animate-float">
         <div
           ref={ref}
           role="button"
           tabIndex={0}
-          aria-label="Coffee Lab stempelkort. Tryk for at stemple."
+          aria-label="Copenhagen Coffee Lab stempelkort. Tryk for at stemple."
           onClick={handleTap}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -76,8 +100,18 @@ export default function HeroStampCard() {
               handleTap();
             }
           }}
-          className="cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50"
+          className={cn(
+            "relative cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50",
+            celebrate && "animate-[cardBurst_0.55s_ease-out]",
+          )}
         >
+          {celebrate ? (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -inset-2 -z-10 rounded-[1.7rem] ring-2 ring-moss"
+              style={{ animation: "burstRing 0.7s ease-out forwards" }}
+            />
+          ) : null}
           <StampCard
             businessName="Copenhagen Coffee Lab"
             logoUrl="/coffeelab.png"
@@ -91,6 +125,7 @@ export default function HeroStampCard() {
             required={REQUIRED}
             rewardText="10. kop er gratis"
             serial="COFFEELAB1"
+            serialLabel="Coffee Lab"
             showPoweredBy
             pop={pop}
             shine

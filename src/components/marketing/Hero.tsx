@@ -13,9 +13,9 @@ export default function Hero() {
           <div className="animate-fade-up">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
             <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.12] tracking-[0.01em] text-ink md:text-[3.1rem]">
-              Stempelkortet, der{" "}
-              <span className="font-fraunces font-light italic">aldrig</span>{" "}
-              bliver væk.
+              Stempelkortet, der skaber{" "}
+              <span className="font-fraunces font-light italic">flere gensyn</span>
+              .
             </h1>
             <p className="mt-6 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
               Altid lige ved hånden i Apple Wallet. Scan en QR-kode, og kunden

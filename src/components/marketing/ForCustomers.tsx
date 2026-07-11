@@ -58,8 +58,8 @@ export default function ForCustomers() {
       <div className="max-w-xl">
         <Eyebrow>For dine kunder</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Ikke bare et stempelkort. En{" "}
-          <span className="font-fraunces font-light italic">relation</span>.
+          Skab flere{" "}
+          <span className="font-fraunces font-light italic">gensyn</span>.
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
           Kortet ligger i kundens Apple Wallet, altid ved hånden. Hver gang de

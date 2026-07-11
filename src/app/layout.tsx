@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   openGraph: {
-    title: "Stemplet - stempelkortet, der aldrig bliver væk",
+    title: "Stemplet - stempelkortet, der skaber flere gensyn",
     description:
       "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding. Et produkt fra Alius.",
     url: appUrl,
