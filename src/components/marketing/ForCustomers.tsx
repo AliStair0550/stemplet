@@ -1,10 +1,19 @@
 import { Section, Eyebrow } from "@/components/ui";
-import { StampCard } from "@/components/StampCard";
+import { RelationshipGraphic } from "@/components/marketing/RelationshipGraphic";
 
-const POINTS = [
-  "Ingen app at hente.",
-  "Ingen konto at oprette.",
-  "Kortet minder dem om dig fra låseskærmen, når de går forbi.",
+const CUSTOMER = [
+  "Ingen app, ingen konto, intet at installere.",
+  "Bliver aldrig væk, det ligger altid i Wallet.",
+  "Minder dem om dig fra låseskærmen, når de er i nærheden.",
+  "De ser præcis, hvor tæt de er på næste gratis.",
+  "Helt anonymt, hvis de vil. Data ligger i EU.",
+];
+
+const BUSINESS = [
+  "Du ligger i kundens Wallet og bliver set, hver gang de åbner telefonen.",
+  "Flere genbesøg og faste kunder, uge efter uge.",
+  "Du ser genbesøg, stempler og indløsninger, sort på hvidt.",
+  "Ingen kan snyde. Hvert stempel er signeret.",
 ];
 
 function CheckMark() {
@@ -23,44 +32,47 @@ function CheckMark() {
   );
 }
 
+function Benefits({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div>
+      <span className="text-[0.65rem] font-[400] uppercase tracking-[0.14em] text-moss">
+        {label}
+      </span>
+      <ul className="mt-5 flex flex-col gap-3.5">
+        {items.map((p) => (
+          <li key={p} className="flex gap-3">
+            <CheckMark />
+            <span className="font-[300] text-[0.88rem] leading-[1.6] text-ink">
+              {p}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function ForCustomers() {
   return (
     <Section className="bg-sand">
-      <div className="grid items-center gap-14 md:grid-cols-2 md:gap-16">
-        <div>
-          <Eyebrow>For dine kunder</Eyebrow>
-          <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-            Dine kunder har allerede telefonen i{" "}
-            <span className="font-fraunces font-light italic">hånden</span>.
-          </h2>
-          <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
-            Nu har de også dit stempelkort. Uden noget nyt at lære og uden noget
-            at installere.
-          </p>
+      <div className="max-w-xl">
+        <Eyebrow>For dine kunder</Eyebrow>
+        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+          Ikke bare et stempelkort. En{" "}
+          <span className="font-fraunces font-light italic">relation</span>.
+        </h2>
+        <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
+          Kortet ligger i kundens Apple Wallet, altid ved hånden. Hver gang de
+          åbner telefonen, er du der. Sådan skaber du kunder, der kommer igen,
+          og en forretning, der kan se det.
+        </p>
+      </div>
 
-          <ul className="mt-8 flex flex-col gap-4">
-            {POINTS.map((p) => (
-              <li key={p} className="flex gap-3.5">
-                <CheckMark />
-                <span className="font-[300] text-[0.9rem] leading-[1.7] text-ink">
-                  {p}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="flex justify-center md:justify-end">
-          <StampCard
-            businessName="Bageren på Torvet"
-            primaryColor="#3A2A1E"
-            textColor="#FFFFFF"
-            stampIcon="croissant"
-            stamps={6}
-            required={8}
-            rewardText="8. brød er gratis"
-            serial="STEMPLET42"
-          />
+      <div className="mt-16 grid items-center gap-14 md:grid-cols-2 md:gap-16">
+        <RelationshipGraphic />
+        <div className="flex flex-col gap-10">
+          <Benefits label="For dine kunder" items={CUSTOMER} />
+          <Benefits label="For din forretning" items={BUSINESS} />
         </div>
       </div>
     </Section>

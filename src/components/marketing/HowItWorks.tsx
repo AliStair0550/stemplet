@@ -11,6 +11,10 @@ const FIRST_VISIT: Step[] = [
     title: "Kortet ligger i Wallet",
     body: "På fem sekunder er dit stempelkort i kundens Apple Wallet. Ingen konto, ingen tilmelding, ingen e-mail.",
   },
+  {
+    title: "Få det første stempel",
+    body: "Ved købet lander det første stempel med det samme. Kunden er i gang, og kortet begynder at fylde.",
+  },
 ];
 
 const EVERY_VISIT: Step[] = [

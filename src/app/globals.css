@@ -184,6 +184,23 @@ p {
   }
 }
 
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+@keyframes presencePulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 .animate-fade-up {
   opacity: 0;
   animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
