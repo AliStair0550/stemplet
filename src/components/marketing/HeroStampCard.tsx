@@ -87,7 +87,7 @@ export default function HeroStampCard() {
   return (
     <div className="flex flex-col items-center gap-5">
       <Celebration show={celebrate} />
-      <div className="animate-float">
+      <div className="w-[28rem] max-w-full animate-float">
         <div
           ref={ref}
           role="button"
@@ -101,7 +101,7 @@ export default function HeroStampCard() {
             }
           }}
           className={cn(
-            "relative cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50",
+            "relative w-full cursor-pointer rounded-[1.4rem] outline-none transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-moss/50",
             celebrate && "animate-[cardBurst_0.55s_ease-out]",
           )}
         >

@@ -159,9 +159,9 @@ export function StampCard({
           </div>
         </div>
 
-        {/* Stempelfelter - balancerede raekker (fx 5+5) */}
+        {/* Stempelfelter - balancerede raekker (fx 5+5), centreret paa kortet */}
         <div
-          className={cn("grid w-fit", landscape ? "gap-2" : "gap-2.5")}
+          className={cn("mx-auto grid w-fit", landscape ? "gap-2" : "gap-2.5")}
           style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
         >
           {slots.map((_, i) => {
