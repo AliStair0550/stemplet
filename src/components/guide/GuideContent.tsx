@@ -254,12 +254,9 @@ export function GuideContent({ data }: { data: GuideData }) {
               q="Kunden siger jeg fik ikke stempel"
               a={`Tjek om kunden allerede har fået ét inden for de sidste ${cooldownText}. Ellers giv stemplet med Scan kort ved kassen.`}
             />
-            {/* TODO: Naar et rigtigt "Find mit kort"-flow (genfind kort paa ny
-                telefon via serienummer/e-mail) bygges, skal dette svar opdateres
-                til at beskrive det flow. */}
             <QA
               q="Kunden har ny telefon eller kan ikke finde kortet"
-              a="Opret et nyt kort til kunden, og giv de manglende stempler via Scan kort. Så er kunden i gang igen."
+              a="Har kunden kortet i Apple Wallet, følger det med. Ellers kan de selv hente det igen på stemplet.alius.dk/find-kort ved at skrive serienummeret fra kortet. Kender de ikke nummeret, kan du slå kortet op under Scan kort."
             />
           </div>
         </div>

@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: "Hvordan er det med GDPR?",
-    a: "Alle data ligger i EU. Du behøver ikke at indsamle navn eller e-mail, så dine kunder kan være helt anonyme. Et stempelkort kræver kun et kort, ikke en identitet.",
+    a: "Kundedata ligger i EU, og dine kunder kan være helt anonyme, et stempelkort kræver kun et kort, ikke en identitet. Der ligger både en privatlivspolitik og en databehandleraftale klar til dig.",
   },
 ];
 

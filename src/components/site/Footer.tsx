@@ -50,10 +50,24 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-fog pt-6">
-          <span className="font-[200] text-[0.72rem] tracking-[0.02em] text-slate">
-            © 2026 Stemplet
-          </span>
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-fog pt-6">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <span className="font-[200] text-[0.72rem] tracking-[0.02em] text-slate">
+              © 2026 Stemplet
+            </span>
+            <Link
+              href="/privatliv"
+              className="font-[300] text-[0.72rem] text-slate transition-colors hover:text-ink"
+            >
+              Privatliv
+            </Link>
+            <Link
+              href="/databehandleraftale"
+              className="font-[300] text-[0.72rem] text-slate transition-colors hover:text-ink"
+            >
+              Databehandleraftale
+            </Link>
+          </div>
           <a
             href="https://alius.dk"
             target="_blank"
