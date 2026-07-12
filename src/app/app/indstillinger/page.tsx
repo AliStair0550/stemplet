@@ -83,11 +83,7 @@ export default async function IndstillingerPage({
                   Opgrader til Pro
                 </SubmitButton>
               </form>
-            ) : (
-              <span className="text-[0.78rem] font-[200] text-slate">
-                Betaling sættes op snart
-              </span>
-            )}
+            ) : null}
           </div>
         </Panel>
       </div>

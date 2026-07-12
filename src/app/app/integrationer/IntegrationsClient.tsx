@@ -110,6 +110,17 @@ export function IntegrationsClient({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Venlig intro, saa ikke-tekniske brugere ikke bliver bange */}
+      <div className="rounded-sm border border-moss/30 bg-moss/[0.05] p-6">
+        <h2 className="text-[1rem] font-[400] text-ink">Skal du bruge det her?</h2>
+        <p className="mt-2 max-w-2xl text-[0.88rem] font-[200] leading-relaxed text-stone">
+          Kun hvis du vil koble Stemplet sammen med et andet system, fx dit
+          kassesystem eller et værktøj som Zapier. Så kan stempler og belønninger
+          køre helt af sig selv. Ellers kan du roligt springe siden over, alt
+          virker uden.
+        </p>
+      </div>
+
       {/* API-nøgle */}
       <Panel>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -255,12 +266,31 @@ export function IntegrationsClient({
         </div>
       </Panel>
 
-      {/* API-dokumentation */}
-      <Panel>
-        <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-          API, sådan gør du
-        </h2>
-        <p className="mt-2 max-w-lg text-[0.85rem] font-[200] text-stone">
+      {/* API-dokumentation foldet ind, saa ikke-tekniske brugere ikke skraemmes */}
+      <details className="group rounded-sm border border-fog bg-white">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden">
+          <div>
+            <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+              For udviklere: API&apos;et
+            </h2>
+            <p className="mt-1 text-[0.82rem] font-[200] text-stone">
+              Endpoints, eksempler og svar. Klik for at folde ud.
+            </p>
+          </div>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 shrink-0 text-slate transition-transform group-open:rotate-180"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div className="border-t border-fog p-6 pt-5">
+        <p className="max-w-lg text-[0.85rem] font-[200] text-stone">
           Alle kald bruger din nøgle som{" "}
           <code className="text-[0.8rem] text-ink">Bearer</code>-token. Basis-URL:
         </p>
@@ -326,7 +356,8 @@ export function IntegrationsClient({
           stregkode og i kundelisten. Serienummeret hører kun til din butik,
           nøgler fra andre butikker kan ikke røre det.
         </p>
-      </Panel>
+        </div>
+      </details>
     </div>
   );
 }

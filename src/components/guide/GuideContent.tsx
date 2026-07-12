@@ -61,6 +61,13 @@ function IconShield() {
     </svg>
   );
 }
+function IconLayers() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+      <path d="M12 3l9 5-9 5-9-5 9-5Z" /><path d="M3 12l9 5 9-5" /><path d="M3 16l9 5 9-5" />
+    </svg>
+  );
+}
 
 // ── Byggeklodser ─────────────────────────────────────────────────────
 function BigCard({ icon, title, steps }: { icon: React.ReactNode; title: string; steps: string[] }) {
@@ -132,52 +139,76 @@ export function GuideContent({ data }: { data: GuideData }) {
         alt, du skal vide.
       </p>
 
-      {/* 1. De to situationer */}
-      <div className="grid gap-5 sm:grid-cols-2">
-        <BigCard
-          icon={<IconStamp />}
-          title="Kunden vil have et stempel"
-          steps={[
-            "Kunden viser sit kort, eller du viser skærmen med koden.",
-            "Koden bliver scannet, eller du trykker Giv stempel.",
-            "Stemplet lander på kortet med det samme.",
-          ]}
-        />
-        <BigCard
-          icon={<IconGift />}
-          title="Kunden vil indløse sin belønning"
-          steps={[
-            "Kortet er fuldt og siger vis ved kassen.",
-            "Du scanner kortet og taster jeres PIN.",
-            "Belønningen gives, og kortet starter forfra.",
-          ]}
-        />
-      </div>
+      {/* 1. De tre situationer ved kassen */}
+      <Section title="De tre situationer ved kassen">
+        <p className="-mt-2 text-[1.05rem] leading-[1.6] text-stone">
+          Det er stort set alt, du møder i hverdagen. Find den, kunden vil have,
+          og følg de tre trin.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <BigCard
+            icon={<IconStamp />}
+            title="Ét stempel"
+            steps={[
+              "Vis skærmen med koden til kunden.",
+              "Kunden scanner den med sit kamera.",
+              "Stemplet lander med det samme.",
+            ]}
+          />
+          <BigCard
+            icon={<IconLayers />}
+            title="Flere stempler"
+            steps={[
+              "Åbn Stempel, vælg Scan kort.",
+              "Scan kundens kort.",
+              "Tryk Giv stempel én gang pr. vare.",
+            ]}
+          />
+          <BigCard
+            icon={<IconGift />}
+            title="Indløs belønning"
+            steps={[
+              "Scan kundens fyldte kort.",
+              "Tast jeres PIN og tryk Indløs.",
+              "Kortet starter forfra af sig selv.",
+            ]}
+          />
+        </div>
+      </Section>
 
-      {/* 2. Stempel, to måder */}
-      <Section title="Stempel, to måder">
+      {/* 2. De to måder at give et stempel på */}
+      <Section title="De to måder at give et stempel på">
         <div className="grid gap-5 md:grid-cols-2">
           <Way icon={<IconPhone />} title="Kunden scanner selv">
             <p>
-              Skærmen ved disken viser en kode. Kunden scanner den med sit
-              kamera, og stemplet lander af sig selv.
+              Vis skærmen med koden. Kunden scanner den med sit eget kamera, og
+              stemplet lander af sig selv.
             </p>
-            <p>Koden skifter {refresh}. {cooldownSentence(data.cooldownMin)}</p>
+            <p>
+              Bruges til{" "}
+              <span className="font-[500] text-ink">ét stempel</span>. Koden
+              skifter {refresh}, og {cooldownSentence(data.cooldownMin)}
+            </p>
           </Way>
           <Way icon={<IconScan />} title="Du scanner kundens kort">
             <p>
-              Åbn Kasse, vælg Scan kort, scan kundens kort, og tryk Giv stempel.
+              Åbn Stempel, vælg Scan kort, scan kundens kort, og tryk Giv
+              stempel.
             </p>
             <p>
-              Her bestemmer du selv. Køber kunden tre kaffe, trykker du tre
-              gange.
+              Bruges til{" "}
+              <span className="font-[500] text-ink">flere stempler</span> og til
+              at indløse. Her bestemmer du selv.
             </p>
           </Way>
         </div>
         <div className="rounded-lg border border-moss/30 bg-moss/5 p-5 text-[1.05rem] leading-[1.6] text-ink">
-          <span className="font-[500]">Hvornår bruger jeg hvilken?</span>{" "}
-          Selvbetjening til den ene kaffe. Scan kort, når der skal flere
-          stempler, eller når der skal indløses.
+          <span className="font-[500]">
+            Hvad gør jeg, hvis kunden vil have flere stempler?
+          </span>{" "}
+          Brug Scan kort og tryk Giv stempel én gang for hver vare. Køber kunden
+          tre kaffe, trykker du tre gange. Kundens egen scanning af skærmen giver
+          kun ét stempel ad gangen.
         </div>
       </Section>
 
@@ -187,7 +218,7 @@ export function GuideContent({ data }: { data: GuideData }) {
           <ol className="flex flex-col gap-3.5">
             {[
               "Kundens kort er fuldt og siger vis ved kassen.",
-              "Åbn Kasse og vælg Scan kort.",
+              "Åbn Stempel og vælg Scan kort.",
               "Scan kundens kort.",
               "Tast jeres personale-PIN og tryk Indløs.",
               "Kunden får sin belønning, og kortet starter forfra af sig selv.",
