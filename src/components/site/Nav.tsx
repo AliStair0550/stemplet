@@ -47,6 +47,14 @@ export default function Nav() {
             </Link>
           ))}
         </nav>
+
+        {/* Mobil: mindst Log ind skal altid kunne naas fra toppen. */}
+        <Link
+          href="/login"
+          className="font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-moss md:hidden"
+        >
+          Log ind
+        </Link>
       </div>
     </header>
   );

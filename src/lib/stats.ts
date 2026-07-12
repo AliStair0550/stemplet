@@ -22,12 +22,6 @@ function daysAgo(n: number): Date {
   d.setDate(d.getDate() - n);
   return d;
 }
-function startOfToday(): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 export async function getBusinessStats(businessId: string): Promise<BusinessStats> {
   const cards = await prisma.card.findMany({
     where: { businessId },
@@ -56,15 +50,11 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
 
   const d30 = daysAgo(30);
   const d60 = daysAgo(60);
-  const d7 = daysAgo(7);
-  const today = startOfToday();
   const rel = { customerCard: { cardId: { in: cardIds } } };
 
   const [
     ccs,
     stampsTotal,
-    stampsToday,
-    stampsWeek,
     redemptionsTotal,
     redemptions30,
     recentStamps,
@@ -82,12 +72,10 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
         },
       }),
       prisma.stamp.count({ where: rel }),
-      prisma.stamp.count({ where: { ...rel, createdAt: { gte: today } } }),
-      prisma.stamp.count({ where: { ...rel, createdAt: { gte: d7 } } }),
       prisma.redemption.count({ where: rel }),
       prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
       prisma.stamp.findMany({
-        where: { ...rel, createdAt: { gte: daysAgo(13) } },
+        where: { ...rel, createdAt: { gte: daysAgo(14) } },
         select: { createdAt: true },
       }),
       prisma.redemption.findMany({
@@ -104,6 +92,12 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
         _count: { _all: true },
       }),
     ]);
+
+  // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
+  // saa noegletal og graf altid er enige (ingen UTC/CET-forskydning ved midnat).
+  const perDay = buildPerDay(recentStamps.map((s) => s.createdAt));
+  const stampsToday = perDay[perDay.length - 1]?.count ?? 0;
+  const stampsWeek = perDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
 
   const methodCount = new Map(
     methodGroups.map((g) => [g.method, g._count._all]),
@@ -157,7 +151,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     completionRate,
     avgDaysToFull,
     byMethod,
-    perDay: buildPerDay(recentStamps.map((s) => s.createdAt)),
+    perDay,
   };
 }
 

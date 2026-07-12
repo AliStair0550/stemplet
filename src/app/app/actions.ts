@@ -116,6 +116,28 @@ export async function revokeApiKeyAction(): Promise<Result> {
   return { ok: true };
 }
 
+/** Blokér webhooks mod loopback/private/link-local vaerter (SSRF-vaern). */
+function isBlockedWebhookHost(hostname: string): boolean {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal")) {
+    return true;
+  }
+  if (h === "::1" || h.startsWith("fe80:") || h.startsWith("fc") || h.startsWith("fd")) {
+    return true;
+  }
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+  }
+  return false;
+}
+
 export async function saveWebhookUrl(formData: FormData): Promise<Result> {
   const { business } = await requireBusiness();
   const raw = String(formData.get("webhookUrl") ?? "").trim();
@@ -130,6 +152,12 @@ export async function saveWebhookUrl(formData: FormData): Promise<Result> {
     }
     if (url.protocol !== "https:") {
       return { ok: false, error: "URL'en skal bruge https." };
+    }
+    if (isBlockedWebhookHost(url.hostname)) {
+      return {
+        ok: false,
+        error: "URL'en må ikke pege på en intern eller privat adresse.",
+      };
     }
     webhookUrl = url.toString();
   }

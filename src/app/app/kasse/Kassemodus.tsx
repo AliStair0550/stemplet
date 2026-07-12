@@ -90,7 +90,7 @@ function StempelQr() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="flex flex-col items-center gap-4 rounded-sm border border-fog bg-white p-8">
+      <div className="flex flex-col items-center gap-4 rounded-sm border border-fog bg-white p-6 sm:p-8">
         {error ? (
           <p className="max-w-xs text-center font-[200] text-[0.9rem] text-stone">
             {error}
@@ -101,12 +101,12 @@ function StempelQr() {
             alt="Stempel-QR"
             width={340}
             height={340}
-            className="h-[min(70vw,340px)] w-[min(70vw,340px)]"
+            className="h-[min(72vw,320px)] w-[min(72vw,320px)]"
             unoptimized
             priority
           />
         ) : (
-          <div className="h-[340px] w-[340px] animate-pulse rounded-sm bg-fog" />
+          <div className="h-[min(72vw,320px)] w-[min(72vw,320px)] animate-pulse rounded-sm bg-fog" />
         )}
         <p className="text-[0.8rem] font-[200] text-slate">
           Kunden scanner med kameraet. Ny kode om {seconds} sek.

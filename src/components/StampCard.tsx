@@ -159,9 +159,13 @@ export function StampCard({
           </div>
         </div>
 
-        {/* Stempelfelter - balancerede raekker (fx 5+5), centreret paa kortet */}
+        {/* Stempelfelter - balancerede raekker (fx 5+5), centreret paa kortet.
+            Mindre felter paa smaa telefoner, saa 11-12 stempler aldrig klippes. */}
         <div
-          className={cn("mx-auto grid w-fit", landscape ? "gap-2" : "gap-2.5")}
+          className={cn(
+            "mx-auto grid w-fit",
+            landscape ? "gap-2" : "gap-2 sm:gap-2.5",
+          )}
           style={{ gridTemplateColumns: `repeat(${columns}, auto)` }}
         >
           {slots.map((_, i) => {
@@ -182,14 +186,18 @@ export function StampCard({
                 key={`${i}-${filled}`}
                 className={cn(
                   "flex items-center justify-center rounded-full",
-                  landscape ? "h-9 w-9" : "h-10 w-10",
+                  landscape ? "h-9 w-9" : "h-9 w-9 sm:h-10 sm:w-10",
                   filled && pop && i === stamps - 1 && "animate-stamp-pop",
                 )}
                 style={chipStyle}
               >
                 <StampIcon
                   icon={stampIcon}
-                  className={landscape ? "h-[1.05rem] w-[1.05rem]" : "h-5 w-5"}
+                  className={
+                    landscape
+                      ? "h-[1.05rem] w-[1.05rem]"
+                      : "h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5"
+                  }
                 />
               </div>
             );

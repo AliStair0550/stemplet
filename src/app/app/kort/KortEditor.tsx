@@ -52,8 +52,11 @@ export function KortEditor({
           img.complete
             ? Promise.resolve()
             : new Promise<void>((res) => {
-                img.onload = () => res();
-                img.onerror = () => res();
+                const done = () => res();
+                img.onload = done;
+                img.onerror = done;
+                // Sikkerheds-timeout: haeng aldrig hvis et billede ikke svarer.
+                setTimeout(done, 1500);
               }),
         ),
       );
@@ -111,12 +114,13 @@ export function KortEditor({
         ) : null}
       </div>
 
-      {/* Delekort, som eksporteres til PNG. Ligger i viewporten (saa billeder
-          hentes) men er usynligt: opacity-0 paa FORAELDEREN, saa selve
-          capture-noden (ref) stadig er fuldt synlig for html-to-image. */}
+      {/* Delekort, som eksporteres til PNG. Ligger oeverst i viewporten (saa
+          billederne hentes) men klippes til 0x0, saa det 560px brede kort
+          aldrig skaber vandret scroll paa mobil. html-to-image faanger stadig
+          selve capture-noden (ref) i fuld stoerrelse. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 -z-50 opacity-0"
+        className="pointer-events-none fixed left-0 top-0 -z-50 h-0 w-0 overflow-hidden"
       >
         <div ref={shareRef}>
           <ShareCard
