@@ -170,6 +170,16 @@ export async function saveWebhookUrl(formData: FormData): Promise<Result> {
   return { ok: true };
 }
 
+export async function setWeeklyEmail(enabled: boolean): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { weeklyEmailEnabled: enabled },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
 export async function createCampaign(formData: FormData): Promise<Result> {
   const { business } = await requireBusiness();
   const parsed = campaignSchema.safeParse({

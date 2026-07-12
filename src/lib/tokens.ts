@@ -91,3 +91,23 @@ export async function consumeJti(
   });
   return res === "OK";
 }
+
+// ── Afmeld-token (ugebrev) ───────────────────────────────────────────
+// Signeret, uden udloeb, saa afmeld-linket i mails virker for altid.
+
+export async function signUnsubscribeToken(businessId: string): Promise<string> {
+  return new SignJWT({ businessId, purpose: "unsub" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .sign(secretKey());
+}
+
+export async function verifyUnsubscribeToken(token: string): Promise<string> {
+  const { payload } = await jwtVerify(token, secretKey(), {
+    algorithms: ["HS256"],
+  });
+  if (payload.purpose !== "unsub" || !payload.businessId) {
+    throw new Error("Ugyldigt afmeld-token");
+  }
+  return String(payload.businessId);
+}

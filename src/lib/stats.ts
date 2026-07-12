@@ -190,6 +190,58 @@ function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
   return days.map((d) => ({ ...d, count: buckets.get(d.date) ?? 0 }));
 }
 
+export type WeeklyStats = {
+  stampsWeek: number;
+  stampsDelta: number; // stempler denne uge minus ugen før
+  newCustomers: number;
+  redemptions: number;
+  churn: number; // kunder der er ved at glide fra dig
+};
+
+/** Tal til den ugentlige statistik-mail. Rullende 7-dages vinduer. */
+export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
+  const cards = await prisma.card.findMany({
+    where: { businessId },
+    select: { id: true },
+  });
+  const cardIds = cards.map((c) => c.id);
+  if (cardIds.length === 0) {
+    return { stampsWeek: 0, stampsDelta: 0, newCustomers: 0, redemptions: 0, churn: 0 };
+  }
+
+  const rel = { customerCard: { cardId: { in: cardIds } } };
+  const d7 = daysAgo(7);
+  const d14 = daysAgo(14);
+  const d21 = daysAgo(21);
+  const d60 = daysAgo(60);
+
+  const [stampsWeek, stampsPrevWeek, newCustomers, redemptions, churn] =
+    await Promise.all([
+      prisma.stamp.count({ where: { ...rel, createdAt: { gte: d7 } } }),
+      prisma.stamp.count({ where: { ...rel, createdAt: { gte: d14, lt: d7 } } }),
+      prisma.customerCard.count({
+        where: { cardId: { in: cardIds }, createdAt: { gte: d7 } },
+      }),
+      prisma.redemption.count({ where: { ...rel, createdAt: { gte: d7 } } }),
+      // "Ved at glide fra dig": var engagerede, men ikke set i 21-60 dage.
+      prisma.customerCard.count({
+        where: {
+          cardId: { in: cardIds },
+          lastStampAt: { gte: d60, lt: d21 },
+          OR: [{ completedCount: { gte: 1 } }, { stamps: { gte: 2 } }],
+        },
+      }),
+    ]);
+
+  return {
+    stampsWeek,
+    stampsDelta: stampsWeek - stampsPrevWeek,
+    newCustomers,
+    redemptions,
+    churn,
+  };
+}
+
 export async function getRecentActivity(businessId: string, take = 12) {
   return prisma.auditLog.findMany({
     where: { businessId },

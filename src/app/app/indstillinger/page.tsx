@@ -3,6 +3,7 @@ import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading, Panel } from "@/components/dash";
 import { SettingsForms } from "./SettingsForms";
+import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
 import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
@@ -53,6 +54,24 @@ export default async function IndstillingerPage({
         name={business.name}
         cooldown={business.stampCooldownMin}
       />
+
+      {/* Ugentligt overblik */}
+      <div className="mt-6">
+        <Panel>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+                Ugentligt overblik
+              </h2>
+              <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
+                En kort mail hver mandag med ugens stempler, nye kunder og
+                indløsninger.
+              </p>
+            </div>
+            <WeeklyEmailToggle initial={business.weeklyEmailEnabled} />
+          </div>
+        </Panel>
+      </div>
 
       {/* Abonnement */}
       <div className="mt-6">
