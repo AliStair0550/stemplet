@@ -115,14 +115,14 @@ export function KortEditor({
       </div>
 
       {/* Delekort, som eksporteres til PNG. Ligger oeverst i viewporten (saa
-          billederne hentes) men klippes til 0x0, saa det 560px brede kort
-          aldrig skaber vandret scroll paa mobil. html-to-image faanger stadig
-          selve capture-noden (ref) i fuld stoerrelse. */}
+          billederne hentes) men usynligt via opacity-0 paa FORAELDEREN, saa
+          selve capture-noden (ref) har fuld 560px bredde til html-to-image.
+          Vandret scroll fra de 560px undgaas via overflow-x: clip paa body. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 -z-50 h-0 w-0 overflow-hidden"
+        className="pointer-events-none fixed left-0 top-0 -z-50 opacity-0"
       >
-        <div ref={shareRef}>
+        <div ref={shareRef} className="w-[560px]">
           <ShareCard
             design={design}
             businessName={businessName}

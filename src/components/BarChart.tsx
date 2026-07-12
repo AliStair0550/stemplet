@@ -18,7 +18,7 @@ export function BarChart({
 
   return (
     <div className={className}>
-      <div className="flex h-44 items-end gap-[3px]">
+      <div className="flex h-44 items-end gap-2 sm:gap-2.5">
         {data.map((d, i) => {
           const h = (d.count / max) * 100;
           return (
@@ -27,7 +27,7 @@ export function BarChart({
               className="group relative flex h-full flex-1 items-end justify-center"
             >
               <div
-                className="w-full max-w-[22px] origin-bottom rounded-t-[4px]"
+                className="w-full max-w-[44px] origin-bottom rounded-t-[5px]"
                 style={{
                   height: `${Math.max(1.5, h)}%`,
                   background:
@@ -52,7 +52,7 @@ export function BarChart({
       <div className="h-px w-full bg-clay" />
 
       {hasSublabels ? (
-        <div className="mt-2 flex gap-[3px]">
+        <div className="mt-2 flex gap-2 sm:gap-2.5">
           {data.map((d, i) => (
             <span
               key={i}

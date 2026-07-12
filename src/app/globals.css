@@ -25,6 +25,9 @@ body {
   background: var(--color-parchment);
   color: var(--color-stone);
   font-family: var(--font-sans);
+  /* Ingen vandret scroll (fx fra det skjulte 560px delekort ved PNG-eksport).
+     "clip" laver ikke en scroll-container, saa position: sticky virker stadig. */
+  overflow-x: clip;
 }
 
 /* ── Print: personale-guiden paa A4, sort/hvid ─────────────────────── */

@@ -50,10 +50,10 @@ function GettingStarted({ slug }: { slug: string }) {
       link: "Materialer",
     },
     {
-      title: "Prøv kassen",
+      title: "Giv et stempel",
       body: "Vis stempel-QR'en, eller scan et kundekort.",
       href: "/app/kasse",
-      link: "Åbn kasse",
+      link: "Åbn Stempel",
     },
     {
       title: "Del dit kort",
@@ -107,7 +107,7 @@ export default async function OverviewPage() {
   const { business } = await requireBusiness();
   const [stats, activity] = await Promise.all([
     getBusinessStats(business.id),
-    getRecentActivity(business.id, 10),
+    getRecentActivity(business.id, 6),
   ]);
 
   return (
@@ -117,7 +117,7 @@ export default async function OverviewPage() {
         subtitle="Her er, hvordan dit stempelkort klarer sig."
         action={
           <ButtonLink href="/app/kasse" variant="moss" size="md">
-            Åbn kasse
+            Stempel
           </ButtonLink>
         }
       />
@@ -148,7 +148,7 @@ export default async function OverviewPage() {
         />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
         <Panel>
           <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
             Stempler seneste 7 dage
