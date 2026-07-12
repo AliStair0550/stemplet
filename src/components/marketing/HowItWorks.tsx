@@ -74,7 +74,7 @@ function Track({
 
 export default function HowItWorks() {
   return (
-    <Section id="sådan" className="scroll-mt-24">
+    <Section id="sådan" className="scroll-mt-24 bg-moss/[0.05]">
       <div className="max-w-xl">
         <Eyebrow>Få flere stamkunder</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">

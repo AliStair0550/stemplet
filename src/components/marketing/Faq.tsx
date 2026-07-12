@@ -34,7 +34,7 @@ export default function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <Section>
+    <Section className="bg-moss/[0.05]">
       <div className="grid gap-12 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
         <div>
           <Eyebrow>Spørgsmål</Eyebrow>

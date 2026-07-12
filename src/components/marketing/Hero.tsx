@@ -12,12 +12,11 @@ export default function Hero() {
         <div className="grid items-center gap-14 md:grid-cols-2 md:gap-12">
           <div className="animate-fade-up">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
-            <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.12] tracking-[0.01em] text-ink md:text-[3.1rem]">
+            <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.16] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
               <span className="whitespace-nowrap font-fraunces font-[600] italic">
-                flere gensyn
+                flere gensyn.
               </span>
-              .
             </h1>
             <p className="mt-6 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
               Altid lige ved hånden i Apple Wallet. Scan en QR-kode, og kunden

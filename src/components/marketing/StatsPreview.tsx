@@ -24,14 +24,9 @@ export default function StatsPreview() {
 
       <div className="mt-14 rounded-sm border border-fog bg-parchment p-6 shadow-[0_24px_70px_-32px_rgba(26,26,26,0.28)] md:p-8">
         <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="font-[400] text-[0.95rem] tracking-[0.02em] text-ink">
-              Overblik
-            </span>
-            <span className="font-[200] text-[0.72rem] text-slate">
-              Coffee Lab
-            </span>
-          </div>
+          <span className="font-[400] text-[0.95rem] tracking-[0.02em] text-ink">
+            Overblik
+          </span>
           <span className="rounded-full border border-fog px-3.5 py-1.5 font-[300] text-[0.68rem] uppercase tracking-[0.1em] text-slate">
             Sidste 30 dage
           </span>
@@ -69,19 +64,26 @@ export default function StatsPreview() {
               12 uger
             </span>
           </div>
-          <div className="mt-6 flex h-32 items-end gap-1.5 sm:gap-2.5">
-            {BARS.map((h, i) => (
+          <div className="mt-6 flex h-36 items-end gap-1.5 sm:gap-2.5">
+            {BARS.map((count, i) => (
               <div
                 key={i}
-                className="flex-1 rounded-t-[3px]"
-                style={{
-                  height: `${h}%`,
-                  background:
-                    i === BARS.length - 1
-                      ? "repeating-linear-gradient(135deg, #4A7D68 0 5px, #3a6252 5px 6px)"
-                      : "repeating-linear-gradient(135deg, #2D5F4A 0 5px, #21483795 5px 6px)",
-                }}
-              />
+                className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+              >
+                <span className="text-[0.5rem] font-[400] tabular-nums text-slate sm:text-[0.6rem]">
+                  {count}
+                </span>
+                <div
+                  className="w-full rounded-t-[3px]"
+                  style={{
+                    height: `${(count / Math.max(...BARS)) * 100}%`,
+                    background:
+                      i === BARS.length - 1
+                        ? "repeating-linear-gradient(135deg, #4A7D68 0 5px, #3a6252 5px 6px)"
+                        : "repeating-linear-gradient(135deg, #2D5F4A 0 5px, #21483795 5px 6px)",
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>
