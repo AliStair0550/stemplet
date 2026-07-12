@@ -24,7 +24,15 @@ export async function createBusinessAction(input: {
   email: string;
   pin: string;
   design: CardDesign;
+  acceptedTerms: boolean;
 }): Promise<CreateResult> {
+  if (!input.acceptedTerms) {
+    return {
+      ok: false,
+      error:
+        "Du skal acceptere handelsbetingelser, privatlivspolitik og databehandleraftale for at oprette en butik.",
+    };
+  }
   const base = onboardingStartSchema.safeParse({
     name: input.name,
     email: input.email,
@@ -74,6 +82,7 @@ export async function createBusinessAction(input: {
         textColor: design.data.textColor,
         logoUrl: design.data.logoUrl ?? null,
         staffPin,
+        termsAcceptedAt: new Date(),
         users: { create: { email: base.data.email, name: base.data.name } },
         cards: {
           create: {

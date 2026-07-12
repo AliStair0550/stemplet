@@ -14,6 +14,7 @@ export function StartWizard() {
   const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
   const [design, setDesign] = useState<CardDesign>(DEFAULT_DESIGN);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<Extract<CreateResult, { ok: true }> | null>(null);
   const [pending, startTransition] = useTransition();
@@ -31,7 +32,7 @@ export function StartWizard() {
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createBusinessAction({ name, email, pin, design });
+      const res = await createBusinessAction({ name, email, pin, design, acceptedTerms });
       if (res.ok) {
         setCreated(res);
         setStep(2);
@@ -123,6 +124,44 @@ export function StartWizard() {
             Tilføj dit logo nu, så henter vi automatisk dine farver. Du kan
             ændre alt bagefter i dashboardet.
           </p>
+          <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-moss"
+            />
+            <span className="text-[0.78rem] font-[200] leading-relaxed text-stone">
+              Jeg accepterer{" "}
+              <a
+                href="/handelsbetingelser"
+                target="_blank"
+                rel="noreferrer"
+                className="text-moss underline underline-offset-2 hover:opacity-70"
+              >
+                handelsbetingelserne
+              </a>
+              ,{" "}
+              <a
+                href="/privatliv"
+                target="_blank"
+                rel="noreferrer"
+                className="text-moss underline underline-offset-2 hover:opacity-70"
+              >
+                privatlivspolitikken
+              </a>{" "}
+              og{" "}
+              <a
+                href="/databehandleraftale"
+                target="_blank"
+                rel="noreferrer"
+                className="text-moss underline underline-offset-2 hover:opacity-70"
+              >
+                databehandleraftalen
+              </a>
+              .
+            </span>
+          </label>
         </div>
       ) : null}
 
@@ -197,8 +236,8 @@ export function StartWizard() {
           ) : (
             <button
               onClick={submit}
-              disabled={pending}
-              className={btnClass("moss")}
+              disabled={pending || !acceptedTerms}
+              className={`${btnClass("moss")} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {pending ? "Opretter..." : "Opret min butik"}
             </button>

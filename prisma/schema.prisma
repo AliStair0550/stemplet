@@ -35,6 +35,7 @@ model Business {
   apiKey           String?    @unique // til det offentlige API (Bearer + webhook-signatur)
   webhookUrl       String? // POST'es ved stempel/beloenning/indloesning
   weeklyEmailEnabled Boolean  @default(true) // ugentlig statistik-mail
+  termsAcceptedAt  DateTime? // accepterede vilkaar/privatliv/DPA ved oprettelse
   users            User[]
   cards            Card[]
   auditLogs        AuditLog[]

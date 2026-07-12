@@ -62,6 +62,12 @@ export default function Footer() {
               © 2026 Stemplet
             </span>
             <Link
+              href="/handelsbetingelser"
+              className="font-[300] text-[0.72rem] text-slate transition-colors hover:text-ink"
+            >
+              Handelsbetingelser
+            </Link>
+            <Link
               href="/privatliv"
               className="font-[300] text-[0.72rem] text-slate transition-colors hover:text-ink"
             >
