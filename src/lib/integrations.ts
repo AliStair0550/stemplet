@@ -1,7 +1,28 @@
 import "server-only";
 import { createHmac, randomBytes } from "node:crypto";
+import { lookup } from "node:dns/promises";
 import { prisma } from "./prisma";
 import type { Business } from "@prisma/client";
+
+/** Er en (resolveret) IP loopback/privat/link-local? SSRF-vaern for webhooks. */
+export function isPrivateAddress(ip: string): boolean {
+  const v = ip.toLowerCase();
+  if (v === "::1" || v.startsWith("fe80:") || v.startsWith("fc") || v.startsWith("fd")) {
+    return true;
+  }
+  const v4 = v.startsWith("::ffff:") ? v.slice(7) : v;
+  const m = v4.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const a = Number(m[1]);
+    const b = Number(m[2]);
+    if (a === 0 || a === 10 || a === 127) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+  }
+  return false;
+}
 
 // ── API-nøgler ────────────────────────────────────────────────────────
 // Bruges som Bearer-token til det offentlige API OG som hemmelighed til at
@@ -40,6 +61,15 @@ export async function fireWebhook(
 ): Promise<void> {
   if (!business.webhookUrl || !business.apiKey) return;
   try {
+    // SSRF-vaern mod DNS-rebinding: slaa vaerten op og afvis, hvis den peger
+    // paa en intern/privat adresse (selv om hostnavnet saa uskyldigt ud).
+    const target = new URL(business.webhookUrl);
+    const { address } = await lookup(target.hostname);
+    if (isPrivateAddress(address)) {
+      console.error("Webhook blokeret (privat adresse):", target.hostname);
+      return;
+    }
+
     const body = JSON.stringify({
       event,
       businessId: business.id,

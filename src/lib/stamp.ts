@@ -206,10 +206,12 @@ export async function redeemReward(opts: {
     const required = cc.card.stampsRequired;
 
     // Atomisk: nulstil kun hvis kortet stadig er fuldt. To samtidige
-    // indløsninger paa samme kort giver kun een indløsning.
+    // indløsninger paa samme kort giver kun een indløsning. Vi TRAEKKER
+    // "required" fra (ikke nul), saa et evt. ekstra stempel fra en kampagne
+    // (fx dobbeltstempel paa sidste felt) baeres over til naeste runde.
     const reset = await tx.customerCard.updateMany({
       where: { id: cc.id, stamps: { gte: required } },
-      data: { stamps: 0, completedCount: { increment: 1 } },
+      data: { stamps: { decrement: required }, completedCount: { increment: 1 } },
     });
     if (reset.count === 0) {
       throw new StampError("FULL", "Kortet er ikke fuldt endnu.");

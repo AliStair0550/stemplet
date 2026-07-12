@@ -1,6 +1,7 @@
 import "server-only";
 import bcrypt from "bcryptjs";
 import { getRedis } from "./redis";
+import { prisma } from "./prisma";
 import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "./system-config";
 
 // ── Personale-PIN ─────────────────────────────────────────────────────
@@ -13,52 +14,50 @@ export async function verifyPin(pin: string, hash: string): Promise<boolean> {
   return bcrypt.compare(pin, hash);
 }
 
-// ── PIN-forsøg og låsning pr. enhed ────────────────────────────────
-// 3 fejlforsøg låser indløsning i 5 minutter for den enhed.
-
-function failKey(businessId: string, deviceId: string) {
-  return `pinfail:${businessId}:${deviceId}`;
-}
-function lockKey(businessId: string, deviceId: string) {
-  return `pinlock:${businessId}:${deviceId}`;
-}
+// ── PIN-forsøg og låsning ──────────────────────────────────────────
+// 3 fejlforsøg låser indløsning i 5 minutter. DB-backet (ikke kun Redis), saa
+// laasningen ALDRIG kan omgaas ved et Redis-nedbrud. lockId er IP (eller
+// enheds-id). Den atomiske INCREMENT taeller korrekt selv ved mange samtidige
+// forsoeg (bruteforce).
 
 export async function pinLockRemaining(
   businessId: string,
-  deviceId: string,
+  lockId: string,
 ): Promise<number> {
-  const redis = getRedis();
-  const ttl = await redis.ttl(lockKey(businessId, deviceId));
-  return ttl > 0 ? ttl : 0;
+  const row = await prisma.pinAttempt.findUnique({
+    where: { businessId_lockId: { businessId, lockId } },
+    select: { lockedUntil: true },
+  });
+  if (!row?.lockedUntil) return 0;
+  const ms = row.lockedUntil.getTime() - Date.now();
+  return ms > 0 ? Math.ceil(ms / 1000) : 0;
 }
 
 export async function recordPinFail(
   businessId: string,
-  deviceId: string,
-): Promise<{ locked: boolean; remaining: number; fails: number }> {
-  const redis = getRedis();
-  const key = failKey(businessId, deviceId);
-  const fails = await redis.incr(key);
-  if (fails === 1) {
-    await redis.expire(key, PIN_LOCK_SECONDS);
-  }
-  if (fails >= PIN_MAX_ATTEMPTS) {
-    await redis.set(lockKey(businessId, deviceId), "1", {
-      ex: PIN_LOCK_SECONDS,
+  lockId: string,
+): Promise<{ locked: boolean }> {
+  const row = await prisma.pinAttempt.upsert({
+    where: { businessId_lockId: { businessId, lockId } },
+    create: { businessId, lockId, fails: 1 },
+    update: { fails: { increment: 1 } },
+    select: { fails: true },
+  });
+  if (row.fails >= PIN_MAX_ATTEMPTS) {
+    await prisma.pinAttempt.update({
+      where: { businessId_lockId: { businessId, lockId } },
+      data: { fails: 0, lockedUntil: new Date(Date.now() + PIN_LOCK_SECONDS * 1000) },
     });
-    await redis.del(key);
-    return { locked: true, remaining: PIN_LOCK_SECONDS, fails };
+    return { locked: true };
   }
-  return { locked: false, remaining: 0, fails };
+  return { locked: false };
 }
 
 export async function clearPinFails(
   businessId: string,
-  deviceId: string,
+  lockId: string,
 ): Promise<void> {
-  const redis = getRedis();
-  await redis.del(failKey(businessId, deviceId));
-  await redis.del(lockKey(businessId, deviceId));
+  await prisma.pinAttempt.deleteMany({ where: { businessId, lockId } });
 }
 
 // ── Anomali-flag ──────────────────────────────────────────────────────

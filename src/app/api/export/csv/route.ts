@@ -51,7 +51,8 @@ export async function GET() {
     .map((r) => r.map(cell).join(","))
     .join("\n");
 
-  return new Response(csv, {
+  // UTF-8 BOM, saa Excel paa Windows viser ae/oe/aa korrekt.
+  return new Response("﻿" + csv, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": 'attachment; filename="stemplet-kunder.csv"',

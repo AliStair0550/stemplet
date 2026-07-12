@@ -42,6 +42,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }) => {
         const apiKey = provider.apiKey;
         if (!apiKey) {
+          // Aldrig i produktion: log ikke login-links, fejl hoejlydt i stedet.
+          if (process.env.NODE_ENV === "production") {
+            throw new Error("AUTH_RESEND_KEY mangler i produktion.");
+          }
           console.log(`\n🔗 Login-link til ${identifier}:\n${url}\n`);
           return;
         }

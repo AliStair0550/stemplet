@@ -8,7 +8,7 @@ import { generateSerial, generateAuthToken } from "@/lib/ids";
 import { canCreateCustomer } from "@/lib/plans";
 
 /** Opretter (eller genfinder) kundens kort og sætter device-cookie. */
-export async function claimCard(slug: string, _formData?: FormData) {
+export async function claimCard(slug: string) {
   const business = await prisma.business.findUnique({
     where: { slug },
     include: {

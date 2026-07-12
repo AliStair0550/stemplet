@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { StampIcon } from "./StampIcon";
-import { hexToRgb, contrastText, type StampIconKey } from "@/lib/brand";
+import { hexToRgb, type StampIconKey } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 export type StampCardProps = {

@@ -207,3 +207,16 @@ model AuditLog {
   @@index([businessId])
   @@index([businessId, action])
 }
+
+// Personale-PIN forsoeg/laasning. DB-backet (ikke kun Redis), saa laasningen
+// aldrig kan omgaas ved et Redis-nedbrud. lockId er IP (eller enheds-id).
+model PinAttempt {
+  id          String    @id @default(cuid())
+  businessId  String
+  lockId      String
+  fails       Int       @default(0)
+  lockedUntil DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([businessId, lockId])
+}

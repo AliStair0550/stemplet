@@ -52,7 +52,17 @@ function StempelQr() {
   const [qr, setQr] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState<string | null>(null);
+  // iOS Safari kan ikke sætte vilkaarlige elementer i fuldskaerm - skjul
+  // knappen der, saa den ikke bliver et forvirrende no-op.
+  const [canFullscreen, setCanFullscreen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setCanFullscreen(
+      typeof document !== "undefined" &&
+        typeof document.documentElement.requestFullscreen === "function",
+    );
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -108,7 +118,7 @@ function StempelQr() {
         ) : (
           <div className="h-[min(72vw,320px)] w-[min(72vw,320px)] animate-pulse rounded-sm bg-fog" />
         )}
-        <p className="text-[0.8rem] font-[200] text-slate">
+        <p className="text-[0.85rem] font-[300] text-stone">
           Kunden scanner med kameraet. Ny kode om {seconds} sek.
         </p>
       </div>
@@ -116,9 +126,11 @@ function StempelQr() {
         Stil enheden ved disken. Koden skifter hvert minut, så et foto af
         skærmen er værdiløst bagefter.
       </p>
-      <button onClick={fullscreen} className={btnClass("outline", "md")}>
-        Fuldskærm
-      </button>
+      {canFullscreen ? (
+        <button onClick={fullscreen} className={btnClass("outline", "md")}>
+          Fuldskærm
+        </button>
+      ) : null}
     </div>
   );
 }

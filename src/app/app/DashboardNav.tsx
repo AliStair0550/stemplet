@@ -85,14 +85,16 @@ export function DashboardNav({
             </form>
           </div>
         </div>
-        <nav className="no-scrollbar flex gap-1 overflow-x-auto px-4 pb-3">
+        <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
           {LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "whitespace-nowrap px-3 py-1.5 text-[0.78rem] font-[300]",
-                isActive(l.href) ? "text-moss" : "text-stone",
+                "whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
+                isActive(l.href)
+                  ? "bg-moss/10 text-moss"
+                  : "text-stone hover:text-ink",
               )}
             >
               {l.label}

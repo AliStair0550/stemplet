@@ -2,15 +2,6 @@ import type { Plan } from "@prisma/client";
 
 export const PRO_PRICE_DKK = 99;
 
-export type PlanLimits = {
-  maxCards: number | null; // null = ubegrænset
-  maxCustomers: number | null; // samlede kundekort - null = ubegrænset
-  campaigns: boolean;
-  fullStats: boolean;
-  showPoweredBy: boolean;
-  ownBrand: boolean;
-};
-
 // Gratis er et fuldt brugbart produkt op til 100 kundekort. Loftet er en
 // VAEKSTMUR, ikke en straf: eksisterende kunder kan altid stemple og indløse -
 // der kan bare ikke oprettes NYE kort ved loftet. Vi varsler allerede ved 80,
@@ -18,33 +9,18 @@ export type PlanLimits = {
 export const FREE_CUSTOMER_LIMIT = 100;
 export const FREE_CUSTOMER_WARN = 80;
 
-export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  FREE: {
-    maxCards: null,
-    maxCustomers: FREE_CUSTOMER_LIMIT,
-    campaigns: true,
-    fullStats: true,
-    showPoweredBy: false,
-    ownBrand: true,
-  },
-  PRO: {
-    maxCards: null,
-    maxCustomers: null,
-    campaigns: true,
-    fullStats: true,
-    showPoweredBy: false,
-    ownBrand: true,
-  },
+// Kun det, der faktisk haandhaeves: kunde-loftet og Stemplet-maerket. Alle
+// oevrige funktioner (kampagner, fuld statistik, eget brand) er ens paa begge
+// planer, saa de behoever ingen gate.
+export type PlanLimits = {
+  maxCustomers: number | null; // samlede kundekort - null = ubegraenset
+  showPoweredBy: boolean;
 };
 
-export function limitsFor(plan: Plan): PlanLimits {
-  return PLAN_LIMITS[plan];
-}
-
-export function canCreateCard(plan: Plan, currentCards: number): boolean {
-  const max = PLAN_LIMITS[plan].maxCards;
-  return max === null || currentCards < max;
-}
+export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
+  FREE: { maxCustomers: FREE_CUSTOMER_LIMIT, showPoweredBy: false },
+  PRO: { maxCustomers: null, showPoweredBy: false },
+};
 
 /**
  * Kan der oprettes ET nyt kundekort? Loftet tæller ALLE oprettede kort, ikke

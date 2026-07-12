@@ -104,7 +104,7 @@ export function Scanner({
       {onClose ? (
         <button
           onClick={onClose}
-          className="mt-6 text-[0.72rem] font-[300] uppercase tracking-[0.12em] text-parchment/70 hover:text-parchment"
+          className="mt-6 rounded-full border border-parchment/30 px-6 py-2.5 text-[0.78rem] font-[400] uppercase tracking-[0.12em] text-parchment/90 transition-colors hover:bg-parchment/10"
         >
           Luk
         </button>

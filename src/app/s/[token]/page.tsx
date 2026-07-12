@@ -1,7 +1,6 @@
 import { verifyStampToken } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
 import { StampConfirm } from "./StampConfirm";
-import { ButtonLink } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
