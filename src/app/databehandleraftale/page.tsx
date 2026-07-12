@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Databehandleraftale mellem butikken (dataansvarlig) og Stemplet (databehandler).",
 };
 
-const CONTACT = "kontakt@alius.dk";
+const CONTACT = "hej@alius.dk";
 
 function Li({ children }: { children: React.ReactNode }) {
   return (

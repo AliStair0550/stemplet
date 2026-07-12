@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 // TODO (juridisk): indsæt CVR-nummer og fysisk adresse for Alius, og faa
 // politikken gennemgaaet af en advokat inden endelig brug.
-const CONTACT = "kontakt@alius.dk";
+const CONTACT = "hej@alius.dk";
 
 function Li({ children }: { children: React.ReactNode }) {
   return (
