@@ -12,9 +12,27 @@ import Pricing from "@/components/marketing/Pricing";
 import Faq from "@/components/marketing/Faq";
 import FinalCta from "@/components/marketing/FinalCta";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Stemplet",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web, iOS",
+  description:
+    "Digitalt stempelkort i Apple Wallet til caféer, barberer og bagere. Kunderne scanner en QR-kode og har kortet på fem sekunder. Ingen app, ingen tilmelding.",
+  url: "https://stemplet.alius.dk",
+  inLanguage: "da-DK",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },
+  publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
+};
+
 export default function Page() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Nav />
       <main>
         <Hero />

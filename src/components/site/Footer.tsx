@@ -47,6 +47,12 @@ export default function Footer() {
                 {l.label}
               </Link>
             ))}
+            <a
+              href="mailto:hej@alius.dk"
+              className="font-[300] text-[0.85rem] tracking-[0.01em] text-stone transition-colors hover:text-moss"
+            >
+              Kontakt: hej@alius.dk
+            </a>
           </nav>
         </div>
 

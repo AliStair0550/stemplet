@@ -12,6 +12,20 @@ export const metadata: Metadata = {
   description:
     "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på fem sekunder. Ingen app. Ingen tilmelding. Et produkt fra Alius.",
   applicationName: "Stemplet",
+  keywords: [
+    "stempelkort",
+    "digitalt stempelkort",
+    "loyalitetskort",
+    "kundeklub",
+    "Apple Wallet",
+    "loyalitetsprogram",
+    "genbesøg",
+    "café loyalitet",
+    "Stemplet",
+    "Alius",
+  ],
+  authors: [{ name: "Alius", url: "https://alius.dk" }],
+  creator: "Alius",
   appleWebApp: {
     capable: true,
     title: "Stemplet",
@@ -25,6 +39,12 @@ export const metadata: Metadata = {
     siteName: "Stemplet",
     locale: "da_DK",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stemplet - stempelkortet, der skaber flere gensyn",
+    description:
+      "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding.",
   },
   icons: {
     icon: [
