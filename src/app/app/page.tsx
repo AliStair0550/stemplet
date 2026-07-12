@@ -151,9 +151,15 @@ export default async function OverviewPage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <Panel>
           <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-            Stempler seneste 14 dage
+            Stempler seneste 7 dage
           </h2>
-          <BarChart data={stats.perDay} />
+          <BarChart
+            data={stats.perDay.slice(-7).map((d) => ({
+              label: d.label,
+              count: d.count,
+              sublabel: d.weekday,
+            }))}
+          />
         </Panel>
 
         <Panel>

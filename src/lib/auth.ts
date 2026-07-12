@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
+import { loginEmail } from "./emails";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
 // Kunder logger ALDRIG ind - de identificeres via device-cookie og serial.
@@ -28,23 +29,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM || "Stemplet <login@stemplet.alius.dk>",
       name: "E-mail",
-      // Dev-hjælp: uden Resend-nøgle logges login-linket i terminalen,
-      // så man kan logge ind lokalt. I produktion sendes en rigtig mail.
-      ...(!process.env.AUTH_RESEND_KEY && process.env.NODE_ENV !== "production"
-        ? {
-            sendVerificationRequest: async ({
-              identifier,
-              url,
-            }: {
-              identifier: string;
-              url: string;
-            }) => {
-              console.log(
-                `\n🔗 Login-link til ${identifier}:\n${url}\n`,
-              );
-            },
-          }
-        : {}),
+      // Vi sender ALTID vores egen brandede mail (Stemplets tone og stil).
+      // Uden Resend-noegle (lokal udvikling) logges linket i terminalen.
+      sendVerificationRequest: async ({
+        identifier,
+        url,
+        provider,
+      }: {
+        identifier: string;
+        url: string;
+        provider: { apiKey?: string; from?: string };
+      }) => {
+        const apiKey = provider.apiKey;
+        if (!apiKey) {
+          console.log(`\n🔗 Login-link til ${identifier}:\n${url}\n`);
+          return;
+        }
+        const mail = loginEmail(url);
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${apiKey}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            from: provider.from,
+            to: identifier,
+            subject: mail.subject,
+            html: mail.html,
+            text: mail.text,
+          }),
+        });
+        if (!res.ok) {
+          const detail = await res.text().catch(() => "");
+          throw new Error(`Resend-fejl (${res.status}): ${detail}`);
+        }
+      },
     }),
   ],
   pages: {

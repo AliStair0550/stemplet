@@ -43,6 +43,46 @@ export function StampIcon({
           <path d="M4 15c3 1 6 1 8-1s2-5 1-8c2 1 4 3 5 6 1 3 0 6-3 7-4 1-9-.5-11-4Z" />
         </svg>
       );
+    case "pizza":
+      return (
+        <svg {...common}>
+          <path d="M12 3c4 0 7.5 2.2 9 5.5L12 21 3 8.5C4.5 5.2 8 3 12 3Z" />
+          <path d="M5 9.5c4-1.5 10-1.5 14 0" />
+          <circle cx="10" cy="10.5" r="0.6" fill="currentColor" />
+          <circle cx="13.5" cy="12.5" r="0.6" fill="currentColor" />
+        </svg>
+      );
+    case "burger":
+      return (
+        <svg {...common}>
+          <path d="M4 9.5c0-3 3.6-5 8-5s8 2 8 5" />
+          <path d="M4 14h16M5 11h14" />
+          <path d="M5 14c0 2.5 3 4 7 4s7-1.5 7-4" />
+        </svg>
+      );
+    case "beer":
+      return (
+        <svg {...common}>
+          <path d="M7 8h8v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8Z" />
+          <path d="M15 10h2.5a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H15" />
+          <path d="M7 8c-.5-2.5 1-4 2.5-3.5C10 3 11.5 3 12.5 4c1.2-.8 2.5.2 2.5 1.5 0 .9-.5 1.7-1 2.5" />
+        </svg>
+      );
+    case "icecream":
+      return (
+        <svg {...common}>
+          <path d="M8 10a4 4 0 0 1 8 0" />
+          <path d="M7.5 11h9l-4.5 9-4.5-9Z" />
+          <path d="M8.5 14h7" />
+        </svg>
+      );
+    case "wine":
+      return (
+        <svg {...common}>
+          <path d="M7 4h10c0 4-2 7-5 7S7 8 7 4Z" />
+          <path d="M12 11v6M9 20h6" />
+        </svg>
+      );
     case "heart":
       return (
         <svg {...common}>

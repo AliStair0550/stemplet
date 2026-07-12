@@ -8,7 +8,7 @@ import { KortEditor } from "./KortEditor";
 import type { StampIconKey } from "@/lib/brand";
 import type { CardDesign } from "@/components/CardDesigner";
 
-export const metadata: Metadata = { title: "Kort" };
+export const metadata: Metadata = { title: "Design" };
 export const dynamic = "force-dynamic";
 
 export default async function KortPage() {
@@ -36,7 +36,7 @@ export default async function KortPage() {
   return (
     <>
       <PageHeading
-        title="Dit kort"
+        title="Design"
         subtitle="Design dit unikke stempelkort, download det og fortæl dine kunder om det."
       />
       <KortEditor

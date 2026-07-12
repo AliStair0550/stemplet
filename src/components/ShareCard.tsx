@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { StampCard } from "@/components/StampCard";
 import type { CardDesign } from "@/components/CardDesigner";
 
@@ -38,12 +37,13 @@ export function ShareCard({
       />
 
       <div className="flex items-center gap-5">
-        <Image
+        {/* Plain <img> (ikke next/image), saa html-to-image kan indlejre QR'en. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={qrDataUrl}
           alt=""
           width={96}
           height={96}
-          unoptimized
           className="h-24 w-24 rounded-md bg-white p-1.5 ring-1 ring-fog"
         />
         <div className="max-w-[230px]">

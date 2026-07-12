@@ -1,12 +1,12 @@
 // Enkelt-serie søjlegraf: moss med fin diagonal tekstur (farve + mønster),
 // 4px afrundet top ved baseline, hover-tooltip, og en direkte etiket paa
-// den højeste søjle. Ren CSS - vokser blidt ved indlæsning (reduceret
-// bevægelse respekteres via globals.css).
+// den højeste søjle. Kan vise en fast etiket (fx ugedag) under hver søjle.
+// Ren CSS - vokser blidt ved indlæsning (reduceret bevægelse respekteres).
 export function BarChart({
   data,
   className,
 }: {
-  data: { label: string; count: number }[];
+  data: { label: string; count: number; sublabel?: string }[];
   className?: string;
 }) {
   const max = Math.max(1, ...data.map((d) => d.count));
@@ -14,6 +14,7 @@ export function BarChart({
     (mi, d, i, arr) => (d.count > arr[mi].count ? i : mi),
     0,
   );
+  const hasSublabels = data.some((d) => d.sublabel);
 
   return (
     <div className={className}>
@@ -49,10 +50,24 @@ export function BarChart({
         })}
       </div>
       <div className="h-px w-full bg-clay" />
-      <div className="mt-2 flex justify-between text-[0.62rem] font-[200] text-slate">
-        <span>{data[0]?.label}</span>
-        <span>{data[data.length - 1]?.label}</span>
-      </div>
+
+      {hasSublabels ? (
+        <div className="mt-2 flex gap-[3px]">
+          {data.map((d, i) => (
+            <span
+              key={i}
+              className="flex-1 text-center text-[0.62rem] font-[300] capitalize text-slate"
+            >
+              {d.sublabel}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-2 flex justify-between text-[0.62rem] font-[200] text-slate">
+          <span>{data[0]?.label}</span>
+          <span>{data[data.length - 1]?.label}</span>
+        </div>
+      )}
     </div>
   );
 }

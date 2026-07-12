@@ -10,8 +10,6 @@ import { formatDkNumber } from "@/lib/utils";
 export const metadata: Metadata = { title: "Statistik" };
 export const dynamic = "force-dynamic";
 
-const pct = (n: number) => `${Math.round(n)}%`;
-
 export default async function StatistikPage() {
   const { business } = await requireBusiness();
   const stats = await getBusinessStats(business.id);
@@ -85,7 +83,7 @@ function FullStats({ stats }: { stats: BusinessStats }) {
         />
         <StatTile
           label="Genbesøgsrate"
-          value={<AnimatedNumber value={stats.revisitRate * 100} format={pct} />}
+          value={<AnimatedNumber value={stats.revisitRate * 100} format="percent" />}
           sub="kunder der kom igen"
         />
         <StatTile
@@ -94,7 +92,8 @@ function FullStats({ stats }: { stats: BusinessStats }) {
             stats.avgDaysToFull !== null ? (
               <AnimatedNumber
                 value={stats.avgDaysToFull}
-                format={(n) => `${(Math.round(n * 10) / 10).toString()} dage`}
+                suffix=" dage"
+                decimals={1}
               />
             ) : (
               "-"
@@ -125,7 +124,7 @@ function FullStats({ stats }: { stats: BusinessStats }) {
         <StatTile
           label="Gennemførelsesrate"
           value={
-            <AnimatedNumber value={stats.completionRate * 100} format={pct} />
+            <AnimatedNumber value={stats.completionRate * 100} format="percent" />
           }
           sub="kunder der fyldte et kort"
         />

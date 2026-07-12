@@ -348,6 +348,7 @@ export function CardDesigner({
           rewardText={value.rewardText}
           showPoweredBy={showPoweredBy}
           serial="STEMPLET01"
+          serialLabel={businessName}
         />
       </div>
     </div>

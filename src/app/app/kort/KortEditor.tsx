@@ -42,13 +42,33 @@ export function KortEditor({
     setDownloading(true);
     try {
       const { toPng } = await import("html-to-image");
-      // Kald to gange - foerste gang varmer webfonts/billeder op.
-      await toPng(node, { pixelRatio: 2, backgroundColor: "#FAF8F4" });
-      const dataUrl = await toPng(node, {
+
+      // Vent paa skrifttyper OG at alle billeder er faerdigindlaest, ellers
+      // bliver PNG'en tom. (Kortet renderes i viewporten men usynligt, saa
+      // billederne rent faktisk hentes.)
+      if (document.fonts?.ready) await document.fonts.ready;
+      await Promise.all(
+        Array.from(node.querySelectorAll("img")).map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((res) => {
+                img.onload = () => res();
+                img.onerror = () => res();
+              }),
+        ),
+      );
+
+      const opts = {
         pixelRatio: 2,
         cacheBust: true,
         backgroundColor: "#FAF8F4",
-      });
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+      };
+      // Kald to gange - foerste gang varmer rendering/fonts helt op.
+      await toPng(node, opts);
+      const dataUrl = await toPng(node, opts);
+
       const a = document.createElement("a");
       a.download = `stempelkort-${slug}.png`;
       a.href = dataUrl;
@@ -91,17 +111,20 @@ export function KortEditor({
         ) : null}
       </div>
 
-      {/* Skjult delekort, som eksporteres til PNG (deles paa sociale medier). */}
+      {/* Delekort, som eksporteres til PNG. Ligger i viewporten (saa billeder
+          hentes) men er usynligt: opacity-0 paa FORAELDEREN, saa selve
+          capture-noden (ref) stadig er fuldt synlig for html-to-image. */}
       <div
-        ref={shareRef}
         aria-hidden
-        className="pointer-events-none fixed left-[-9999px] top-0"
+        className="pointer-events-none fixed left-0 top-0 -z-50 opacity-0"
       >
-        <ShareCard
-          design={design}
-          businessName={businessName}
-          qrDataUrl={qrDataUrl}
-        />
+        <div ref={shareRef}>
+          <ShareCard
+            design={design}
+            businessName={businessName}
+            qrDataUrl={qrDataUrl}
+          />
+        </div>
       </div>
     </div>
   );

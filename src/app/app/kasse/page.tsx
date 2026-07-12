@@ -3,7 +3,7 @@ import { requireBusiness } from "@/lib/session";
 import { PageHeading } from "@/components/dash";
 import { Kassemodus } from "./Kassemodus";
 
-export const metadata: Metadata = { title: "Kasse" };
+export const metadata: Metadata = { title: "Stempel" };
 export const dynamic = "force-dynamic";
 
 export default async function KassePage() {
@@ -11,7 +11,7 @@ export default async function KassePage() {
   return (
     <>
       <PageHeading
-        title="Kasse"
+        title="Stempel"
         subtitle="Vis stempel-QR til kunden, eller scan kundens kort."
       />
       <Kassemodus />

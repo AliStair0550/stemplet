@@ -14,7 +14,7 @@ export type BusinessStats = {
   completionRate: number;
   avgDaysToFull: number | null;
   byMethod: { kiosk: number; staff: number; manual: number };
-  perDay: { date: string; label: string; count: number }[];
+  perDay: { date: string; label: string; weekday: string; count: number }[];
 };
 
 function daysAgo(n: number): Date {
@@ -172,13 +172,22 @@ function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
     day: "numeric",
     month: "short",
   });
+  const wdFmt = new Intl.DateTimeFormat("da-DK", {
+    timeZone: "Europe/Copenhagen",
+    weekday: "short",
+  });
   const buckets = new Map<string, number>();
-  const days: { date: string; label: string; count: number }[] = [];
+  const days: BusinessStats["perDay"] = [];
   for (let i = 13; i >= 0; i--) {
     const d = daysAgo(i);
     const key = keyFmt.format(d);
     buckets.set(key, 0);
-    days.push({ date: key, label: labelFmt.format(d), count: 0 });
+    days.push({
+      date: key,
+      label: labelFmt.format(d),
+      weekday: wdFmt.format(d).replace(".", ""),
+      count: 0,
+    });
   }
   for (const dt of dates) {
     const key = keyFmt.format(dt);
