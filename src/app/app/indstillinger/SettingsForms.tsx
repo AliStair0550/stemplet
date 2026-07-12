@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { saveSettings, setPin } from "../actions";
 import { btnClass } from "@/components/ui";
 import { Panel } from "@/components/dash";
+import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 function Msg({ text, ok = true }: { text: string | null; ok?: boolean }) {
   if (!text) return null;
@@ -17,9 +18,11 @@ function Msg({ text, ok = true }: { text: string | null; ok?: boolean }) {
 export function SettingsForms({
   name,
   cooldown,
+  category,
 }: {
   name: string;
   cooldown: number;
+  category: string | null;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -74,6 +77,26 @@ export function SettingsForms({
               defaultValue={name}
               className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-moss"
             />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
+              Branche
+            </span>
+            <select
+              name="category"
+              defaultValue={category ?? ""}
+              className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-moss"
+            >
+              <option value="">Vælg branche</option>
+              {BUSINESS_CATEGORIES.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <span className="text-[0.72rem] font-[200] text-slate">
+              Bruges til at give dig bedre indsigt senere.
+            </span>
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">

@@ -9,6 +9,7 @@ import { getStripe, proPriceId } from "@/lib/stripe";
 import { APP_URL } from "@/lib/env";
 import { hashPin } from "@/lib/security";
 import { generateApiKey } from "@/lib/integrations";
+import { isBusinessCategory } from "@/lib/categories";
 import {
   cardDesignSchema,
   businessSettingsSchema,
@@ -68,11 +69,14 @@ export async function saveSettings(formData: FormData): Promise<Result> {
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Tjek felterne." };
   }
+  const rawCategory = String(formData.get("category") ?? "");
+  const category = isBusinessCategory(rawCategory) ? rawCategory : null;
   await prisma.business.update({
     where: { id: business.id },
     data: {
       name: parsed.data.name,
       stampCooldownMin: parsed.data.stampCooldownMin,
+      category,
     },
   });
   revalidatePath("/app/indstillinger");

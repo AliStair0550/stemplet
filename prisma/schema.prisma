@@ -24,6 +24,7 @@ model Business {
   id               String     @id @default(cuid())
   name             String
   slug             String     @unique
+  category         String? // branche (kode), backfilles i indstillinger
   logoUrl          String?
   primaryColor     String     @default("#061C3D")
   textColor        String     @default("#FFFFFF")

@@ -53,6 +53,7 @@ export default async function IndstillingerPage({
       <SettingsForms
         name={business.name}
         cooldown={business.stampCooldownMin}
+        category={business.category}
       />
 
       {/* Ugentligt overblik */}
