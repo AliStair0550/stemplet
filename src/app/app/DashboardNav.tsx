@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 
 const LINKS: { href: string; label: string; proOnly?: boolean }[] = [
   { href: "/app", label: "Overblik" },
-  { href: "/app/kort", label: "Design" },
   { href: "/app/kasse", label: "Stempel" },
+  { href: "/app/kort", label: "Design" },
   { href: "/app/guide", label: "Sådan virker det" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },

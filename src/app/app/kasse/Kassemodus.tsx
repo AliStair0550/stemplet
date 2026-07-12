@@ -6,11 +6,22 @@ import { Scanner } from "@/components/Scanner";
 import { StampCard } from "@/components/StampCard";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { StampIcon } from "@/components/StampIcon";
 import type { StampIconKey } from "@/lib/brand";
 
 type Tab = "stempel" | "scan";
 
-export function Kassemodus() {
+export type KioskCard = {
+  businessName: string;
+  logoUrl: string | null;
+  primaryColor: string;
+  textColor: string;
+  stampIcon: StampIconKey;
+  rewardText: string;
+  stampsRequired: number;
+};
+
+export function Kassemodus({ card }: { card: KioskCard }) {
   const [tab, setTab] = useState<Tab>("stempel");
 
   return (
@@ -41,28 +52,19 @@ export function Kassemodus() {
           : "Brug kameraet til at scanne kundens kort, når du selv vil give et stempel eller indløse en belønning."}
       </p>
 
-      {tab === "stempel" ? <StempelQr /> : <ScanMode />}
+      {tab === "stempel" ? <StempelQr card={card} /> : <ScanMode />}
     </div>
   );
 }
 
 // ── Roterende stempel-QR til kundens kamera ──────────────────────────
 
-function StempelQr() {
+function StempelQr({ card }: { card: KioskCard }) {
   const [qr, setQr] = useState<string | null>(null);
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState<string | null>(null);
-  // iOS Safari kan ikke sætte vilkaarlige elementer i fuldskaerm - skjul
-  // knappen der, saa den ikke bliver et forvirrende no-op.
-  const [canFullscreen, setCanFullscreen] = useState(false);
+  const [kiosk, setKiosk] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    setCanFullscreen(
-      typeof document !== "undefined" &&
-        typeof document.documentElement.requestFullscreen === "function",
-    );
-  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -92,45 +94,149 @@ function StempelQr() {
     };
   }, [refresh]);
 
-  function fullscreen() {
-    const el = document.documentElement;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen?.();
-  }
+  // Laas siden bag kiosk-visningen, saa man bliver paa den.
+  useEffect(() => {
+    if (!kiosk) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [kiosk]);
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      <div className="flex flex-col items-center gap-4 rounded-sm border border-fog bg-white p-6 sm:p-8">
-        {error ? (
-          <p className="max-w-xs text-center font-[200] text-[0.9rem] text-stone">
-            {error}
+    <>
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-fog bg-white p-8 text-center">
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+              Scan og saml stempler
+            </span>
+            <span className="font-[300] text-[1.05rem] text-ink">
+              {card.businessName}
+            </span>
+          </div>
+          {error ? (
+            <p className="flex h-[min(64vw,260px)] w-[min(64vw,260px)] items-center justify-center text-center font-[200] text-[0.9rem] text-stone">
+              {error}
+            </p>
+          ) : qr ? (
+            <Image
+              src={qr}
+              alt="Stempel-QR"
+              width={300}
+              height={300}
+              className="h-[min(64vw,260px)] w-[min(64vw,260px)]"
+              unoptimized
+              priority
+            />
+          ) : (
+            <div className="h-[min(64vw,260px)] w-[min(64vw,260px)] animate-pulse rounded-lg bg-fog" />
+          )}
+          <p className="text-[0.8rem] font-[300] text-slate">
+            Ny kode om {seconds} sek.
           </p>
-        ) : qr ? (
+        </div>
+
+        <button
+          onClick={() => setKiosk(true)}
+          className={btnClass("moss", "md")}
+        >
+          Vis i fuldskærm
+        </button>
+        <p className="max-w-md text-center font-[200] text-[0.85rem] leading-relaxed text-stone">
+          Stil enheden ved disken. Koden skifter hvert minut, så et foto af
+          skærmen er værdiløst bagefter.
+        </p>
+      </div>
+
+      {kiosk ? (
+        <KioskView
+          card={card}
+          qr={qr}
+          seconds={seconds}
+          onClose={() => setKiosk(false)}
+        />
+      ) : null}
+    </>
+  );
+}
+
+// ── Fuldskaerms kiosk-visning i butikkens eget brand ─────────────────
+// Ren CSS-overlay (ikke Fullscreen-API'et), saa den ogsaa virker paa iPhone
+// og bliver staaende, indtil man selv lukker den.
+
+function KioskView({
+  card,
+  qr,
+  seconds,
+  onClose,
+}: {
+  card: KioskCard;
+  qr: string | null;
+  seconds: number;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[120] flex flex-col items-center justify-center gap-8 px-6 py-10"
+      style={{ background: card.primaryColor, color: card.textColor }}
+    >
+      <button
+        onClick={onClose}
+        aria-label="Luk fuldskærm"
+        className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full opacity-70 transition-opacity hover:opacity-100"
+        style={{ border: `1px solid ${card.textColor}` }}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.7}
+          strokeLinecap="round"
+          className="h-5 w-5"
+        >
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+
+      <span className="font-[300] text-[1.6rem] tracking-[0.01em]">
+        {card.businessName}
+      </span>
+
+      <div className="rounded-3xl bg-white p-6 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.45)]">
+        {qr ? (
           <Image
             src={qr}
             alt="Stempel-QR"
-            width={340}
-            height={340}
-            className="h-[min(72vw,320px)] w-[min(72vw,320px)]"
+            width={420}
+            height={420}
+            className="h-[min(66vw,380px)] w-[min(66vw,380px)]"
             unoptimized
             priority
           />
         ) : (
-          <div className="h-[min(72vw,320px)] w-[min(72vw,320px)] animate-pulse rounded-sm bg-fog" />
+          <div className="h-[min(66vw,380px)] w-[min(66vw,380px)] animate-pulse rounded-xl bg-fog" />
         )}
-        <p className="text-[0.85rem] font-[300] text-stone">
-          Kunden scanner med kameraet. Ny kode om {seconds} sek.
+      </div>
+
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex items-center gap-2 opacity-40">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StampIcon key={i} icon={card.stampIcon} className="h-5 w-5" />
+          ))}
+        </div>
+        <p className="font-[300] text-[1.5rem] leading-tight">
+          Scan og saml stempler
+        </p>
+        <p className="text-[1.05rem] font-[300]" style={{ opacity: 0.85 }}>
+          {card.stampsRequired} stempler, og så: {card.rewardText}
         </p>
       </div>
-      <p className="max-w-md text-center font-[200] text-[0.85rem] leading-relaxed text-stone">
-        Stil enheden ved disken. Koden skifter hvert minut, så et foto af
-        skærmen er værdiløst bagefter.
+
+      <p className="text-[0.8rem] font-[300]" style={{ opacity: 0.55 }}>
+        Ny kode om {seconds} sek.
       </p>
-      {canFullscreen ? (
-        <button onClick={fullscreen} className={btnClass("outline", "md")}>
-          Fuldskærm
-        </button>
-      ) : null}
     </div>
   );
 }
