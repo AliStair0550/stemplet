@@ -352,31 +352,58 @@ function ScanMode() {
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-5">
+      {/* Tom tilstand: en indbydende invitation til at scanne */}
       {!card && !loading ? (
-        <button
-          onClick={() => {
-            setNote(null);
-            setScanning(true);
-          }}
-          className={btnClass("moss", "lg")}
-        >
-          Scan kundens kort
-        </button>
+        <div className="flex flex-col items-center gap-5 rounded-2xl border border-fog bg-white p-10 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-8 w-8"
+            >
+              <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16" />
+            </svg>
+          </span>
+          <div>
+            <p className="font-[400] text-[1.1rem] text-ink">
+              Scan kundens kort
+            </p>
+            <p className="mx-auto mt-1.5 max-w-xs font-[200] text-[0.85rem] leading-relaxed text-stone">
+              Ret kameraet mod QR-koden på kundens kort. Så kan du give stempler
+              eller indløse en belønning.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setNote(null);
+              setScanning(true);
+            }}
+            className={btnClass("moss", "lg")}
+          >
+            Åbn kamera
+          </button>
+          {note ? (
+            <p
+              className={cn(
+                "font-[300] text-[0.85rem]",
+                note.ok ? "text-moss" : "text-rust",
+              )}
+            >
+              {note.text}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {loading ? (
-        <p className="font-[200] text-[0.9rem] text-stone">Henter kort...</p>
-      ) : null}
-
-      {note && !card ? (
-        <p
-          className={cn(
-            "font-[200] text-[0.85rem]",
-            note.ok ? "text-moss" : "text-rust",
-          )}
-        >
-          {note.text}
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-fog bg-white p-10">
+          <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
+          <p className="font-[200] text-[0.9rem] text-stone">Henter kort...</p>
+        </div>
       ) : null}
 
       {card ? (
@@ -395,8 +422,8 @@ function ScanMode() {
           {note ? (
             <p
               className={cn(
-                "font-[200] text-[0.85rem]",
-                note.ok ? "text-moss" : "text-ink",
+                "text-center font-[300] text-[0.9rem]",
+                note.ok ? "text-moss" : "text-rust",
               )}
             >
               {note.text}
@@ -404,9 +431,9 @@ function ScanMode() {
           ) : null}
 
           {card.rewardReady ? (
-            <div className="flex flex-col gap-3 rounded-sm border border-moss bg-moss/5 p-5">
+            <div className="flex flex-col gap-3 rounded-lg border border-moss bg-moss/5 p-5">
               <div>
-                <p className="font-[300] text-[1rem] text-ink">Belønning klar</p>
+                <p className="font-[400] text-[1rem] text-ink">Belønning klar</p>
                 <p className="font-[200] text-[0.85rem] text-stone">
                   {card.rewardText}
                 </p>
@@ -438,15 +465,17 @@ function ScanMode() {
             <button
               onClick={giveStamp}
               disabled={busy}
-              className={btnClass("primary")}
+              className={btnClass("moss", "lg")}
             >
-              {busy ? "Et øjeblik..." : "Giv stempel"}
+              {busy
+                ? "Et øjeblik..."
+                : `Giv stempel (${card.stamps} af ${card.required})`}
             </button>
           )}
 
           <button
             onClick={reset}
-            className="self-start text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate hover:text-ink"
+            className="mx-auto text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
           >
             Scan nyt kort
           </button>

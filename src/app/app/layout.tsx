@@ -16,7 +16,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-parchment">
-      <DashboardNav businessName={business.name} plan={business.plan} />
+      <DashboardNav businessName={business.name} />
       <main className="md:pl-60 print:!pl-0">
         <div className="mx-auto max-w-[920px] px-6 py-10 md:px-10 md:py-12">
           {children}

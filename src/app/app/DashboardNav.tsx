@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { Plan } from "@prisma/client";
 import { Wordmark } from "@/components/Wordmark";
 import { signOutAction } from "./actions";
 import { cn } from "@/lib/utils";
 
-const LINKS: { href: string; label: string; proOnly?: boolean }[] = [
+const LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
   { href: "/app/kasse", label: "Stempel" },
   { href: "/app/kort", label: "Design" },
@@ -19,13 +18,7 @@ const LINKS: { href: string; label: string; proOnly?: boolean }[] = [
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 
-export function DashboardNav({
-  businessName,
-  plan,
-}: {
-  businessName: string;
-  plan: Plan;
-}) {
+export function DashboardNav({ businessName }: { businessName: string }) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
@@ -36,12 +29,9 @@ export function DashboardNav({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex print:hidden">
         <Wordmark />
-        <div className="mt-1 flex items-center gap-2">
-          <span className="truncate text-[0.75rem] font-[200] text-slate">
-            {businessName}
-          </span>
-          <PlanBadge plan={plan} />
-        </div>
+        <span className="mt-1 block truncate text-[0.75rem] font-[200] text-slate">
+          {businessName}
+        </span>
 
         <nav className="mt-10 flex flex-col gap-1">
           {LINKS.map((l) => (
@@ -56,11 +46,6 @@ export function DashboardNav({
               )}
             >
               {l.label}
-              {l.proOnly && plan !== "PRO" ? (
-                <span className="ml-1.5 text-[0.6rem] uppercase tracking-[0.1em] text-clay">
-                  Pro
-                </span>
-              ) : null}
             </Link>
           ))}
         </nav>
@@ -76,14 +61,11 @@ export function DashboardNav({
       <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 backdrop-blur-md md:hidden print:hidden">
         <div className="flex items-center justify-between px-6 py-4">
           <Wordmark />
-          <div className="flex items-center gap-3">
-            <PlanBadge plan={plan} />
-            <form action={signOutAction}>
-              <button className="text-[0.7rem] font-[300] uppercase tracking-[0.1em] text-slate">
-                Log ud
-              </button>
-            </form>
-          </div>
+          <form action={signOutAction}>
+            <button className="text-[0.7rem] font-[300] uppercase tracking-[0.1em] text-slate">
+              Log ud
+            </button>
+          </form>
         </div>
         <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
           {LINKS.map((l) => (
@@ -103,18 +85,5 @@ export function DashboardNav({
         </nav>
       </div>
     </>
-  );
-}
-
-function PlanBadge({ plan }: { plan: Plan }) {
-  return (
-    <span
-      className={cn(
-        "rounded-full px-2 py-0.5 text-[0.6rem] font-[400] uppercase tracking-[0.1em]",
-        plan === "PRO" ? "bg-moss text-parchment" : "bg-fog text-slate",
-      )}
-    >
-      {plan === "PRO" ? "Pro" : "Gratis"}
-    </span>
   );
 }
