@@ -151,6 +151,10 @@ model Stamp {
   method         StampMethod
   tokenJti       String?
   multiplier     Int          @default(1)
+  // Fremtidssikring til per-butik statistik (lokations-model paa roadmap Q1 2027).
+  // Ingen Location-tabel eller logik endnu - kun feltet, saa historik ikke gaar
+  // tabt, naar featuren bygges.
+  locationId     String?
   createdAt      DateTime     @default(now())
 
   // Et token maa bruges een gang PR. KORT. NULL-jti'er (personale/API) kolliderer
