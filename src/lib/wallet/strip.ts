@@ -110,14 +110,23 @@ export async function buildStripImages(opts: {
     const ty = cy - iconSize / 2;
     const dash = `${esc(D * 0.09)} ${esc(D * 0.09)}`;
 
-    if (filled) {
+    if (isGift) {
+      // Beloennings-gaven. Optjent: guldfyldt (aabnet) med gave-ikon i
+      // kortfarven. Ikke optjent: guld stiplet cirkel med gave-ikon i guld,
+      // saa praemien er synlig hele vejen.
+      if (filled) {
+        cells +=
+          `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="${GOLD}"/>` +
+          `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${pc}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${GIFT_MARKUP}</g>`;
+      } else {
+        cells +=
+          `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${GOLD}" stroke-width="4" stroke-dasharray="${dash}"/>` +
+          `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${GOLD}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${GIFT_MARKUP}</g>`;
+      }
+    } else if (filled) {
       cells +=
         `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="url(#coin)"/>` +
         `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${pc}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(opts.stampIcon, pc)}</g>`;
-    } else if (isGift) {
-      cells +=
-        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${GOLD}" stroke-width="4" stroke-dasharray="${dash}"/>` +
-        `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${GOLD}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${GIFT_MARKUP}</g>`;
     } else if (isNext) {
       cells += `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R - 3)}" fill="none" stroke="${GOLD}" stroke-width="6"/>`;
     } else {

@@ -34,6 +34,28 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+const GOLD = "#C9A24B";
+
+// Gave-ikon til beloennings-feltet (det sidste stempel). Staar som praemie hele
+// vejen og "aabner" sig, naar kortet bliver fuldt.
+function GiftIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 11h16v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8Z" />
+      <path d="M12 11v9M3 8h18v3H3z" />
+      <path d="M12 8S10.5 4 8.5 4 6 6 8 8M12 8s1.5-4 3.5-4S18 6 16 8" />
+    </svg>
+  );
+}
+
 /**
  * Tro kopi af Wallet-passet, bygget i HTML/CSS. Bruges i hero, i
  * kortdesigneren (live preview) og som webkort.
@@ -177,6 +199,44 @@ export function StampCard({
         >
           {slots.map((_, i) => {
             const filled = i < stamps;
+            const isReward = i === required - 1;
+            const justStamped = pop && i === stamps - 1;
+            const sizeCls = landscape
+              ? "h-9 w-9"
+              : "h-9 w-9 sm:h-10 sm:w-10";
+            const iconCls = landscape
+              ? "h-[1.05rem] w-[1.05rem]"
+              : "h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5";
+
+            // Beloennings-feltet: guld-gave. Vises som praemie hele vejen og
+            // aabner sig (guldfyldt + glOd + pop) naar kortet bliver fuldt.
+            if (isReward) {
+              const rewardStyle = filled
+                ? {
+                    background: GOLD,
+                    color: primaryColor,
+                    boxShadow: "0 4px 16px rgba(201,162,75,0.55)",
+                  }
+                : {
+                    background: rgba(GOLD, 0.16),
+                    color: GOLD,
+                    border: `1.5px solid ${rgba(GOLD, 0.65)}`,
+                  };
+              return (
+                <div
+                  key={`${i}-${filled}`}
+                  className={cn(
+                    "flex items-center justify-center rounded-full",
+                    sizeCls,
+                    filled && justStamped && "animate-gift-open",
+                  )}
+                  style={rewardStyle}
+                >
+                  <GiftIcon className={iconCls} />
+                </div>
+              );
+            }
+
             const chipStyle = filled
               ? {
                   background: textColor,
@@ -193,19 +253,12 @@ export function StampCard({
                 key={`${i}-${filled}`}
                 className={cn(
                   "flex items-center justify-center rounded-full",
-                  landscape ? "h-9 w-9" : "h-9 w-9 sm:h-10 sm:w-10",
-                  filled && pop && i === stamps - 1 && "animate-stamp-pop",
+                  sizeCls,
+                  filled && justStamped && "animate-stamp-pop",
                 )}
                 style={chipStyle}
               >
-                <StampIcon
-                  icon={stampIcon}
-                  className={
-                    landscape
-                      ? "h-[1.05rem] w-[1.05rem]"
-                      : "h-[1.05rem] w-[1.05rem] sm:h-5 sm:w-5"
-                  }
-                />
+                <StampIcon icon={stampIcon} className={iconCls} />
               </div>
             );
           })}

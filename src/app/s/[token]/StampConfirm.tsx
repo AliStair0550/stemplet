@@ -168,7 +168,7 @@ export function StampConfirm({
           <div className="flex flex-col items-center gap-1">
             <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-ink">
               {state.rewardReady
-                ? "Tillykke"
+                ? "Belønning låst op"
                 : state.created
                   ? "Velkommen"
                   : state.increment > 1
@@ -182,7 +182,7 @@ export function StampConfirm({
               }}
             >
               {state.rewardReady
-                ? "Dit kort er fuldt"
+                ? "Din belønning er klar"
                 : `${cap(talDk(state.stamps))} af ${talDk(state.required)}`}
             </h1>
           </div>
