@@ -86,7 +86,8 @@ export function StampConfirm({
       });
       const data = await res.json();
       if (data.ok) {
-        haptic(data.rewardReady ? [30, 50, 30, 50, 90] : 22);
+        // Reward: festlig rytme. Alm. stempel: et blOEdt "press-settle".
+        haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [14, 45, 26]);
         setState({
           phase: "done",
           stamps: data.stamps,
@@ -152,25 +153,53 @@ export function StampConfirm({
                   ? "Dobbeltstempel"
                   : "Stempel modtaget"}
             </span>
-            <h1 className="font-fraunces font-light italic text-[1.9rem] leading-tight text-ink">
+            <h1
+              className="font-fraunces font-light italic text-[1.9rem] leading-tight text-ink"
+              style={{
+                animation: "countPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
+              }}
+            >
               {state.rewardReady
                 ? "Dit kort er fuldt"
                 : `${cap(talDk(state.stamps))} af ${talDk(state.required)}`}
             </h1>
           </div>
 
-          {/* Kortet er helten: kunden ser det nye stempel poppe ind. */}
-          <StampCard
-            businessName={businessName}
-            logoUrl={logoUrl}
-            primaryColor={primaryColor}
-            textColor={textColor}
-            stampIcon={icon}
-            stamps={state.stamps}
-            required={state.required}
-            rewardText={rewardText}
-            pop
-          />
+          {/* Stempel-landingen: kortet MODTAGER stemplet med en blOEd glOEd-bloom
+              og en ring der breder sig ud. Kortet er helten, det nye stempel
+              popper ind. Elegant og dybt, ikke konfetti. */}
+          <div className="relative">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-moss/20 blur-2xl"
+              style={{ animation: "stampBloom 1.2s ease-out forwards" }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border border-moss/40"
+              style={{
+                animation: "stampRipple 0.9s cubic-bezier(0.16,1,0.3,1) forwards",
+              }}
+            />
+            <div
+              style={{
+                animation:
+                  "cardReceive 0.7s cubic-bezier(0.34,1.56,0.64,1) both",
+              }}
+            >
+              <StampCard
+                businessName={businessName}
+                logoUrl={logoUrl}
+                primaryColor={primaryColor}
+                textColor={textColor}
+                stampIcon={icon}
+                stamps={state.stamps}
+                required={state.required}
+                rewardText={rewardText}
+                pop
+              />
+            </div>
+          </div>
 
           <p className="font-[300] text-[0.9rem] leading-relaxed text-stone">
             {state.rewardReady

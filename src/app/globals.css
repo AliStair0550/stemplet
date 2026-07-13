@@ -165,6 +165,45 @@ textarea:focus-visible {
   }
 }
 
+/* Stempel-landing (elegant dopamin, ikke konfetti): en blOEd glOEd der blomstrer
+   op bag kortet, en ring der breder sig ud, og kortet der "modtager" stemplet. */
+@keyframes stampBloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  38% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes stampRipple {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.24);
+  }
+}
+
+@keyframes cardReceive {
+  0% {
+    transform: scale(0.93);
+  }
+  55% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @keyframes confettiFall {
   0% {
     transform: translateY(-10vh) rotate(0deg);
