@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
-import { checkRateLimit } from "@/lib/redis";
+import { durableRateLimit } from "@/lib/rate-limit";
 import {
   onboardingStartSchema,
   cardDesignSchema,
@@ -125,13 +125,14 @@ export async function sendOnboardingLogin(formData: FormData) {
   if (!email) return;
 
   const h = await headers();
+  // x-real-ip saettes af Vercel og kan ikke spoofes; foretraek den.
   const ip =
+    h.get("x-real-ip")?.trim() ||
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    h.get("x-real-ip") ||
     "ukendt";
   const [emailOk, ipOk] = await Promise.all([
-    checkRateLimit("login-email", 3, "1 h", email),
-    checkRateLimit("login-ip", 10, "1 h", ip),
+    durableRateLimit("login-email", email, 3, 3600),
+    durableRateLimit("login-ip", ip, 10, 3600),
   ]);
   // Ved onboarding er kontoen lige oprettet - bloker ikke, men undgaa
   // gentagne mails hvis nogen spammer knappen.

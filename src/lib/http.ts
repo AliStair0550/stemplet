@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 
-/** Bedste bud på klientens IP bag Vercels proxy. */
+/** Betroet klient-IP bag Vercels proxy.
+ *  x-real-ip saettes af Vercel og kan IKKE spoofes af klienten. Det leftmost
+ *  hop i x-forwarded-for ER klient-styret og maa aldrig bruges som sikkerheds-
+ *  noegle (fx PIN-laas), da det saa kan roteres for at omgaa laasen. */
 export function clientIp(req: NextRequest): string | null {
+  const real = req.headers.get("x-real-ip");
+  if (real) return real.trim();
   const fwd = req.headers.get("x-forwarded-for");
   if (fwd) return fwd.split(",")[0]?.trim() ?? null;
-  return req.headers.get("x-real-ip");
+  return null;
 }
 
 export function apiError(

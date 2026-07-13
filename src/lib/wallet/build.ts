@@ -1,4 +1,5 @@
 import "server-only";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "../prisma";
 import { PLAN_LIMITS } from "../plans";
 import { buildPass } from "./pass";
@@ -29,11 +30,15 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
   });
 }
 
-/** Tjekker Apples "Authorization: ApplePass <token>"-header. */
+/** Tjekker Apples "Authorization: ApplePass <token>"-header i konstant tid. */
 export function checkPassAuth(
   authHeader: string | null,
   authToken: string,
 ): boolean {
   if (!authHeader) return false;
-  return authHeader === `ApplePass ${authToken}`;
+  const expected = Buffer.from(`ApplePass ${authToken}`);
+  const got = Buffer.from(authHeader);
+  // timingSafeEqual kraever ens laengde, saa laengde-tjek foerst (ikke hemmeligt).
+  if (expected.length !== got.length) return false;
+  return timingSafeEqual(expected, got);
 }

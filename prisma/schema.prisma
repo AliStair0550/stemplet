@@ -215,6 +215,18 @@ model AuditLog {
   @@index([businessId, action])
 }
 
+// DB-backet rate limit til magic-link-afsendelse (fail-closed), saa email-
+// bombning ogsaa er bremset hvis Redis falder. scope = "login-email" osv.
+model SendThrottle {
+  id          String   @id @default(cuid())
+  scope       String
+  key         String
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+
+  @@unique([scope, key])
+}
+
 // Personale-PIN forsoeg/laasning. DB-backet (ikke kun Redis), saa laasningen
 // aldrig kan omgaas ved et Redis-nedbrud. lockId er IP (eller enheds-id).
 model PinAttempt {

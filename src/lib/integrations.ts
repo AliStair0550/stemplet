@@ -61,11 +61,11 @@ export async function fireWebhook(
 ): Promise<void> {
   if (!business.webhookUrl || !business.apiKey) return;
   try {
-    // SSRF-vaern mod DNS-rebinding: slaa vaerten op og afvis, hvis den peger
-    // paa en intern/privat adresse (selv om hostnavnet saa uskyldigt ud).
+    // SSRF-vaern: slaa ALLE vaertens adresser op og afvis, hvis bare een peger
+    // paa en intern/privat adresse (multi-A-record eller uskyldigt hostnavn).
     const target = new URL(business.webhookUrl);
-    const { address } = await lookup(target.hostname);
-    if (isPrivateAddress(address)) {
+    const resolved = await lookup(target.hostname, { all: true });
+    if (resolved.some((a) => isPrivateAddress(a.address))) {
       console.error("Webhook blokeret (privat adresse):", target.hostname);
       return;
     }
@@ -81,6 +81,8 @@ export async function fireWebhook(
       .digest("hex");
     await fetch(business.webhookUrl, {
       method: "POST",
+      // Foelg ALDRIG redirects: ellers kan et 302 -> intern host omgaa vaernet.
+      redirect: "manual",
       headers: {
         "content-type": "application/json",
         "user-agent": "Stemplet-Webhook/1",

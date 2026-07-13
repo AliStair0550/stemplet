@@ -1,8 +1,10 @@
 import "server-only";
 import { PKPass } from "passkit-generator";
 import { readFile } from "node:fs/promises";
+import { lookup } from "node:dns/promises";
 import path from "node:path";
 import { walletIds, walletCertificates } from "./config";
+import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
 import { hexToRgb, contrastText } from "../brand";
 
@@ -27,8 +29,27 @@ function rgbString(hex: string): string {
 async function loadLogo(logoUrl: string | null): Promise<Buffer> {
   if (logoUrl) {
     try {
-      const res = await fetch(logoUrl);
-      if (res.ok) return Buffer.from(await res.arrayBuffer());
+      // Data-URI (den normale vej fra kortdesigneren): ingen netvaerkshentning.
+      if (logoUrl.startsWith("data:")) {
+        const res = await fetch(logoUrl);
+        if (res.ok) return Buffer.from(await res.arrayBuffer());
+      } else {
+        // Fjern-URL: SSRF-vaern. Afvis interne/private adresser og foelg ikke
+        // redirects, saa et logo aldrig kan bruges til at naa intern metadata.
+        const url = new URL(logoUrl);
+        if (
+          (url.protocol === "https:" || url.protocol === "http:") &&
+          url.hostname
+        ) {
+          const resolved = await lookup(url.hostname, { all: true });
+          if (resolved.some((a) => isPrivateAddress(a.address))) {
+            console.error("Logo blokeret (privat adresse):", url.hostname);
+          } else {
+            const res = await fetch(logoUrl, { redirect: "manual" });
+            if (res.ok) return Buffer.from(await res.arrayBuffer());
+          }
+        }
+      }
     } catch {
       // falder tilbage til standardikonet
     }

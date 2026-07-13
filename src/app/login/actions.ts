@@ -4,14 +4,18 @@ import { headers } from "next/headers";
 import { signIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { emailSchema } from "@/lib/validation";
-import { checkRateLimit } from "@/lib/redis";
+import { durableRateLimit } from "@/lib/rate-limit";
 
 export type LoginState = { error?: string; notFound?: boolean };
 
 async function clientIpFromHeaders(): Promise<string> {
   const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  return fwd?.split(",")[0]?.trim() || h.get("x-real-ip") || "ukendt";
+  // x-real-ip saettes af Vercel og kan ikke spoofes; foretraek den.
+  return (
+    h.get("x-real-ip")?.trim() ||
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "ukendt"
+  );
 }
 
 export async function requestMagicLink(
@@ -25,11 +29,12 @@ export async function requestMagicLink(
   const email = parsed.data.toLowerCase();
 
   // Bremser email-bombning og bruteforce-optaelling: 3 mails/time pr. e-mail,
-  // 10/time pr. IP. Fail-open hvis Redis ikke svarer.
+  // 10/time pr. IP. DB-backet (fail-closed), saa graensen ogsaa gaelder hvis
+  // Redis er nede.
   const ip = await clientIpFromHeaders();
   const [emailOk, ipOk] = await Promise.all([
-    checkRateLimit("login-email", 3, "1 h", email),
-    checkRateLimit("login-ip", 10, "1 h", ip),
+    durableRateLimit("login-email", email, 3, 3600),
+    durableRateLimit("login-ip", ip, 10, 3600),
   ]);
   if (!emailOk || !ipOk) {
     return {
