@@ -46,10 +46,18 @@ export default function Page() {
         <Divider />
         <Pricing />
         <Divider />
-        <ForCustomers />
+        {/* Nederste sektioner: spring initialt render-arbejde over til der
+            scrolles naer dem (content-visibility). */}
+        <div className="cv-section">
+          <ForCustomers />
+        </div>
         <Divider />
-        <Faq />
-        <FinalCta />
+        <div className="cv-section">
+          <Faq />
+        </div>
+        <div className="cv-section">
+          <FinalCta />
+        </div>
       </main>
       <Footer />
     </>

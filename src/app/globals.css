@@ -46,6 +46,14 @@ body {
   overflow-x: clip;
 }
 
+/* Spring layout/paint over for sektioner langt under folden, indtil der scrolles
+   naer dem: mindre initialt arbejde paa mobil. Indholdet bliver i HTML (SEO og
+   anker-links bevares), og browsere uden understoettelse ignorerer det bare. */
+.cv-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 560px;
+}
+
 /* ── Print: personale-guiden paa A4, sort/hvid ─────────────────────── */
 @media print {
   @page {
