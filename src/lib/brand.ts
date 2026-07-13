@@ -79,6 +79,30 @@ export function contrastText(bgHex: string): "#FFFFFF" | "#1A1A1A" {
   return yiq >= 150 ? "#1A1A1A" : "#FFFFFF";
 }
 
+/** Relativ luminans (WCAG 2.1). */
+function relLuminance(hex: string): number {
+  const { r, g, b } = hexToRgb(hex);
+  const f = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+
+/** WCAG-kontrastforhold mellem to farver (1 til 21). Højere er bedre. */
+export function contrastRatio(aHex: string, bHex: string): number {
+  const la = relLuminance(aHex);
+  const lb = relLuminance(bHex);
+  const hi = Math.max(la, lb);
+  const lo = Math.min(la, lb);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Er tekst-på-kort læsbar? AA for stor tekst er 3:1; vi kræver 3.5 som margin. */
+export function isCardReadable(primaryHex: string, textHex: string): boolean {
+  return contrastRatio(primaryHex, textHex) >= 3.5;
+}
+
 /** Let variation af en farve, til gradient/skygge på kortet. */
 export function shade(hex: string, amount: number): string {
   const { r, g, b } = hexToRgb(hex);

@@ -154,6 +154,11 @@ export function StampCard({
               "text-[1.1rem] font-[300] leading-snug",
               rewardReady && "animate-reward-glow rounded-md",
             )}
+            style={
+              rewardReady
+                ? ({ "--glow-color": rgba(textColor, 0.2) } as React.CSSProperties)
+                : undefined
+            }
           >
             {rewardText}
           </div>
@@ -177,9 +182,9 @@ export function StampCard({
                   boxShadow: "0 3px 8px rgba(0,0,0,0.18)",
                 }
               : {
-                  background: rgba(textColor, 0.06),
-                  color: rgba(textColor, 0.35),
-                  border: `1px solid ${rgba(textColor, 0.18)}`,
+                  background: rgba(textColor, 0.08),
+                  color: rgba(textColor, 0.5),
+                  border: `1px solid ${rgba(textColor, 0.28)}`,
                 };
             return (
               <div

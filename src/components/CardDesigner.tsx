@@ -7,6 +7,7 @@ import {
   STAMP_ICONS,
   CARD_THEMES,
   contrastText,
+  isCardReadable,
   normalizeHex,
   type StampIconKey,
 } from "@/lib/brand";
@@ -185,7 +186,7 @@ export function CardDesigner({
             maxLength={80}
             onChange={(e) => set("rewardText", e.target.value)}
             placeholder="10. kop er gratis"
-            className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-moss"
           />
         </Field>
 
@@ -235,7 +236,7 @@ export function CardDesigner({
                     })
                   }
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-full transition",
+                    "flex h-11 w-11 items-center justify-center rounded-full transition",
                     active
                       ? "ring-2 ring-moss ring-offset-2 ring-offset-parchment"
                       : "ring-1 ring-clay hover:ring-moss",
@@ -269,7 +270,7 @@ export function CardDesigner({
                 onChange={(e) =>
                   set("primaryColor", normalizeHex(e.target.value, value.primaryColor))
                 }
-                className="w-full border border-clay bg-parchment px-3 py-2 font-[200] text-[0.85rem] text-ink outline-none focus:border-moss"
+                className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-moss"
               />
             </div>
           </Field>
@@ -287,11 +288,27 @@ export function CardDesigner({
                 onChange={(e) =>
                   set("textColor", normalizeHex(e.target.value, value.textColor))
                 }
-                className="w-full border border-clay bg-parchment px-3 py-2 font-[200] text-[0.85rem] text-ink outline-none focus:border-moss"
+                className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-moss"
               />
             </div>
           </Field>
         </div>
+
+        {!isCardReadable(value.primaryColor, value.textColor) ? (
+          <div className="-mt-2 flex items-start justify-between gap-3 rounded-sm border border-rust/40 bg-rust/5 px-3 py-2.5">
+            <p className="text-[0.76rem] font-[300] leading-relaxed text-rust">
+              Teksten er svær at læse på denne kortfarve. Vælg mere kontrast, så
+              kunderne kan se deres stempler.
+            </p>
+            <button
+              type="button"
+              onClick={() => set("textColor", contrastText(value.primaryColor))}
+              className="shrink-0 self-center text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-moss hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60"
+            >
+              Ret automatisk
+            </button>
+          </div>
+        ) : null}
 
         {allowLogo ? (
           <div className="flex flex-col gap-2">
@@ -316,17 +333,17 @@ export function CardDesigner({
                 <button
                   type="button"
                   onClick={() => set("logoUrl", null)}
-                  className="text-[0.75rem] font-[200] text-slate hover:text-ink"
+                  className="text-[0.75rem] font-[300] text-slate hover:text-ink"
                 >
                   Fjern
                 </button>
               ) : null}
             </div>
-            <p className="text-[0.72rem] font-[200] text-slate">
+            <p className="text-[0.72rem] font-[300] text-slate">
               Vi henter automatisk et farveforslag fra dit logo.
             </p>
             {logoError ? (
-              <p className="text-[0.75rem] font-[200] text-rust">{logoError}</p>
+              <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
             ) : null}
           </div>
         ) : null}

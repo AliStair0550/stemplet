@@ -46,7 +46,7 @@ export function WebCardActions({
 
       <button
         onClick={() => setShowQr((v) => !v)}
-        className={btnClass("outline", "md") + " w-full"}
+        className={btnClass(rewardReady ? "moss" : "outline", "md") + " w-full"}
       >
         {showQr ? "Skjul kode" : "Vis ved kassen"}
       </button>
@@ -54,14 +54,14 @@ export function WebCardActions({
       {walletEnabled ? (
         <a
           href={`/api/wallet/pass/${serial}`}
-          className={btnClass("primary", "md") + " w-full"}
+          className={btnClass("outline", "md") + " w-full"}
         >
           Læg i Apple Wallet
         </a>
       ) : null}
 
       {note ? (
-        <p className="text-center text-[0.8rem] font-[200] text-stone">{note}</p>
+        <p className="text-center text-[0.8rem] font-[300] text-stone">{note}</p>
       ) : null}
 
       {showQr ? (
