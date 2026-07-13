@@ -99,8 +99,10 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
 
   pass.headerFields.push({
     key: "stamps",
+    // Klamp visningen: under carry-vinduet kan raa stamps vaere required+1,
+    // men kortet skal aldrig vise "11/10".
     label: "STEMPLER",
-    value: `${input.stamps}/${input.required}`,
+    value: `${Math.min(input.stamps, input.required)}/${input.required}`,
   });
 
   pass.primaryFields.push({

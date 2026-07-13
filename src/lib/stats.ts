@@ -172,8 +172,13 @@ function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
   });
   const buckets = new Map<string, number>();
   const days: BusinessStats["perDay"] = [];
+  // Anker ved kl. 12 UTC og skridt hele doegn: saa lander 24-timers-skridtet
+  // aldrig taet paa midnat i dansk tid, og ingen dag tabes/dubleres ved
+  // sommertidsskift (hvor et raat 24-timers-skridt kan ramme samme dato to gange).
+  const noon = new Date();
+  noon.setUTCHours(12, 0, 0, 0);
   for (let i = 13; i >= 0; i--) {
-    const d = daysAgo(i);
+    const d = new Date(noon.getTime() - i * 86_400_000);
     const key = keyFmt.format(d);
     buckets.set(key, 0);
     days.push({

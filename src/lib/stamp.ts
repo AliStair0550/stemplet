@@ -74,9 +74,16 @@ export async function applyStamp(opts: {
       );
     }
 
-    // Rate limit pr. kunde. Gaelder den ubemandede kunde-QR, ikke personalet
-    // ved disken (skipCooldown) eller manuelle stempler.
-    if (!opts.skipCooldown && opts.method !== "MANUAL" && cc.lastStampAt) {
+    // Cooldown gaelder den ubemandede kunde-QR, ikke personalet ved disken
+    // (skipCooldown) eller manuelle stempler.
+    const enforceCooldown = !opts.skipCooldown && opts.method !== "MANUAL";
+    const cooldownCutoff = new Date(
+      now.getTime() - business.stampCooldownMin * 60000,
+    );
+
+    // Venlig fejl FOER stempling (giver praecis ventetid). Selve haandhaevelsen
+    // sker atomisk i optaellingen nedenfor, saa den ikke kan omgaas i et race.
+    if (enforceCooldown && cc.lastStampAt) {
       const minutesSince =
         (now.getTime() - cc.lastStampAt.getTime()) / 60000;
       if (minutesSince < business.stampCooldownMin) {
@@ -88,31 +95,59 @@ export async function applyStamp(opts: {
       }
     }
 
-    // Kampagner: dobbeltstempel og velkomstbonus.
+    // Kampagner: dobbeltstempel (velkomstbonus haandteres atomisk nedenfor).
     const active = cc.card.campaigns.filter(
       (c) => c.startsAt <= now && c.endsAt >= now,
     );
-    let increment = active.some((c) => c.type === "DOUBLE_STAMP") ? 2 : 1;
+    const baseIncrement = active.some((c) => c.type === "DOUBLE_STAMP") ? 2 : 1;
     const hasWelcome = active.some((c) => c.type === "WELCOME_BONUS");
-    if (hasWelcome) {
-      const priorStamps = await tx.stamp.count({
-        where: { customerCardId: cc.id },
-      });
-      const isFirstEver = priorStamps === 0 && cc.completedCount === 0;
-      if (isFirstEver) increment += 1;
-    }
 
-    // Atomisk optaelling: opdaterer kun hvis kortet ikke allerede er fuldt.
-    // Forhindrer tabte stempler ved to samtidige stempler paa samme kort.
+    // Atomisk optaelling: opdaterer kun hvis kortet ikke er fuldt OG cooldown
+    // er ovre. Forhindrer baade tabte stempler OG at to samtidige kunde-QR-
+    // stempler begge slipper forbi cooldown (check-then-act-racet).
     const applied = await tx.customerCard.updateMany({
-      where: { id: cc.id, stamps: { lt: required } },
-      data: { stamps: { increment }, lastStampAt: now },
+      where: {
+        id: cc.id,
+        stamps: { lt: required },
+        ...(enforceCooldown
+          ? {
+              OR: [
+                { lastStampAt: null },
+                { lastStampAt: { lt: cooldownCutoff } },
+              ],
+            }
+          : {}),
+      },
+      data: { stamps: { increment: baseIncrement }, lastStampAt: now },
     });
     if (applied.count === 0) {
+      // Skeln mellem fuldt kort og tabt cooldown-race for en god fejlbesked.
+      const fresh = await tx.customerCard.findUnique({
+        where: { id: cc.id },
+        select: { stamps: true },
+      });
+      if ((fresh?.stamps ?? 0) >= required) {
+        throw new StampError(
+          "FULL",
+          "Kortet er fuldt. Bed personalet indløse din belønning.",
+        );
+      }
       throw new StampError(
-        "FULL",
-        "Kortet er fuldt. Bed personalet indløse din belønning.",
+        "COOLDOWN",
+        "Du har lige fået et stempel. Prøv igen om lidt.",
       );
+    }
+
+    // Velkomstbonus: kun den allerfoerste stempling (0 -> baseIncrement) faar
+    // den. Row-laasen fra optaellingen serialiserer samtidige stemplinger, saa
+    // kun een kan matche stamps === baseIncrement -> ingen dobbelt bonus.
+    let increment = baseIncrement;
+    if (hasWelcome && cc.completedCount === 0) {
+      const bonus = await tx.customerCard.updateMany({
+        where: { id: cc.id, stamps: baseIncrement },
+        data: { stamps: { increment: 1 } },
+      });
+      if (bonus.count === 1) increment += 1;
     }
 
     await tx.stamp.create({
