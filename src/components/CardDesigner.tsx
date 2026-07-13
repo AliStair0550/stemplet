@@ -38,7 +38,9 @@ export const DEFAULT_DESIGN: CardDesign = {
  */
 function processLogo(
   file: File,
-  maxDim = 240,
+  // 512 px, saa logoet ogsaa staar knivskarpt i Apple Wallet (op til 480 px
+  // paa @3x-skaerme). Skaleres altid ned til visning, aldrig op.
+  maxDim = 512,
 ): Promise<{ dataUrl: string; color: string | null }> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();

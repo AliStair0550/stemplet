@@ -101,11 +101,13 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     "strip@2x.png": strip.x2,
     "strip@3x.png": strip.x3,
   };
-  // Butikkens eget logo i toppen. Har butikken ingen, viser vi kun navnet
-  // (logoText), ikke Stemplet-badgen, saa passet er fuldt i butikkens brand.
+  // Butikkens eget logo i toppen. Samme hoej-oploeselige buffer paa alle tre
+  // taetheder, saa logoet staar knivskarpt ogsaa paa @3x-skaerme (foer manglede
+  // logo@3x, saa @3x faldt tilbage paa den mindre @2x og blev uskarp).
   if (logoBuf) {
     images["logo.png"] = logoBuf;
     images["logo@2x.png"] = logoBuf;
+    images["logo@3x.png"] = logoBuf;
   }
 
   const pass = new PKPass(images, certificates, {
@@ -117,7 +119,9 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     foregroundColor: fg,
     backgroundColor: bg,
     labelColor: labelCol,
-    logoText: input.businessName,
+    // Har butikken et logo, staar det ALENE i toppen (intet navn ved siden af).
+    // Uden logo viser vi butiksnavnet som tekst i stedet.
+    ...(logoBuf ? {} : { logoText: input.businessName }),
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
     sharingProhibited: true,
