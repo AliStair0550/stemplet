@@ -25,7 +25,7 @@ export default function Footer() {
               gratis.
             </p>
             <Image
-              src="/stemplet-badge-moss.png"
+              src="/stemplet-badge-rust.png"
               alt="Stemplet"
               width={64}
               height={64}

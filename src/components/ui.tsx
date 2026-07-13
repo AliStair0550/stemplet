@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 // ── Knapper (Alius-stil: skarpe hjørner, uppercase, wide tracking) ────
 
-type Variant = "primary" | "outline" | "moss" | "ghost";
+type Variant = "primary" | "outline" | "moss" | "ghost" | "light";
 type Size = "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
@@ -11,6 +11,8 @@ const VARIANTS: Record<Variant, string> = {
   outline: "border border-clay text-ink hover:border-moss hover:text-moss",
   moss: "bg-moss text-parchment border border-moss hover:bg-moss-light hover:border-moss-light",
   ghost: "text-slate hover:text-ink",
+  // Lys knap til moerke sektioner (fx den afsluttende CTA).
+  light: "bg-parchment text-ink border border-parchment hover:bg-sand hover:border-sand",
 };
 
 const SIZES: Record<Size, string> = {

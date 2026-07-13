@@ -1,9 +1,10 @@
-// Genererer branded PWA-ikoner: moss-cirkel paa sand, samme motiv som favicon.
+// Genererer branded PWA-ikoner: dyb-roed cirkel (stempel-farve) paa sand.
 import { PNG } from "pngjs";
 import { writeFileSync } from "node:fs";
 
 const SAND = [245, 243, 239];
-const MOSS = [45, 95, 74];
+// Dyb roed, som et gammeldags stempel (#8C2C24).
+const MOSS = [140, 44, 36];
 const PARCHMENT = [250, 248, 244];
 
 function hexPixel(png, x, y, [r, g, b], a = 255) {

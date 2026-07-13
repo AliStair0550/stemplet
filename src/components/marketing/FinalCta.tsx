@@ -2,7 +2,7 @@ import { ButtonLink, Container } from "@/components/ui";
 
 export default function FinalCta() {
   return (
-    <section className="bg-forest py-24 text-parchment md:py-32">
+    <section className="bg-[#6F2620] py-24 text-parchment md:py-32">
       <Container className="flex flex-col items-center text-center">
         <span className="font-[400] text-[0.65rem] uppercase tracking-[0.12em] text-parchment/60">
           Kom i gang
@@ -16,7 +16,7 @@ export default function FinalCta() {
           binding.
         </p>
         <div className="mt-10">
-          <ButtonLink href="/start" variant="moss" size="lg">
+          <ButtonLink href="/start" variant="light" size="lg">
             Kom gratis i gang
           </ButtonLink>
         </div>
