@@ -8,10 +8,13 @@ export function Scanner({
   onResult,
   onClose,
   hint,
+  overlayClassName,
 }: {
   onResult: (text: string) => void;
   onClose?: () => void;
   hint?: string;
+  /** Overstyr overlayets z-index (fx naar scanneren skal ligge over kioskmodus). */
+  overlayClassName?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -105,7 +108,11 @@ export function Scanner({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 p-6">
+    <div
+      className={`fixed inset-0 flex flex-col items-center justify-center bg-ink/95 p-6 ${
+        overlayClassName ?? "z-50"
+      }`}
+    >
       <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg bg-black">
         <video
           ref={videoRef}

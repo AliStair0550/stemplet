@@ -31,5 +31,15 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "maskable",
       },
     ],
+    // Genvej til kassemodus, saa butikken kan starte direkte i kiosken
+    // (Android/Chrome). Paa iOS aabner hjemmeskaerm-ikonet den aktuelle side.
+    shortcuts: [
+      {
+        name: "Kassemodus",
+        short_name: "Kasse",
+        description: "Fuldskærms stempel-QR og scanning ved disken.",
+        url: "/app/kasse",
+      },
+    ],
   };
 }
