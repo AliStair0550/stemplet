@@ -143,3 +143,39 @@ Effektivitet: tids-indekser + migration (E2), `cache()`-dedup af butik-opslag (E
    register/unregister paa en separat noegle. Stoerre aendring.
 5. **Ovrige:** cron-batching (E3), APNs-status/oprydning (K9), find-kort throttling +
    andet led (S6), FREE-graense atomisk (K5).
+
+---
+
+## Implementeret 13. juli 2026
+
+Godkendt af bruger: statistik-omskrivning, hverdags-stemplet redesignes, magic-link
+fail-closed. Udskudt bevidst: pgbouncer-pooling, unsubscribe GET->POST, Wallet-token-
+arkitektur (S3).
+
+**Design (commits 8fdc458, 4adcfd5, 071aeed):**
+- D-A1 Synlige fokus-ringe paa alle knapper + formularfelter
+- D-A2 44px touch-maal; Kassemodus-faner er nu 48px segment-kontrol, fuld bredde mobil
+- D-D1 Fejl/PIN-fejl i `text-rust` med rust-prik (regel-fix)
+- D-B1 "Klar"-gloed fra kortets egen farve; D-B3 laesbare tomme felter; D-B5 eet
+  primaerknap-hierarki paa kortvisning; D-B2 kontrast-vaern + "Ret automatisk" i designer
+- D-C1 Hverdags-stemplet viser kortet fyldes ("Fire af ti", n tilbage); D-C2/C3
+  loading-ghost + fejl-glyph med "Proev igen"
+- D-A4 Loeftet ExtraLight helper-tekst; D-D5 AnimatedNumber uden blink; D-D3 BarChart-
+  vaerdier paa mobil; D-D4 StatTile-hover fjernet; D-D6 PIN-hjaelpetekst
+- D-E1 Mobil-CTA "Kom gratis i gang"; D-E2 ensartet Fraunces-accent
+
+**Sikkerhed (commit aeb09ff):** S1 logoUrl-SSRF-vaern, S2 webhook redirect:manual +
+multi-A-record, S4 betroet x-real-ip, S7 konstant-tid, S5 magic-link fail-closed
+(SendThrottle + migration).
+
+**Korrekthed (commit fa02a5d):** K3 atomisk cooldown, K4 atomisk velkomstbonus, K6
+DST-sikre dagsbuckets, K8 carry-visning klampet.
+
+**Effektivitet (commit 36a5112):** E1 aggregeret statistik (verificeret 0 afvigelser),
+K1 avgDaysToFull pr. cyklus (demo 5.1 -> 2.5), E2 tids-indekser + migration, E5
+cache()-dedup af butik-opslag.
+
+**Udestaar (afventer beslutning):** S3 Wallet-token, S6 find-kort-throttling, S8
+bruger-enumeration + delt HMAC-noegle, K5 FREE-graense race, K9 APNs-oprydning, E3
+cron-batching, E4 pgbouncer, E6/E7 mindre query-optimering, D-A3/A5 type-skala +
+radius-system (stoerre design-oprydning), D-B4 dekorativ stregkode.
