@@ -17,17 +17,17 @@ const STEPS: { kicker: string; title: string; body: string }[] = [
   {
     kicker: "01",
     title: "Kunden scanner QR-koden",
-    body: "Kameraet på skiltet ved kassen, og kortet ligger i Apple Wallet på fem sekunder. Ingen app, ingen tilmelding, ingen e-mail.",
+    body: "Kameraet på skiltet ved disken, og kortet ligger i Apple Wallet, før kaffen er skænket. Ingen app, ingen tilmelding, ingen e-mail.",
   },
   {
     kicker: "02",
     title: "Hvert køb giver et stempel",
-    body: "Kunden scanner butikkens QR, eller I scanner deres kort. Tælleren stiger i Wallet og minder dem om jer fra låseskærmen.",
+    body: "Butikkens QR eller jeres scanning, ét tryk pr. kop. Kortet tæller op i Wallet og siger pænt goddag fra kundens låseskærm.",
   },
   {
     kicker: "03",
-    title: "Fuldt kort bliver til belønning",
-    body: "Ved disken bekræfter personalet med PIN. Belønningen frigives, kortet nulstiller til en ny runde, og kunden er på vej tilbage.",
+    title: "Fuldt kort, fortjent belønning",
+    body: "Personalet frigiver med PIN, kortet nulstiller, og kunden har allerede en god grund til at kigge forbi igen.",
   },
 ];
 
@@ -83,7 +83,7 @@ export default function HowItWorks() {
           }
         };
         wait(() => fillStep(1), 300);
-      }, 1900);
+      }, 1600);
     };
 
     let io: IntersectionObserver | null = null;
@@ -120,14 +120,15 @@ export default function HowItWorks() {
           Fra scan til fast gæst.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
-          Hele rejsen sker i kundens telefon, uden app og uden tilmelding. Se
-          den køre igennem her.
+          Hele rejsen sker i kundens telefon, uden app og uden tilmelding. Her
+          er den fra første scan til fuldt kort, vist på ét og samme kort.
         </p>
       </div>
 
       <div className="mt-14 grid items-center gap-12 md:grid-cols-2 md:gap-16">
-        {/* Trinene, synkroniseret med animationen */}
-        <ol className="flex flex-col gap-2">
+        {/* Trinene, synkroniseret med animationen. Paa mobil ligger den
+            animerede scene oeverst, saa man ser den med det samme. */}
+        <ol className="order-2 flex flex-col gap-2 md:order-1">
           {STEPS.map((s, i) => {
             const active = i === activeIdx;
             return (
@@ -163,7 +164,7 @@ export default function HowItWorks() {
         </ol>
 
         {/* Den animerede scene: eet kort, hele livscyklussen */}
-        <div ref={stageRef} className="flex flex-col items-center gap-6">
+        <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-2">
           <div
             className={cn(
               "w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -230,7 +231,7 @@ export default function HowItWorks() {
                     >
                       <path d="M5 12.5l4.5 4.5L19 7" />
                     </svg>
-                    Belønning frigivet, ny runde begynder
+                    Belønning givet, og så begynder jagten forfra
                   </span>
                 )}
               </div>

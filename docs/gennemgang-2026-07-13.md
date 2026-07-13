@@ -192,10 +192,37 @@ Backend/resten:
 - S3 Wallet-pass-download gated paa device-cookie (commit 5eba8f0)
 - A3/A5 radius samlet paa rounded-lg, type-skala kodificeret som tokens (f0fcaaa)
 
-**Udestaar stadig (lav prioritet):** S8 bruger-enumeration + delt HMAC-noegle, K5
-FREE-graense race, E6/E7 mindre query-optimering, D-B4 dekorativ stregkode,
-fuld per-instans type-migrering (tokenne er sat, inline-stoerrelser konvergerer
-over tid).
+## BINDENDE foer skalering ud over de 10 piloter
 
-**Handling hos dig:** Tilfoej `pgbouncer=true&connection_limit=1` til Vercels
-`DATABASE_URL` (efter `sslmode=require`), IKKE til DIRECT_URL, og redeploy.
+Disse punkter er ikke "nice to have". De SKAL vaere loeste, foer Stemplet saelges
+til butikker ud over de 10 pilot-butikker. Med faa, kendte butikker er
+risikoen inddaemmet; med aabent salg er den ikke.
+
+- **S3 Wallet-token-arkitektur (bindende deadline: inden salg ud over de 10
+  piloter).** Status: kerne-eksponeringen er LUKKET, pass-download er nu gated paa
+  device-cookien (commit 5eba8f0), saa et offentligt serienr. ikke laenger giver
+  adgang til kortets `authToken`. Cookie-gating er den rigtige loesning inden for
+  PassKit (Apple sender kun pass'ets eget authenticationToken tilbage; en separat
+  "registrerings-hemmelighed" findes ikke i protokollen). FOER skalering skal
+  loesningen dog gennemgaas een gang mere af en, der kender PassKit, og der skal
+  tages stilling til token-rotation ved kort-nulstilling. Betragt cookie-gating
+  som tilstraekkelig til pilot, ikke som endelig uden det review.
+- **S8 bruger-enumeration** paa login (distinkt "ingen konto"-svar) + **delt
+  HMAC-noegle** til stempel- og unsubscribe-tokens: adskil noeglerne / brug
+  audience-claim, og gør login-svaret neutralt.
+- **K5 FREE-graense race** (kan overskride 100 kunder ved samtidige claims):
+  goeres atomisk foer graensen faktisk haandhaeves paa betalende plan.
+- **S6 andet led** paa find-kort (ud over IP-throttling), fx sidst kendte e-mail,
+  hvis kort-genfinding skal skaleres.
+
+## Udestaar (lav prioritet, ikke blokerende)
+
+E6/E7 mindre query-optimering, D-B4 dekorativ stregkode, fuld per-instans
+type-migrering (tokenne er sat, inline-stoerrelser konvergerer over tid).
+
+## Handling hos dig
+
+- **E4 (gjort):** `pgbouncer=true&connection_limit=1` er lagt paa Vercels pooled
+  `DATABASE_URL` (efter `sslmode=require`); `DIRECT_URL` er uroert til migrationer.
+  Formaal: sporadiske forbindelsesfejl under belastning maa ikke forurene
+  pilottesten.
