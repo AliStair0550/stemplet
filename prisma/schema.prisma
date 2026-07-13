@@ -164,6 +164,9 @@ model Stamp {
   // aldrig, da NULL regnes som distinkt i Postgres.
   @@unique([tokenJti, customerCardId])
   @@index([customerCardId])
+  // Tids-vinduer i statistik (i dag/uge/14 dage) + ugebrev-cron: dette indeks
+  // daekker baade relations-semi-joinet og createdAt-range i eet scan.
+  @@index([customerCardId, createdAt])
 }
 
 model Redemption {
@@ -173,6 +176,8 @@ model Redemption {
   createdAt      DateTime     @default(now())
 
   @@index([customerCardId])
+  // Tids-vinduer (indloesninger seneste 30 dage) + avgDaysToFull-window-query.
+  @@index([customerCardId, createdAt])
 }
 
 enum CampaignType {
@@ -213,6 +218,8 @@ model AuditLog {
 
   @@index([businessId])
   @@index([businessId, action])
+  // "Seneste aktivitet": where businessId order by createdAt desc take N.
+  @@index([businessId, createdAt])
 }
 
 // DB-backet rate limit til magic-link-afsendelse (fail-closed), saa email-

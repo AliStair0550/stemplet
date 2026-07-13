@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
 export type BusinessStats = {
@@ -25,10 +26,9 @@ function daysAgo(n: number): Date {
 export async function getBusinessStats(businessId: string): Promise<BusinessStats> {
   const cards = await prisma.card.findMany({
     where: { businessId },
-    select: { id: true, stampsRequired: true },
+    select: { id: true },
   });
   const cardIds = cards.map((c) => c.id);
-  const reqByCard = new Map(cards.map((c) => [c.id, c.stampsRequired]));
 
   if (cardIds.length === 0) {
     return {
@@ -51,47 +51,81 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
   const d30 = daysAgo(30);
   const d60 = daysAgo(60);
   const rel = { customerCard: { cardId: { in: cardIds } } };
+  const inCards = { cardId: { in: cardIds } };
 
+  // Alt udregnes med aggregerede queries (count/groupBy/raw), saa vi ikke
+  // laenger henter ALLE kundekort og ALLE indloesninger som fulde raekker for at
+  // udlede en haandfuld tal (skalerer nu med indeks, ikke med kundetal).
+  //
+  // Genvej til "kunder med totalEver >= n": completedCount >= 1 medfoerer altid
+  // totalEver >= required >= 4 >= 2, saa vi behoever ikke stampsRequired:
+  //   atLeast1 = stamps >= 1 ELLER completedCount >= 1
+  //   atLeast2 = stamps >= 2 ELLER completedCount >= 1
   const [
-    ccs,
+    totalCustomers,
+    activeCustomers,
+    newCustomers30,
+    atLeast1,
+    atLeast2,
+    distinctRedeemers,
     stampsTotal,
     redemptionsTotal,
     redemptions30,
     recentStamps,
-    reds,
     methodGroups,
+    avgRows,
   ] = await Promise.all([
-      prisma.customerCard.findMany({
-        where: { cardId: { in: cardIds } },
-        select: {
-          cardId: true,
-          stamps: true,
-          completedCount: true,
-          createdAt: true,
-          lastStampAt: true,
-        },
-      }),
-      prisma.stamp.count({ where: rel }),
-      prisma.redemption.count({ where: rel }),
-      prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
-      prisma.stamp.findMany({
-        where: { ...rel, createdAt: { gte: daysAgo(14) } },
-        select: { createdAt: true },
-      }),
-      prisma.redemption.findMany({
-        where: rel,
-        select: {
-          createdAt: true,
-          customerCardId: true,
-          customerCard: { select: { createdAt: true } },
-        },
-      }),
-      prisma.stamp.groupBy({
-        by: ["method"],
-        where: rel,
-        _count: { _all: true },
-      }),
-    ]);
+    prisma.customerCard.count({ where: inCards }),
+    prisma.customerCard.count({
+      where: { ...inCards, lastStampAt: { gte: d60 } },
+    }),
+    prisma.customerCard.count({
+      where: { ...inCards, createdAt: { gte: d30 } },
+    }),
+    prisma.customerCard.count({
+      where: {
+        ...inCards,
+        OR: [{ stamps: { gte: 1 } }, { completedCount: { gte: 1 } }],
+      },
+    }),
+    prisma.customerCard.count({
+      where: {
+        ...inCards,
+        OR: [{ stamps: { gte: 2 } }, { completedCount: { gte: 1 } }],
+      },
+    }),
+    prisma.customerCard.count({
+      where: { ...inCards, redemptions: { some: {} } },
+    }),
+    prisma.stamp.count({ where: rel }),
+    prisma.redemption.count({ where: rel }),
+    prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
+    prisma.stamp.findMany({
+      where: { ...rel, createdAt: { gte: daysAgo(14) } },
+      select: { createdAt: true },
+    }),
+    prisma.stamp.groupBy({
+      by: ["method"],
+      where: rel,
+      _count: { _all: true },
+    }),
+    // avgDaysToFull PR. CYKLUS: maal hver indloesning fra den FORRIGE indloesning
+    // (eller kort-oprettelsen ved den foerste), ikke fra kortets oprettelse hver
+    // gang. Ellers traekker loyale kunder tallet kunstigt op.
+    prisma.$queryRaw<{ avg_days: number | null }[]>(Prisma.sql`
+      SELECT AVG(days)::float8 AS avg_days FROM (
+        SELECT EXTRACT(EPOCH FROM (r."createdAt" - COALESCE(
+          LAG(r."createdAt") OVER (
+            PARTITION BY r."customerCardId" ORDER BY r."createdAt", r."id"
+          ),
+          cc."createdAt"
+        ))) / 86400.0 AS days
+        FROM "Redemption" r
+        JOIN "CustomerCard" cc ON cc."id" = r."customerCardId"
+        WHERE cc."cardId" IN (${Prisma.join(cardIds)})
+      ) s
+    `),
+  ]);
 
   // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
   // saa noegletal og graf altid er enige (ingen UTC/CET-forskydning ved midnat).
@@ -108,35 +142,14 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     manual: methodCount.get("MANUAL") ?? 0,
   };
 
-  const totalCustomers = ccs.length;
-  const activeCustomers = ccs.filter(
-    (c) => c.lastStampAt && c.lastStampAt >= d60,
-  ).length;
-  const newCustomers30 = ccs.filter((c) => c.createdAt >= d30).length;
-
-  let atLeast1 = 0;
-  let atLeast2 = 0;
-  for (const c of ccs) {
-    const totalEver = c.stamps + c.completedCount * (reqByCard.get(c.cardId) ?? 0);
-    if (totalEver >= 1) atLeast1 += 1;
-    if (totalEver >= 2) atLeast2 += 1;
-  }
   const revisitRate = atLeast1 ? atLeast2 / atLeast1 : 0;
   // Andel af kunder der har fyldt mindst eet kort (distinkt, saa den aldrig
   // overstiger 100 %).
-  const distinctRedeemers = new Set(reds.map((r) => r.customerCardId)).size;
   const completionRate = totalCustomers ? distinctRedeemers / totalCustomers : 0;
 
-  let avgDaysToFull: number | null = null;
-  if (reds.length > 0) {
-    const totalDays = reds.reduce((sum, r) => {
-      const diff =
-        (r.createdAt.getTime() - r.customerCard.createdAt.getTime()) /
-        (1000 * 60 * 60 * 24);
-      return sum + Math.max(0, diff);
-    }, 0);
-    avgDaysToFull = Math.round((totalDays / reds.length) * 10) / 10;
-  }
+  const avgVal = avgRows[0]?.avg_days;
+  const avgDaysToFull =
+    avgVal == null ? null : Math.round(Math.max(0, avgVal) * 10) / 10;
 
   return {
     totalCustomers,
