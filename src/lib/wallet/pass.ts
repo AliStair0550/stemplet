@@ -26,6 +26,16 @@ function rgbString(hex: string): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
+// Blander to farver (t=0 -> a, t=1 -> b). Bruges til en DAEMPET label-farve
+// (tekstfarven trukket mod baggrunden), saa labels er diskrete og vaerdierne
+// popper - som paa et Apple-kort.
+function blendRgb(hexA: string, hexB: string, t: number): string {
+  const a = hexToRgb(hexA);
+  const b = hexToRgb(hexB);
+  const m = (x: number, y: number) => Math.round(x * (1 - t) + y * t);
+  return `rgb(${m(a.r, b.r)}, ${m(a.g, b.g)}, ${m(a.b, b.b)})`;
+}
+
 async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
   if (logoUrl) {
     try {
@@ -69,6 +79,8 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
 
   const bg = rgbString(input.primaryColor);
   const fg = rgbString(contrastText(input.primaryColor));
+  // Dæmpet label-farve (tekstfarven trukket ~1/3 mod baggrunden).
+  const labelCol = blendRgb(contrastText(input.primaryColor), input.primaryColor, 0.34);
   const rewardReady = input.stamps >= input.required;
 
   const images: Record<string, Buffer> = {
@@ -90,7 +102,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     serialNumber: input.serial,
     foregroundColor: fg,
     backgroundColor: bg,
-    labelColor: fg,
+    labelColor: labelCol,
     logoText: input.businessName,
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
@@ -107,20 +119,17 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
   });
 
+  // Minimalistisk og inspirerende: beloenningen staar stort UDEN label (den
+  // taler for sig selv), og en varm linje viser, hvor taet man er.
   pass.primaryFields.push({
     key: "reward",
-    label: "BELØNNING",
     value: input.rewardText,
   });
 
+  const left = input.required - input.stamps;
   pass.secondaryFields.push({
     key: "status",
-    label: "STATUS",
-    value: rewardReady
-      ? "Belønning klar"
-      : `Mangler ${input.required - input.stamps} ${
-          input.required - input.stamps === 1 ? "stempel" : "stempler"
-        }`,
+    value: rewardReady ? "Klar til dig" : `Kun ${left} tilbage`,
   });
 
   pass.backFields.push(
