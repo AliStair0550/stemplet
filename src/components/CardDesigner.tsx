@@ -339,8 +339,9 @@ export function CardDesigner({
                 </button>
               ) : null}
             </div>
-            <p className="text-[0.72rem] font-[300] text-slate">
-              Vi henter automatisk et farveforslag fra dit logo.
+            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Vi henter automatisk et farveforslag fra dit logo. Har du et logo,
+              viser kortet det i stedet for butikkens navn.
             </p>
             {logoError ? (
               <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>

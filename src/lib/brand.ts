@@ -45,6 +45,10 @@ export const CARD_THEMES: { name: string; primary: string; text: string }[] = [
   { name: "Kul", primary: "#1A1A1A", text: "#F5F3EF" },
   { name: "Hav", primary: "#123B47", text: "#E6F3F6" },
   { name: "Sand", primary: "#E8E2D6", text: "#2A2118" },
+  { name: "Creme", primary: "#F4ECDD", text: "#3B2F1E" },
+  { name: "Himmel", primary: "#DBE7F3", text: "#1D3654" },
+  { name: "Mint", primary: "#DCEDE2", text: "#1F4536" },
+  { name: "Rosa", primary: "#F3E0E4", text: "#5C2739" },
 ];
 
 const HEX_RE = /^#([0-9a-fA-F]{6})$/;

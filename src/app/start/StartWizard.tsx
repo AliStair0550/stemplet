@@ -136,7 +136,7 @@ export function StartWizard() {
           <CardDesigner
             value={design}
             onChange={setDesign}
-            businessName={name || "Din butik"}
+            businessName={name}
             allowLogo
           />
           <p className="text-[0.75rem] font-[200] text-slate">

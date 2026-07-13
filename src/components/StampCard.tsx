@@ -100,6 +100,8 @@ export function StampCard({
         {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5">
+            {/* Enten logo eller navn, aldrig begge: har butikken et logo, staar
+                det alene; ellers vises navnet (med et lille bogstav-maerke). */}
             {logoUrl ? (
               <Image
                 src={logoUrl}
@@ -112,15 +114,15 @@ export function StampCard({
                 )}
                 unoptimized
               />
-            ) : (
+            ) : businessName ? (
               <div
                 className="flex h-9 w-9 items-center justify-center rounded-md text-[0.7rem] font-[500]"
                 style={{ background: rgba(textColor, 0.14) }}
               >
                 {businessName.slice(0, 2).toUpperCase()}
               </div>
-            )}
-            {!hideName ? (
+            ) : null}
+            {!hideName && !logoUrl && businessName ? (
               <span className="text-[0.82rem] font-[400] tracking-[0.02em]">
                 {businessName}
               </span>
@@ -218,15 +220,17 @@ export function StampCard({
             )}
           >
             <BarcodeGlyph value={serial} compact={landscape} />
-            <span
-              className={cn(
-                "font-[400] text-ink",
-                serialLabel ? "tracking-[0.12em]" : "tracking-[0.3em]",
-                landscape ? "text-[0.55rem]" : "text-[0.6rem]",
-              )}
-            >
-              {serialLabel ?? serial}
-            </span>
+            {(serialLabel ?? serial) ? (
+              <span
+                className={cn(
+                  "font-[400] text-ink",
+                  serialLabel ? "tracking-[0.12em]" : "tracking-[0.3em]",
+                  landscape ? "text-[0.55rem]" : "text-[0.6rem]",
+                )}
+              >
+                {serialLabel ?? serial}
+              </span>
+            ) : null}
           </div>
         ) : null}
 
