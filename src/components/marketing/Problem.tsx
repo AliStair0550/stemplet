@@ -78,11 +78,7 @@ export default function Problem() {
         </div>
 
         {/* Stemplet: løftet, med moss-accent, det man vælger */}
-        <div className="relative overflow-hidden rounded-lg border border-moss/25 bg-white p-8 shadow-[0_22px_54px_-30px_rgba(45,95,74,0.5)] md:p-10">
-          <span
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-1 bg-moss"
-          />
+        <div className="rounded-lg border border-moss/25 bg-white p-8 shadow-[0_22px_54px_-30px_rgba(45,95,74,0.5)] md:p-10">
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-moss">
             Stemplet
           </span>
@@ -107,9 +103,9 @@ export default function Problem() {
               Din statistik
             </span>
             <p className="mt-3 font-[300] text-[0.95rem] leading-[1.75] text-parchment/80">
-              Papkortet fortæller dig intet. Stemplet viser sort på hvidt, hvem
-              der kommer igen, og du bliver husket, hver gang kunden åbner sin
-              Wallet.
+              Papkortet fortæller dig intet. Stemplet viser sort på hvidt, hvor
+              mange der kommer igen, og du bliver husket, hver gang kunden åbner
+              sin Wallet.
             </p>
           </div>
           <div className="grid shrink-0 grid-cols-3 gap-8 md:gap-12">

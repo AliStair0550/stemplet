@@ -4,7 +4,6 @@
 // intet at respektere for prefers-reduced-motion).
 import { useState } from "react";
 import { Section, Eyebrow } from "@/components/ui";
-import { PRO_PRICE_DKK } from "@/lib/plans";
 import { formatDkNumber } from "@/lib/utils";
 
 function Slider({
@@ -56,8 +55,6 @@ export default function RoiCalculator() {
 
   const perCustomerYear = purchase * visits * 12;
   const total = perCustomerYear * extra;
-  const proYear = PRO_PRICE_DKK * 12;
-  const breakEven = Math.max(1, Math.ceil(proYear / perCustomerYear));
 
   return (
     <Section id="vaerd">
@@ -112,12 +109,6 @@ export default function RoiCalculator() {
             <span className="ml-1 text-[1rem] font-[200] text-slate">
               mere om året
             </span>
-          </p>
-          <p className="mt-2 max-w-sm font-[200] text-[0.9rem] leading-[1.7] text-stone">
-            Pro koster {formatDkNumber(proYear)} kr. om året. Det er tjent hjem,
-            hvis Stemplet giver dig bare{" "}
-            {breakEven === 1 ? "én" : formatDkNumber(breakEven)} ekstra
-            stamkunde{breakEven === 1 ? "" : "r"}.
           </p>
         </div>
       </div>
