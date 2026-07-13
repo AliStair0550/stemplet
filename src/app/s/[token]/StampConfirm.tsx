@@ -233,7 +233,7 @@ export function StampConfirm({
                     ? {
                         kicker: "Lige stemplet",
                         title: "Du har lige fået et stempel",
-                        body: "Skal du have et til, fx en øl mere? Vis dit kort til personalet, så giver de dig stemplet med det samme.",
+                        body: "Skal du have et til? Vis dit kort til personalet, så giver de dig stemplet med det samme.",
                         cta: "Vis mit kort",
                         href: `/kort/${s.serial}?vis=1`,
                       }
