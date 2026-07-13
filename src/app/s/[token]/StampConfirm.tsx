@@ -62,6 +62,7 @@ export function StampConfirm({
   logoUrl,
   stampIcon,
   rewardText,
+  walletEnabled,
 }: {
   token: string;
   slug: string;
@@ -71,6 +72,7 @@ export function StampConfirm({
   logoUrl: string | null;
   stampIcon: string;
   rewardText: string;
+  walletEnabled: boolean;
 }) {
   const [state, setState] = useState<State>({ phase: "loading" });
   const ran = useRef(false);
@@ -171,20 +173,30 @@ export function StampConfirm({
           <div className="relative">
             <span
               aria-hidden
-              className="pointer-events-none absolute -inset-6 rounded-[2rem] bg-moss/20 blur-2xl"
-              style={{ animation: "stampBloom 1.2s ease-out forwards" }}
+              className="pointer-events-none absolute -inset-8 rounded-[2.2rem] bg-moss/30 blur-3xl"
+              style={{ animation: "stampBloom 1.25s ease-out forwards" }}
+            />
+            {/* To ringe der breder sig ud (den anden lidt forskudt) for et
+                rigere, tydeligere "impact". */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border-2 border-moss/50"
+              style={{
+                animation: "stampRipple 0.95s cubic-bezier(0.16,1,0.3,1) forwards",
+              }}
             />
             <span
               aria-hidden
-              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border border-moss/40"
+              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border border-moss/30"
               style={{
-                animation: "stampRipple 0.9s cubic-bezier(0.16,1,0.3,1) forwards",
+                animation:
+                  "stampRipple 1.15s cubic-bezier(0.16,1,0.3,1) 0.18s forwards",
               }}
             />
             <div
               style={{
                 animation:
-                  "cardReceive 0.7s cubic-bezier(0.34,1.56,0.64,1) both",
+                  "cardReceive 0.75s cubic-bezier(0.34,1.56,0.64,1) both",
               }}
             >
               <StampCard
@@ -209,13 +221,31 @@ export function StampConfirm({
                 } tilbage til din belønning.`}
           </p>
 
-          <ButtonLink
-            href={`/kort/${state.serial}`}
-            variant={state.rewardReady ? "moss" : "outline"}
-            size="lg"
-          >
-            Se dit kort
-          </ButtonLink>
+          {/* Wallet-knappen ligger nu HER, saa kunden kan gemme kortet med det
+              samme, i stedet for foerst at skulle ind paa "Se dit kort". */}
+          <div className="flex w-full flex-col items-center gap-3">
+            {walletEnabled && !state.rewardReady ? (
+              <>
+                <a
+                  href={`/api/wallet/pass/${state.serial}`}
+                  className={btnClass("moss", "lg") + " w-full max-w-xs"}
+                >
+                  Læg i Apple Wallet
+                </a>
+                <p className="text-[0.76rem] font-[300] text-slate">
+                  Så ligger kortet klar i lommen til næste besøg.
+                </p>
+              </>
+            ) : null}
+            <ButtonLink
+              href={`/kort/${state.serial}`}
+              variant={state.rewardReady || !walletEnabled ? "moss" : "outline"}
+              size="lg"
+              className="w-full max-w-xs"
+            >
+              Se dit kort
+            </ButtonLink>
+          </div>
         </div>
       ) : null}
 

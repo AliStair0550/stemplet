@@ -46,6 +46,26 @@ function IconGift() {
     </svg>
   );
 }
+function IconQr() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-[1.3rem] w-[1.3rem]">
+      <rect x="4" y="4" width="6" height="6" rx="1" />
+      <rect x="14" y="4" width="6" height="6" rx="1" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <path d="M14 14h3v3M20 14v.01M17 20h3v-3M14 20h.01" />
+    </svg>
+  );
+}
+function IconShare() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-[1.3rem] w-[1.3rem]">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="M8.2 10.8 15.8 6.4M8.2 13.2l7.6 4.4" />
+    </svg>
+  );
+}
 
 // Varsl foer muren: fra 80 kunder viser vi vaerdien og opgraderingsknappen,
 // saa salget starter paa "se hvad de har givet dig" - ikke paa tvang.
@@ -80,38 +100,51 @@ function GettingStarted({ slug }: { slug: string }) {
   const customerUrlShort = `${APP_URL.replace(/^https?:\/\//, "")}/k/${slug}`;
   const steps = [
     {
-      title: "Print din QR",
-      body: "Hent plakat eller diskskilt og sæt den ved kassen.",
+      icon: <IconQr />,
+      title: "Sæt din QR op",
+      body: "Hent plakat eller diskskilt, og stil den ved kassen.",
       href: "/app/materialer",
-      link: "Materialer",
+      link: "Hent materialer",
     },
     {
-      title: "Giv et stempel",
-      body: "Vis stempel-QR'en, eller scan et kundekort.",
+      icon: <IconStamp />,
+      title: "Giv det første stempel",
+      body: "Vis stempel-QR'en, eller scan et kundekort ved disken.",
       href: "/app/kasse",
       link: "Åbn Stempel",
     },
     {
+      icon: <IconShare />,
       title: "Del dit kort",
-      body: "Send linket, eller læg det på sociale medier.",
+      body: "Læg linket på sociale medier, så kunderne har kortet klar til næste besøg.",
       copy: { value: customerUrl, display: customerUrlShort },
       href: `/k/${slug}`,
       link: "Se kundesiden",
     },
   ];
   return (
-    <Panel className="mb-6 border-moss/40 bg-moss/[0.04]">
-      <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-moss">
-        Kom godt i gang
-      </h2>
-      <ol className="mt-5 grid gap-6 sm:grid-cols-3">
+    <div className="mb-6 overflow-hidden rounded-lg border border-moss/30 bg-white">
+      <div className="border-b border-fog bg-moss/[0.05] px-6 py-5 md:px-8">
+        <span className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
+          Kom godt i gang
+        </span>
+        <h2 className="mt-1.5 font-[300] text-[1.3rem] leading-tight text-ink">
+          Tre skridt til dine første stempler
+        </h2>
+      </div>
+      <ol className="grid gap-px bg-fog sm:grid-cols-3">
         {steps.map((s, i) => (
-          <li key={s.title} className="flex flex-col gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-moss font-fraunces text-[0.9rem] font-light italic text-moss">
-              {i + 1}
-            </span>
-            <span className="font-[400] text-[0.95rem] text-ink">{s.title}</span>
-            <span className="break-words font-[200] text-[0.82rem] leading-relaxed text-stone">
+          <li key={s.title} className="flex flex-col gap-3 bg-white p-6">
+            <div className="flex items-center justify-between">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss/10 text-moss">
+                {s.icon}
+              </span>
+              <span className="font-fraunces text-[1.15rem] font-light italic text-moss/70">
+                0{i + 1}
+              </span>
+            </div>
+            <span className="font-[400] text-[1rem] text-ink">{s.title}</span>
+            <span className="break-words font-[300] text-[0.84rem] leading-relaxed text-stone">
               {s.body}
             </span>
             {s.copy ? (
@@ -119,14 +152,25 @@ function GettingStarted({ slug }: { slug: string }) {
             ) : null}
             <Link
               href={s.href}
-              className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-moss hover:opacity-70"
+              className="mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-moss transition-opacity hover:opacity-70"
             >
               {s.link}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
             </Link>
           </li>
         ))}
       </ol>
-    </Panel>
+    </div>
   );
 }
 

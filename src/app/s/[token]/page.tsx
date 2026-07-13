@@ -1,5 +1,6 @@
 import { verifyStampToken } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
+import { WALLET_ENABLED } from "@/lib/env";
 import { StampConfirm } from "./StampConfirm";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +89,7 @@ export default async function StampPage({
       logoUrl={brand.logoUrl}
       stampIcon={brand.stampIcon}
       rewardText={brand.rewardText}
+      walletEnabled={WALLET_ENABLED}
     />
   );
 }
