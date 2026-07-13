@@ -25,7 +25,7 @@ export default function Footer() {
               <br />
               Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
               hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
-              statistik og købsmønstre. Dine første 100 kunder er gratis.
+              statistik og købsmønstre.
             </p>
             <Image
               src="/stemplet-badge-rust.png"
