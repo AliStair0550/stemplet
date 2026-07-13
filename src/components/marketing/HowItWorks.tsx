@@ -128,7 +128,7 @@ export default function HowItWorks() {
       <div className="mt-14 grid items-center gap-12 md:grid-cols-2 md:gap-16">
         {/* Trinene, synkroniseret med animationen. Paa mobil ligger den
             animerede scene oeverst, saa man ser den med det samme. */}
-        <ol className="order-2 flex flex-col gap-2 md:order-1">
+        <ol className="order-2 flex flex-col gap-2 md:order-2">
           {STEPS.map((s, i) => {
             const active = i === activeIdx;
             return (
@@ -164,7 +164,7 @@ export default function HowItWorks() {
         </ol>
 
         {/* Den animerede scene: eet kort, hele livscyklussen */}
-        <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-2">
+        <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-1">
           <div
             className={cn(
               "w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -172,17 +172,14 @@ export default function HowItWorks() {
             )}
           >
             <StampCard
-              businessName="Copenhagen Coffee Lab"
-              logoUrl="/coffeelab.png"
-              logoClassName="!h-8 opacity-90 [filter:brightness(0)_invert(1)]"
-              hideName
+              businessName="Odense Craft Beer"
               landscape
-              primaryColor="#2A1A10"
-              textColor="#F6EEE4"
-              stampIcon="coffee"
+              primaryColor="#1E4535"
+              textColor="#EFE9DB"
+              stampIcon="beer"
               stamps={stamps}
               required={REQUIRED}
-              rewardText="10. kop er gratis"
+              rewardText="10. øl er gratis"
               pop={pop}
               shine={phase === "scan"}
             />

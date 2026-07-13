@@ -58,7 +58,7 @@ export default function Nav() {
           {/* Den primaere CTA skal altid kunne naas, ogsaa fra mobil-toppen. */}
           <Link
             href="/start"
-            className="inline-flex min-h-9 items-center rounded-full bg-moss px-4 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-moss-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+            className="inline-flex min-h-9 items-center rounded-full bg-ink px-4 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
           >
             Kom gratis i gang
           </Link>

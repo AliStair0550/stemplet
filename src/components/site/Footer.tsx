@@ -19,10 +19,10 @@ export default function Footer() {
               Stemplet<span className="text-moss">.</span>
             </span>
             <p className="max-w-md font-[200] text-[0.9rem] leading-[1.9] text-stone">
-              De mindste forretninger har de mest loyale kunder. De har bare
-              aldrig haft værktøjerne til at vise det. Stemplet er digital
-              loyalitet til caféen, barberen og bageren, gratis at begynde, og
-              altid i butikkens eget brand.
+              Stempelkortet er den ældste loyalitetsidé, der findes: Kom igen,
+              og vi husker dig. Stemplet giver den idé et digitalt hjem. Direkte
+              i kundens Wallet. Indsigt i købsmønstre. Dine første 100 kunder er
+              gratis.
             </p>
             <Image
               src="/stemplet-badge-moss.png"
@@ -35,7 +35,7 @@ export default function Footer() {
 
           {/* Genveje */}
           <nav className="flex flex-col gap-3.5 md:items-end">
-            <span className="mb-1 text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
+            <span className="mb-1 text-[0.72rem] font-[700] uppercase tracking-[0.14em] text-ink">
               Genveje
             </span>
             {LINKS.map((l) => (

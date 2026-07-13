@@ -1,15 +1,23 @@
 import { Section } from "@/components/ui";
 
 const OLD = [
-  "Bliver væk, længe før det er fyldt.",
-  "Et håndstempel kan alle kopiere.",
-  "Du ved intet om dine kunder.",
+  "Ryger i skuffen og er væk, før det er fyldt.",
+  "Håndstemplet, alle kan tegne det efter.",
+  "Nul data. Du ved ikke, hvem der kommer igen.",
+  "Ude af syne i lommen, og din butik glemt.",
 ];
 
 const NEW = [
-  "Ligger altid i Apple Wallet, klar ved kassen.",
+  "Ligger i Apple Wallet, altid ét swipe fra kassen.",
   "Hvert stempel er signeret og gælder kun én gang.",
-  "Du ser genbesøg, stempler og indløsninger.",
+  "Statistik i realtid: genbesøg, stempler og indløsninger.",
+  "Dit brand dukker op, hver gang kunden åbner sin telefon.",
+];
+
+const STATS = [
+  { value: "68%", label: "vender tilbage" },
+  { value: "1.240", label: "stempler i år" },
+  { value: "94", label: "belønninger indløst" },
 ];
 
 function MinusMark() {
@@ -51,8 +59,9 @@ export default function Problem() {
         </p>
       </div>
 
-      <div className="mt-14 grid overflow-hidden rounded-lg border border-clay md:grid-cols-2">
-        <div className="border-b border-clay p-8 md:border-b-0 md:border-r md:p-10">
+      <div className="mt-14 grid gap-5 md:grid-cols-2">
+        {/* Papkortet: dæmpet, det man forlader */}
+        <div className="rounded-lg border border-clay bg-parchment/50 p-8 md:p-10">
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-slate">
             Papkortet
           </span>
@@ -68,7 +77,12 @@ export default function Problem() {
           </ul>
         </div>
 
-        <div className="bg-parchment p-8 md:p-10">
+        {/* Stemplet: løftet, med moss-accent, det man vælger */}
+        <div className="relative overflow-hidden rounded-lg border border-moss/25 bg-white p-8 shadow-[0_22px_54px_-30px_rgba(45,95,74,0.5)] md:p-10">
+          <span
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1 bg-moss"
+          />
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-moss">
             Stemplet
           </span>
@@ -82,6 +96,34 @@ export default function Problem() {
               </li>
             ))}
           </ul>
+        </div>
+      </div>
+
+      {/* Statistik-callout: det papkortet aldrig kunne give dig */}
+      <div className="mt-5 overflow-hidden rounded-lg bg-ink p-8 text-parchment md:p-10">
+        <div className="flex flex-col gap-9 md:flex-row md:items-center md:justify-between md:gap-12">
+          <div className="max-w-sm">
+            <span className="text-[0.65rem] font-[400] uppercase tracking-[0.14em] text-moss-light">
+              Din statistik
+            </span>
+            <p className="mt-3 font-[300] text-[0.95rem] leading-[1.75] text-parchment/80">
+              Papkortet fortæller dig intet. Stemplet viser sort på hvidt, hvem
+              der kommer igen, og du bliver husket, hver gang kunden åbner sin
+              Wallet.
+            </p>
+          </div>
+          <div className="grid shrink-0 grid-cols-3 gap-8 md:gap-12">
+            {STATS.map((s) => (
+              <div key={s.label}>
+                <div className="font-fraunces text-[1.9rem] font-light leading-none text-parchment">
+                  {s.value}
+                </div>
+                <div className="mt-2 font-[300] text-[0.72rem] leading-tight text-parchment/60">
+                  {s.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </Section>

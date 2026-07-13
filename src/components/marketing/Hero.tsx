@@ -12,9 +12,9 @@ export default function Hero() {
         <div className="grid items-center gap-14 md:grid-cols-2 md:gap-12">
           <div className="animate-fade-up">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
-            <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.16] tracking-[0.01em] text-ink md:text-[3.1rem]">
+            <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.2] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
-              <span className="whitespace-nowrap font-fraunces font-[400] italic">
+              <span className="inline-block whitespace-nowrap pb-[0.08em] font-fraunces font-[400] italic leading-[1.1]">
                 flere gensyn.
               </span>
             </h1>

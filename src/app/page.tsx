@@ -40,12 +40,13 @@ export default function Page() {
         <Divider />
         <Problem />
         <Divider />
-        <ForCustomers />
         <NoCheating />
         <StatsPreview />
         <RoiCalculator />
         <Divider />
         <Pricing />
+        <Divider />
+        <ForCustomers />
         <Divider />
         <Faq />
         <FinalCta />
