@@ -112,7 +112,8 @@ export function SettingsForms({
             />
             <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
               Hvor længe før den samme kunde selv kan scanne kiosk-QR&apos;en igen.
-              Personalet kan altid give stempler uden ventetid. Fx bar: 10, café: 120.
+              Personalet kan altid give stempler uden ventetid. Standard er 30 min.
+              (fx bar: 10, café: 30).
             </span>
           </label>
           <div className="flex items-center gap-3">

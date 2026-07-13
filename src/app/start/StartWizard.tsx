@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
 import { btnClass } from "@/components/ui";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
+import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 const STEPS = ["Din butik", "Design kortet", "Print og gå i gang"];
 
@@ -13,6 +14,7 @@ export function StartWizard() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
+  const [category, setCategory] = useState("");
   const [design, setDesign] = useState<CardDesign>(DEFAULT_DESIGN);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export function StartWizard() {
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createBusinessAction({ name, email, pin, design, acceptedTerms });
+      const res = await createBusinessAction({ name, email, pin, category, design, acceptedTerms });
       if (res.ok) {
         setCreated(res);
         setStep(2);
@@ -107,6 +109,23 @@ export function StartWizard() {
               Bruges når personalet indløser en fyldt belønning ved kassen. Du
               kan altid ændre den senere.
             </span>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              Branche (valgfri)
+            </span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-moss"
+            >
+              <option value="">Vælg branche</option>
+              {BUSINESS_CATEGORIES.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
       ) : null}

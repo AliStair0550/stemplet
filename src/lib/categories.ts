@@ -5,8 +5,11 @@
 export const CATEGORY_KEYS = [
   "cafe",
   "coffeebar",
+  "bar",
   "restaurant",
+  "takeaway",
   "bakery",
+  "icecream",
   "barber",
   "salon",
   "retail",
@@ -19,8 +22,11 @@ export type BusinessCategory = (typeof CATEGORY_KEYS)[number];
 export const CATEGORY_LABELS: Record<BusinessCategory, string> = {
   cafe: "Café",
   coffeebar: "Kaffebar",
+  bar: "Bar eller ølbar",
   restaurant: "Restaurant eller spisested",
+  takeaway: "Takeaway eller streetfood",
   bakery: "Bageri",
+  icecream: "Is eller dessert",
   barber: "Frisør eller barber",
   salon: "Skønhed og velvære",
   retail: "Butik eller detailhandel",

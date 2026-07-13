@@ -12,6 +12,7 @@ import {
 } from "@/lib/validation";
 import { slugify } from "@/lib/utils";
 import { hashPin } from "@/lib/security";
+import { isBusinessCategory } from "@/lib/categories";
 import { APP_URL } from "@/lib/env";
 import type { CardDesign } from "@/components/CardDesigner";
 
@@ -23,6 +24,7 @@ export async function createBusinessAction(input: {
   name: string;
   email: string;
   pin: string;
+  category?: string;
   design: CardDesign;
   acceptedTerms: boolean;
 }): Promise<CreateResult> {
@@ -83,6 +85,10 @@ export async function createBusinessAction(input: {
         logoUrl: design.data.logoUrl ?? null,
         staffPin,
         termsAcceptedAt: new Date(),
+        category:
+          input.category && isBusinessCategory(input.category)
+            ? input.category
+            : null,
         users: { create: { email: base.data.email, name: base.data.name } },
         cards: {
           create: {
