@@ -72,21 +72,26 @@ const POINTS = [
 
 export default function NoCheating() {
   return (
-    <Section className="bg-moss text-parchment">
-      <div className="max-w-xl">
-        <span className="font-[400] text-[0.65rem] uppercase tracking-[0.12em] text-parchment/60">
+    <Section className="relative overflow-hidden bg-ink text-parchment">
+      {/* Blødt moss-lys i hjørnet, saa den sorte sektion faar dybde og brand. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-moss/20 blur-[130px]"
+      />
+      <div className="relative max-w-xl">
+        <span className="font-[400] text-[0.65rem] uppercase tracking-[0.14em] text-moss-light">
           Sikkerhed
         </span>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-parchment">
           Ingen kan snyde systemet.
         </h2>
-        <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-parchment/70">
+        <p className="mt-5 max-w-md font-[300] text-[0.95rem] leading-[1.8] text-parchment/70">
           Et digitalt stempel er ikke bare pænere. Det er sværere at forfalske
           end noget gummistempel.
         </p>
       </div>
 
-      <div className="mt-14 grid border-y border-parchment/15 md:grid-cols-3">
+      <div className="relative mt-14 grid border-y border-parchment/15 md:grid-cols-3">
         {POINTS.map((p, i) => (
           <div
             key={p.title}
@@ -96,13 +101,13 @@ export default function NoCheating() {
                 : ""
             }`}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-parchment/25 text-parchment">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-moss-light/40 bg-moss/10 text-moss-light">
               {p.icon}
             </div>
             <h3 className="mt-6 font-[400] text-[1.1rem] tracking-[0.02em] text-parchment">
               {p.title}
             </h3>
-            <p className="mt-3 font-[200] text-[0.88rem] leading-[1.75] text-parchment/70">
+            <p className="mt-3 font-[300] text-[0.88rem] leading-[1.75] text-parchment/70">
               {p.body}
             </p>
           </div>

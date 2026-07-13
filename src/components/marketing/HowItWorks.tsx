@@ -1,102 +1,242 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { Section, Eyebrow } from "@/components/ui";
+import { StampCard } from "@/components/StampCard";
+import { cn } from "@/lib/utils";
 
-type Step = { title: string; body: string };
+// Animeret forklaring: eet kort koerer hele livscyklussen igennem, og de tre
+// trin til venstre lyser med. Loopet starter, naar sektionen ses, og respekterer
+// reduceret bevaegelse (viser en rolig statisk tilstand).
 
-const FIRST_VISIT: Step[] = [
+type Phase = "scan" | "fill" | "reward";
+const REQUIRED = 10;
+const PHASE_INDEX: Record<Phase, number> = { scan: 0, fill: 1, reward: 2 };
+
+const STEPS: { kicker: string; title: string; body: string }[] = [
   {
-    title: "Scan QR-koden",
-    body: "Kunden scanner skiltet ved kassen med telefonens kamera. Ingen app at hente, intet at installere.",
+    kicker: "01",
+    title: "Kunden scanner QR-koden",
+    body: "Kameraet på skiltet ved kassen, og kortet ligger i Apple Wallet på fem sekunder. Ingen app, ingen tilmelding, ingen e-mail.",
   },
   {
-    title: "Kortet ligger i Wallet",
-    body: "På fem sekunder er dit stempelkort i kundens Apple Wallet. Ingen konto, ingen tilmelding, ingen e-mail.",
+    kicker: "02",
+    title: "Hvert køb giver et stempel",
+    body: "Kunden scanner butikkens QR, eller I scanner deres kort. Tælleren stiger i Wallet og minder dem om jer fra låseskærmen.",
   },
   {
-    title: "Få det første stempel",
-    body: "Kunden scanner butikkens stempel-QR, eller personalet scanner kundens kort. Det første stempel lander med det samme.",
+    kicker: "03",
+    title: "Fuldt kort bliver til belønning",
+    body: "Ved disken bekræfter personalet med PIN. Belønningen frigives, kortet nulstiller til en ny runde, og kunden er på vej tilbage.",
   },
 ];
-
-const EVERY_VISIT: Step[] = [
-  {
-    title: "Få et stempel",
-    body: "Kunden scanner butikkens stempel-QR, eller personalet scanner kundens kort. Stemplet lander med det samme.",
-  },
-  {
-    title: "Kortet tæller op af sig selv",
-    body: "Tælleren stiger i Wallet, og kortet minder kunden om dig fra låseskærmen. De ser præcis, hvor tæt de er på næste gratis.",
-  },
-  {
-    title: "Indløs ved kassen",
-    body: "Fuldt kort vises ved disken. Personalet bekræfter med PIN, og kortet nulstiller til en ny runde. Ingen kan snyde.",
-  },
-];
-
-function Track({
-  label,
-  who,
-  steps,
-}: {
-  label: string;
-  who: string;
-  steps: Step[];
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-4">
-        <span className="text-[0.65rem] font-[400] uppercase tracking-[0.14em] text-moss">
-          {label}
-        </span>
-        <span className="h-px flex-1 bg-clay" />
-      </div>
-      <p className="mt-3 font-[200] text-[0.82rem] text-slate">{who}</p>
-
-      <ol className="mt-8 flex flex-col gap-8">
-        {steps.map((step, i) => (
-          <li key={step.title} className="flex gap-4">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-moss font-fraunces text-[0.95rem] font-light italic text-moss">
-              {i + 1}
-            </span>
-            <div>
-              <h3 className="font-[400] text-[1.05rem] leading-[1.4] text-ink">
-                {step.title}
-              </h3>
-              <p className="mt-1.5 max-w-xs font-[200] text-[0.88rem] leading-[1.75] text-stone">
-                {step.body}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
 
 export default function HowItWorks() {
+  const [phase, setPhase] = useState<Phase>("scan");
+  const [stamps, setStamps] = useState(0);
+  const [pin, setPin] = useState(0);
+  const [pop, setPop] = useState(false);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPhase("fill");
+      setStamps(7);
+      return;
+    }
+
+    let alive = true;
+    const timers: number[] = [];
+    const wait = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (alive) fn();
+      }, ms);
+      timers.push(id);
+    };
+
+    const cycle = () => {
+      if (!alive) return;
+      setPhase("scan");
+      setStamps(0);
+      setPin(0);
+      setPop(false);
+
+      // Scan -> saml stempler
+      wait(() => {
+        setPhase("fill");
+        const fillStep = (s: number) => {
+          setPop(true);
+          setStamps(s);
+          if (s < REQUIRED) {
+            wait(() => fillStep(s + 1), 300);
+          } else {
+            // Fuldt -> indloes med PIN -> ny runde
+            wait(() => {
+              setPhase("reward");
+              const pinStep = (p: number) => {
+                setPin(p);
+                if (p < 4) wait(() => pinStep(p + 1), 280);
+                else wait(cycle, 1700);
+              };
+              wait(() => pinStep(1), 650);
+            }, 950);
+          }
+        };
+        wait(() => fillStep(1), 300);
+      }, 1900);
+    };
+
+    let io: IntersectionObserver | null = null;
+    const node = stageRef.current;
+    if (node) {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            io?.disconnect();
+            cycle();
+          }
+        },
+        { threshold: 0.3 },
+      );
+      io.observe(node);
+    } else {
+      cycle();
+    }
+
+    return () => {
+      alive = false;
+      io?.disconnect();
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, []);
+
+  const activeIdx = PHASE_INDEX[phase];
+
   return (
-    <Section id="sådan" className="scroll-mt-24 bg-moss/[0.05]">
+    <Section id="sådan" className="scroll-mt-24 bg-moss/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Få flere stamkunder</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Så enkelt fungerer det.
+          Fra scan til fast gæst.
         </h2>
-        <p className="mt-4 font-[200] text-[0.95rem] leading-[1.8] text-stone">
-          Ingen app, ingen tilmelding, ingen forvirring. Sådan ser det ud for
-          dine kunder, fra første besøg til fast gæst.
+        <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
+          Hele rejsen sker i kundens telefon, uden app og uden tilmelding. Se
+          den køre igennem her.
         </p>
       </div>
 
-      <div className="mt-14 grid gap-12 md:grid-cols-2 md:gap-16">
-        <Track
-          label="Første besøg"
-          who="Den nye kunde."
-          steps={FIRST_VISIT}
-        />
-        <Track
-          label="Hvert køb derefter"
-          who="Den faste kunde."
-          steps={EVERY_VISIT}
-        />
+      <div className="mt-14 grid items-center gap-12 md:grid-cols-2 md:gap-16">
+        {/* Trinene, synkroniseret med animationen */}
+        <ol className="flex flex-col gap-2">
+          {STEPS.map((s, i) => {
+            const active = i === activeIdx;
+            return (
+              <li
+                key={s.kicker}
+                aria-current={active}
+                className={cn(
+                  "flex gap-5 rounded-lg border p-5 transition-all duration-500",
+                  active
+                    ? "border-moss/30 bg-white shadow-[0_12px_34px_-20px_rgba(45,95,74,0.55)]"
+                    : "border-transparent opacity-55",
+                )}
+              >
+                <span
+                  className={cn(
+                    "font-fraunces text-[1.2rem] font-light italic transition-colors duration-500",
+                    active ? "text-moss" : "text-slate",
+                  )}
+                >
+                  {s.kicker}
+                </span>
+                <div>
+                  <h3 className="font-[400] text-[1.05rem] leading-[1.4] text-ink">
+                    {s.title}
+                  </h3>
+                  <p className="mt-1.5 font-[300] text-[0.88rem] leading-[1.7] text-stone">
+                    {s.body}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* Den animerede scene: eet kort, hele livscyklussen */}
+        <div ref={stageRef} className="flex flex-col items-center gap-6">
+          <div
+            className={cn(
+              "w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              phase === "scan" ? "scale-[0.96] opacity-90" : "scale-100 opacity-100",
+            )}
+          >
+            <StampCard
+              businessName="Copenhagen Coffee Lab"
+              logoUrl="/coffeelab.png"
+              logoClassName="!h-8 opacity-90 [filter:brightness(0)_invert(1)]"
+              hideName
+              landscape
+              primaryColor="#2A1A10"
+              textColor="#F6EEE4"
+              stampIcon="coffee"
+              stamps={stamps}
+              required={REQUIRED}
+              rewardText="10. kop er gratis"
+              pop={pop}
+              shine={phase === "scan"}
+            />
+          </div>
+
+          {/* Fase-chrome under kortet */}
+          <div className="flex min-h-[2.75rem] items-center justify-center text-center">
+            {phase === "scan" ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-clay bg-white px-4 py-2 text-[0.78rem] font-[300] text-stone">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-moss" />
+                Kortet lander i Apple Wallet på fem sekunder
+              </span>
+            ) : null}
+            {phase === "fill" ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-clay bg-white px-4 py-2 text-[0.78rem] font-[300] tabular-nums text-stone">
+                {stamps} af {REQUIRED} stempler
+              </span>
+            ) : null}
+            {phase === "reward" ? (
+              <div className="inline-flex items-center gap-3 rounded-full border border-moss/30 bg-moss/5 px-4 py-2 text-[0.78rem] font-[300] text-moss">
+                {pin < 4 ? (
+                  <>
+                    <span>Personale-PIN</span>
+                    <span className="flex gap-1.5">
+                      {[0, 1, 2, 3].map((d) => (
+                        <span
+                          key={d}
+                          className={cn(
+                            "h-2 w-2 rounded-full transition-colors duration-200",
+                            d < pin ? "bg-moss" : "bg-moss/25",
+                          )}
+                        />
+                      ))}
+                    </span>
+                  </>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3.5 w-3.5"
+                    >
+                      <path d="M5 12.5l4.5 4.5L19 7" />
+                    </svg>
+                    Belønning frigivet, ny runde begynder
+                  </span>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
     </Section>
   );

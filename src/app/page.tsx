@@ -36,9 +36,9 @@ export default function Page() {
       <Nav />
       <main>
         <Hero />
+        <HowItWorks />
         <Divider />
         <Problem />
-        <HowItWorks />
         <Divider />
         <ForCustomers />
         <NoCheating />
