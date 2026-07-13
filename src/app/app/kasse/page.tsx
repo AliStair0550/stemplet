@@ -29,7 +29,7 @@ export default async function KassePage() {
     <>
       <PageHeading
         title="Stempel"
-        subtitle="Åbn kassemodus på en skærm ved disken: fuldskærms stempel-QR og scanning i ét."
+        subtitle="Vis stempel-QR til kunden, scan kundens kort, eller åbn kassemodus på en skærm ved disken."
       />
       <Kassemodus card={kioskCard} />
     </>

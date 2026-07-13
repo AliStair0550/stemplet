@@ -23,7 +23,40 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-// ── Fuldskaerm (hvor browseren understoetter det: Android/desktop) ────
+// ── Ikoner ────────────────────────────────────────────────────────────
+function ScanFrameIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16" />
+    </svg>
+  );
+}
+
+function ExpandIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3" />
+    </svg>
+  );
+}
+
+// ── Fuldskaerm (Android/desktop; iOS bruger PWA-standalone) ────────────
 function enterFullscreen() {
   const el = document.documentElement as HTMLElement & {
     webkitRequestFullscreen?: () => Promise<void> | void;
@@ -36,7 +69,7 @@ function enterFullscreen() {
         (p as Promise<void>).catch(() => {});
       }
     } catch {
-      /* fuldskaerm er valgfrit; PWA-standalone giver det paa iOS */
+      /* fuldskaerm er valgfrit */
     }
   }
 }
@@ -45,21 +78,16 @@ function exitFullscreen() {
   try {
     if (document.fullscreenElement) document.exitFullscreen?.();
   } catch {
-    /* ligegyldigt hvis det ikke kan lade sig goere */
+    /* ligegyldigt */
   }
 }
 
-// ── Wake Lock: hold skaermen vaagen, mens kiosken er aaben ────────────
-// Gen-tager laasen naar skaermen har vaeret skjult (fx efter et notifikations-
-// panel), for browseren slipper den automatisk. Er API'et ikke tilgaengeligt
-// (aeldre iOS), er faldback at butikken saetter Auto-laas til Aldrig.
+// ── Wake Lock: hold skaermen vaagen i kioskmodus ──────────────────────
 function useWakeLock(active: boolean) {
   const sentinelRef = useRef<WakeLockSentinel | null>(null);
-
   useEffect(() => {
     if (!active) return;
     let cancelled = false;
-
     const request = async () => {
       try {
         if (
@@ -81,11 +109,9 @@ function useWakeLock(active: boolean) {
         /* ikke kritisk */
       }
     };
-
     const onVisible = () => {
       if (document.visibilityState === "visible") request();
     };
-
     request();
     document.addEventListener("visibilitychange", onVisible);
     return () => {
@@ -123,7 +149,6 @@ function useKioskToken(active: boolean) {
       setSeconds(data.expiresInSeconds ?? 60);
       setOffline(false);
       backoffRef.current = 2000;
-      // Forny lidt foer udloeb, saa koden aldrig naar at blive ugyldig.
       const next = Math.max((data.expiresInSeconds ?? 60) - 5, 10) * 1000;
       clearTimer();
       timeoutRef.current = setTimeout(() => refresh(), next);
@@ -137,7 +162,6 @@ function useKioskToken(active: boolean) {
     }
   }, []);
 
-  // Start / stop
   useEffect(() => {
     aliveRef.current = active;
     if (!active) {
@@ -152,7 +176,6 @@ function useKioskToken(active: boolean) {
     };
   }, [active, refresh]);
 
-  // Nedtaelling pr. sekund (kun til visning)
   useEffect(() => {
     if (!active) return;
     const id = setInterval(
@@ -162,7 +185,6 @@ function useKioskToken(active: boolean) {
     return () => clearInterval(id);
   }, [active]);
 
-  // Reconnect: hent straks igen naar nettet er tilbage eller skaermen ses igen.
   useEffect(() => {
     if (!active) return;
     const kick = () => {
@@ -184,104 +206,430 @@ function useKioskToken(active: boolean) {
   return { qr, seconds, offline };
 }
 
-// ── Top: dashboard-indgang + kiosk-overlay ────────────────────────────
+// ── Dashboard-siden: vaelg mellem QR, scan og kassemodus ──────────────
 export function Kassemodus({ card }: { card: KioskCard }) {
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"qr" | "scan">("qr");
+  const [kioskOpen, setKioskOpen] = useState(false);
 
-  // Startes appen fra hjemmeskaermen (standalone), aabnes kiosken med det
-  // samme, saa ikonet lander direkte i kassen uden browser-krom.
+  // Startet fra hjemmeskaermen (standalone) -> aabn kiosken direkte.
   useEffect(() => {
     const standalone =
       window.matchMedia?.("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (standalone) setOpen(true);
+    if (standalone) setKioskOpen(true);
   }, []);
 
   const openKiosk = () => {
     enterFullscreen();
-    setOpen(true);
+    setKioskOpen(true);
   };
   const closeKiosk = () => {
     exitFullscreen();
-    setOpen(false);
+    setKioskOpen(false);
   };
 
   return (
-    <>
-      <KioskEntry onOpen={openKiosk} />
-      {open ? <KioskShell card={card} onClose={closeKiosk} /> : null}
-    </>
-  );
-}
-
-function KioskEntry({ onOpen }: { onOpen: () => void }) {
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-fog bg-white p-8 md:p-10">
-        <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between md:gap-10">
-          <div className="max-w-md">
-            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
-              Kassemodus
-            </span>
-            <h2 className="mt-2 font-[300] text-[1.5rem] leading-tight text-ink">
-              Én skærm, hele kassen.
-            </h2>
-            <p className="mt-3 font-[300] text-[0.9rem] leading-relaxed text-stone">
-              Fuldskærm med din roterende stempel-QR og én stor knap til at
-              scanne kundens kort. Stil en iPad på disken og lad den stå:
-              skærmen holdes vågen, og efter hver scanning går den selv tilbage
-              til QR-koden.
-            </p>
-          </div>
-          <button onClick={onOpen} className={btnClass("moss", "lg")}>
-            Åbn kassemodus
-          </button>
+    <div className="flex flex-col gap-7">
+      {/* Valg-linje: de to daglige tilstande + kassemodus */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full gap-1 rounded-lg border border-fog bg-white p-1 sm:w-auto">
+          {(
+            [
+              ["qr", "Vis stempel-QR"],
+              ["scan", "Scan kundens kort"],
+            ] as ["qr" | "scan", string][]
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setMode(key)}
+              aria-pressed={mode === key}
+              className={cn(
+                "flex min-h-11 flex-1 items-center justify-center rounded-md px-5 text-[0.85rem] font-[300] tracking-[0.01em] transition-colors sm:flex-none",
+                mode === key
+                  ? "bg-ink text-parchment"
+                  : "text-stone hover:text-ink",
+              )}
+            >
+              {label}
+            </button>
+          ))}
         </div>
+
+        <button
+          onClick={openKiosk}
+          className={btnClass("outline") + " gap-2"}
+        >
+          <ExpandIcon className="h-4 w-4" />
+          Åbn kassemodus
+        </button>
       </div>
-      <InstallHint />
+
+      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel />}
+
+      {kioskOpen ? <KioskShell card={card} onClose={closeKiosk} /> : null}
     </div>
   );
 }
 
-function InstallHint() {
+// ── Panel: vis stempel-QR til kunden ──────────────────────────────────
+function StampQrPanel({ card }: { card: KioskCard }) {
+  const { qr, seconds, offline } = useKioskToken(true);
+  const showQr = qr && seconds > 0;
+  const box = "h-[min(64vw,260px)] w-[min(64vw,260px)]";
+
   return (
-    <details className="group rounded-lg border border-fog bg-sand/60 p-6">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-[400] text-[0.9rem] text-ink">
-        Læg kassen på hjemmeskærmen (anbefales)
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-4 w-4 shrink-0 text-slate transition-transform group-open:rotate-180"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </summary>
-      <ol className="mt-5 flex flex-col gap-3 border-t border-fog pt-5">
-        {[
-          "Åbn denne side i Safari på iPad'en (eller Chrome på Android).",
-          "Tryk på Del-ikonet og vælg Læg på hjemmeskærm.",
-          "Åbn Stemplet-ikonet: kassen starter direkte i fuldskærm uden browser.",
-          "iPad: sæt Auto-lås til Aldrig under Indstillinger, Skærm og lysstyrke, så skærmen aldrig slukker.",
-        ].map((t, i) => (
-          <li key={i} className="flex gap-3">
-            <span className="font-fraunces text-[0.95rem] font-light italic text-moss">
-              {i + 1}
-            </span>
-            <span className="font-[300] text-[0.86rem] leading-relaxed text-stone">
-              {t}
-            </span>
-          </li>
-        ))}
-      </ol>
-    </details>
+    <div className="flex flex-col items-center gap-6">
+      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white p-8 text-center">
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+            Scan og saml stempler
+          </span>
+          <span className="font-[300] text-[1.05rem] text-ink">
+            {card.businessName}
+          </span>
+        </div>
+
+        {showQr ? (
+          <Image
+            src={qr}
+            alt="Stempel-QR"
+            width={300}
+            height={300}
+            className={box}
+            unoptimized
+            priority
+          />
+        ) : offline ? (
+          <div
+            className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-lg border border-fog text-center",
+              box,
+            )}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-9 w-9 text-slate"
+            >
+              <path d="M1 1l22 22M16.7 12.7A6 6 0 0 0 12 11M5 12.5a10 10 0 0 1 4-2M8.5 16.5a4 4 0 0 1 5 0M12 20h.01" />
+            </svg>
+            <p className="font-[300] text-[0.85rem] text-stone">
+              Ingen forbindelse
+            </p>
+          </div>
+        ) : (
+          <div className={cn("animate-pulse rounded-lg bg-fog", box)} />
+        )}
+
+        <p className="text-[0.8rem] font-[300] text-slate">
+          {showQr
+            ? `Ny kode om ${seconds} sek.`
+            : offline
+              ? "Ingen forbindelse. Prøver igen"
+              : "Henter kode..."}
+        </p>
+      </div>
+
+      <p className="max-w-md text-center font-[300] text-[0.85rem] leading-relaxed text-stone">
+        Vis skærmen til kunden. De scanner koden med deres eget kamera og får
+        stemplet selv. Koden skifter hvert minut, så et foto af skærmen er
+        værdiløst bagefter.
+      </p>
+    </div>
   );
 }
 
-// ── Kiosk-overlay: styrer visning, wake lock og inaktivitet ───────────
+// ── Panel: scan kundens kort (personalet stempler selv) ───────────────
+function ScanPanel() {
+  const [scanning, setScanning] = useState(false);
+  const [serial, setSerial] = useState<string | null>(null);
+
+  const onResult = (text: string) => {
+    const value = text.includes("/kort/")
+      ? (text.split("/kort/")[1]?.split(/[/?#]/)[0] ?? text)
+      : text.trim();
+    setScanning(false);
+    setSerial(value);
+  };
+
+  if (serial) {
+    return (
+      <div className="flex justify-center">
+        <StaffCard
+          serial={serial}
+          onRescan={() => {
+            setSerial(null);
+            setScanning(true);
+          }}
+          onExit={() => setSerial(null)}
+        />
+        {scanning ? (
+          <Scanner
+            hint="Ret kameraet mod QR-koden på kundens kort."
+            onClose={() => setScanning(false)}
+            onResult={onResult}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white p-10 text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+          <ScanFrameIcon className="h-8 w-8" />
+        </span>
+        <div>
+          <p className="font-[400] text-[1.1rem] text-ink">Scan kundens kort</p>
+          <p className="mx-auto mt-1.5 max-w-xs font-[300] text-[0.85rem] leading-relaxed text-stone">
+            Ret kameraet mod QR-koden på kundens kort. Så kan du give stempler
+            eller indløse en belønning.
+          </p>
+        </div>
+        <button
+          onClick={() => setScanning(true)}
+          className={btnClass("primary", "lg")}
+        >
+          Åbn kamera
+        </button>
+      </div>
+
+      {scanning ? (
+        <Scanner
+          hint="Ret kameraet mod QR-koden på kundens kort."
+          onClose={() => setScanning(false)}
+          onResult={onResult}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// ── Delt: det scannede kort + giv stempel / indløs ────────────────────
+type CardState = {
+  serial: string;
+  stamps: number;
+  required: number;
+  rewardReady: boolean;
+  rewardText: string;
+  stampIcon: string;
+  primaryColor: string;
+  textColor: string;
+  businessName: string;
+};
+
+function StaffCard({
+  serial,
+  onRescan,
+  onExit,
+}: {
+  serial: string;
+  onRescan: () => void;
+  onExit: () => void;
+}) {
+  const [card, setCard] = useState<CardState | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pin, setPin] = useState("");
+  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const loadCard = useCallback(async (s: string) => {
+    setLoading(true);
+    setNote(null);
+    try {
+      const res = await fetch(
+        `/api/staff/card?serial=${encodeURIComponent(s)}`,
+        { cache: "no-store" },
+      );
+      const data = await res.json();
+      if (res.ok) setCard(data as CardState);
+      else {
+        setCard(null);
+        setNote({ ok: false, text: data.message ?? "Kortet blev ikke fundet." });
+      }
+    } catch {
+      setCard(null);
+      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCard(serial);
+  }, [serial, loadCard]);
+
+  async function giveStamp() {
+    if (!card) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const res = await fetch("/api/staff/stamp", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ serial: card.serial }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNote({
+          ok: true,
+          text: data.rewardReady
+            ? "Kortet er nu fuldt. Belønning klar."
+            : `Stempel givet. ${data.stamps} af ${data.required}.`,
+        });
+        await loadCard(card.serial);
+      } else {
+        setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
+      }
+    } catch {
+      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function redeem() {
+    if (!card) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const res = await fetch("/api/staff/redeem", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ serial: card.serial, pin }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNote({ ok: true, text: "Belønning indløst. Kortet er nulstillet." });
+        setPin("");
+        await loadCard(card.serial);
+      } else {
+        setNote({ ok: false, text: data.message ?? "Kunne ikke indløse." });
+        setPin("");
+      }
+    } catch {
+      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex w-full max-w-md flex-col gap-5 rounded-lg border border-fog bg-white p-6 shadow-[0_20px_50px_-30px_rgba(26,26,26,0.4)]">
+      {loading ? (
+        <div className="flex flex-col items-center gap-3 py-10">
+          <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
+          <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
+        </div>
+      ) : card ? (
+        <>
+          <StampCard
+            businessName={card.businessName}
+            primaryColor={card.primaryColor}
+            textColor={card.textColor}
+            stampIcon={card.stampIcon as StampIconKey}
+            stamps={card.stamps}
+            required={card.required}
+            rewardText={card.rewardText}
+            serial={card.serial}
+          />
+
+          {note ? (
+            <p
+              className={cn(
+                "text-center font-[300] text-[0.9rem]",
+                note.ok ? "text-moss" : "text-rust",
+              )}
+            >
+              {note.text}
+            </p>
+          ) : null}
+
+          {card.rewardReady ? (
+            <div className="flex flex-col gap-3 rounded-lg border border-moss bg-moss/5 p-5">
+              <div>
+                <p className="font-[400] text-[1rem] text-ink">Belønning klar</p>
+                <p className="font-[300] text-[0.85rem] text-stone">
+                  {card.rewardText}
+                </p>
+              </div>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[0.66rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                  Personale-PIN for at indløse
+                </span>
+                <input
+                  inputMode="numeric"
+                  value={pin}
+                  onChange={(e) =>
+                    setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="****"
+                  autoFocus
+                  aria-describedby="staff-pin-hint"
+                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-moss"
+                />
+                <span
+                  id="staff-pin-hint"
+                  className="text-[0.72rem] font-[300] text-slate"
+                >
+                  Indtast 4 til 6 cifre.
+                </span>
+              </label>
+              <button
+                onClick={redeem}
+                disabled={busy || pin.length < 4}
+                className={btnClass("primary") + " self-start"}
+              >
+                {busy ? "Indløser..." : "Indløs belønning"}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={giveStamp}
+              disabled={busy}
+              className={btnClass("primary", "lg")}
+            >
+              {busy
+                ? "Et øjeblik..."
+                : `Giv stempel (${card.stamps} af ${card.required})`}
+            </button>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col items-center gap-4 py-8 text-center">
+          <p className="font-[400] text-[1rem] text-ink">
+            Kortet blev ikke fundet
+          </p>
+          {note ? (
+            <p className="font-[300] text-[0.88rem] text-rust">{note.text}</p>
+          ) : null}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-4 border-t border-fog pt-4">
+        <button
+          onClick={onRescan}
+          className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
+        >
+          Scan nyt kort
+        </button>
+        <button
+          onClick={onExit}
+          className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
+        >
+          Færdig
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Kioskmodus: fuldskaerm, styrer visning, wake lock og inaktivitet ──
 type View = "qr" | "scan" | "card";
 
 function KioskShell({
@@ -301,7 +649,6 @@ function KioskShell({
     setSerial(null);
   }, []);
 
-  // Escape lukker kiosken.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -310,7 +657,6 @@ function KioskShell({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Laas baggrundens scroll, saa man ikke kan glide ud af kiosken.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -319,7 +665,7 @@ function KioskShell({
     };
   }, []);
 
-  // 30 sek. uden berøring i scan/kort -> selv tilbage til QR.
+  // 30 sek. uden beroering i scan/kort -> selv tilbage til QR.
   useEffect(() => {
     if (view === "qr") return;
     let t: ReturnType<typeof setTimeout>;
@@ -333,9 +679,7 @@ function KioskShell({
       "touchstart",
     ];
     reset();
-    events.forEach((e) =>
-      window.addEventListener(e, reset, { passive: true }),
-    );
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
     return () => {
       clearTimeout(t);
       events.forEach((e) => window.removeEventListener(e, reset));
@@ -359,14 +703,16 @@ function KioskShell({
       ) : null}
 
       {view === "card" && serial ? (
-        <KioskStaffCard
-          serial={serial}
-          onRescan={() => {
-            setSerial(null);
-            setView("scan");
-          }}
-          onExit={backToQr}
-        />
+        <div className="flex h-full w-full items-center justify-center overflow-y-auto p-6">
+          <StaffCard
+            serial={serial}
+            onRescan={() => {
+              setSerial(null);
+              setView("scan");
+            }}
+            onExit={backToQr}
+          />
+        </div>
       ) : null}
 
       {view === "scan" ? (
@@ -415,7 +761,6 @@ function CloseButton({
   );
 }
 
-// ── QR-visning: standardtilstanden i kiosken ──────────────────────────
 function KioskQr({
   card,
   qr,
@@ -515,242 +860,9 @@ function KioskQr({
         className="flex min-h-16 w-full max-w-lg items-center justify-center gap-3 rounded-full text-[1.1rem] font-[400] tracking-[0.02em] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55)] transition-transform active:scale-[0.98]"
         style={{ background: card.textColor, color: card.primaryColor }}
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.7}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-6 w-6"
-        >
-          <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16" />
-        </svg>
+        <ScanFrameIcon className="h-6 w-6" />
         Scan kundens kort
       </button>
-    </div>
-  );
-}
-
-// ── Kort-visning: personalet giver stempel eller indløser ─────────────
-type CardState = {
-  serial: string;
-  stamps: number;
-  required: number;
-  rewardReady: boolean;
-  rewardText: string;
-  stampIcon: string;
-  primaryColor: string;
-  textColor: string;
-  businessName: string;
-};
-
-function KioskStaffCard({
-  serial,
-  onRescan,
-  onExit,
-}: {
-  serial: string;
-  onRescan: () => void;
-  onExit: () => void;
-}) {
-  const [card, setCard] = useState<CardState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [pin, setPin] = useState("");
-  const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const loadCard = useCallback(async (s: string) => {
-    setLoading(true);
-    setNote(null);
-    try {
-      const res = await fetch(
-        `/api/staff/card?serial=${encodeURIComponent(s)}`,
-        { cache: "no-store" },
-      );
-      const data = await res.json();
-      if (res.ok) setCard(data as CardState);
-      else {
-        setCard(null);
-        setNote({ ok: false, text: data.message ?? "Kortet blev ikke fundet." });
-      }
-    } catch {
-      setCard(null);
-      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCard(serial);
-  }, [serial, loadCard]);
-
-  async function giveStamp() {
-    if (!card) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      const res = await fetch("/api/staff/stamp", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNote({
-          ok: true,
-          text: data.rewardReady
-            ? "Kortet er nu fuldt. Belønning klar."
-            : `Stempel givet. ${data.stamps} af ${data.required}.`,
-        });
-        await loadCard(card.serial);
-      } else {
-        setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
-      }
-    } catch {
-      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function redeem() {
-    if (!card) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      const res = await fetch("/api/staff/redeem", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial, pin }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setNote({ ok: true, text: "Belønning indløst. Kortet er nulstillet." });
-        setPin("");
-        await loadCard(card.serial);
-      } else {
-        setNote({ ok: false, text: data.message ?? "Kunne ikke indløse." });
-        setPin("");
-      }
-    } catch {
-      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="flex h-full w-full items-center justify-center overflow-y-auto p-6">
-      <div className="flex w-full max-w-md flex-col gap-5 rounded-[1.6rem] bg-parchment p-6 text-ink shadow-[0_30px_80px_-24px_rgba(0,0,0,0.5)]">
-        {loading ? (
-          <div className="flex flex-col items-center gap-3 py-10">
-            <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
-            <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
-          </div>
-        ) : card ? (
-          <>
-            <StampCard
-              businessName={card.businessName}
-              primaryColor={card.primaryColor}
-              textColor={card.textColor}
-              stampIcon={card.stampIcon as StampIconKey}
-              stamps={card.stamps}
-              required={card.required}
-              rewardText={card.rewardText}
-              serial={card.serial}
-            />
-
-            {note ? (
-              <p
-                className={cn(
-                  "text-center font-[300] text-[0.9rem]",
-                  note.ok ? "text-moss" : "text-rust",
-                )}
-              >
-                {note.text}
-              </p>
-            ) : null}
-
-            {card.rewardReady ? (
-              <div className="flex flex-col gap-3 rounded-lg border border-moss bg-moss/5 p-5">
-                <div>
-                  <p className="font-[400] text-[1rem] text-ink">
-                    Belønning klar
-                  </p>
-                  <p className="font-[300] text-[0.85rem] text-stone">
-                    {card.rewardText}
-                  </p>
-                </div>
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-[0.66rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                    Personale-PIN for at indløse
-                  </span>
-                  <input
-                    inputMode="numeric"
-                    value={pin}
-                    onChange={(e) =>
-                      setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    placeholder="****"
-                    autoFocus
-                    aria-describedby="kiosk-pin-hint"
-                    className="w-40 border border-clay bg-white px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-moss"
-                  />
-                  <span
-                    id="kiosk-pin-hint"
-                    className="text-[0.72rem] font-[300] text-slate"
-                  >
-                    Indtast 4 til 6 cifre.
-                  </span>
-                </label>
-                <button
-                  onClick={redeem}
-                  disabled={busy || pin.length < 4}
-                  className={btnClass("moss") + " self-start"}
-                >
-                  {busy ? "Indløser..." : "Indløs belønning"}
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={giveStamp}
-                disabled={busy}
-                className={btnClass("moss", "lg")}
-              >
-                {busy
-                  ? "Et øjeblik..."
-                  : `Giv stempel (${card.stamps} af ${card.required})`}
-              </button>
-            )}
-          </>
-        ) : (
-          <div className="flex flex-col items-center gap-4 py-8 text-center">
-            <p className="font-[400] text-[1rem] text-ink">
-              Kortet blev ikke fundet
-            </p>
-            {note ? (
-              <p className="font-[300] text-[0.88rem] text-rust">{note.text}</p>
-            ) : null}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between gap-4 border-t border-fog pt-4">
-          <button
-            onClick={onRescan}
-            className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
-          >
-            Scan nyt kort
-          </button>
-          <button
-            onClick={onExit}
-            className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
-          >
-            Tilbage til QR
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
