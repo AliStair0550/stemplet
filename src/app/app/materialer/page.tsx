@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import QRCode from "qrcode";
 import { requireBusiness } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
+import { ShareCardSection } from "./ShareCardSection";
+import type { CardDesign } from "@/components/CardDesigner";
+import type { StampIconKey } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Materialer" };
 export const dynamic = "force-dynamic";
@@ -17,6 +21,19 @@ export default async function MaterialerPage() {
     width: 480,
     color: { dark: "#1A1A1A", light: "#FFFFFF" },
   });
+
+  const card = await prisma.card.findFirst({
+    where: { businessId: business.id },
+    orderBy: { createdAt: "asc" },
+  });
+  const design: CardDesign = {
+    stampsRequired: card?.stampsRequired ?? 10,
+    rewardText: card?.rewardText ?? "din belønning",
+    stampIcon: (card?.stampIcon ?? "coffee") as StampIconKey,
+    primaryColor: business.primaryColor,
+    textColor: business.textColor,
+    logoUrl: business.logoUrl,
+  };
 
   return (
     <>
@@ -74,6 +91,14 @@ export default async function MaterialerPage() {
           </Panel>
         </div>
       </div>
+
+      <ShareCardSection
+        design={design}
+        businessName={business.name}
+        slug={business.slug}
+        cardUrl={cardUrl}
+        qrDataUrl={qr}
+      />
     </>
   );
 }
