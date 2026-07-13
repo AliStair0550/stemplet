@@ -133,19 +133,22 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
   });
 
-  // Ingen primaryFields: strip-billedet (stempel-gitteret) staar rent i toppen.
-  // Beloenning + hvor taet man er staar under gitteret.
+  // Rent og elegant: strip-gitteret staar oeverst, og kun to SMAA felter under.
+  // Ingen "BELØNNING"-label (den giver sig selv), og status staar diskret til
+  // hoejre.
   const left = input.required - input.stamps;
-  pass.secondaryFields.push({
-    key: "reward",
-    label: "BELØNNING",
-    value: input.rewardText,
-  });
-
-  pass.auxiliaryFields.push({
-    key: "status",
-    value: rewardReady ? "Klar til dig" : `${left} tilbage`,
-  });
+  pass.auxiliaryFields.push(
+    {
+      key: "reward",
+      value: input.rewardText,
+      textAlignment: "PKTextAlignmentLeft",
+    },
+    {
+      key: "status",
+      value: rewardReady ? "Klar" : `${left} tilbage`,
+      textAlignment: "PKTextAlignmentRight",
+    },
+  );
 
   pass.backFields.push(
     {

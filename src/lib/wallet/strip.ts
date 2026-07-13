@@ -110,7 +110,15 @@ export async function buildStripImages(opts: {
     }
   }
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${cells}</svg>`;
+  // Subtilt mønster i tekstfarven (meget lav opacity), saa kortet faar en
+  // diskret, taktil tekstur uden at tage fokus fra stemplerne.
+  const pattern =
+    `<defs><pattern id="tex" width="46" height="46" patternUnits="userSpaceOnUse">` +
+    `<circle cx="6" cy="6" r="2.3" fill="${tc}" fill-opacity="0.05"/>` +
+    `</pattern></defs>` +
+    `<rect width="${W}" height="${H}" fill="url(#tex)"/>`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${pattern}${cells}</svg>`;
   const base = Buffer.from(svg);
 
   const [x3, x2, x1] = await Promise.all([
