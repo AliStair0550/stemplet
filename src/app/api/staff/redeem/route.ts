@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireKasseBusinessId } from "@/lib/kasse";
 import { prisma } from "@/lib/prisma";
 import { loadCardBySerial, redeemReward, StampError } from "@/lib/stamp";
 import { redeemSchema } from "@/lib/validation";
@@ -17,8 +17,7 @@ export const dynamic = "force-dynamic";
 
 // Indløsning kræver personale-PIN. 3 fejl låser enheden i 5 minutter.
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const businessId = session?.user?.businessId;
+  const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
   const parsed = redeemSchema.safeParse(await req.json().catch(() => ({})));

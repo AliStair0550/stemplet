@@ -39,7 +39,42 @@ model Business {
   users            User[]
   cards            Card[]
   auditLogs        AuditLog[]
+  devices          Device[]
+  pairingCodes     DevicePairingCode[]
   createdAt        DateTime   @default(now())
+}
+
+// ─────────────────────────────────────────────────────────────
+// Kasse-enhed: en parret disk-enhed (fx iPad) med langtids-adgang til
+// registeret UDEN ejer-login. Kan spaerres af ejeren. Adgangen er begraenset
+// til kassen (vis QR, scan, stempel, indloes med PIN, kassemodus), aldrig
+// dashboard/priser/fakturering.
+// ─────────────────────────────────────────────────────────────
+model Device {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String    @default("Kasse")
+  tokenHash  String    @unique // sha256 af enheds-token (cookie)
+  lastSeenAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId])
+}
+
+// Kortvarig parringskode: ejeren genererer den, personalet indtaster den paa
+// enheden. Engangsbrug, udloeber efter faa minutter.
+model DevicePairingCode {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  codeHash   String    @unique // sha256 af koden
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId])
 }
 
 // ─────────────────────────────────────────────────────────────

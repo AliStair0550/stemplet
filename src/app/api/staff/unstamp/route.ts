@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireKasseBusinessId } from "@/lib/kasse";
 import { loadCardBySerial, undoLastStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 
 // Fortryd sidste stempel (personalet kom til at taste for mange gange).
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const businessId = session?.user?.businessId;
+  const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
   const parsed = staffStampSchema.safeParse(await req.json().catch(() => ({})));

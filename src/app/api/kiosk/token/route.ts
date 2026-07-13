@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import QRCode from "qrcode";
-import { auth } from "@/lib/auth";
+import { requireKasseBusinessId } from "@/lib/kasse";
 import { prisma } from "@/lib/prisma";
 import { signStampToken } from "@/lib/tokens";
 import { apiError } from "@/lib/http";
@@ -10,8 +10,7 @@ export const dynamic = "force-dynamic";
 
 // Kassemodus henter et nyt signeret token her hvert 60. sekund.
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const businessId = session?.user?.businessId;
+  const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
   const card = await prisma.card.findFirst({

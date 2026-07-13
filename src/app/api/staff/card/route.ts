@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireKasseBusinessId } from "@/lib/kasse";
 import { loadCardBySerial } from "@/lib/stamp";
 import { apiError } from "@/lib/http";
 
@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 // Personalet slaar kortets aktuelle tilstand op efter scanning, saa de ser
 // status (og om der er en belønning klar) foer de handler.
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const businessId = session?.user?.businessId;
+  const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
   const serial = req.nextUrl.searchParams.get("serial")?.trim();
