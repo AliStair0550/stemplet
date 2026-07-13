@@ -19,9 +19,9 @@ export default function Hero() {
               </span>
             </h1>
             <p className="mt-6 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
-              Altid lige ved hånden i Apple Wallet. Scan en QR-kode, og kunden
-              er i gang på fem sekunder. Ingen app. Ingen tilmelding. Dine
-              første 100 kunder er gratis.
+              Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
+              hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
+              statistik og købsmønstre. Dine første 100 kunder er gratis.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
               <ButtonLink href="/start" variant="primary" size="lg">

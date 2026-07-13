@@ -60,7 +60,7 @@ export default function Nav() {
             href="/start"
             className="inline-flex min-h-9 items-center rounded-full bg-ink px-4 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
           >
-            Kom i gang
+            Kom gratis i gang
           </Link>
         </div>
       </div>

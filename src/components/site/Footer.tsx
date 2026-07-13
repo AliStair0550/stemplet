@@ -23,8 +23,9 @@ export default function Footer() {
                 Stempelkortet, der skaber flere gensyn.
               </span>
               <br />
-              Altid lige ved hånden i Apple Wallet. Scan en QR-kode, og kunden
-              er i gang på fem sekunder. Ingen app. Ingen tilmelding.
+              Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
+              hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
+              statistik og købsmønstre. Dine første 100 kunder er gratis.
             </p>
             <Image
               src="/stemplet-badge-rust.png"
