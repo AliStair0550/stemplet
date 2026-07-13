@@ -19,10 +19,12 @@ export default function Footer() {
               Stemplet<span className="text-moss">.</span>
             </span>
             <p className="max-w-md font-[200] text-[0.9rem] leading-[1.9] text-stone">
-              Stempelkortet er den ældste loyalitetsidé, der findes: Kom igen,
-              og vi husker dig. Stemplet giver den idé et digitalt hjem. Direkte
-              i kundens Wallet. Indsigt i købsmønstre. Dine første 100 kunder er
-              gratis.
+              <span className="font-[300] text-ink">
+                Stempelkortet, der skaber flere gensyn.
+              </span>
+              <br />
+              Altid lige ved hånden i Apple Wallet. Scan en QR-kode, og kunden
+              er i gang på fem sekunder. Ingen app. Ingen tilmelding.
             </p>
             <Image
               src="/stemplet-badge-rust.png"
