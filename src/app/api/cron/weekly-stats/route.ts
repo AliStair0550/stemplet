@@ -44,8 +44,10 @@ export async function GET(req: NextRequest) {
     select: { id: true, name: true, users: { select: { email: true } } },
   });
 
-  let sent = 0;
-  for (const b of businesses) {
+  // Per-butik-arbejde med begraenset samtidighed (chunks paa 5) i stedet for en
+  // fuldt sekventiel loop, saa cron'en holder sig godt under maxDuration selv
+  // naar kundebasen vokser. Hver butik returnerer antal sendte mails.
+  async function processBusiness(b: (typeof businesses)[number]): Promise<number> {
     try {
       const stats = await getWeeklyStats(b.id);
       const token = await signUnsubscribeToken(b.id);
@@ -55,6 +57,7 @@ export async function GET(req: NextRequest) {
         dashboardUrl: `${APP_URL}/app`,
         unsubscribeUrl: `${APP_URL}/api/email/unsubscribe?token=${encodeURIComponent(token)}`,
       });
+      let count = 0;
       for (const u of b.users) {
         if (!u.email) continue;
         const ok = await sendEmail({
@@ -63,11 +66,21 @@ export async function GET(req: NextRequest) {
           html: mail.html,
           text: mail.text,
         });
-        if (ok) sent += 1;
+        if (ok) count += 1;
       }
+      return count;
     } catch (e) {
       console.error("Ugebrev fejlede for", b.id, e);
+      return 0;
     }
+  }
+
+  let sent = 0;
+  const CONCURRENCY = 5;
+  for (let i = 0; i < businesses.length; i += CONCURRENCY) {
+    const chunk = businesses.slice(i, i + CONCURRENCY);
+    const counts = await Promise.all(chunk.map(processBusiness));
+    sent += counts.reduce((a, c) => a + c, 0);
   }
 
   return Response.json({ businesses: businesses.length, sent });

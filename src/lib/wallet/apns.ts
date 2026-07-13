@@ -24,47 +24,86 @@ async function providerToken(): Promise<string> {
   return jwt;
 }
 
+// Sender een push paa en DELT forbindelse og returnerer APNs-statuskoden, saa
+// doede tokens kan ryddes (410 Unregistered / 400 BadDeviceToken).
 function sendOne(
+  client: http2.ClientHttp2Session,
   pushToken: string,
   jwt: string,
   topic: string,
-): Promise<void> {
+): Promise<number | null> {
   return new Promise((resolve) => {
-    const client = http2.connect("https://api.push.apple.com");
-    client.on("error", () => {
-      client.close();
-      resolve();
-    });
-    const req = client.request({
-      ":method": "POST",
-      ":path": `/3/device/${pushToken}`,
-      authorization: `bearer ${jwt}`,
-      "apns-topic": topic,
-      "apns-push-type": "background",
-      "apns-priority": "5",
-      "content-type": "application/json",
+    let req: http2.ClientHttp2Stream;
+    try {
+      req = client.request({
+        ":method": "POST",
+        ":path": `/3/device/${pushToken}`,
+        authorization: `bearer ${jwt}`,
+        "apns-topic": topic,
+        "apns-push-type": "background",
+        "apns-priority": "5",
+        "content-type": "application/json",
+      });
+    } catch {
+      resolve(null);
+      return;
+    }
+    let status: number | null = null;
+    req.on("response", (headers) => {
+      const s = headers[":status"];
+      status = typeof s === "number" ? s : Number(s) || null;
     });
     req.setEncoding("utf8");
-    req.on("end", () => {
-      client.close();
-      resolve();
-    });
-    req.on("error", () => {
-      client.close();
-      resolve();
-    });
+    req.on("data", () => {});
+    req.on("end", () => resolve(status));
+    req.on("error", () => resolve(null));
     req.write(JSON.stringify({}));
     req.end();
   });
 }
 
-/** Sender push til alle registrerede enheder for et kundekort. */
+/** Sender push til alle registrerede enheder for et kundekort og rydder doede
+ *  push-tokens (afregistrerede/ugyldige enheder). Fejler aldrig hoejlydt. */
 export async function pushWalletUpdate(customerCardId: string): Promise<void> {
   const regs = await prisma.walletRegistration.findMany({
     where: { customerCardId },
   });
   if (regs.length === 0) return;
   const { topic } = apnsConfig();
-  const jwt = await providerToken();
-  await Promise.all(regs.map((r) => sendOne(r.pushToken, jwt, topic)));
+
+  let jwt: string;
+  try {
+    jwt = await providerToken();
+  } catch {
+    return;
+  }
+
+  const client = http2.connect("https://api.push.apple.com");
+  const dead: string[] = [];
+  try {
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      const done = () => {
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+      client.on("error", done);
+      Promise.all(
+        regs.map(async (r) => {
+          const status = await sendOne(client, r.pushToken, jwt, topic);
+          if (status === 410 || status === 400) dead.push(r.id);
+        }),
+      ).then(done, done);
+    });
+  } finally {
+    client.close();
+  }
+
+  if (dead.length > 0) {
+    await prisma.walletRegistration
+      .deleteMany({ where: { id: { in: dead } } })
+      .catch(() => {});
+  }
 }
