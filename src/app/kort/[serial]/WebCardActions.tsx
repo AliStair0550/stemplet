@@ -27,7 +27,7 @@ export function WebCardActions({
         onClick={() => setShowQr((v) => !v)}
         className={btnClass(rewardReady ? "primary" : "outline", "md") + " w-full"}
       >
-        {showQr ? "Skjul QR" : "Vis QR ved kassen"}
+        {showQr ? "Skjul QR" : "Vis QR"}
       </button>
 
       {walletEnabled ? (

@@ -4,9 +4,22 @@ import { newDeviceId } from "./ids";
 
 const DEVICE_ID_COOKIE = "stemplet_device";
 const secure = process.env.NODE_ENV === "production";
+const CARD_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2; // 2 aar
 
-function cardCookieName(businessId: string) {
+export function cardCookieName(businessId: string) {
   return `stemplet_card_${businessId}`;
+}
+
+/** Cookie-indstillinger for kort-tokenet. Deles, saa route-handlers kan saette
+ *  den direkte paa NextResponse (mest paalidelige maade). */
+export function cardCookieOptions() {
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: CARD_COOKIE_MAX_AGE,
+  };
 }
 
 /** Enhedstoken (authToken) for kundens kort hos en bestemt virksomhed. */
@@ -22,13 +35,7 @@ export async function setCardToken(
   token: string,
 ): Promise<void> {
   const c = await cookies();
-  c.set(cardCookieName(businessId), token, {
-    httpOnly: true,
-    secure,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365 * 2,
-  });
+  c.set(cardCookieName(businessId), token, cardCookieOptions());
 }
 
 /** Stabil enheds-id til PIN-låsning i kassemodus. Oprettes ved behov. */

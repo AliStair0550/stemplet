@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { verifyStampToken, consumeJti } from "@/lib/tokens";
-import { getCardToken, setCardToken } from "@/lib/cookies";
+import { getCardToken, cardCookieName, cardCookieOptions } from "@/lib/cookies";
 import {
   loadCardByToken,
   applyStamp,
@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
   if (cc && cc.card.businessId !== payload.businessId) cc = null;
 
   let createdCard = false;
+  // Token til en NY device-cookie. Saettes DIREKTE paa svaret (NextResponse)
+  // nedenfor, ikke via cookies().set() i route-handleren: sidstnaevnte holdt
+  // ikke paalideligt, saa hver scanning oprettede et nyt kort i stedet for at
+  // samle op paa det samme.
+  let newCookieToken: string | null = null;
   if (!cc) {
     const created = await createCustomerCard(payload.businessId);
     if (!created.ok) {
@@ -54,7 +59,7 @@ export async function POST(req: NextRequest) {
         { needCard: true, businessId: payload.businessId },
       );
     }
-    await setCardToken(payload.businessId, created.authToken);
+    newCookieToken = created.authToken;
     cc = await loadCardByToken(created.authToken);
     createdCard = true;
     if (!cc) return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
@@ -87,7 +92,21 @@ export async function POST(req: NextRequest) {
     });
     // created: nyoprettet kort (foerste stempel) -> klienten kan vise et
     // "Velkommen"-oejeblik og saette Wallet som den ene handling.
-    return Response.json({ ok: true, created: createdCard, ...res });
+    const response = NextResponse.json({
+      ok: true,
+      created: createdCard,
+      ...res,
+    });
+    if (newCookieToken) {
+      // Cookien saettes paa svaret her, saa den holder paa tvaers af
+      // scanninger og kunden samler op paa SAMME kort.
+      response.cookies.set(
+        cardCookieName(payload.businessId),
+        newCookieToken,
+        cardCookieOptions(),
+      );
+    }
+    return response;
   } catch (e) {
     // Kortet er kendt her, saa alle disse fejl faar serienr. med, saa kunden
     // altid kan komme videre til sit eget kort (og vise QR'en til personalet).
