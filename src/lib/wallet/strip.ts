@@ -42,6 +42,21 @@ function esc(n: number): string {
   return Number(n.toFixed(2)).toString();
 }
 
+// Blander en hex-farve mod hvid/sort (til mont-praeg paa fyldte stempler).
+function mix(hex: string, target: [number, number, number], t: number): string {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const m = (x: number, y: number) => Math.round(x * (1 - t) + y * t);
+  return (
+    "#" +
+    [m(r, target[0]), m(g, target[1]), m(b, target[2])]
+      .map((v) => v.toString(16).padStart(2, "0"))
+      .join("")
+  );
+}
+
 const GOLD = "#C9A24B";
 
 /** Bygger stempel-gitteret som PNG i tre oploesninger (1x/2x/3x). */
@@ -97,7 +112,7 @@ export async function buildStripImages(opts: {
 
     if (filled) {
       cells +=
-        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="${tc}"/>` +
+        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="url(#coin)"/>` +
         `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${pc}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(opts.stampIcon, pc)}</g>`;
     } else if (isGift) {
       cells +=
@@ -110,15 +125,16 @@ export async function buildStripImages(opts: {
     }
   }
 
-  // Subtilt mønster i tekstfarven (meget lav opacity), saa kortet faar en
-  // diskret, taktil tekstur uden at tage fokus fra stemplerne.
-  const pattern =
-    `<defs><pattern id="tex" width="46" height="46" patternUnits="userSpaceOnUse">` +
-    `<circle cx="6" cy="6" r="2.3" fill="${tc}" fill-opacity="0.05"/>` +
-    `</pattern></defs>` +
-    `<rect width="${W}" height="${H}" fill="url(#tex)"/>`;
+  // Mont-praeg paa de fyldte stempler: lys top-venstre, en anelse moerkere
+  // nederst, saa de faar dybde og ser mere kvalitetsfulde ud (ingen fladt fyld).
+  const defs =
+    `<defs><radialGradient id="coin" cx="0.36" cy="0.30" r="0.85">` +
+    `<stop offset="0" stop-color="${mix(tc, [255, 255, 255], 0.16)}"/>` +
+    `<stop offset="0.62" stop-color="${tc}"/>` +
+    `<stop offset="1" stop-color="${mix(tc, [0, 0, 0], 0.1)}"/>` +
+    `</radialGradient></defs>`;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${pattern}${cells}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${cells}</svg>`;
   const base = Buffer.from(svg);
 
   const [x3, x2, x1] = await Promise.all([
