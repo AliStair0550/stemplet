@@ -40,7 +40,12 @@ export async function POST(req: NextRequest) {
   }
   const cc = await loadCardByToken(cardToken);
   if (!cc || cc.card.businessId !== payload.businessId) {
-    return apiError("NO_CARD", "Kortet passer ikke til denne butik.");
+    // Cookien peger paa et kort der ikke laenger findes (fx nulstillet) eller en
+    // anden butik: send kunden til at hente et nyt kort i stedet for en blindgyde.
+    return apiError("NO_CARD", "Hent dit stempelkort her først.", 200, {
+      needCard: true,
+      businessId: payload.businessId,
+    });
   }
 
   // Replay-beskyttelse PR. KORT: samme kort kan ikke bruge samme token to
