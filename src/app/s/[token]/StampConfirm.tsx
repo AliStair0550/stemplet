@@ -49,6 +49,7 @@ type State =
       serial: string;
       rewardReady: boolean;
       increment: number;
+      created: boolean;
     }
   | { phase: "needCard" }
   | { phase: "error"; code: string; message: string; serial?: string };
@@ -97,6 +98,7 @@ export function StampConfirm({
           serial: data.serial,
           rewardReady: data.rewardReady,
           increment: data.increment,
+          created: !!data.created,
         });
       } else if (data.needCard) {
         setState({ phase: "needCard" });
@@ -151,9 +153,11 @@ export function StampConfirm({
             <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
               {state.rewardReady
                 ? "Tillykke"
-                : state.increment > 1
-                  ? "Dobbeltstempel"
-                  : "Stempel modtaget"}
+                : state.created
+                  ? "Velkommen"
+                  : state.increment > 1
+                    ? "Dobbeltstempel"
+                    : "Stempel modtaget"}
             </span>
             <h1
               className="font-fraunces font-light italic text-[1.9rem] leading-tight text-ink"
@@ -216,35 +220,41 @@ export function StampConfirm({
           <p className="font-[300] text-[0.9rem] leading-relaxed text-stone">
             {state.rewardReady
               ? "Vis dit kort ved kassen og få din belønning."
-              : `${state.required - state.stamps} ${
-                  state.required - state.stamps === 1 ? "stempel" : "stempler"
-                } tilbage til din belønning.`}
+              : state.created
+                ? "Læg kortet i din Apple Wallet, så er det klar til næste besøg."
+                : `${state.required - state.stamps} ${
+                    state.required - state.stamps === 1 ? "stempel" : "stempler"
+                  } tilbage til din belønning.`}
           </p>
 
-          {/* Wallet-knappen ligger nu HER, saa kunden kan gemme kortet med det
-              samme, i stedet for foerst at skulle ind paa "Se dit kort". */}
+          {/* Wallet er den ene, tydelige handling: kunden gemmer kortet med det
+              samme. "Se dit kort" ligger diskret under som en tekst-genvej. */}
           <div className="flex w-full flex-col items-center gap-3">
             {walletEnabled && !state.rewardReady ? (
               <>
                 <a
                   href={`/api/wallet/pass/${state.serial}`}
-                  className={btnClass("moss", "lg") + " w-full max-w-xs"}
+                  className={btnClass("primary", "lg") + " w-full max-w-xs"}
                 >
                   Læg i Apple Wallet
                 </a>
-                <p className="text-[0.76rem] font-[300] text-slate">
-                  Så ligger kortet klar i lommen til næste besøg.
-                </p>
+                <a
+                  href={`/kort/${state.serial}`}
+                  className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
+                >
+                  Se dit kort
+                </a>
               </>
-            ) : null}
-            <ButtonLink
-              href={`/kort/${state.serial}`}
-              variant={state.rewardReady || !walletEnabled ? "moss" : "outline"}
-              size="lg"
-              className="w-full max-w-xs"
-            >
-              Se dit kort
-            </ButtonLink>
+            ) : (
+              <ButtonLink
+                href={`/kort/${state.serial}`}
+                variant="primary"
+                size="lg"
+                className="w-full max-w-xs"
+              >
+                Se dit kort
+              </ButtonLink>
+            )}
           </div>
         </div>
       ) : null}
@@ -260,7 +270,7 @@ export function StampConfirm({
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
             Du mangler et kort hos {businessName}. Det tager fem sekunder.
           </p>
-          <ButtonLink href={`/k/${slug}`} variant="moss" size="lg">
+          <ButtonLink href={`/k/${slug}`} variant="primary" size="lg">
             Hent dit kort
           </ButtonLink>
         </div>
@@ -319,7 +329,7 @@ export function StampConfirm({
                   <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
                     {copy.body}
                   </p>
-                  <ButtonLink href={copy.href} variant="moss" size="lg">
+                  <ButtonLink href={copy.href} variant="primary" size="lg">
                     {copy.cta}
                   </ButtonLink>
                 </div>
@@ -338,7 +348,7 @@ export function StampConfirm({
                     Bed personalet vise den nye kode, eller vis dit eget kort ved
                     kassen.
                   </p>
-                  <ButtonLink href={`/k/${slug}`} variant="moss" size="lg">
+                  <ButtonLink href={`/k/${slug}`} variant="primary" size="lg">
                     Åbn mit kort
                   </ButtonLink>
                 </div>
@@ -353,7 +363,7 @@ export function StampConfirm({
                 <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
                   {s.message}
                 </p>
-                <button onClick={doStamp} className={btnClass("moss", "lg")}>
+                <button onClick={doStamp} className={btnClass("primary", "lg")}>
                   Prøv igen
                 </button>
               </div>

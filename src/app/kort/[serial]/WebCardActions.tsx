@@ -42,7 +42,7 @@ export function WebCardActions({
             setNote(null);
             setScanning(true);
           }}
-          className={btnClass("moss", "lg") + " w-full"}
+          className={btnClass("primary", "lg") + " w-full"}
         >
           Scan for stempel
         </button>
@@ -50,7 +50,7 @@ export function WebCardActions({
 
       <button
         onClick={() => setShowQr((v) => !v)}
-        className={btnClass(rewardReady ? "moss" : "outline", "md") + " w-full"}
+        className={btnClass(rewardReady ? "primary" : "outline", "md") + " w-full"}
       >
         {showQr ? "Skjul kode" : "Vis ved kassen"}
       </button>

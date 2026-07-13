@@ -7,7 +7,7 @@ type Variant = "primary" | "outline" | "moss" | "ghost";
 type Size = "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-ink text-parchment border border-ink hover:bg-moss hover:border-moss",
+  primary: "bg-ink text-parchment border border-ink hover:bg-stone hover:border-stone",
   outline: "border border-clay text-ink hover:border-moss hover:text-moss",
   moss: "bg-moss text-parchment border border-moss hover:bg-moss-light hover:border-moss-light",
   ghost: "text-slate hover:text-ink",

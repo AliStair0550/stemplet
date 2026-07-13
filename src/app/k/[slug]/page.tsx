@@ -93,7 +93,7 @@ export default async function ClaimPage({
 
         {hasCard ? (
           <div className="flex flex-col items-center gap-3">
-            <ButtonLink href={`/kort/${existing!.serial}`} variant="moss" size="lg">
+            <ButtonLink href={`/kort/${existing!.serial}`} variant="primary" size="lg">
               Åbn dit kort
             </ButtonLink>
             <p className="text-[0.75rem] font-[200] text-slate">
@@ -103,7 +103,7 @@ export default async function ClaimPage({
         ) : (
           <div className="flex flex-col items-center gap-4">
             <form action={claimCard.bind(null, slug)}>
-              <SubmitButton variant="moss" size="lg" pendingText="Opretter dit kort...">
+              <SubmitButton variant="primary" size="lg" pendingText="Opretter dit kort...">
                 {WALLET_ENABLED ? "Læg i Apple Wallet" : "Hent dit stempelkort"}
               </SubmitButton>
             </form>

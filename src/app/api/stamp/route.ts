@@ -1,7 +1,12 @@
 import type { NextRequest } from "next/server";
 import { verifyStampToken, consumeJti } from "@/lib/tokens";
-import { getCardToken } from "@/lib/cookies";
-import { loadCardByToken, applyStamp, StampError } from "@/lib/stamp";
+import { getCardToken, setCardToken } from "@/lib/cookies";
+import {
+  loadCardByToken,
+  applyStamp,
+  createCustomerCard,
+  StampError,
+} from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -28,24 +33,31 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Find kundens kort via device-cookie for netop denne virksomhed.
+  // Find kundens kort via device-cookie. Har kunden intet kort (ny kunde),
+  // eller peger cookien paa et slettet/andet kort, oprettes et nyt kort
+  // automatisk. Saa faar en ny kunde sit foerste stempel med det samme og
+  // lander direkte paa "Laeg i Apple Wallet", uden en mellemskaerm.
   const cardToken = await getCardToken(payload.businessId);
-  if (!cardToken) {
-    return apiError(
-      "NO_CARD",
-      "Du har ikke et stempelkort endnu. Hent det først.",
-      200,
-      { needCard: true, businessId: payload.businessId },
-    );
-  }
-  const cc = await loadCardByToken(cardToken);
-  if (!cc || cc.card.businessId !== payload.businessId) {
-    // Cookien peger paa et kort der ikke laenger findes (fx nulstillet) eller en
-    // anden butik: send kunden til at hente et nyt kort i stedet for en blindgyde.
-    return apiError("NO_CARD", "Hent dit stempelkort her først.", 200, {
-      needCard: true,
-      businessId: payload.businessId,
-    });
+  let cc = cardToken ? await loadCardByToken(cardToken) : null;
+  if (cc && cc.card.businessId !== payload.businessId) cc = null;
+
+  let createdCard = false;
+  if (!cc) {
+    const created = await createCustomerCard(payload.businessId);
+    if (!created.ok) {
+      // Butikken har ramt sit gratis-loft: send til claim-siden i stedet for
+      // en blindgyde. (Sjaeldent: kun paa Gratis ved loftet.)
+      return apiError(
+        "NO_CARD",
+        "Butikken tager ikke imod nye stempelkort lige nu.",
+        200,
+        { needCard: true, businessId: payload.businessId },
+      );
+    }
+    await setCardToken(payload.businessId, created.authToken);
+    cc = await loadCardByToken(created.authToken);
+    createdCard = true;
+    if (!cc) return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
 
   // Replay-beskyttelse PR. KORT: samme kort kan ikke bruge samme token to
@@ -73,7 +85,9 @@ export async function POST(req: NextRequest) {
       tokenJti: payload.jti,
       ip: clientIp(req),
     });
-    return Response.json({ ok: true, ...res });
+    // created: nyoprettet kort (foerste stempel) -> klienten kan vise et
+    // "Velkommen"-oejeblik og saette Wallet som den ene handling.
+    return Response.json({ ok: true, created: createdCard, ...res });
   } catch (e) {
     // Kortet er kendt her, saa alle disse fejl faar serienr. med, saa kunden
     // altid kan komme videre til sit eget kort (og vise QR'en til personalet).

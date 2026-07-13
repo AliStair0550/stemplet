@@ -4,6 +4,51 @@ import { prisma } from "./prisma";
 import { trackStampAnomaly } from "./security";
 import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
+import { generateSerial, generateAuthToken } from "./ids";
+import { canCreateCustomer } from "./plans";
+
+/**
+ * Opretter et nyt kundekort for butikkens aktive kort. Bruges naar en ny kunde
+ * scanner stempel-QR'en: kortet dannes automatisk, saa foerste stempel kan
+ * gives med det samme uden en mellemskaerm. Returnerer "full", hvis butikken
+ * har ramt sit gratis-loft.
+ */
+export async function createCustomerCard(
+  businessId: string,
+): Promise<
+  | { ok: true; id: string; serial: string; authToken: string }
+  | { ok: false; reason: "full" | "error" }
+> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: {
+      plan: true,
+      cards: {
+        where: { active: true },
+        orderBy: { createdAt: "asc" },
+        take: 1,
+        select: { id: true },
+      },
+    },
+  });
+  if (!business || business.cards.length === 0) {
+    return { ok: false, reason: "error" };
+  }
+  if (business.plan === "FREE") {
+    const total = await prisma.customerCard.count({
+      where: { card: { businessId } },
+    });
+    if (!canCreateCustomer("FREE", total)) return { ok: false, reason: "full" };
+  }
+  const cc = await prisma.customerCard.create({
+    data: {
+      cardId: business.cards[0].id,
+      serial: generateSerial(),
+      authToken: generateAuthToken(),
+    },
+  });
+  return { ok: true, id: cc.id, serial: cc.serial, authToken: cc.authToken };
+}
 
 export class StampError extends Error {
   code: "COOLDOWN" | "FULL" | "INACTIVE" | "NOT_FOUND";
