@@ -150,7 +150,7 @@ export function StampConfirm({
       {state.phase === "done" ? (
         <div className="flex w-full max-w-sm flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-1">
-            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-ink">
               {state.rewardReady
                 ? "Tillykke"
                 : state.created
@@ -319,7 +319,7 @@ export function StampConfirm({
                     <StampIcon icon={icon} className="h-8 w-8" />
                   </span>
                   <div className="flex flex-col items-center gap-1">
-                    <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+                    <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-ink">
                       {copy.kicker}
                     </span>
                     <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">

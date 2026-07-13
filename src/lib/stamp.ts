@@ -272,6 +272,75 @@ export async function applyStamp(opts: {
   };
 }
 
+/**
+ * Fortryd sidste stempel (personalet kom til at taste for mange gange).
+ * Sletter den nyeste Stamp og traekker dens multiplier fra taelleren. Kan kaldes
+ * gentagne gange for at rulle flere fejl-tryk tilbage.
+ */
+export async function undoLastStamp(opts: {
+  customerCardId: string;
+  ip?: string | null;
+}): Promise<{
+  serial: string;
+  stamps: number;
+  required: number;
+  rewardReady: boolean;
+}> {
+  const res = await prisma.$transaction(async (tx) => {
+    const cc = await tx.customerCard.findUnique({
+      where: { id: opts.customerCardId },
+      include: { card: true },
+    });
+    if (!cc) throw new StampError("NOT_FOUND", "Kortet blev ikke fundet.");
+
+    const last = await tx.stamp.findFirst({
+      where: { customerCardId: cc.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!last) {
+      throw new StampError("NOT_FOUND", "Der er ikke noget stempel at fortryde.");
+    }
+
+    await tx.stamp.delete({ where: { id: last.id } });
+    const removed = Math.min(last.multiplier, cc.stamps);
+
+    // Saet lastStampAt tilbage til det forrige stempel (eller nul), saa
+    // cooldown ogsaa ruller tilbage.
+    const prev = await tx.stamp.findFirst({
+      where: { customerCardId: cc.id },
+      orderBy: { createdAt: "desc" },
+    });
+    const updated = await tx.customerCard.update({
+      where: { id: cc.id },
+      data: {
+        stamps: Math.max(0, cc.stamps - removed),
+        lastStampAt: prev?.createdAt ?? null,
+      },
+      select: { stamps: true },
+    });
+
+    const required = cc.card.stampsRequired;
+    await tx.auditLog.create({
+      data: {
+        businessId: cc.card.businessId,
+        action: "UNDO_STAMP",
+        ip: opts.ip ?? null,
+        detail: { serial: cc.serial, removed, stamps: updated.stamps },
+      },
+    });
+
+    return {
+      serial: cc.serial,
+      stamps: updated.stamps,
+      required,
+      rewardReady: updated.stamps >= required,
+    };
+  });
+
+  void pushWallet(opts.customerCardId);
+  return res;
+}
+
 /** Indløsning kræver PIN (tjekkes af kalderen). Nulstiller til ny runde. */
 export async function redeemReward(opts: {
   customerCardId: string;

@@ -45,7 +45,7 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
 /** Login-link (magic link). Bruges baade ved log ind og efter onboarding. */
 export function loginEmail(url: string): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td style="border-radius:8px;background:${C.moss};">
+    <td style="border-radius:8px;background:${C.ink};">
       <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Log ind på Stemplet</a>
     </td></tr></table>`;
 
@@ -135,7 +135,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
       : "";
 
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
-    <td style="border-radius:8px;background:${C.moss};">
+    <td style="border-radius:8px;background:${C.ink};">
       <a href="${d.dashboardUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se dit dashboard</a>
     </td></tr></table>`;
 

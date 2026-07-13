@@ -58,7 +58,7 @@ export function WebCardActions({
       {walletEnabled ? (
         <a
           href={`/api/wallet/pass/${serial}`}
-          className={btnClass("outline", "md") + " w-full"}
+          className={btnClass("primary", "md") + " w-full"}
         >
           Læg i Apple Wallet
         </a>

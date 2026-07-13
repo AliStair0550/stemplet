@@ -519,6 +519,33 @@ function StaffCard({
     }
   }
 
+  async function undo() {
+    if (!card) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const res = await fetch("/api/staff/unstamp", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ serial: card.serial }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNote({
+          ok: true,
+          text: `Fortrudt. ${data.stamps} af ${data.required}.`,
+        });
+        await loadCard(card.serial);
+      } else {
+        setNote({ ok: false, text: data.message ?? "Kunne ikke fortryde." });
+      }
+    } catch {
+      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="flex w-full max-w-md flex-col gap-5 rounded-lg border border-fog bg-white p-6 shadow-[0_20px_50px_-30px_rgba(26,26,26,0.4)]">
       {loading ? (
@@ -589,16 +616,32 @@ function StaffCard({
               </button>
             </div>
           ) : (
-            <button
-              onClick={giveStamp}
-              disabled={busy}
-              className={btnClass("primary", "lg")}
-            >
-              {busy
-                ? "Et øjeblik..."
-                : `Giv stempel (${card.stamps} af ${card.required})`}
-            </button>
+            <div className="flex flex-col gap-2">
+              <p className="text-center text-[0.8rem] font-[300] text-slate">
+                Kortet er scannet. Tryk selv for at give stemplet.
+              </p>
+              <button
+                onClick={giveStamp}
+                disabled={busy}
+                className={btnClass("primary", "lg")}
+              >
+                {busy
+                  ? "Et øjeblik..."
+                  : `Giv stempel (${card.stamps} af ${card.required})`}
+              </button>
+            </div>
           )}
+
+          {card.stamps > 0 ? (
+            <button
+              type="button"
+              onClick={undo}
+              disabled={busy}
+              className="mx-auto text-[0.75rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-rust disabled:opacity-50"
+            >
+              Fortryd sidste stempel
+            </button>
+          ) : null}
         </>
       ) : (
         <div className="flex flex-col items-center gap-4 py-8 text-center">
@@ -629,9 +672,9 @@ function StaffCard({
   );
 }
 
-// ── Kioskmodus: fuldskaerm, styrer visning, wake lock og inaktivitet ──
-type View = "qr" | "scan" | "card";
-
+// ── Kioskmodus: en ren, kunde-vendt QR-tavle i fuldskaerm ─────────────
+// Kunden ser QR'en og scanner selv. Personalet scanner kundens kort fra
+// Stempel-siden (ScanPanel), ikke herfra, saa kiosken kan staa mod kunden.
 function KioskShell({
   card,
   onClose,
@@ -639,15 +682,8 @@ function KioskShell({
   card: KioskCard;
   onClose: () => void;
 }) {
-  const [view, setView] = useState<View>("qr");
-  const [serial, setSerial] = useState<string | null>(null);
   const { qr, seconds, offline } = useKioskToken(true);
   useWakeLock(true);
-
-  const backToQr = useCallback(() => {
-    setView("qr");
-    setSerial(null);
-  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -665,70 +701,18 @@ function KioskShell({
     };
   }, []);
 
-  // 30 sek. uden beroering i scan/kort -> selv tilbage til QR.
-  useEffect(() => {
-    if (view === "qr") return;
-    let t: ReturnType<typeof setTimeout>;
-    const reset = () => {
-      clearTimeout(t);
-      t = setTimeout(backToQr, 30000);
-    };
-    const events: Array<keyof WindowEventMap> = [
-      "pointerdown",
-      "keydown",
-      "touchstart",
-    ];
-    reset();
-    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
-    return () => {
-      clearTimeout(t);
-      events.forEach((e) => window.removeEventListener(e, reset));
-    };
-  }, [view, backToQr]);
-
   return (
     <div
       className="fixed inset-0 z-[120] overflow-hidden"
       style={{ background: card.primaryColor, color: card.textColor }}
     >
-      {view === "qr" ? (
-        <KioskQr
-          card={card}
-          qr={qr}
-          seconds={seconds}
-          offline={offline}
-          onScan={() => setView("scan")}
-          onClose={onClose}
-        />
-      ) : null}
-
-      {view === "card" && serial ? (
-        <div className="flex h-full w-full items-center justify-center overflow-y-auto p-6">
-          <StaffCard
-            serial={serial}
-            onRescan={() => {
-              setSerial(null);
-              setView("scan");
-            }}
-            onExit={backToQr}
-          />
-        </div>
-      ) : null}
-
-      {view === "scan" ? (
-        <Scanner
-          overlayClassName="z-[130]"
-          hint="Ret kameraet mod QR-koden på kundens kort."
-          onClose={backToQr}
-          onResult={(text) => {
-            const value = text.includes("/kort/")
-              ? (text.split("/kort/")[1]?.split(/[/?#]/)[0] ?? text)
-              : text.trim();
-            setSerial(value);
-            setView("card");
-          }}
-        />
-      ) : null}
+      <KioskQr
+        card={card}
+        qr={qr}
+        seconds={seconds}
+        offline={offline}
+        onClose={onClose}
+      />
     </div>
   );
 }
@@ -766,14 +750,12 @@ function KioskQr({
   qr,
   seconds,
   offline,
-  onScan,
   onClose,
 }: {
   card: KioskCard;
   qr: string | null;
   seconds: number;
   offline: boolean;
-  onScan: () => void;
   onClose: () => void;
 }) {
   const qrSize = "min(64vmin, 540px)";
@@ -854,15 +836,6 @@ function KioskQr({
           </p>
         </div>
       </div>
-
-      <button
-        onClick={onScan}
-        className="flex min-h-16 w-full max-w-lg items-center justify-center gap-3 rounded-full text-[1.1rem] font-[400] tracking-[0.02em] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.55)] transition-transform active:scale-[0.98]"
-        style={{ background: card.textColor, color: card.primaryColor }}
-      >
-        <ScanFrameIcon className="h-6 w-6" />
-        Scan kundens kort
-      </button>
     </div>
   );
 }
