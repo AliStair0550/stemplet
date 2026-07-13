@@ -139,7 +139,7 @@ export default async function IndstillingerPage({
                         <td
                           className={`py-2 pr-4 ${
                             l.action === "FLAGGED" || l.action === "PIN_FAIL"
-                              ? "text-moss"
+                              ? "text-rust"
                               : "text-ink"
                           }`}
                         >

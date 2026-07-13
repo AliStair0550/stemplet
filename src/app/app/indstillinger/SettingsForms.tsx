@@ -100,7 +100,7 @@ export function SettingsForms({
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
-              Stempel-interval (minutter)
+              Selvbetjenings-interval (minutter)
             </span>
             <input
               name="stampCooldownMin"
@@ -108,10 +108,11 @@ export function SettingsForms({
               min={0}
               max={1440}
               defaultValue={cooldown}
-              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-moss"
+              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-moss"
             />
-            <span className="text-[0.72rem] font-[200] text-slate">
-              Maks. eet stempel pr. kunde i dette interval.
+            <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Hvor længe før den samme kunde selv kan scanne kiosk-QR&apos;en igen.
+              Personalet kan altid give stempler uden ventetid. Fx bar: 10, café: 120.
             </span>
           </label>
           <div className="flex items-center gap-3">
