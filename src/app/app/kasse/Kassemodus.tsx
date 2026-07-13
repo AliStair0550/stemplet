@@ -336,8 +336,7 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 
       <p className="max-w-md text-center font-[300] text-[0.85rem] leading-relaxed text-stone">
         Vis skærmen til kunden. De scanner koden med deres eget kamera og får
-        stemplet selv. Koden skifter hvert minut, så et foto af skærmen er
-        værdiløst bagefter.
+        stemplet selv. Koden skifter hvert minut.
       </p>
     </div>
   );

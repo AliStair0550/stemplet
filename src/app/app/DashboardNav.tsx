@@ -10,10 +10,10 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
   { href: "/app/kasse", label: "Stempel" },
   { href: "/app/statistik", label: "Statistik" },
+  { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },
   { href: "/app/materialer", label: "Materialer" },
   { href: "/app/guide", label: "Sådan virker det" },
-  { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/integrationer", label: "Integrationer" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];

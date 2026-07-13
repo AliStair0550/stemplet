@@ -6,8 +6,6 @@ import { StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
-import { CopyInline } from "@/components/CopyInline";
-import { APP_URL } from "@/lib/env";
 import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
 
@@ -96,20 +94,18 @@ function CustomerLimitNotice({ plan, total }: { plan: Plan; total: number }) {
 }
 
 function GettingStarted({ slug }: { slug: string }) {
-  const customerUrl = `${APP_URL}/k/${slug}`;
-  const customerUrlShort = `${APP_URL.replace(/^https?:\/\//, "")}/k/${slug}`;
   const steps = [
     {
       icon: <IconQr />,
       title: "Sæt din QR op",
-      body: "Hent plakat eller diskskilt, og stil den ved kassen.",
+      body: "Hent plakat eller diskskilt og stil den ved kassen.",
       href: "/app/materialer",
       link: "Hent materialer",
     },
     {
       icon: <IconStamp />,
       title: "Giv det første stempel",
-      body: "Vis stempel-QR'en, eller scan et kundekort ved disken.",
+      body: "Vis stempel-QR'en eller scan kortet direkte fra kundens Wallet.",
       href: "/app/kasse",
       link: "Åbn Stempel",
     },
@@ -117,7 +113,6 @@ function GettingStarted({ slug }: { slug: string }) {
       icon: <IconShare />,
       title: "Del dit kort",
       body: "Læg linket på sociale medier, så kunderne har kortet klar til næste besøg.",
-      copy: { value: customerUrl, display: customerUrlShort },
       href: `/k/${slug}`,
       link: "Se kundesiden",
     },
@@ -147,9 +142,6 @@ function GettingStarted({ slug }: { slug: string }) {
             <span className="break-words font-[300] text-[0.84rem] leading-relaxed text-stone">
               {s.body}
             </span>
-            {s.copy ? (
-              <CopyInline value={s.copy.value} display={s.copy.display} />
-            ) : null}
             <Link
               href={s.href}
               className="mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-moss transition-opacity hover:opacity-70"
