@@ -91,10 +91,21 @@ function BigCard({ icon, title, steps }: { icon: React.ReactNode; title: string;
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id?: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="flex flex-col gap-5">
-      <h2 className="text-[1.4rem] font-[400] tracking-[0.01em] text-ink">{title}</h2>
+    <section id={id} className="flex scroll-mt-24 flex-col gap-5">
+      <h2 className="flex items-center gap-3 text-[1.4rem] font-[400] tracking-[0.01em] text-ink">
+        <span aria-hidden className="h-5 w-1 rounded-full bg-moss" />
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -139,8 +150,29 @@ export function GuideContent({ data }: { data: GuideData }) {
         alt, du skal vide.
       </p>
 
+      {/* Spring-navigation, saa personalet hurtigt finder det de skal bruge. */}
+      <nav className="-mt-4 flex flex-wrap gap-2 print:hidden">
+        {(
+          [
+            ["#kassen", "Ved kassen"],
+            ["#maader", "Giv stempel"],
+            ["#indloes", "Indløs"],
+            ["#driller", "Når noget driller"],
+            ["#sikkerhed", "Sikkerhed"],
+          ] as [string, string][]
+        ).map(([href, label]) => (
+          <a
+            key={href}
+            href={href}
+            className="rounded-full border border-fog bg-white px-4 py-2 text-[0.8rem] font-[300] text-stone transition-colors hover:border-moss hover:text-moss"
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+
       {/* 1. De tre situationer ved kassen */}
-      <Section title="De tre situationer ved kassen">
+      <Section id="kassen" title="De tre situationer ved kassen">
         <p className="-mt-2 text-[1.05rem] leading-[1.6] text-stone">
           Det er stort set alt, du møder i hverdagen. Find den, kunden vil have,
           og følg de tre trin.
@@ -177,7 +209,7 @@ export function GuideContent({ data }: { data: GuideData }) {
       </Section>
 
       {/* 2. De to måder at give et stempel på */}
-      <Section title="De to måder at give et stempel på">
+      <Section id="maader" title="De to måder at give et stempel på">
         <div className="grid gap-5 md:grid-cols-2">
           <Way icon={<IconPhone />} title="Kunden scanner selv">
             <p>
@@ -213,7 +245,7 @@ export function GuideContent({ data }: { data: GuideData }) {
       </Section>
 
       {/* 3. Indløsning */}
-      <Section title="Sådan indløser du en belønning">
+      <Section id="indloes" title="Sådan indløser du en belønning">
         <div className="rounded-lg border border-fog bg-white p-6">
           <ol className="flex flex-col gap-3.5">
             {[
@@ -239,7 +271,7 @@ export function GuideContent({ data }: { data: GuideData }) {
       </Section>
 
       {/* 4. Når noget driller */}
-      <Section title="Når noget driller">
+      <Section id="driller" title="Når noget driller">
         <div className="rounded-lg border border-fog bg-white p-6">
           <div className="flex flex-col gap-4">
             <QA
@@ -290,7 +322,7 @@ export function GuideContent({ data }: { data: GuideData }) {
       ) : null}
 
       {/* 6. Kort om sikkerheden */}
-      <Section title="Kort om sikkerheden">
+      <Section id="sikkerhed" title="Kort om sikkerheden">
         <div className="rounded-lg border border-fog bg-white p-6">
           <div className="flex items-start gap-3 text-moss">
             <IconShield />

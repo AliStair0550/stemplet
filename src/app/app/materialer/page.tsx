@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
-import { PageHeading, Panel } from "@/components/dash";
+import { PageHeading } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
@@ -12,6 +12,15 @@ import type { StampIconKey } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Materialer" };
 export const dynamic = "force-dynamic";
+
+function IconDoc() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
+      <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+      <path d="M14 3v5h5M9 13h6M9 17h6" />
+    </svg>
+  );
+}
 
 export default async function MaterialerPage() {
   const { business } = await requireBusiness();
@@ -42,53 +51,65 @@ export default async function MaterialerPage() {
         subtitle="Print en QR til disken. Kunder scanner og får deres kort."
       />
       <div className="grid gap-6 md:grid-cols-[1fr_1.1fr]">
-        <Panel className="flex flex-col items-center gap-4">
-          <Image
-            src={qr}
-            alt="QR til dit stempelkort"
-            width={200}
-            height={200}
-            className="h-48 w-48"
-            unoptimized
-          />
-          <span className="break-all text-center text-[0.78rem] font-[200] text-slate">
+        {/* QR til disken */}
+        <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-8">
+          <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
+            Din QR-kode
+          </span>
+          <div className="rounded-lg border border-fog p-3">
+            <Image
+              src={qr}
+              alt="QR til dit stempelkort"
+              width={200}
+              height={200}
+              className="h-44 w-44"
+              unoptimized
+            />
+          </div>
+          <span className="break-all text-center text-[0.78rem] font-[300] text-slate">
             {cardUrl}
           </span>
-        </Panel>
+        </div>
 
+        {/* Print-materialer */}
         <div className="flex flex-col gap-4">
-          <Panel>
-            <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-              A4-plakat
-            </h2>
-            <p className="mt-2 font-[200] text-[0.85rem] leading-relaxed text-stone">
-              Til opslagstavlen eller vinduet.
-            </p>
-            <a
-              href="/api/materials/plakat"
-              target="_blank"
-              rel="noopener"
-              className={btnClass("primary") + " mt-4"}
+          {(
+            [
+              {
+                title: "A4-plakat",
+                body: "Til opslagstavlen eller vinduet.",
+                href: "/api/materials/plakat",
+              },
+              {
+                title: "A6-diskskilt",
+                body: "Lille skilt til at stå ved kassen.",
+                href: "/api/materials/skilt",
+              },
+            ] as const
+          ).map((m) => (
+            <div
+              key={m.title}
+              className="flex items-center gap-5 rounded-lg border border-fog bg-white p-6"
             >
-              Hent plakat (PDF)
-            </a>
-          </Panel>
-          <Panel>
-            <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-              A6-diskskilt
-            </h2>
-            <p className="mt-2 font-[200] text-[0.85rem] leading-relaxed text-stone">
-              Lille skilt til at stå ved kassen.
-            </p>
-            <a
-              href="/api/materials/skilt"
-              target="_blank"
-              rel="noopener"
-              className={btnClass("primary") + " mt-4"}
-            >
-              Hent diskskilt (PDF)
-            </a>
-          </Panel>
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss">
+                <IconDoc />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-[400] text-[1rem] text-ink">{m.title}</h2>
+                <p className="mt-0.5 font-[300] text-[0.84rem] leading-relaxed text-stone">
+                  {m.body}
+                </p>
+              </div>
+              <a
+                href={m.href}
+                target="_blank"
+                rel="noopener"
+                className={btnClass("outline")}
+              >
+                Hent PDF
+              </a>
+            </div>
+          ))}
         </div>
       </div>
 

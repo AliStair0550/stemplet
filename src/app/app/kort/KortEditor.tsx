@@ -85,33 +85,39 @@ export function KortEditor({
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <CardDesigner
-        value={design}
-        onChange={setDesign}
-        businessName={businessName}
-        allowLogo
-      />
-      <div className="flex flex-wrap items-center gap-4">
-        <button onClick={save} disabled={pending} className={btnClass("primary")}>
-          {pending ? "Gemmer..." : "Gem kort"}
-        </button>
-        <button
-          onClick={download}
-          disabled={downloading}
-          className={btnClass("outline")}
-        >
-          {downloading ? "Laver billede..." : "Download som PNG"}
-        </button>
-        {msg ? (
-          <span
-            className={`text-[0.82rem] font-[200] ${
-              msg.ok ? "text-moss" : "text-rust"
-            }`}
+    <div className="flex flex-col gap-6">
+      <div className="rounded-lg border border-fog bg-white p-6 md:p-8">
+        <CardDesigner
+          value={design}
+          onChange={setDesign}
+          businessName={businessName}
+          allowLogo
+        />
+        <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-fog pt-6">
+          <button
+            onClick={save}
+            disabled={pending}
+            className={btnClass("primary")}
           >
-            {msg.text}
-          </span>
-        ) : null}
+            {pending ? "Gemmer..." : "Gem kort"}
+          </button>
+          <button
+            onClick={download}
+            disabled={downloading}
+            className={btnClass("outline")}
+          >
+            {downloading ? "Laver billede..." : "Download som billede"}
+          </button>
+          {msg ? (
+            <span
+              className={`text-[0.82rem] font-[300] ${
+                msg.ok ? "text-moss" : "text-rust"
+              }`}
+            >
+              {msg.text}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       {/* Delekort, som eksporteres til PNG. Ligger oeverst i viewporten (saa
