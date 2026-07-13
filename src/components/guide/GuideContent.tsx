@@ -72,7 +72,7 @@ function IconLayers() {
 // ── Byggeklodser ─────────────────────────────────────────────────────
 function BigCard({ icon, title, steps }: { icon: React.ReactNode; title: string; steps: string[] }) {
   return (
-    <div className="flex flex-col gap-5 rounded-lg border border-fog bg-white p-7">
+    <div className="flex flex-col gap-5 rounded-lg border border-fog bg-white shadow-card p-7">
       <div className="flex items-center gap-3 text-moss">
         {icon}
         <h3 className="text-[1.25rem] font-[400] leading-tight text-ink">{title}</h3>
@@ -113,7 +113,7 @@ function Section({
 
 function Way({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-fog bg-white p-6">
+    <div className="rounded-lg border border-fog bg-white shadow-card p-6">
       <div className="flex items-center gap-2.5 text-moss">
         {icon}
         <h3 className="text-[1.1rem] font-[500] text-ink">{title}</h3>
@@ -246,7 +246,7 @@ export function GuideContent({ data }: { data: GuideData }) {
 
       {/* 3. Indløsning */}
       <Section id="indloes" title="Sådan indløser du en belønning">
-        <div className="rounded-lg border border-fog bg-white p-6">
+        <div className="rounded-lg border border-fog bg-white shadow-card p-6">
           <ol className="flex flex-col gap-3.5">
             {[
               "Kundens kort er fuldt og siger vis ved kassen.",
@@ -272,7 +272,7 @@ export function GuideContent({ data }: { data: GuideData }) {
 
       {/* 4. Når noget driller */}
       <Section id="driller" title="Når noget driller">
-        <div className="rounded-lg border border-fog bg-white p-6">
+        <div className="rounded-lg border border-fog bg-white shadow-card p-6">
           <div className="flex flex-col gap-4">
             <QA
               q="Der står koden er udløbet"
@@ -323,7 +323,7 @@ export function GuideContent({ data }: { data: GuideData }) {
 
       {/* 6. Kort om sikkerheden */}
       <Section id="sikkerhed" title="Kort om sikkerheden">
-        <div className="rounded-lg border border-fog bg-white p-6">
+        <div className="rounded-lg border border-fog bg-white shadow-card p-6">
           <div className="flex items-start gap-3 text-moss">
             <IconShield />
             <ul className="flex flex-col gap-2 text-[1.05rem] leading-[1.6] text-ink">

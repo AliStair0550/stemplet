@@ -267,7 +267,7 @@ export function IntegrationsClient({
       </Panel>
 
       {/* API-dokumentation foldet ind, saa ikke-tekniske brugere ikke skraemmes */}
-      <details className="group rounded-lg border border-fog bg-white">
+      <details className="group rounded-lg border border-fog bg-white shadow-card">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden">
           <div>
             <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">

@@ -40,7 +40,7 @@ export function WebCardActions({
       ) : null}
 
       {showQr ? (
-        <div className="mt-2 flex flex-col items-center gap-2 rounded-lg border border-fog bg-white p-4">
+        <div className="mt-2 flex flex-col items-center gap-2 rounded-lg border border-fog bg-white shadow-card p-4">
           <Image
             src={serialQr}
             alt={`QR for ${serial}`}

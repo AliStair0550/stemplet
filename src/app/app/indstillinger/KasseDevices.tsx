@@ -55,7 +55,7 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
   }
 
   return (
-    <section className="rounded-lg border border-fog bg-white p-6 md:p-8">
+    <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
       <div className="flex flex-col gap-1">
         <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
           Kasse-enheder
@@ -142,7 +142,7 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
               <span className="font-[400] text-ink">stemplet.alius.dk/kasse</span>{" "}
               og indtast koden, eller scan QR-koden.
             </p>
-            <div className="rounded-lg border border-fog bg-white p-3">
+            <div className="rounded-lg border border-fog bg-white shadow-card p-3">
               <Image
                 src={pairing.qrDataUrl}
                 alt="Parrings-QR"

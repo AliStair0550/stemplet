@@ -88,7 +88,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
       {/* Vaelg type som to kort, saa det er tydeligt hvad de goer */}
       <form
         onSubmit={onCreate}
-        className="flex flex-col gap-5 rounded-lg border border-fog bg-white p-6"
+        className="flex flex-col gap-5 rounded-lg border border-fog bg-white shadow-card p-6"
       >
         <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
           Ny kampagne
@@ -195,7 +195,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
               return (
                 <li
                   key={c.id}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-fog bg-white px-5 py-4"
+                  className="flex items-center justify-between gap-4 rounded-lg border border-fog bg-white shadow-card px-5 py-4"
                 >
                   <div className="flex items-center gap-3.5">
                     <span

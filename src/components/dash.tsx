@@ -32,7 +32,12 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-lg border border-fog bg-white p-6", className)}>
+    <div
+      className={cn(
+        "rounded-lg border border-fog bg-white p-6 shadow-card",
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -54,7 +59,7 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-fog bg-white p-5",
+        "group relative overflow-hidden rounded-lg border border-fog bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift",
         className,
       )}
     >

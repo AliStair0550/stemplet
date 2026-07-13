@@ -234,7 +234,7 @@ export function StartWizard() {
 
           <div className="grid gap-4 md:grid-cols-3">
             {/* 1: QR-kode til download */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
                   1
@@ -265,7 +265,7 @@ export function StartWizard() {
             </div>
 
             {/* 2: Se og del kortet online */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
                   2
@@ -310,7 +310,7 @@ export function StartWizard() {
             </div>
 
             {/* 3: Faerdigt skilt til print */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
                   3

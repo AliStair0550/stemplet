@@ -35,7 +35,7 @@ export default async function MaterialerPage() {
       />
       <div className="grid gap-6 md:grid-cols-[1fr_1.1fr]">
         {/* QR til disken */}
-        <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-8">
+        <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-8">
           <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
             Din QR-kode
           </span>
@@ -82,7 +82,7 @@ export default async function MaterialerPage() {
           ).map((m) => (
             <div
               key={m.title}
-              className="flex items-center gap-5 rounded-lg border border-fog bg-white p-6"
+              className="flex items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-6"
             >
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss">
                 <IconDoc />

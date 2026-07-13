@@ -22,7 +22,7 @@ const SIZES: Record<Size, string> = {
 
 export function btnClass(variant: Variant = "primary", size: Size = "md"): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all disabled:opacity-50 disabled:pointer-events-none",
+    "inline-flex items-center justify-center gap-2 font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
     // Synlig tastatur-fokus overalt (samme ring paa alle knapper).
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
     VARIANTS[variant],

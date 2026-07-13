@@ -232,7 +232,7 @@ export function Kassemodus({ card }: { card: KioskCard }) {
     <div className="flex flex-col gap-7">
       {/* Valg-linje: de to daglige tilstande + kassemodus */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex w-full gap-1 rounded-lg border border-fog bg-white p-1 sm:w-auto">
+        <div className="flex w-full gap-1 rounded-lg border border-fog bg-white shadow-card p-1 sm:w-auto">
           {(
             [
               ["qr", "Vis stempel-QR"],
@@ -279,7 +279,7 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white p-8 text-center">
+      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-8 text-center">
         <div className="flex flex-col items-center gap-1">
           <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
             Scan og saml stempler
@@ -379,7 +379,7 @@ function ScanPanel() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white p-10 text-center">
+      <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-10 text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
           <ScanFrameIcon className="h-8 w-8" />
         </span>

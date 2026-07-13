@@ -197,7 +197,7 @@ export default async function OverviewPage() {
   return (
     <>
       {/* Velkomst-band: butikkens brand-glimt, dato og status i et roligt panel */}
-      <div className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white">
+      <div className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white shadow-card">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[90px]"

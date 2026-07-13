@@ -114,7 +114,7 @@ export function ShareCardSection({
   }
 
   return (
-    <div className="mt-6 rounded-lg border border-fog bg-white p-6 md:p-8">
+    <div className="mt-6 rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,18rem)_1fr]">
         {/* Preview af kortet */}
         <div className="mx-auto w-full max-w-xs">

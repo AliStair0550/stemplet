@@ -86,7 +86,7 @@ export function KortEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-fog bg-white p-6 md:p-8">
+      <div className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
         <CardDesigner
           value={design}
           onChange={setDesign}
