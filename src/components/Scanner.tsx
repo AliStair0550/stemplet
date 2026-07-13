@@ -18,6 +18,10 @@ export function Scanner({
   const rafRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const doneRef = useRef(false);
+  // onResult i en ref, saa kamera-effekten kan koere med [] og ALDRIG rives ned
+  // igen af en re-render eller en ny callback-identitet (det lukkede kameraet).
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
   const [status, setStatus] = useState<"starting" | "scanning" | "error">(
     "starting",
   );
@@ -25,12 +29,23 @@ export function Scanner({
   useEffect(() => {
     let cancelled = false;
 
-    async function start() {
+    async function getStream(): Promise<MediaStream> {
+      // Foerst bagkameraet; falder tilbage til et hvilket som helst kamera,
+      // hvis "environment" ikke findes (fx laptops eller streng iOS-adfaerd).
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+        return await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
           audio: false,
         });
+      } catch {
+        return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+    }
+
+    async function start() {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) throw new Error("no-media");
+        const stream = await getStream();
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -39,7 +54,14 @@ export function Scanner({
         const video = videoRef.current;
         if (!video) return;
         video.srcObject = stream;
-        await video.play();
+        // iOS kan afvise play() hvis den afbrydes; ignorer og lad tick vente
+        // paa data i stedet for at gaa i fejl-tilstand.
+        try {
+          await video.play();
+        } catch {
+          /* tick() venter paa HAVE_ENOUGH_DATA uanset */
+        }
+        if (cancelled) return;
         setStatus("scanning");
         tick();
       } catch {
@@ -50,7 +72,7 @@ export function Scanner({
     function tick() {
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      if (!video || !canvas || doneRef.current) return;
+      if (!video || !canvas || doneRef.current || cancelled) return;
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         const w = video.videoWidth;
         const h = video.videoHeight;
@@ -65,7 +87,7 @@ export function Scanner({
           });
           if (code && code.data) {
             doneRef.current = true;
-            onResult(code.data);
+            onResultRef.current(code.data);
             return;
           }
         }
@@ -79,7 +101,8 @@ export function Scanner({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, [onResult]);
+    // Bevidst tom: kameraet startes een gang og lukkes kun ved unmount.
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 p-6">

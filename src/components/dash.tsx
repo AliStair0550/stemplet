@@ -42,24 +42,33 @@ export function StatTile({
   label,
   value,
   sub,
+  icon,
   className,
 }: {
   label: string;
   value: React.ReactNode;
   sub?: string;
+  icon?: React.ReactNode;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "rounded-lg border border-fog bg-white p-5",
+        "group relative overflow-hidden rounded-lg border border-fog bg-white p-5",
         className,
       )}
     >
-      <div className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-        {label}
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
+          {label}
+        </div>
+        {icon ? (
+          <span className="text-moss/60 transition-colors group-hover:text-moss">
+            {icon}
+          </span>
+        ) : null}
       </div>
-      <div className="mt-2 font-[300] text-[1.9rem] leading-none text-ink">
+      <div className="mt-3 font-[300] text-[2rem] leading-none text-ink tabular-nums">
         {value}
       </div>
       {sub ? (

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Plan } from "@prisma/client";
 import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity } from "@/lib/stats";
-import { PageHeading, StatTile, Panel } from "@/components/dash";
+import { StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
@@ -10,6 +10,42 @@ import { CopyInline } from "@/components/CopyInline";
 import { APP_URL } from "@/lib/env";
 import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
+
+// Smaa line-art ikoner til noegletal-fliserne.
+const ICON = "h-[1.15rem] w-[1.15rem]";
+function IconUsers() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={ICON}>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+      <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" />
+    </svg>
+  );
+}
+function IconSpark() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={ICON}>
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" />
+    </svg>
+  );
+}
+function IconStamp() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={ICON}>
+      <circle cx="12" cy="9" r="5" />
+      <path d="M9.5 9l1.7 1.7L15 7" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}
+function IconGift() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={ICON}>
+      <path d="M4 11h16v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8Z" />
+      <path d="M12 11v9M3 8h18v3H3zM12 8S10.5 4 8.5 4 6 6 8 8M12 8s1.5-4 3.5-4S18 6 16 8" />
+    </svg>
+  );
+}
 
 // Varsl foer muren: fra 80 kunder viser vi vaerdien og opgraderingsknappen,
 // saa salget starter paa "se hvad de har givet dig" - ikke paa tvang.
@@ -110,17 +146,44 @@ export default async function OverviewPage() {
     getRecentActivity(business.id, 6),
   ]);
 
+  const dateLabel = new Intl.DateTimeFormat("da-DK", {
+    timeZone: "Europe/Copenhagen",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
+
+  const statusLine =
+    stats.stampsToday > 0
+      ? `${formatDkNumber(stats.stampsToday)} ${stats.stampsToday === 1 ? "stempel" : "stempler"} i dag, og ${formatDkNumber(stats.activeCustomers)} aktive kunder lige nu.`
+      : `${formatDkNumber(stats.activeCustomers)} aktive kunder. Vis stempel-QR'en ved kassen, så begynder dagen at tælle.`;
+
   return (
     <>
-      <PageHeading
-        title={`Hej, ${business.name}`}
-        subtitle="Her er, hvordan dit stempelkort klarer sig."
-        action={
+      {/* Velkomst-band: butikkens brand-glimt, dato og status i et roligt panel */}
+      <div className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[90px]"
+          style={{ background: business.primaryColor, opacity: 0.12 }}
+        />
+        <div className="relative flex flex-wrap items-end justify-between gap-5 p-6 md:p-8">
+          <div className="min-w-0">
+            <p className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
+              {dateLabel}
+            </p>
+            <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
+              Hej, {business.name}
+            </h1>
+            <p className="mt-1.5 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
+              {statusLine}
+            </p>
+          </div>
           <ButtonLink href="/app/kasse" variant="moss" size="md">
             Stempel
           </ButtonLink>
-        }
-      />
+        </div>
+      </div>
 
       <CustomerLimitNotice plan={business.plan} total={stats.totalCustomers} />
 
@@ -129,20 +192,24 @@ export default async function OverviewPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           label="Aktive kunder"
+          icon={<IconUsers />}
           value={<AnimatedNumber value={stats.activeCustomers} />}
           sub={`${formatDkNumber(stats.totalCustomers)} i alt`}
         />
         <StatTile
           label="Nye kunder (30 dage)"
+          icon={<IconSpark />}
           value={<AnimatedNumber value={stats.newCustomers30} />}
         />
         <StatTile
           label="Stempler i dag"
+          icon={<IconStamp />}
           value={<AnimatedNumber value={stats.stampsToday} />}
           sub={`${formatDkNumber(stats.stampsWeek)} seneste 7 dage`}
         />
         <StatTile
           label="Indløsninger"
+          icon={<IconGift />}
           value={<AnimatedNumber value={stats.redemptionsTotal} />}
           sub={`${formatDkNumber(stats.redemptions30)} seneste 30 dage`}
         />
@@ -150,7 +217,7 @@ export default async function OverviewPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
         <Panel>
-          <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+          <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
             Stempler seneste 7 dage
           </h2>
           <BarChart
@@ -163,7 +230,7 @@ export default async function OverviewPage() {
         </Panel>
 
         <Panel>
-          <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+          <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
             Seneste aktivitet
           </h2>
           {activity.length === 0 ? (
