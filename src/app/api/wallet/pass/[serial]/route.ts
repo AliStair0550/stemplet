@@ -36,11 +36,22 @@ export async function GET(
     return new Response("Kortet blev ikke fundet.", { status: 404 });
   }
 
-  const buffer = await buildPkpass(cc);
+  let buffer: Buffer;
+  try {
+    buffer = await buildPkpass(cc);
+  } catch (e) {
+    console.error("pkpass-bygning fejlede", e);
+    return new Response("Kunne ikke bygge passet.", { status: 500 });
+  }
+
   return new Response(new Uint8Array(buffer), {
     headers: {
       "content-type": "application/vnd.apple.pkpass",
-      "content-disposition": `attachment; filename="${serial}.pkpass"`,
+      // "inline", IKKE "attachment": iOS Safari skal AABNE passet i Wallet.
+      // Med attachment forsoeger Safari at downloade det som en fil og siger
+      // "Safari kan ikke hente dette arkiv".
+      "content-disposition": `inline; filename="stemplet-${serial}.pkpass"`,
+      "cache-control": "no-store",
     },
   });
 }
