@@ -20,6 +20,37 @@ export function StartWizard() {
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<Extract<CreateResult, { ok: true }> | null>(null);
   const [pending, startTransition] = useTransition();
+  const [copied, setCopied] = useState(false);
+
+  async function copyLink() {
+    if (!created) return;
+    try {
+      await navigator.clipboard.writeText(created.cardUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* udklipsholder ikke tilgaengelig */
+    }
+  }
+
+  async function shareCard() {
+    if (!created) return;
+    const data = {
+      title: `${name || "Stempelkort"} i din Wallet`,
+      text: "Saml stempler og få en belønning. Ingen app, det ligger i din Wallet.",
+      url: created.cardUrl,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(data);
+        return;
+      }
+    } catch {
+      // brugeren afbroed delingen; falder tilbage til kopiér nedenfor
+      return;
+    }
+    copyLink();
+  }
 
   function next() {
     setError(null);
@@ -45,7 +76,11 @@ export function StartWizard() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+    <div
+      className={`mx-auto flex w-full flex-col gap-8 ${
+        step === 2 ? "max-w-4xl" : "max-w-2xl"
+      }`}
+    >
       {/* Trin-indikator */}
       <ol className="flex items-center gap-3">
         {STEPS.map((label, i) => (
@@ -185,46 +220,140 @@ export function StartWizard() {
       ) : null}
 
       {step === 2 && created ? (
-        <div className="flex flex-col items-center gap-6 text-center">
-          <h2 className="font-fraunces font-light italic text-[1.8rem] text-ink">
-            Din butik er klar
-          </h2>
-          <p className="max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
-            Print denne QR-kode og sæt den ved kassen. Dine kunder scanner den
-            og har deres stempelkort på fem sekunder. QR-koden ligger også altid
-            klar i dashboardet.
-          </p>
-          <div className="rounded-lg border border-fog bg-white p-5">
-            <Image
-              src={created.qrDataUrl}
-              alt="QR til dit stempelkort"
-              width={220}
-              height={220}
-              className="h-52 w-52"
-              unoptimized
-            />
+        <div className="flex flex-col gap-8">
+          <div className="text-center">
+            <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
+              Du er klar
+            </h2>
+            <p className="mx-auto mt-3 max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
+              Gør to ting nu: sæt kortet op i butikken, og del det online. Så
+              begynder dine kunder at samle stempler direkte i deres Apple
+              Wallet.
+            </p>
           </div>
-          <a
-            href={created.qrDataUrl}
-            download={`stemplet-qr-${created.slug}.png`}
-            className={btnClass("outline")}
-          >
-            Download QR-kode
-          </a>
-          <a
-            href={created.cardUrl}
-            className="text-[0.8rem] font-[200] text-moss hover:opacity-70"
-          >
-            {created.cardUrl}
-          </a>
-          <div className="mt-2 flex flex-col items-center gap-2 border-t border-fog pt-6">
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* 1: QR-kode til download */}
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
+                  1
+                </span>
+                <h3 className="font-[400] text-[1rem] text-ink">QR-kode</h3>
+              </div>
+              <div className="flex justify-center rounded-lg border border-fog bg-parchment p-3">
+                <Image
+                  src={created.qrDataUrl}
+                  alt="QR til dit stempelkort"
+                  width={140}
+                  height={140}
+                  className="h-32 w-32"
+                  unoptimized
+                />
+              </div>
+              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
+                Download koden og brug den, hvor du vil: på skærme,
+                klistermærker eller din egen plakat.
+              </p>
+              <a
+                href={created.qrDataUrl}
+                download={`stemplet-qr-${created.slug}.png`}
+                className={`${btnClass("outline")} mt-auto`}
+              >
+                Download QR
+              </a>
+            </div>
+
+            {/* 2: Se og del kortet online */}
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
+                  2
+                </span>
+                <h3 className="font-[400] text-[1rem] text-ink">
+                  Se og del kortet
+                </h3>
+              </div>
+              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
+                Åbn dit kort og del linket online, så folk lægger det i deres
+                Wallet.
+              </p>
+              <span className="break-all rounded-md bg-sand px-3 py-2 text-center text-[0.74rem] font-[300] text-slate">
+                {created.cardUrl}
+              </span>
+              <div className="mt-auto flex flex-col gap-2">
+                <a
+                  href={created.cardUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={btnClass("moss")}
+                >
+                  Se mit kort
+                </a>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={shareCard}
+                    className={`${btnClass("outline")} flex-1`}
+                  >
+                    Del
+                  </button>
+                  <button
+                    type="button"
+                    onClick={copyLink}
+                    className={`${btnClass("outline")} flex-1`}
+                  >
+                    {copied ? "Kopieret" : "Kopiér link"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 3: Faerdigt skilt til print */}
+            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white p-6">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
+                  3
+                </span>
+                <h3 className="font-[400] text-[1rem] text-ink">
+                  Færdigt skilt
+                </h3>
+              </div>
+              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
+                Et flot, færdigt skilt du bare printer og sætter op. Vælg
+                størrelse:
+              </p>
+              <div className="mt-auto flex flex-col gap-2">
+                {(
+                  [
+                    ["plakat", "A4-plakat"],
+                    ["a5", "A5-skilt"],
+                    ["visitkort", "Visitkort"],
+                  ] as const
+                ).map(([t, label]) => (
+                  <a
+                    key={t}
+                    href={`/api/materials/${t}?slug=${created.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={btnClass("outline")}
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Tydelig login-CTA i midten */}
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-moss/30 bg-moss/[0.05] p-8 text-center">
             <form action={sendOnboardingLogin}>
               <input type="hidden" name="email" value={email} />
               <button className={btnClass("primary", "lg")}>
-                Log ind på dashboardet
+                Log ind på dit dashboard
               </button>
             </form>
-            <p className="max-w-xs text-[0.72rem] font-[200] leading-relaxed text-slate">
+            <p className="max-w-sm font-[200] text-[0.74rem] leading-relaxed text-slate">
               Vi sender et login-link til {email}. Klik det, og du er inde i
               dashboardet. Husk at tjekke spam-mappen, hvis det ikke dukker op.
             </p>

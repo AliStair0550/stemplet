@@ -4,27 +4,61 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
-import { MaterialsPdf } from "./Doc";
+import { MaterialsPdf, type MaterialTier } from "./Doc";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type PageSize = "A4" | "A5" | "A6" | [number, number];
+
+// Visitkort: 85x55 mm i punkter (1 mm = 2,8346 pt).
+const FORMATS: Record<
+  string,
+  { pageSize: PageSize; tier: MaterialTier; file: string }
+> = {
+  plakat: { pageSize: "A4", tier: "lg", file: "plakat-a4" },
+  a5: { pageSize: "A5", tier: "md", file: "skilt-a5" },
+  skilt: { pageSize: "A6", tier: "sm", file: "diskskilt-a6" },
+  visitkort: { pageSize: [241, 156], tier: "xs", file: "visitkort" },
+};
+
+const withCard = {
+  cards: { take: 1, orderBy: { createdAt: "asc" as const } },
+};
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ type: string }> },
 ) {
   const { type } = await params;
-  const size = type === "skilt" ? "A6" : "A4";
+  const fmt = FORMATS[type] ?? FORMATS.plakat;
 
-  const session = await auth();
-  const businessId = session?.user?.businessId;
-  if (!businessId) return new Response("Ikke logget ind.", { status: 401 });
+  // Offentlig adgang via ?slug= (bruges i onboarding, foer brugeren har
+  // et login). Uden slug kraeves en session (dashboardets materialer-side).
+  // Alt paa skiltet (navn, logo, beloenning, QR til /k/slug) er i forvejen
+  // offentligt via det offentlige kort, saa slug-adgang laekker intet.
+  const slug = req.nextUrl.searchParams.get("slug")?.trim();
 
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
-    include: { cards: { take: 1, orderBy: { createdAt: "asc" } } },
-  });
-  if (!business) return new Response("Ikke fundet.", { status: 404 });
+  let business = null;
+  if (slug) {
+    business = await prisma.business.findUnique({
+      where: { slug },
+      include: withCard,
+    });
+  } else {
+    const session = await auth();
+    const businessId = session?.user?.businessId;
+    if (businessId) {
+      business = await prisma.business.findUnique({
+        where: { id: businessId },
+        include: withCard,
+      });
+    }
+  }
+
+  if (!business) {
+    return new Response("Ikke fundet.", { status: slug ? 404 : 401 });
+  }
 
   const cardUrl = `${APP_URL}/k/${business.slug}`;
   const qrDataUrl = await QRCode.toDataURL(cardUrl, {
@@ -38,14 +72,15 @@ export async function GET(
     qrDataUrl,
     rewardText: business.cards[0]?.rewardText ?? "",
     logoUrl: business.logoUrl,
-    size,
+    pageSize: fmt.pageSize,
+    tier: fmt.tier,
   });
   const buffer = await renderToBuffer(element);
 
   return new Response(new Uint8Array(buffer), {
     headers: {
       "content-type": "application/pdf",
-      "content-disposition": `inline; filename="stemplet-${size === "A6" ? "diskskilt" : "plakat"}.pdf"`,
+      "content-disposition": `inline; filename="stemplet-${fmt.file}.pdf"`,
     },
   });
 }
