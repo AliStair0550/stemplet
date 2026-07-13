@@ -26,7 +26,7 @@ function rgbString(hex: string): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-async function loadLogo(logoUrl: string | null): Promise<Buffer> {
+async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
   if (logoUrl) {
     try {
       // Data-URI (den normale vej fra kortdesigneren): ingen netvaerkshentning.
@@ -51,10 +51,10 @@ async function loadLogo(logoUrl: string | null): Promise<Buffer> {
         }
       }
     } catch {
-      // falder tilbage til standardikonet
+      // ingen brugbar logo -> vis kun butiksnavnet (ingen Stemplet-badge)
     }
   }
-  return readFile(path.join(process.cwd(), "public", "icon-512.png"));
+  return null;
 }
 
 /** Bygger et .pkpass (storeCard) for et kundekort. */
@@ -71,29 +71,31 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   const fg = rgbString(contrastText(input.primaryColor));
   const rewardReady = input.stamps >= input.required;
 
-  const pass = new PKPass(
-    {
-      "icon.png": iconBuf,
-      "icon@2x.png": iconBuf,
-      "logo.png": logoBuf,
-      "logo@2x.png": logoBuf,
-    },
-    certificates,
-    {
-      passTypeIdentifier,
-      teamIdentifier,
-      organizationName: input.businessName,
-      description: `Stempelkort - ${input.businessName}`,
-      serialNumber: input.serial,
-      foregroundColor: fg,
-      backgroundColor: bg,
-      labelColor: fg,
-      logoText: input.businessName,
-      webServiceURL: `${APP_URL}/api/wallet`,
-      authenticationToken: input.authToken,
-      sharingProhibited: true,
-    },
-  );
+  const images: Record<string, Buffer> = {
+    "icon.png": iconBuf,
+    "icon@2x.png": iconBuf,
+  };
+  // Butikkens eget logo i toppen. Har butikken ingen, viser vi kun navnet
+  // (logoText), ikke Stemplet-badgen, saa passet er fuldt i butikkens brand.
+  if (logoBuf) {
+    images["logo.png"] = logoBuf;
+    images["logo@2x.png"] = logoBuf;
+  }
+
+  const pass = new PKPass(images, certificates, {
+    passTypeIdentifier,
+    teamIdentifier,
+    organizationName: input.businessName,
+    description: `Stempelkort - ${input.businessName}`,
+    serialNumber: input.serial,
+    foregroundColor: fg,
+    backgroundColor: bg,
+    labelColor: fg,
+    logoText: input.businessName,
+    webServiceURL: `${APP_URL}/api/wallet`,
+    authenticationToken: input.authToken,
+    sharingProhibited: true,
+  });
 
   pass.type = "storeCard";
 
@@ -107,7 +109,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
 
   pass.primaryFields.push({
     key: "reward",
-    label: "BELOENNING",
+    label: "BELØNNING",
     value: input.rewardText,
   });
 
@@ -116,7 +118,9 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     label: "STATUS",
     value: rewardReady
       ? "Belønning klar"
-      : `Mangler ${input.required - input.stamps}`,
+      : `Mangler ${input.required - input.stamps} ${
+          input.required - input.stamps === 1 ? "stempel" : "stempler"
+        }`,
   });
 
   pass.backFields.push(
