@@ -41,7 +41,7 @@ export default function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-sm font-[300] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+                className="rounded-lg font-[300] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
               >
                 {l.label}
               </Link>
@@ -50,7 +50,7 @@ export default function Nav() {
 
           <Link
             href="/login"
-            className="rounded-sm font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+            className="rounded-lg font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
           >
             Log ind
           </Link>

@@ -15,6 +15,22 @@
   --color-rust: #9e3b2e;
   --font-sans: "Jost", sans-serif;
   --font-fraunces: "Fraunces", serif;
+
+  /* ── Type-skala (modulaer ~1.25). Brug disse i stedet for vilkaarlige
+     text-[Xrem]-vaerdier, saa stoerrelserne konvergerer over tid.
+     label = uppercase micro-labels (eyebrow, stat-label, form-label). ───── */
+  --text-label: 0.66rem;
+  --text-caption: 0.78rem;
+  --text-body: 0.9rem;
+  --text-lead: 1rem;
+  --text-title: 1.2rem;
+  --text-heading: 1.6rem;
+  --text-section: 2rem;
+  --text-display: 2.6rem;
+
+  /* ── Radius-system: rounded-lg = containere/kort, rounded-full = pills,
+     rounded-md = smaa kontroller, rounded-[1.4rem] = selve stempelkortet
+     (bevidst "objekt"). Knapper og inputs er skarpe (brand). ───────────── */
 }
 
 html {

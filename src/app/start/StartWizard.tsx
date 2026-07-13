@@ -175,7 +175,7 @@ export function StartWizard() {
             og har deres stempelkort på fem sekunder. QR-koden ligger også altid
             klar i dashboardet.
           </p>
-          <div className="rounded-sm border border-fog bg-white p-5">
+          <div className="rounded-lg border border-fog bg-white p-5">
             <Image
               src={created.qrDataUrl}
               alt="QR til dit stempelkort"

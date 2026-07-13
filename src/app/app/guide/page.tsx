@@ -35,7 +35,7 @@ export default async function GuidePage() {
         action={<PrintGuideButton />}
       />
 
-      <div className="mb-10 rounded-sm border border-fog bg-white p-5 print:hidden">
+      <div className="mb-10 rounded-lg border border-fog bg-white p-5 print:hidden">
         <p className="text-[0.9rem] font-[400] text-ink">
           Del med personalet uden login
         </p>

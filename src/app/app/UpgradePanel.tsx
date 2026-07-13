@@ -10,7 +10,7 @@ export function UpgradePanel({
   enabled?: boolean;
 }) {
   return (
-    <div className="rounded-sm border border-moss bg-moss/5 p-8 text-center">
+    <div className="rounded-lg border border-moss bg-moss/5 p-8 text-center">
       <h3 className="font-[300] text-[1.2rem] text-ink">
         {feature} er en del af Pro
       </h3>

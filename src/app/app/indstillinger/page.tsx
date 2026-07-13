@@ -40,12 +40,12 @@ export default async function IndstillingerPage({
       <PageHeading title="Indstillinger" subtitle="Profil, PIN, abonnement og log." />
 
       {betaling === "ok" ? (
-        <div className="mb-6 rounded-sm border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
+        <div className="mb-6 rounded-lg border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
           Tak. Din betaling er registreret.
         </div>
       ) : null}
       {fejl === "stripe" ? (
-        <div className="mb-6 rounded-sm border border-clay bg-sand px-5 py-3 text-[0.85rem] font-[200] text-stone">
+        <div className="mb-6 rounded-lg border border-clay bg-sand px-5 py-3 text-[0.85rem] font-[200] text-stone">
           Betaling er ikke sat op endnu. Alt andet virker på Gratis-planen.
         </div>
       ) : null}

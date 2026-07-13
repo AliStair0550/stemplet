@@ -49,9 +49,9 @@ export function CategoryBars({
                   {d.value} · {Math.round((d.value / total) * 100)}%
                 </span>
               </div>
-              <div className="h-3.5 w-full overflow-hidden rounded-sm bg-fog">
+              <div className="h-3.5 w-full overflow-hidden rounded-lg bg-fog">
                 <div
-                  className="h-full origin-left rounded-sm"
+                  className="h-full origin-left rounded-lg"
                   style={{
                     width: `${Math.max(2, w)}%`,
                     background: s.tex,

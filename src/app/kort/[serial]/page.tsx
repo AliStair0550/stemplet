@@ -70,7 +70,7 @@ export default async function WebCardPage({
         />
 
         {rewardReady ? (
-          <div className="w-full rounded-sm border border-moss bg-moss/5 px-5 py-4 text-center">
+          <div className="w-full rounded-lg border border-moss bg-moss/5 px-5 py-4 text-center">
             <p className="font-[300] text-[1rem] text-ink">
               Din belønning er klar
             </p>

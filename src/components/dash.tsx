@@ -12,7 +12,7 @@ export function PageHeading({
   return (
     <div className="mb-8 flex items-start justify-between gap-4">
       <div>
-        <h1 className="font-[300] text-[1.6rem] tracking-[0.01em] text-ink">
+        <h1 className="font-[300] text-heading tracking-[0.01em] text-ink">
           {title}
         </h1>
         {subtitle ? (
@@ -32,7 +32,7 @@ export function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-sm border border-fog bg-white p-6", className)}>
+    <div className={cn("rounded-lg border border-fog bg-white p-6", className)}>
       {children}
     </div>
   );
@@ -52,11 +52,11 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "rounded-sm border border-fog bg-white p-5",
+        "rounded-lg border border-fog bg-white p-5",
         className,
       )}
     >
-      <div className="text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
+      <div className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
         {label}
       </div>
       <div className="mt-2 font-[300] text-[1.9rem] leading-none text-ink">

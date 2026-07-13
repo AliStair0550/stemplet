@@ -110,7 +110,7 @@ function StempelQr({ card }: { card: KioskCard }) {
   return (
     <>
       <div className="flex flex-col items-center gap-6">
-        <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-2xl border border-fog bg-white p-8 text-center">
+        <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white p-8 text-center">
           <div className="flex flex-col items-center gap-1">
             <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
               Scan og saml stempler
@@ -219,7 +219,7 @@ function KioskView({
             priority
           />
         ) : (
-          <div className="h-[min(66vw,380px)] w-[min(66vw,380px)] animate-pulse rounded-xl bg-fog" />
+          <div className="h-[min(66vw,380px)] w-[min(66vw,380px)] animate-pulse rounded-lg bg-fog" />
         )}
       </div>
 
@@ -357,7 +357,7 @@ function ScanMode() {
     <div className="flex w-full max-w-sm flex-col gap-5">
       {/* Tom tilstand: en indbydende invitation til at scanne */}
       {!card && !loading ? (
-        <div className="flex flex-col items-center gap-5 rounded-2xl border border-fog bg-white p-10 text-center">
+        <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-10 text-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
             <svg
               viewBox="0 0 24 24"
@@ -403,7 +403,7 @@ function ScanMode() {
       ) : null}
 
       {loading ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-fog bg-white p-10">
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-fog bg-white p-10">
           <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
           <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
         </div>

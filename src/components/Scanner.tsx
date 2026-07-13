@@ -83,7 +83,7 @@ export function Scanner({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink/95 p-6">
-      <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-sm bg-black">
+      <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg bg-black">
         <video
           ref={videoRef}
           className="h-full w-full object-cover"
@@ -92,7 +92,7 @@ export function Scanner({
         />
         <canvas ref={canvasRef} className="hidden" />
         {/* sigtefelt */}
-        <div className="pointer-events-none absolute inset-8 rounded-sm border-2 border-parchment/70" />
+        <div className="pointer-events-none absolute inset-8 rounded-lg border-2 border-parchment/70" />
       </div>
       <p className="mt-6 max-w-xs text-center text-[0.85rem] font-[200] text-parchment/80">
         {status === "error"

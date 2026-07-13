@@ -34,7 +34,7 @@ function CopyButton({ value, label = "Kopiér" }: { value: string; label?: strin
 
 function Code({ children }: { children: React.ReactNode }) {
   return (
-    <pre className="overflow-x-auto rounded-sm border border-fog bg-sand/60 px-4 py-3 text-[0.76rem] leading-relaxed text-ink">
+    <pre className="overflow-x-auto rounded-lg border border-fog bg-sand/60 px-4 py-3 text-[0.76rem] leading-relaxed text-ink">
       <code>{children}</code>
     </pre>
   );
@@ -111,7 +111,7 @@ export function IntegrationsClient({
   return (
     <div className="flex flex-col gap-6">
       {/* Venlig intro, saa ikke-tekniske brugere ikke bliver bange */}
-      <div className="rounded-sm border border-moss/30 bg-moss/[0.05] p-6">
+      <div className="rounded-lg border border-moss/30 bg-moss/[0.05] p-6">
         <h2 className="text-[1rem] font-[400] text-ink">Skal du bruge det her?</h2>
         <p className="mt-2 max-w-2xl text-[0.88rem] font-[200] leading-relaxed text-stone">
           Kun hvis du vil koble Stemplet sammen med et andet system, fx dit
@@ -138,7 +138,7 @@ export function IntegrationsClient({
         {apiKey ? (
           <>
             <div className="mt-4 flex items-center gap-2">
-              <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-sm border border-fog bg-sand/60 px-4 py-2.5 text-[0.82rem] text-ink">
+              <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-lg border border-fog bg-sand/60 px-4 py-2.5 text-[0.82rem] text-ink">
                 {apiKey}
               </code>
               <CopyButton value={apiKey} />
@@ -246,7 +246,7 @@ export function IntegrationsClient({
           <p className="mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
             Hændelser vi sender
           </p>
-          <div className="rounded-sm border border-fog px-4">
+          <div className="rounded-lg border border-fog px-4">
             <EndpointRow
               method="event"
               path="stamp.created"
@@ -267,7 +267,7 @@ export function IntegrationsClient({
       </Panel>
 
       {/* API-dokumentation foldet ind, saa ikke-tekniske brugere ikke skraemmes */}
-      <details className="group rounded-sm border border-fog bg-white">
+      <details className="group rounded-lg border border-fog bg-white">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden">
           <div>
             <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
@@ -295,13 +295,13 @@ export function IntegrationsClient({
           <code className="text-[0.8rem] text-ink">Bearer</code>-token. Basis-URL:
         </p>
         <div className="mt-3 flex items-center gap-2">
-          <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-sm border border-fog bg-sand/60 px-4 py-2.5 text-[0.82rem] text-ink">
+          <code className="flex-1 overflow-x-auto whitespace-nowrap rounded-lg border border-fog bg-sand/60 px-4 py-2.5 text-[0.82rem] text-ink">
             {baseUrl}/api/v1
           </code>
           <CopyButton value={`${baseUrl}/api/v1`} />
         </div>
 
-        <div className="mt-5 rounded-sm border border-fog px-4">
+        <div className="mt-5 rounded-lg border border-fog px-4">
           <EndpointRow
             method="POST"
             path="/api/v1/stamp"

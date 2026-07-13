@@ -17,7 +17,7 @@ function CustomerLimitNotice({ plan, total }: { plan: Plan; total: number }) {
   if (plan !== "FREE" || total < FREE_CUSTOMER_WARN) return null;
   const atWall = total >= FREE_CUSTOMER_LIMIT;
   return (
-    <div className="mb-6 rounded-sm border border-moss bg-moss/5 p-6">
+    <div className="mb-6 rounded-lg border border-moss bg-moss/5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="font-[400] text-[1rem] text-ink">

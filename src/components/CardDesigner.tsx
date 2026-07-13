@@ -295,7 +295,7 @@ export function CardDesigner({
         </div>
 
         {!isCardReadable(value.primaryColor, value.textColor) ? (
-          <div className="-mt-2 flex items-start justify-between gap-3 rounded-sm border border-rust/40 bg-rust/5 px-3 py-2.5">
+          <div className="-mt-2 flex items-start justify-between gap-3 rounded-lg border border-rust/40 bg-rust/5 px-3 py-2.5">
             <p className="text-[0.76rem] font-[300] leading-relaxed text-rust">
               Teksten er svær at læse på denne kortfarve. Vælg mere kontrast, så
               kunderne kan se deres stempler.
