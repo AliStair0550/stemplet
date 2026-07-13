@@ -23,6 +23,23 @@ function haptic(pattern: number | number[]) {
   }
 }
 
+const ERROR_GLYPH = (
+  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-clay/40 text-stone">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-7 w-7"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5M12 16h.01" />
+    </svg>
+  </span>
+);
+
 type State =
   | { phase: "loading" }
   | {
@@ -34,7 +51,7 @@ type State =
       increment: number;
     }
   | { phase: "needCard" }
-  | { phase: "error"; message: string };
+  | { phase: "error"; code: string; message: string; serial?: string };
 
 export function StampConfirm({
   token,
@@ -81,10 +98,19 @@ export function StampConfirm({
       } else if (data.needCard) {
         setState({ phase: "needCard" });
       } else {
-        setState({ phase: "error", message: data.message ?? "Noget gik galt." });
+        setState({
+          phase: "error",
+          code: data.code ?? "SERVER",
+          message: data.message ?? "Noget gik galt.",
+          serial: data.serial,
+        });
       }
     } catch {
-      setState({ phase: "error", message: "Ingen forbindelse. Prøv igen." });
+      setState({
+        phase: "error",
+        code: "NETWORK",
+        message: "Ingen forbindelse. Prøv igen.",
+      });
     }
   }, [token]);
 
@@ -181,31 +207,100 @@ export function StampConfirm({
         </div>
       ) : null}
 
-      {state.phase === "error" ? (
-        <div className="flex flex-col items-center gap-5">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-clay/40 text-stone">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-7 w-7"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5M12 16h.01" />
-            </svg>
-          </span>
-          <h1 className="font-[300] text-[1.4rem] text-ink">Prøv igen</h1>
-          <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
-            {state.message}
-          </p>
-          <button onClick={doStamp} className={btnClass("moss", "lg")}>
-            Prøv igen
-          </button>
-        </div>
-      ) : null}
+      {state.phase === "error"
+        ? (() => {
+            const s = state;
+
+            // Kunden HAR et kort her (allerede stemplet / cooldown / fuldt) ->
+            // send dem hen til deres eget kort, hvor de kan vise QR'en til
+            // personalet (som scanner uden cooldown). Ingen doed "Proev igen".
+            if (
+              (s.code === "REPLAY" ||
+                s.code === "COOLDOWN" ||
+                s.code === "FULL") &&
+              s.serial
+            ) {
+              const copy =
+                s.code === "REPLAY"
+                  ? {
+                      kicker: "Allerede stemplet",
+                      title: "Du har allerede fået dit stempel",
+                      body: "Denne kode er brugt en gang. Dit kort er opdateret, se det her.",
+                      cta: "Se dit kort",
+                      href: `/kort/${s.serial}`,
+                    }
+                  : s.code === "COOLDOWN"
+                    ? {
+                        kicker: "Lige stemplet",
+                        title: "Du har lige fået et stempel",
+                        body: "Skal du have et til, fx en øl mere? Vis dit kort til personalet, så giver de dig stemplet med det samme.",
+                        cta: "Vis mit kort",
+                        href: `/kort/${s.serial}?vis=1`,
+                      }
+                    : {
+                        kicker: "Fuldt kort",
+                        title: "Dit kort er fuldt",
+                        body: "Vis det ved kassen, så får du din belønning.",
+                        cta: "Vis mit kort",
+                        href: `/kort/${s.serial}?vis=1`,
+                      };
+              return (
+                <div className="flex w-full max-w-sm flex-col items-center gap-5">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+                    <StampIcon icon={icon} className="h-8 w-8" />
+                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+                      {copy.kicker}
+                    </span>
+                    <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">
+                      {copy.title}
+                    </h1>
+                  </div>
+                  <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+                    {copy.body}
+                  </p>
+                  <ButtonLink href={copy.href} variant="moss" size="lg">
+                    {copy.cta}
+                  </ButtonLink>
+                </div>
+              );
+            }
+
+            // Udloebet kode -> hen til deres kort via butikkens claim-side.
+            if (s.code === "EXPIRED") {
+              return (
+                <div className="flex flex-col items-center gap-5">
+                  {ERROR_GLYPH}
+                  <h1 className="font-[300] text-[1.4rem] text-ink">
+                    Koden er udløbet
+                  </h1>
+                  <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+                    Bed personalet vise den nye kode, eller vis dit eget kort ved
+                    kassen.
+                  </p>
+                  <ButtonLink href={`/k/${slug}`} variant="moss" size="lg">
+                    Åbn mit kort
+                  </ButtonLink>
+                </div>
+              );
+            }
+
+            // Reelt forbigaaende (netvaerk/server) -> aegte "Proev igen".
+            return (
+              <div className="flex flex-col items-center gap-5">
+                {ERROR_GLYPH}
+                <h1 className="font-[300] text-[1.4rem] text-ink">Prøv igen</h1>
+                <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+                  {s.message}
+                </p>
+                <button onClick={doStamp} className={btnClass("moss", "lg")}>
+                  Prøv igen
+                </button>
+              </div>
+            );
+          })()
+        : null}
     </main>
   );
 }

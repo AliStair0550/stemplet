@@ -34,10 +34,13 @@ export async function generateViewport({
 
 export default async function WebCardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ serial: string }>;
+  searchParams: Promise<{ vis?: string }>;
 }) {
   const { serial } = await params;
+  const { vis } = await searchParams;
   const cc = await loadCardBySerial(serial);
   if (!cc) notFound();
 
@@ -85,6 +88,7 @@ export default async function WebCardPage({
           serialQr={serialQr}
           walletEnabled={WALLET_ENABLED}
           rewardReady={rewardReady}
+          openQr={vis === "1"}
         />
 
         <p className="max-w-xs text-center text-[0.72rem] font-[200] leading-relaxed text-slate">

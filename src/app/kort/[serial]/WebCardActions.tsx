@@ -10,14 +10,18 @@ export function WebCardActions({
   serialQr,
   walletEnabled,
   rewardReady,
+  openQr = false,
 }: {
   serial: string;
   serialQr: string;
   walletEnabled: boolean;
   rewardReady: boolean;
+  /** Vis kort-QR'en med det samme (fx naar kunden kommer fra cooldown og skal
+   *  vise kortet til personalet). */
+  openQr?: boolean;
 }) {
   const [scanning, setScanning] = useState(false);
-  const [showQr, setShowQr] = useState(rewardReady);
+  const [showQr, setShowQr] = useState(rewardReady || openQr);
   const [note, setNote] = useState<string | null>(null);
 
   const handleResult = useCallback((text: string) => {

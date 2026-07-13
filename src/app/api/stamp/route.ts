@@ -54,10 +54,11 @@ export async function POST(req: NextRequest) {
     console.error("Redis (jti) fejlede, stoler paa DB-unik:", e);
   }
   if (!fresh) {
-    return apiError(
-      "REPLAY",
-      "Koden er allerede brugt. Bed personalet om at vise en ny.",
-    );
+    // Kunden har allerede brugt netop denne kode (typisk scannet skaerm-QR'en
+    // to gange). Send serienr. med, saa vi kan sende dem hen til deres kort.
+    return apiError("REPLAY", "Koden er allerede brugt.", 400, {
+      serial: cc.serial,
+    });
   }
 
   try {
@@ -69,7 +70,13 @@ export async function POST(req: NextRequest) {
     });
     return Response.json({ ok: true, ...res });
   } catch (e) {
-    if (e instanceof StampError) return apiError(e.code, e.message);
+    // Kortet er kendt her, saa alle disse fejl faar serienr. med, saa kunden
+    // altid kan komme videre til sit eget kort (og vise QR'en til personalet).
+    if (e instanceof StampError) {
+      return apiError(e.code, e.message, e.code === "COOLDOWN" ? 429 : 400, {
+        serial: cc.serial,
+      });
+    }
     // DB-backstop: samme jti to gange rammer @unique (P2002) = replay.
     if (
       e &&
@@ -77,10 +84,9 @@ export async function POST(req: NextRequest) {
       "code" in e &&
       (e as { code?: string }).code === "P2002"
     ) {
-      return apiError(
-        "REPLAY",
-        "Koden er allerede brugt. Bed personalet om at vise en ny.",
-      );
+      return apiError("REPLAY", "Koden er allerede brugt.", 400, {
+        serial: cc.serial,
+      });
     }
     console.error("Stempel-fejl", e);
     return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
