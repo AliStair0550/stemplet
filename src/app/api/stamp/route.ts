@@ -15,9 +15,17 @@ export const dynamic = "force-dynamic";
 // Stempel-endpoint. Kundens kamera rammer /s/[token], som poster hertil.
 export async function POST(req: NextRequest) {
   let token: string | undefined;
+  // known: kortets authToken gemt i klientens localStorage. Bruges som robust
+  // fallback, hvis device-cookien ikke holdt (iOS Safari persisterer ikke altid
+  // Set-Cookie fra fetch). Saa genkender telefonen ALTID sit eget kort i stedet
+  // for at oprette et nyt ved hver scanning.
+  let known: string | undefined;
   try {
     const body = await req.json();
     token = body?.token;
+    if (typeof body?.known === "string" && body.known.length > 0) {
+      known = body.known;
+    }
   } catch {
     return apiError("BAD_REQUEST", "Ugyldig forespørgsel.");
   }
@@ -40,6 +48,12 @@ export async function POST(req: NextRequest) {
   const cardToken = await getCardToken(payload.businessId);
   let cc = cardToken ? await loadCardByToken(cardToken) : null;
   if (cc && cc.card.businessId !== payload.businessId) cc = null;
+
+  // Fallback: klientens gemte kort-token (localStorage), hvis cookien svigtede.
+  if (!cc && known) {
+    const kcc = await loadCardByToken(known);
+    if (kcc && kcc.card.businessId === payload.businessId) cc = kcc;
+  }
 
   let createdCard = false;
   // Token til en NY device-cookie. Saettes DIREKTE paa svaret (NextResponse)
@@ -95,6 +109,9 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       ok: true,
       created: createdCard,
+      // Kortets token tilbage til klienten, saa den kan gemme den i
+      // localStorage og genkende SAMME kort ved naeste scanning.
+      cardToken: cc.authToken,
       ...res,
     });
     if (newCookieToken) {

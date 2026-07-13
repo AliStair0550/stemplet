@@ -81,14 +81,30 @@ export function StampConfirm({
 
   const doStamp = useCallback(async () => {
     setState({ phase: "loading" });
+    // Gemt kort-token (localStorage) som robust fallback, hvis device-cookien
+    // ikke holdt paa denne telefon. Saa samler kunden op paa SAMME kort.
+    const storeKey = `stmpl_${slug}`;
+    let known: string | null = null;
+    try {
+      known = localStorage.getItem(storeKey);
+    } catch {
+      // localStorage kan vaere blokeret (privat browsing) - saa faldes tilbage
+      // paa cookien alene.
+    }
     try {
       const res = await fetch("/api/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, known }),
       });
       const data = await res.json();
       if (data.ok) {
+        // Husk kortet paa denne enhed til naeste scanning.
+        try {
+          if (data.cardToken) localStorage.setItem(storeKey, data.cardToken);
+        } catch {
+          /* ignorer hvis localStorage er blokeret */
+        }
         // Reward: festlig rytme. Alm. stempel: et blOEdt "press-settle".
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [14, 45, 26]);
         setState({
@@ -117,7 +133,7 @@ export function StampConfirm({
         message: "Ingen forbindelse. Prøv igen.",
       });
     }
-  }, [token]);
+  }, [token, slug]);
 
   useEffect(() => {
     if (ran.current) return;
@@ -221,38 +237,31 @@ export function StampConfirm({
             {state.rewardReady
               ? "Vis dit kort ved kassen og få din belønning."
               : state.created
-                ? "Læg kortet i din Apple Wallet, så er det klar til næste besøg."
+                ? "Læg kortet i din Apple Wallet, så er du klar til dit næste besøg."
                 : `${state.required - state.stamps} ${
                     state.required - state.stamps === 1 ? "stempel" : "stempler"
                   } tilbage til din belønning.`}
           </p>
 
-          {/* Wallet er den ene, tydelige handling: kunden gemmer kortet med det
-              samme. "Se dit kort" ligger diskret under som en tekst-genvej. */}
+          {/* Wallet er den ene, tydelige handling. Kortet ses allerede ovenfor,
+              saa ingen "Se dit kort"-genvej her. Naar der ER en beloenning klar
+              (eller ingen Wallet), foerer knappen hen til kortets scanbare QR. */}
           <div className="flex w-full flex-col items-center gap-3">
             {walletEnabled && !state.rewardReady ? (
-              <>
-                <a
-                  href={`/api/wallet/pass/${state.serial}`}
-                  className={btnClass("primary", "lg") + " w-full max-w-xs"}
-                >
-                  Læg i Apple Wallet
-                </a>
-                <a
-                  href={`/kort/${state.serial}`}
-                  className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
-                >
-                  Se dit kort
-                </a>
-              </>
+              <a
+                href={`/api/wallet/pass/${state.serial}`}
+                className={btnClass("primary", "lg") + " w-full max-w-xs"}
+              >
+                Læg i Apple Wallet
+              </a>
             ) : (
               <ButtonLink
-                href={`/kort/${state.serial}`}
+                href={`/kort/${state.serial}?vis=1`}
                 variant="primary"
                 size="lg"
                 className="w-full max-w-xs"
               >
-                Se dit kort
+                Vis kort ved kassen
               </ButtonLink>
             )}
           </div>
