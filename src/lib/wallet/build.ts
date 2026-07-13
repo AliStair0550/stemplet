@@ -23,6 +23,7 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     primaryColor: b.primaryColor,
     textColor: b.textColor,
     logoUrl: b.logoUrl,
+    stampIcon: cc.card.stampIcon,
     rewardText: cc.card.rewardText,
     stamps: cc.stamps,
     required: cc.card.stampsRequired,

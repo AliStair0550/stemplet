@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
 import path from "node:path";
 import { walletIds, walletCertificates } from "./config";
+import { buildStripImages } from "./strip";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
 import { hexToRgb, contrastText } from "../brand";
@@ -15,6 +16,7 @@ type PassInput = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  stampIcon: string;
   rewardText: string;
   stamps: number;
   required: number;
@@ -83,9 +85,21 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   const labelCol = blendRgb(contrastText(input.primaryColor), input.primaryColor, 0.34);
   const rewardReady = input.stamps >= input.required;
 
+  // Stempel-gitteret som strip-billede, saa kortet viser de faktiske stempler.
+  const strip = await buildStripImages({
+    stamps: input.stamps,
+    required: input.required,
+    stampIcon: input.stampIcon,
+    primaryColor: input.primaryColor,
+    textColor: input.textColor,
+  });
+
   const images: Record<string, Buffer> = {
     "icon.png": iconBuf,
     "icon@2x.png": iconBuf,
+    "strip.png": strip.x1,
+    "strip@2x.png": strip.x2,
+    "strip@3x.png": strip.x3,
   };
   // Butikkens eget logo i toppen. Har butikken ingen, viser vi kun navnet
   // (logoText), ikke Stemplet-badgen, saa passet er fuldt i butikkens brand.
@@ -119,17 +133,18 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
   });
 
-  // Minimalistisk og inspirerende: beloenningen staar stort UDEN label (den
-  // taler for sig selv), og en varm linje viser, hvor taet man er.
-  pass.primaryFields.push({
+  // Ingen primaryFields: strip-billedet (stempel-gitteret) staar rent i toppen.
+  // Beloenning + hvor taet man er staar under gitteret.
+  const left = input.required - input.stamps;
+  pass.secondaryFields.push({
     key: "reward",
+    label: "BELØNNING",
     value: input.rewardText,
   });
 
-  const left = input.required - input.stamps;
-  pass.secondaryFields.push({
+  pass.auxiliaryFields.push({
     key: "status",
-    value: rewardReady ? "Klar til dig" : `Kun ${left} tilbage`,
+    value: rewardReady ? "Klar til dig" : `${left} tilbage`,
   });
 
   pass.backFields.push(
