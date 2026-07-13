@@ -15,7 +15,16 @@ export function walletIds() {
  * Certifikater til signering. APPLE_PASS_CERT er base64 af en PEM, der
  * indeholder både signer-certifikatet og den (evt. krypterede) private
  * nøgle. APPLE_WWDR_CERT er base64 af Apples WWDR-certifikat i PEM.
+ *
+ * Vi TRAEKKER de to blokke ud hver for sig: signer-biblioteket laeser den
+ * FOERSTE PEM-blok i signerKey, saa hvis vi giver den den kombinerede PEM
+ * (cert foerst), forsoeger den at laese certifikatet som en noegle og fejler.
  */
+const CERT_RE =
+  /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/;
+const KEY_RE =
+  /-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----[\s\S]+?-----END (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----/;
+
 export function walletCertificates() {
   const combined = Buffer.from(requireEnv("APPLE_PASS_CERT"), "base64").toString(
     "utf8",
@@ -23,10 +32,17 @@ export function walletCertificates() {
   const wwdr = Buffer.from(requireEnv("APPLE_WWDR_CERT"), "base64").toString(
     "utf8",
   );
+  const cert = combined.match(CERT_RE)?.[0];
+  const key = combined.match(KEY_RE)?.[0];
+  if (!cert || !key) {
+    throw new Error(
+      "APPLE_PASS_CERT skal indeholde baade et CERTIFICATE og en PRIVATE KEY (kombineret PEM).",
+    );
+  }
   return {
     wwdr,
-    signerCert: combined,
-    signerKey: combined,
+    signerCert: cert,
+    signerKey: key,
     signerKeyPassphrase: process.env.APPLE_PASS_CERT_PASSWORD,
   };
 }

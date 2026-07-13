@@ -22,7 +22,16 @@
 
 # misc
 .DS_Store
+
+# certifikat- og noeglemateriale (Apple Wallet m.m.) maa ALDRIG committes
 *.pem
+*.p8
+*.key
+*.cer
+*.p12
+*.pfx
+*.mobileprovision
+*.csr
 
 # debug
 npm-debug.log*
