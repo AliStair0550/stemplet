@@ -9,7 +9,6 @@ import StatsPreview from "@/components/marketing/StatsPreview";
 import RoiCalculator from "@/components/marketing/RoiCalculator";
 import Pricing from "@/components/marketing/Pricing";
 import Faq from "@/components/marketing/Faq";
-import FinalCta from "@/components/marketing/FinalCta";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -49,9 +48,6 @@ export default function Page() {
             scrolles naer dem (content-visibility). */}
         <div className="cv-section">
           <Faq />
-        </div>
-        <div className="cv-section">
-          <FinalCta />
         </div>
       </main>
       <Footer />
