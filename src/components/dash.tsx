@@ -16,7 +16,7 @@ export function PageHeading({
           {title}
         </h1>
         {subtitle ? (
-          <p className="mt-1 font-[200] text-[0.88rem] text-stone">{subtitle}</p>
+          <p className="mt-1 font-[300] text-[0.88rem] text-stone">{subtitle}</p>
         ) : null}
       </div>
       {action}
@@ -52,7 +52,7 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "rounded-sm border border-fog bg-white p-5 transition-colors hover:border-clay",
+        "rounded-sm border border-fog bg-white p-5",
         className,
       )}
     >
@@ -63,7 +63,7 @@ export function StatTile({
         {value}
       </div>
       {sub ? (
-        <div className="mt-1.5 text-[0.72rem] font-[200] text-slate">{sub}</div>
+        <div className="mt-1.5 text-[0.72rem] font-[300] text-stone">{sub}</div>
       ) : null}
     </div>
   );

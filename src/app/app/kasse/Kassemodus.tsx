@@ -26,7 +26,7 @@ export function Kassemodus({ card }: { card: KioskCard }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex gap-1 self-start rounded-lg border border-fog bg-white p-1">
+      <div className="flex w-full gap-1 rounded-lg border border-fog bg-white p-1 sm:w-auto sm:self-start">
         {(
           [
             ["stempel", "Stempel-QR"],
@@ -36,9 +36,12 @@ export function Kassemodus({ card }: { card: KioskCard }) {
           <button
             key={key}
             onClick={() => setTab(key)}
+            aria-pressed={tab === key}
             className={cn(
-              "rounded-md px-4 py-2 text-[0.8rem] font-[300] tracking-[0.02em] transition-colors",
-              tab === key ? "bg-moss text-parchment" : "text-stone hover:text-ink",
+              "flex min-h-12 flex-1 items-center justify-center rounded-md px-5 text-[0.9rem] font-[300] tracking-[0.02em] transition-colors sm:flex-none",
+              tab === key
+                ? "bg-moss text-parchment"
+                : "bg-sand text-stone hover:text-ink",
             )}
           >
             {label}
@@ -46,7 +49,7 @@ export function Kassemodus({ card }: { card: KioskCard }) {
         ))}
       </div>
 
-      <p className="-mt-4 max-w-md text-[0.8rem] font-[200] leading-relaxed text-slate">
+      <p className="-mt-4 max-w-md text-[0.8rem] font-[300] leading-relaxed text-slate">
         {tab === "stempel"
           ? "Vis denne skærm til kunden. De scanner QR-koden med deres eget kamera og får stemplet selv."
           : "Brug kameraet til at scanne kundens kort, når du selv vil give et stempel eller indløse en belønning."}
@@ -117,7 +120,7 @@ function StempelQr({ card }: { card: KioskCard }) {
             </span>
           </div>
           {error ? (
-            <p className="flex h-[min(64vw,260px)] w-[min(64vw,260px)] items-center justify-center text-center font-[200] text-[0.9rem] text-stone">
+            <p className="flex h-[min(64vw,260px)] w-[min(64vw,260px)] items-center justify-center text-center font-[300] text-[0.9rem] text-stone">
               {error}
             </p>
           ) : qr ? (
@@ -144,7 +147,7 @@ function StempelQr({ card }: { card: KioskCard }) {
         >
           Vis i fuldskærm
         </button>
-        <p className="max-w-md text-center font-[200] text-[0.85rem] leading-relaxed text-stone">
+        <p className="max-w-md text-center font-[300] text-[0.85rem] leading-relaxed text-stone">
           Stil enheden ved disken. Koden skifter hvert minut, så et foto af
           skærmen er værdiløst bagefter.
         </p>
@@ -372,7 +375,7 @@ function ScanMode() {
             <p className="font-[400] text-[1.1rem] text-ink">
               Scan kundens kort
             </p>
-            <p className="mx-auto mt-1.5 max-w-xs font-[200] text-[0.85rem] leading-relaxed text-stone">
+            <p className="mx-auto mt-1.5 max-w-xs font-[300] text-[0.85rem] leading-relaxed text-stone">
               Ret kameraet mod QR-koden på kundens kort. Så kan du give stempler
               eller indløse en belønning.
             </p>
@@ -402,7 +405,7 @@ function ScanMode() {
       {loading ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-fog bg-white p-10">
           <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
-          <p className="font-[200] text-[0.9rem] text-stone">Henter kort...</p>
+          <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
         </div>
       ) : null}
 
@@ -434,7 +437,7 @@ function ScanMode() {
             <div className="flex flex-col gap-3 rounded-lg border border-moss bg-moss/5 p-5">
               <div>
                 <p className="font-[400] text-[1rem] text-ink">Belønning klar</p>
-                <p className="font-[200] text-[0.85rem] text-stone">
+                <p className="font-[300] text-[0.85rem] text-stone">
                   {card.rewardText}
                 </p>
               </div>
@@ -450,8 +453,12 @@ function ScanMode() {
                   }
                   placeholder="****"
                   autoFocus
-                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-moss"
+                  aria-describedby="pin-hint"
+                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-moss"
                 />
+                <span id="pin-hint" className="text-[0.72rem] font-[300] text-slate">
+                  Indtast 4 til 6 cifre.
+                </span>
               </label>
               <button
                 onClick={redeem}

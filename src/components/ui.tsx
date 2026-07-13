@@ -14,13 +14,15 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  md: "px-7 py-3",
-  lg: "px-9 py-3.5",
+  md: "min-h-11 px-7 py-3",
+  lg: "min-h-12 px-9 py-3.5",
 };
 
 export function btnClass(variant: Variant = "primary", size: Size = "md"): string {
   return cn(
     "inline-flex items-center justify-center gap-2 font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all disabled:opacity-50 disabled:pointer-events-none",
+    // Synlig tastatur-fokus overalt (samme ring paa alle knapper).
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
     VARIANTS[variant],
     SIZES[size],
   );

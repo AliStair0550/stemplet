@@ -167,30 +167,37 @@ export default async function OverviewPage() {
             Seneste aktivitet
           </h2>
           {activity.length === 0 ? (
-            <p className="font-[200] text-[0.85rem] text-slate">
+            <p className="font-[300] text-[0.85rem] text-slate">
               Ingen aktivitet endnu. Sæt din QR op ved kassen.
             </p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {activity.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 border-b border-fog pb-2 last:border-0"
-                >
-                  <span
-                    className={`text-[0.82rem] font-[300] ${
-                      a.action === "FLAGGED" || a.action === "PIN_FAIL"
-                        ? "text-moss"
-                        : "text-ink"
-                    }`}
+              {activity.map((a) => {
+                const isAlert = a.action === "FLAGGED" || a.action === "PIN_FAIL";
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between gap-3 border-b border-fog pb-2 last:border-0"
                   >
-                    {ACTION_LABEL[a.action] ?? a.action}
-                  </span>
-                  <span className="shrink-0 text-[0.72rem] font-[200] text-slate">
-                    {relativeDk(a.createdAt)}
-                  </span>
-                </li>
-              ))}
+                    <span
+                      className={`flex items-center gap-2 text-[0.82rem] font-[300] ${
+                        isAlert ? "text-rust" : "text-ink"
+                      }`}
+                    >
+                      {isAlert ? (
+                        <span
+                          aria-hidden
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-rust"
+                        />
+                      ) : null}
+                      {ACTION_LABEL[a.action] ?? a.action}
+                    </span>
+                    <span className="shrink-0 text-[0.72rem] font-[300] text-slate">
+                      {relativeDk(a.createdAt)}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </Panel>
