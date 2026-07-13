@@ -175,7 +175,27 @@ DST-sikre dagsbuckets, K8 carry-visning klampet.
 K1 avgDaysToFull pr. cyklus (demo 5.1 -> 2.5), E2 tids-indekser + migration, E5
 cache()-dedup af butik-opslag.
 
-**Udestaar (afventer beslutning):** S3 Wallet-token, S6 find-kort-throttling, S8
-bruger-enumeration + delt HMAC-noegle, K5 FREE-graense race, K9 APNs-oprydning, E3
-cron-batching, E4 pgbouncer, E6/E7 mindre query-optimering, D-A3/A5 type-skala +
-radius-system (stoerre design-oprydning), D-B4 dekorativ stregkode.
+## Anden runde (forside + resten af de udskudte)
+
+Forside (commit 5b15455): "Faa flere stamkunder" flyttet op lige efter hero og
+lavet om til en animeret forklaring (eet kort koerer hele livscyklussen: scan ->
+saml 10 -> PIN -> ny runde, med trinene synkroniseret). Sikkerheds-sektionen er
+nu sort (bg-ink) med moss-lys.
+
+Backend/resten:
+- S6 find-kort rate-limitet pr. IP (commit bec9cf3)
+- K9 APNs laeser status + rydder doede tokens (bec9cf3)
+- E3 ugebrev-cron koerer med begraenset samtidighed (bec9cf3)
+- S8 unsubscribe: GET = bekraeft-side, POST = handling (bec9cf3)
+- E4 pgbouncer=true + connection_limit=1 paa pooled DATABASE_URL (lokal .env
+  klaret; SAMME aendring skal laves paa Vercels DATABASE_URL-env)
+- S3 Wallet-pass-download gated paa device-cookie (commit 5eba8f0)
+- A3/A5 radius samlet paa rounded-lg, type-skala kodificeret som tokens (f0fcaaa)
+
+**Udestaar stadig (lav prioritet):** S8 bruger-enumeration + delt HMAC-noegle, K5
+FREE-graense race, E6/E7 mindre query-optimering, D-B4 dekorativ stregkode,
+fuld per-instans type-migrering (tokenne er sat, inline-stoerrelser konvergerer
+over tid).
+
+**Handling hos dig:** Tilfoej `pgbouncer=true&connection_limit=1` til Vercels
+`DATABASE_URL` (efter `sslmode=require`), IKKE til DIRECT_URL, og redeploy.
