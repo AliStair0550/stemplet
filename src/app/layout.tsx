@@ -1,5 +1,22 @@
 import type { Metadata, Viewport } from "next";
+import { Jost, Fraunces } from "next/font/google";
 import "./globals.css";
+
+// Selv-hostede fonts (next/font): ingen render-blokerende eksterne
+// forbindelser, automatisk preload og font-display: swap. Begge er variable
+// fonts, saa alle vaegte daekkes af én fil pr. familie.
+const jost = Jost({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jost",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-fraunces-face",
+});
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk";
 
@@ -69,19 +86,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Jost:wght@100;200;300;400;500&family=Fraunces:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400;1,600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="da" className={`${jost.variable} ${fraunces.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

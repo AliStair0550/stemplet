@@ -46,6 +46,11 @@ export default function HowItWorks() {
     }
 
     let alive = true;
+    // visible: er scenen i viewporten? running: koerer en cyklus lige nu?
+    // Loopet pauser, naar scenen scrolles ud af syne, saa mobilen ikke
+    // gentegner kortet i baggrunden, og genoptages naar den ses igen.
+    let visible = false;
+    let running = false;
     const timers: number[] = [];
     const wait = (fn: () => void, ms: number) => {
       const id = window.setTimeout(() => {
@@ -56,6 +61,7 @@ export default function HowItWorks() {
 
     const cycle = () => {
       if (!alive) return;
+      running = true;
       setPhase("scan");
       setStamps(0);
       setPin(0);
@@ -76,7 +82,9 @@ export default function HowItWorks() {
               const pinStep = (p: number) => {
                 setPin(p);
                 if (p < 4) wait(() => pinStep(p + 1), 280);
-                else wait(cycle, 1700);
+                // Loop-punkt: fortsaet kun, hvis scenen stadig ses.
+                else if (visible) wait(cycle, 1700);
+                else running = false;
               };
               wait(() => pinStep(1), 650);
             }, 950);
@@ -91,15 +99,15 @@ export default function HowItWorks() {
     if (node) {
       io = new IntersectionObserver(
         (entries) => {
-          if (entries[0]?.isIntersecting) {
-            io?.disconnect();
-            cycle();
-          }
+          visible = entries[0]?.isIntersecting ?? false;
+          // Start (eller genoptag) kun, naar scenen er i syne og intet koerer.
+          if (visible && !running) cycle();
         },
         { threshold: 0.3 },
       );
       io.observe(node);
     } else {
+      visible = true;
       cycle();
     }
 

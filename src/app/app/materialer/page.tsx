@@ -81,9 +81,19 @@ export default async function MaterialerPage() {
                 href: "/api/materials/plakat",
               },
               {
+                title: "A5-skilt",
+                body: "Mellemstort skilt til disken eller væggen.",
+                href: "/api/materials/a5",
+              },
+              {
                 title: "A6-diskskilt",
                 body: "Lille skilt til at stå ved kassen.",
                 href: "/api/materials/skilt",
+              },
+              {
+                title: "Visitkort",
+                body: "Til hånden eller ved betalingen. 85 x 55 mm.",
+                href: "/api/materials/visitkort",
               },
             ] as const
           ).map((m) => (

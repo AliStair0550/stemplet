@@ -13,8 +13,8 @@
   --color-parchment: #faf8f4;
   --color-forest: #1a2e24;
   --color-rust: #9e3b2e;
-  --font-sans: "Jost", sans-serif;
-  --font-fraunces: "Fraunces", serif;
+  --font-sans: var(--font-jost), "Jost", sans-serif;
+  --font-fraunces: var(--font-fraunces-face), "Fraunces", serif;
 
   /* ── Type-skala (modulaer ~1.25). Brug disse i stedet for vilkaarlige
      text-[Xrem]-vaerdier, saa stoerrelserne konvergerer over tid.
