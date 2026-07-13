@@ -7,7 +7,7 @@ import { btnClass } from "@/components/ui";
 import {
   createPairingCodeAction,
   revokeDeviceAction,
-} from "./actions";
+} from "./device-actions";
 
 type Device = {
   id: string;

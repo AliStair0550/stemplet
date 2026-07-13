@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading, Panel } from "@/components/dash";
+import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
+import { KasseDevices } from "./KasseDevices";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
 import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
@@ -29,11 +31,20 @@ export default async function IndstillingerPage({
   const { betaling, fejl } = await searchParams;
   const stripeOn = stripeConfigured();
 
-  const logs = await prisma.auditLog.findMany({
-    where: { businessId: business.id },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
+  const [logs, devices] = await Promise.all([
+    prisma.auditLog.findMany({
+      where: { businessId: business.id },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+    listDevices(business.id),
+  ]);
+  const deviceList = devices.map((d) => ({
+    id: d.id,
+    name: d.name,
+    lastSeenAt: d.lastSeenAt ? d.lastSeenAt.toISOString() : null,
+    createdAt: d.createdAt.toISOString(),
+  }));
 
   return (
     <>
@@ -55,6 +66,11 @@ export default async function IndstillingerPage({
         cooldown={business.stampCooldownMin}
         category={business.category}
       />
+
+      {/* Kasse-enheder: giv personalet adgang uden dit login */}
+      <div className="mt-6">
+        <KasseDevices devices={deviceList} />
+      </div>
 
       {/* Ugentligt overblik */}
       <div className="mt-6">
