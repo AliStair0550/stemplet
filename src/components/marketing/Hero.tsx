@@ -14,7 +14,7 @@ export default function Hero() {
             <Eyebrow>Det digitale stempelkort</Eyebrow>
             <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.16] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
-              <span className="whitespace-nowrap font-fraunces font-[600] italic">
+              <span className="whitespace-nowrap font-fraunces font-[400] italic">
                 flere gensyn.
               </span>
             </h1>

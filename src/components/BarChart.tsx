@@ -36,15 +36,19 @@ export function BarChart({
                   animationDelay: `${i * 0.03}s`,
                 }}
               />
-              {i === maxIdx && d.count > 0 ? (
-                <span className="absolute -top-5 text-[0.6rem] font-[400] tabular-nums text-ink">
+              {/* Vaerdi over hver soejle, saa den ogsaa er laesbar paa mobil
+                  (ingen hover). Hoejeste dag fremhaeves. */}
+              {d.count > 0 ? (
+                <span
+                  className={`absolute -top-5 text-[0.6rem] tabular-nums ${
+                    i === maxIdx
+                      ? "font-[400] text-ink"
+                      : "font-[300] text-slate"
+                  }`}
+                >
                   {d.count}
                 </span>
               ) : null}
-              <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-sm border border-fog bg-white px-2 py-1 text-[0.62rem] text-ink shadow-sm group-hover:block">
-                {d.label}:{" "}
-                <span className="font-[400] tabular-nums">{d.count}</span>
-              </div>
             </div>
           );
         })}

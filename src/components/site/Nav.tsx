@@ -6,7 +6,6 @@ import Link from "next/link";
 const LINKS = [
   { href: "/#sådan", label: "Sådan virker det" },
   { href: "/#pris", label: "Pris" },
-  { href: "/login", label: "Log ind" },
 ];
 
 export default function Nav() {
@@ -36,25 +35,34 @@ export default function Nav() {
           Stemplet<span className="text-moss">.</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="font-[300] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex items-center gap-5 md:gap-7">
+          <nav className="hidden items-center gap-7 md:flex">
+            {LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="rounded-sm font-[300] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
 
-        {/* Mobil: mindst Log ind skal altid kunne naas fra toppen. */}
-        <Link
-          href="/login"
-          className="font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-moss md:hidden"
-        >
-          Log ind
-        </Link>
+          <Link
+            href="/login"
+            className="rounded-sm font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+          >
+            Log ind
+          </Link>
+
+          {/* Den primaere CTA skal altid kunne naas, ogsaa fra mobil-toppen. */}
+          <Link
+            href="/start"
+            className="inline-flex min-h-9 items-center rounded-full bg-moss px-4 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-moss-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+          >
+            Kom gratis i gang
+          </Link>
+        </div>
       </div>
     </header>
   );

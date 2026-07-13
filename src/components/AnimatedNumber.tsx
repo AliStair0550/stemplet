@@ -40,7 +40,10 @@ export function AnimatedNumber({
   decimals = 0,
   durationMs = 900,
 }: Props) {
-  const [display, setDisplay] = useState(value);
+  // Starter paa 0 (baade paa serveren og ved hydrering, saa ingen mismatch) og
+  // taeller op. Undgaar det tidligere blink hvor slutvaerdien kort blev vist,
+  // sat til 0, og saa taalt op igen.
+  const [display, setDisplay] = useState(0);
   const raf = useRef<number | null>(null);
 
   useEffect(() => {
@@ -51,19 +54,23 @@ export function AnimatedNumber({
       setDisplay(value);
       return;
     }
+    // Anim fra den nuvaerende visning (0 ved foerste mount, ellers forrige tal)
+    // til den nye vaerdi, saa navigation glider blidt i stedet for at nulstille.
+    const from = display;
     const start = performance.now();
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / durationMs);
       const eased = 1 - Math.pow(1 - t, 3);
-      setDisplay(value * eased);
+      setDisplay(from + (value - from) * eased);
       if (t < 1) raf.current = requestAnimationFrame(tick);
       else setDisplay(value);
     };
-    setDisplay(0);
     raf.current = requestAnimationFrame(tick);
     return () => {
       if (raf.current) cancelAnimationFrame(raf.current);
     };
+    // display med vilje udeladt: skal kun anime naar maalvaerdien aendrer sig.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, durationMs]);
 
   return <span>{formatValue(display, format, suffix, decimals)}</span>;
