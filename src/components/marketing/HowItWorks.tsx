@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Section, Eyebrow } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
-import { Celebration } from "@/components/Celebration";
 import { cn } from "@/lib/utils";
 
 // Animeret forklaring: eet kort koerer hele livscyklussen igennem, og de tre
@@ -182,7 +181,6 @@ export default function HowItWorks() {
 
         {/* Den animerede scene: eet kort, hele livscyklussen */}
         <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-1">
-          <Celebration show={celebrate} />
           <div
             className={cn(
               "relative w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
