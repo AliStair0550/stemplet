@@ -40,9 +40,9 @@ export default function Page() {
         <Divider />
         <NoCheating />
         <StatsPreview />
-        <RoiCalculator />
-        <Divider />
         <Pricing />
+        <Divider />
+        <RoiCalculator />
         <Divider />
         {/* Nederste sektioner: spring initialt render-arbejde over til der
             scrolles naer dem (content-visibility). */}
