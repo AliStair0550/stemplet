@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "Kan en kunde få flere stempler på én gang, fx tre kaffe, tre stempler?",
-    a: "Ja. Ved kassen scanner personalet kundens kort én gang pr. kop, og der er ingen ventetid på personalets stempler. Kundens egen QR-scanning er derimod begrænset til ét stempel ad gangen, så ingen kan stå og scanne sig selv til gratis kaffe. Du bestemmer selv intervallet i indstillinger.",
+    a: "Ja. Personalet scanner kundens kort ved kassen og vælger antallet i scanningsøjeblikket. Tre kaffe, tre stempler, uden ventetid.",
   },
   {
     q: "Virker det på Android?",

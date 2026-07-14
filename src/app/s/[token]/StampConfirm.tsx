@@ -340,6 +340,37 @@ export function StampConfirm({
         ? (() => {
             const s = state;
 
+            // Selvbetjening slaaet fra: personalet giver stemplet. Peg kunden
+            // paa at vise kortet (eller hente det foerst).
+            if (s.code === "SELF_SCAN_OFF") {
+              return (
+                <div className="flex w-full max-w-sm flex-col items-center gap-5">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+                    <StampIcon icon={icon} className="h-8 w-8" />
+                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-ink">
+                      Vis ved kassen
+                    </span>
+                    <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">
+                      Personalet giver dig stemplet
+                    </h1>
+                  </div>
+                  <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+                    Vis dit kort til personalet ved disken, så scanner de det og
+                    giver dig dine stempler.
+                  </p>
+                  <ButtonLink
+                    href={s.serial ? `/kort/${s.serial}?vis=1` : `/k/${slug}`}
+                    variant="primary"
+                    size="lg"
+                  >
+                    {s.serial ? "Vis mit kort" : "Hent dit kort"}
+                  </ButtonLink>
+                </div>
+              );
+            }
+
             // Kunden HAR et kort her (allerede stemplet / cooldown / fuldt) ->
             // send dem hen til deres eget kort, hvor de kan vise QR'en til
             // personalet (som scanner uden cooldown). Ingen doed "Proev igen".

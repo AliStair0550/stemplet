@@ -6,6 +6,7 @@ import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { WelcomeStampToggle } from "./WelcomeStampToggle";
+import { SelfScanToggle } from "./SelfScanToggle";
 import { KasseDevices } from "./KasseDevices";
 import { LocationCard } from "./LocationCard";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -72,6 +73,25 @@ export default async function IndstillingerPage({
       {/* Kasse-enheder: giv personalet adgang uden dit login */}
       <div className="mt-6">
         <KasseDevices devices={deviceList} />
+      </div>
+
+      {/* Selvbetjening (kunden scanner selv) - standard fra */}
+      <div className="mt-6">
+        <Panel>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+                Selvbetjening
+              </h2>
+              <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
+                Som standard scanner kun personalet kundens kort ved kassen. Slår
+                du selvbetjening til, kan kunden også scanne en QR-kode på skærmen
+                og stemple sig selv (kassemodus).
+              </p>
+            </div>
+            <SelfScanToggle initial={business.selfScanEnabled} />
+          </div>
+        </Panel>
       </div>
 
       {/* Velkomststempel ved foerste scan */}

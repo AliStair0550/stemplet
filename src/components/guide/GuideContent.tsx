@@ -4,25 +4,8 @@
 // guiden altid afspejler den faktiske adfaerd. Ingen tekniske ord i teksten.
 // ─────────────────────────────────────────────────────────────────────
 import type { GuideData } from "@/lib/guide";
-import {
-  STAMP_TOKEN_TTL_SECONDS,
-  PIN_MAX_ATTEMPTS,
-  PIN_LOCK_SECONDS,
-} from "@/lib/system-config";
-import { formatCooldown, formatMinutes, formatDkDate } from "@/lib/utils";
-
-function codeRefreshText(seconds: number): string {
-  if (seconds === 60) return "hvert minut";
-  if (seconds < 60) return `hvert ${seconds}. sekund`;
-  return `hvert ${Math.round(seconds / 60)}. minut`;
-}
-
-function cooldownSentence(min: number): string {
-  if (min <= 0) {
-    return "Kunden kan få et stempel hver gang. Der er ingen ventetid.";
-  }
-  return `Kunden kan selv hente ét stempel ad gangen hver ${formatCooldown(min)}.`;
-}
+import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "@/lib/system-config";
+import { formatMinutes, formatDkDate } from "@/lib/utils";
 
 // ── Ikoner ───────────────────────────────────────────────────────────
 function IconStamp() {
@@ -37,13 +20,6 @@ function IconGift() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
       <path d="M20 12v8H4v-8M2 8h20v4H2zM12 8v12M12 8S10 3 7 5s5 3 5 3ZM12 8s2-5 5-3-5 3-5 3Z" />
-    </svg>
-  );
-}
-function IconPhone() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-      <rect x="7" y="3" width="10" height="18" rx="2" /><path d="M11 18h2" />
     </svg>
   );
 }
@@ -134,8 +110,6 @@ function QA({ q, a }: { q: string; a: string }) {
 
 // ── Selve guiden ─────────────────────────────────────────────────────
 export function GuideContent({ data }: { data: GuideData }) {
-  const cooldownText = formatCooldown(data.cooldownMin);
-  const refresh = codeRefreshText(STAMP_TOKEN_TTL_SECONDS);
   const lockText = formatMinutes(PIN_LOCK_SECONDS);
   const cardHome = data.walletEnabled
     ? "i kundens Apple Wallet"
@@ -180,20 +154,20 @@ export function GuideContent({ data }: { data: GuideData }) {
         <div className="grid gap-4 sm:grid-cols-3">
           <BigCard
             icon={<IconStamp />}
-            title="Ét stempel"
+            title="Ny kunde"
             steps={[
-              "Vis skærmen med koden til kunden.",
-              "Kunden scanner den med sit kamera.",
-              "Stemplet lander med det samme.",
+              "Vis skiltet med QR ved disken.",
+              "Kunden scanner og trykker Tilføj.",
+              "Kortet ligger i deres Apple Wallet.",
             ]}
           />
           <BigCard
             icon={<IconLayers />}
-            title="Flere stempler"
+            title="Giv stempler"
             steps={[
-              "Åbn Stempel, vælg Scan kort.",
-              "Scan kundens kort.",
-              "Tryk Giv stempel én gang pr. vare.",
+              "Åbn Stempel og scan kundens kort.",
+              "Vælg antal, fx tre kaffe er tre.",
+              "Tryk Giv stempel.",
             ]}
           />
           <BigCard
@@ -208,39 +182,24 @@ export function GuideContent({ data }: { data: GuideData }) {
         </div>
       </Section>
 
-      {/* 2. De to måder at give et stempel på */}
-      <Section id="maader" title="De to måder at give et stempel på">
-        <div className="grid gap-5 md:grid-cols-2">
-          <Way icon={<IconPhone />} title="Kunden scanner selv">
-            <p>
-              Vis skærmen med koden. Kunden scanner den med sit eget kamera, og
-              stemplet lander af sig selv.
-            </p>
-            <p>
-              Bruges til{" "}
-              <span className="font-[500] text-ink">ét stempel</span>. Koden
-              skifter {refresh}, og {cooldownSentence(data.cooldownMin)}
-            </p>
-          </Way>
-          <Way icon={<IconScan />} title="Du scanner kundens kort">
-            <p>
-              Åbn Stempel, vælg Scan kort, scan kundens kort, og tryk Giv
-              stempel.
-            </p>
-            <p>
-              Bruges til{" "}
-              <span className="font-[500] text-ink">flere stempler</span> og til
-              at indløse. Her bestemmer du selv.
-            </p>
-          </Way>
-        </div>
-        <div className="rounded-lg border border-moss/30 bg-moss/5 p-5 text-[1.05rem] leading-[1.6] text-ink">
+      {/* 2. Sådan giver du et stempel */}
+      <Section id="maader" title="Sådan giver du et stempel">
+        <Way icon={<IconScan />} title="Du scanner kundens kort">
+          <p>
+            Åbn Stempel, scan kundens kort, vælg antal, og tryk Giv stempel. Her
+            bestemmer du selv, hvor mange stempler kunden får.
+          </p>
+          <p>
+            Kortet opdateres automatisk i kundens Wallet, så de altid kan se
+            deres aktuelle status.
+          </p>
+        </Way>
+        <div className="mt-5 rounded-lg border border-moss/30 bg-moss/5 p-5 text-[1.05rem] leading-[1.6] text-ink">
           <span className="font-[500]">
-            Hvad gør jeg, hvis kunden vil have flere stempler?
+            Køber kunden flere varer på én gang?
           </span>{" "}
-          Brug Scan kort og tryk Giv stempel én gang for hver vare. Køber kunden
-          tre kaffe, trykker du tre gange. Kundens egen scanning af skærmen giver
-          kun ét stempel ad gangen.
+          Vælg antallet i scanningsøjeblikket. Tre kaffe, tre stempler. Kun jeres
+          personale kan stemple.
         </div>
       </Section>
 
@@ -275,16 +234,12 @@ export function GuideContent({ data }: { data: GuideData }) {
         <div className="rounded-lg border border-fog bg-white shadow-card p-6">
           <div className="flex flex-col gap-4">
             <QA
-              q="Der står koden er udløbet"
-              a={`Kunden nåede det ikke i tide. Bed kunden scanne den nye kode på skærmen. Den skifter ${refresh}.`}
-            />
-            <QA
               q="Kunden har ikke et kort endnu"
-              a="Når kunden scanner koden, bliver de først sendt hen for at oprette kortet. Det tager fem sekunder. Bagefter scanner de bare igen."
+              a="Bed kunden scanne skiltet med QR ved disken. Det tager fem sekunder at oprette kortet, og bagefter viser de bare kortet til dig."
             />
             <QA
               q="Kunden siger jeg fik ikke stempel"
-              a={`Tjek om kunden allerede har fået ét inden for de sidste ${cooldownText}. Ellers giv stemplet med Scan kort ved kassen.`}
+              a="Scan kundens kort igen og tryk Giv stempel. Der er ingen ventetid på personalets stempler."
             />
             <QA
               q="Kunden får et nyt kort hver gang og samler ikke op"

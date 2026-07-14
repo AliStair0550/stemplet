@@ -13,6 +13,15 @@ export async function GET(req: NextRequest) {
   const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
+  // Selvbetjening skal vaere slaaet til for at vise en kunde-scanbar QR.
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { selfScanEnabled: true },
+  });
+  if (!business?.selfScanEnabled) {
+    return apiError("SELF_SCAN_OFF", "Selvbetjening er slået fra.", 403);
+  }
+
   const card = await prisma.card.findFirst({
     where: { businessId, active: true },
     orderBy: { createdAt: "asc" },

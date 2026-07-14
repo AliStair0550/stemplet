@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
       ip: clientIp(req),
       // Personalet staar ved disken - ingen cooldown paa manuel stempling.
       skipCooldown: true,
+      // Antal stempler personalet valgte (fx tre kaffe = 3).
+      count: parsed.data.count,
     });
     return Response.json({ ok: true, ...res });
   } catch (e) {

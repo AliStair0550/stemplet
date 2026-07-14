@@ -27,9 +27,8 @@ test("formatCooldown formaterer minutter pænt", () => {
 
 // ── Guiden renderer med DB- og system-config-vaerdier, ikke hardcodet ─
 
-test("guiden viser butikkens cooldown og reward fra databasen", () => {
+test("guiden viser reward og antal stempler fra databasen", () => {
   const html = renderToStaticMarkup(<GuideContent data={sample} />);
-  assert.match(html, /2 timer/); // cooldownMin=120 formateret
   assert.match(html, /8 stempler/); // stampsRequired
   assert.match(html, /10\. kop er gratis/); // rewardText
 });
@@ -39,14 +38,6 @@ test("guiden viser PIN-regler fra system-config (ikke hardcodet)", () => {
   // Faelder, hvis nogen hardcoder tallene i stedet for at bruge system-config.
   assert.ok(html.includes(`${PIN_MAX_ATTEMPTS} gange`));
   assert.ok(html.includes(formatMinutes(PIN_LOCK_SECONDS)));
-});
-
-test("ny cooldown -> ny tekst i guiden (30 min)", () => {
-  const html = renderToStaticMarkup(
-    <GuideContent data={{ ...sample, cooldownMin: 30 }} />,
-  );
-  assert.match(html, /30 minutter/);
-  assert.equal(/2 timer/.test(html), false);
 });
 
 // ── Kampagne-sektion renderes kun naar der er en aktiv kampagne ──────

@@ -29,9 +29,13 @@ export default async function KassePage() {
     <>
       <PageHeading
         title="Stempel"
-        subtitle="Vis stempel-QR til kunden, scan kundens kort eller åbn kassemodus på en skærm ved disken."
+        subtitle={
+          business.selfScanEnabled
+            ? "Scan kundens kort, vis stempel-QR eller åbn kassemodus på en skærm ved disken."
+            : "Scan kundens kort for at give stempler eller indløse en belønning."
+        }
       />
-      <Kassemodus card={kioskCard} />
+      <Kassemodus card={kioskCard} selfScan={business.selfScanEnabled} />
     </>
   );
 }

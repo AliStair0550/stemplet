@@ -83,9 +83,10 @@ export const redeemSchema = z.object({
   pin: pinSchema,
 });
 
-// Personale-scan (stempl via serial)
+// Personale-scan (stempl via serial). count: antal stempler paa denne scanning.
 export const staffStampSchema = z.object({
   serial: z.string().min(4),
+  count: z.number().int().min(1).max(20).optional(),
 });
 
 export type CardDesignInput = z.infer<typeof cardDesignSchema>;

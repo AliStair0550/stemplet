@@ -184,6 +184,19 @@ export async function setWeeklyEmail(enabled: boolean): Promise<Result> {
   return { ok: true };
 }
 
+// Til/fra for selvbetjening (kunden scanner selv en roterende QR). Standard fra:
+// kun personalet scanner kundens kort.
+export async function setSelfScan(enabled: boolean): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { selfScanEnabled: enabled },
+  });
+  revalidatePath("/app/indstillinger");
+  revalidatePath("/app/kasse");
+  return { ok: true };
+}
+
 // Til/fra for velkomststempel ved kundens allerfoerste scan.
 export async function setWelcomeStamp(enabled: boolean): Promise<Result> {
   const { business } = await requireBusiness();

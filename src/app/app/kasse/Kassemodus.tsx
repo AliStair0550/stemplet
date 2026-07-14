@@ -235,17 +235,25 @@ function useKioskToken(active: boolean) {
 }
 
 // ── Dashboard-siden: vaelg mellem QR, scan og kassemodus ──────────────
-export function Kassemodus({ card }: { card: KioskCard }) {
+export function Kassemodus({
+  card,
+  selfScan,
+}: {
+  card: KioskCard;
+  selfScan: boolean;
+}) {
   const [mode, setMode] = useState<"qr" | "scan">("qr");
   const [kioskOpen, setKioskOpen] = useState(false);
 
-  // Startet fra hjemmeskaermen (standalone) -> aabn kiosken direkte.
+  // Kun ved selvbetjening: startet fra hjemmeskaermen (standalone) -> aabn
+  // kiosken direkte.
   useEffect(() => {
+    if (!selfScan) return;
     const standalone =
       window.matchMedia?.("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (standalone) setKioskOpen(true);
-  }, []);
+  }, [selfScan]);
 
   const openKiosk = () => {
     enterFullscreen();
@@ -255,6 +263,16 @@ export function Kassemodus({ card }: { card: KioskCard }) {
     exitFullscreen();
     setKioskOpen(false);
   };
+
+  // Uden selvbetjening (standard): kun personalet scanner kundens kort. Ingen
+  // QR-visning, ingen kassemodus.
+  if (!selfScan) {
+    return (
+      <div className="flex flex-col gap-7">
+        <ScanPanel />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-7">
@@ -462,6 +480,8 @@ function StaffCard({
   const [card, setCard] = useState<CardState | null>(null);
   const [loading, setLoading] = useState(true);
   const [pin, setPin] = useState("");
+  // Antal stempler personalet giver paa denne scanning (fx tre kaffe = 3).
+  const [qty, setQty] = useState(1);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   // Synkron guard: to hurtige tryk (touch double-tap) kan begge naa at fyre
@@ -517,7 +537,7 @@ function StaffCard({
       const res = await fetch("/api/staff/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial }),
+        body: JSON.stringify({ serial: card.serial, count: qty }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -526,12 +546,13 @@ function StaffCard({
         setCard({ ...card, stamps: data.stamps, rewardReady: data.rewardReady });
         setLastInc(data.increment ?? 1);
         setPulse((p) => p + 1);
+        setQty(1);
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
         setNote({
           ok: true,
           text: data.rewardReady
             ? "Kortet er nu fuldt. Belønning klar."
-            : `Stempel givet. ${data.stamps} af ${data.required}.`,
+            : `${data.increment ?? 1} ${(data.increment ?? 1) === 1 ? "stempel" : "stempler"} givet. ${data.stamps} af ${data.required}.`,
         });
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
@@ -773,10 +794,57 @@ function StaffCard({
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-3">
               <p className="text-center text-[0.8rem] font-[300] text-slate">
-                Kortet er scannet. Tryk for at give stemplet.
+                Kortet er scannet. Vælg antal og giv stemplet.
               </p>
+              {/* Antal-vaelger: fx tre kaffe = 3 stempler paa een gang */}
+              <div className="flex items-center justify-center gap-4">
+                <span className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-slate">
+                  Antal
+                </span>
+                <div className="flex items-center gap-1 rounded-full border border-clay bg-white p-1">
+                  <button
+                    type="button"
+                    aria-label="Færre"
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    disabled={busy || qty <= 1}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand disabled:opacity-40"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M5 12h14" />
+                    </svg>
+                  </button>
+                  <span className="w-9 text-center text-[1.1rem] font-[400] tabular-nums text-ink">
+                    {qty}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Flere"
+                    onClick={() => setQty((q) => Math.min(20, q + 1))}
+                    disabled={busy || qty >= 20}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand disabled:opacity-40"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.8}
+                      strokeLinecap="round"
+                      className="h-4 w-4"
+                    >
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <CtaGlow>
                 <button
                   onClick={giveStamp}
@@ -791,7 +859,7 @@ function StaffCard({
                         icon={card.stampIcon as StampIconKey}
                         className="h-[1.1rem] w-[1.1rem]"
                       />
-                      Giv stempel ({card.stamps} af {card.required})
+                      {qty === 1 ? "Giv stempel" : `Giv ${qty} stempler`}
                     </>
                   )}
                 </button>

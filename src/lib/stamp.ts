@@ -95,6 +95,8 @@ export async function applyStamp(opts: {
   ip?: string | null;
   /** Personalet staar ved disken og bestemmer selv - spring cooldown over. */
   skipCooldown?: boolean;
+  /** Antal stempler paa een scanning (fx tre kaffe = tre). Standard 1. */
+  count?: number;
 }): Promise<StampResult> {
   const now = new Date();
 
@@ -146,6 +148,9 @@ export async function applyStamp(opts: {
     );
     const baseIncrement = active.some((c) => c.type === "DOUBLE_STAMP") ? 2 : 1;
     const hasWelcome = active.some((c) => c.type === "WELCOME_BONUS");
+    // Antal stempler paa denne scanning (personalet vaelger, fx tre kaffe = 3).
+    const qty = Math.max(1, Math.min(20, Math.floor(opts.count ?? 1)));
+    const scanIncrement = baseIncrement * qty;
 
     // Atomisk optaelling: opdaterer kun hvis kortet ikke er fuldt OG cooldown
     // er ovre. Forhindrer baade tabte stempler OG at to samtidige kunde-QR-
@@ -163,7 +168,7 @@ export async function applyStamp(opts: {
             }
           : {}),
       },
-      data: { stamps: { increment: baseIncrement }, lastStampAt: now },
+      data: { stamps: { increment: scanIncrement }, lastStampAt: now },
     });
     if (applied.count === 0) {
       // Skeln mellem fuldt kort og tabt cooldown-race for en god fejlbesked.
@@ -186,10 +191,10 @@ export async function applyStamp(opts: {
     // Velkomstbonus: kun den allerfoerste stempling (0 -> baseIncrement) faar
     // den. Row-laasen fra optaellingen serialiserer samtidige stemplinger, saa
     // kun een kan matche stamps === baseIncrement -> ingen dobbelt bonus.
-    let increment = baseIncrement;
+    let increment = scanIncrement;
     if (hasWelcome && cc.completedCount === 0) {
       const bonus = await tx.customerCard.updateMany({
-        where: { id: cc.id, stamps: baseIncrement },
+        where: { id: cc.id, stamps: scanIncrement },
         data: { stamps: { increment: 1 } },
       });
       if (bonus.count === 1) increment += 1;

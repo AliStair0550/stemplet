@@ -38,6 +38,10 @@ model Business {
   // Giv et velkomststempel ved kundens ALLERFOERSTE scan (opretter kort + 1
   // stempel). Slaaet fra: foerste scan opretter kun kortet. Standard til.
   welcomeStampEnabled Boolean @default(true)
+  // Selvbetjening: maa kunden stemple sig selv ved at scanne en roterende QR
+  // (kioskmodus)? Standard FRA: kun personalet scanner kundens kort. Holder
+  // butikken enkel (eet statisk tilmeldings-skilt) og loeser snyd strukturelt.
+  selfScanEnabled Boolean @default(false)
   // Butikkens placering (valgfri). Saettes kortet paa Wallet-passet som en
   // "location", saa kortet dukker op paa kundens laaseskaerm, naar de er i
   // naerheden. Native Apple Wallet, butikkens bedste paamindelse.

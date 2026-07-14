@@ -9,6 +9,7 @@ import {
 } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -54,6 +55,28 @@ export async function POST(req: NextRequest) {
   if (!cc && known) {
     const kcc = await loadCardByToken(known);
     if (kcc && kcc.card.businessId === payload.businessId) cc = kcc;
+  }
+
+  // Selvbetjening slaaet fra: kunden maa ikke stemple sig selv. Send dem til at
+  // vise kortet til personalet (som scanner). Normalt uden effekt, da QR'en slet
+  // ikke vises, men holder modellen konsekvent hvis nogen har et gammelt link.
+  let selfScan: boolean;
+  if (cc) {
+    selfScan = cc.card.business.selfScanEnabled;
+  } else {
+    const biz = await prisma.business.findUnique({
+      where: { id: payload.businessId },
+      select: { selfScanEnabled: true },
+    });
+    selfScan = !!biz?.selfScanEnabled;
+  }
+  if (!selfScan) {
+    return apiError(
+      "SELF_SCAN_OFF",
+      "Vis dit kort til personalet, så giver de dig stemplet.",
+      200,
+      cc ? { serial: cc.serial } : {},
+    );
   }
 
   let createdCard = false;

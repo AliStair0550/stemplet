@@ -62,7 +62,7 @@ export default async function KasseRegisterPage({
         ) : null}
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
-        <Kassemodus card={kioskCard} />
+        <Kassemodus card={kioskCard} selfScan={business.selfScanEnabled} />
       </div>
     </main>
   );
