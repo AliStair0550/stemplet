@@ -1,12 +1,10 @@
 import Link from "next/link";
-import type { Plan } from "@prisma/client";
 import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity } from "@/lib/stats";
 import { StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
-import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
 
 // Smaa line-art ikoner til noegletal-fliserne.
@@ -62,34 +60,6 @@ function IconShare() {
       <circle cx="18" cy="19" r="2.5" />
       <path d="M8.2 10.8 15.8 6.4M8.2 13.2l7.6 4.4" />
     </svg>
-  );
-}
-
-// Varsl foer muren: fra 80 kunder viser vi vaerdien og opgraderingsknappen,
-// saa salget starter paa "se hvad de har givet dig" - ikke paa tvang.
-function CustomerLimitNotice({ plan, total }: { plan: Plan; total: number }) {
-  if (plan !== "FREE" || total < FREE_CUSTOMER_WARN) return null;
-  const atWall = total >= FREE_CUSTOMER_LIMIT;
-  return (
-    <div className="mb-6 rounded-lg border border-moss bg-moss/5 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="font-[400] text-[1rem] text-ink">
-            {atWall
-              ? `Du har taget imod ${FREE_CUSTOMER_LIMIT} kunder 🎉`
-              : `Du nærmer dig ${FREE_CUSTOMER_LIMIT} kunder. Flot!`}
-          </p>
-          <p className="mt-1 max-w-xl font-[200] text-[0.85rem] leading-relaxed text-stone">
-            {atWall
-              ? "Dine nuværende kunder stempler og indløser videre præcis som før. Vil du tage imod endnu flere, åbner Pro for ubegrænset antal kort, og viser dig, hvem der er dine stamkunder, og hvem der er ved at forsvinde."
-              : `Du har ${formatDkNumber(total)} kunder. Se hvad de allerede har givet dig, og lås op for ubegrænset antal kort med Pro, når du er klar.`}
-          </p>
-        </div>
-        <ButtonLink href="/app/indstillinger" variant="moss" size="md">
-          {atWall ? "Åbn for flere med Pro" : "Se Pro"}
-        </ButtonLink>
-      </div>
-    </div>
   );
 }
 
@@ -221,7 +191,6 @@ export default async function OverviewPage() {
         </div>
       </div>
 
-      <CustomerLimitNotice plan={business.plan} total={stats.totalCustomers} />
 
       {stats.stampsTotal === 0 ? <GettingStarted slug={business.slug} /> : null}
 

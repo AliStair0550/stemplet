@@ -4,6 +4,7 @@ import { Divider } from "@/components/ui";
 import Hero from "@/components/marketing/Hero";
 import Problem from "@/components/marketing/Problem";
 import HowItWorks from "@/components/marketing/HowItWorks";
+import TryItYourself from "@/components/marketing/TryItYourself";
 import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
 import RoiCalculator from "@/components/marketing/RoiCalculator";
@@ -35,6 +36,8 @@ export default function Page() {
       <main>
         <Hero />
         <HowItWorks />
+        <Divider />
+        <TryItYourself />
         <Divider />
         <Problem />
         <Divider />

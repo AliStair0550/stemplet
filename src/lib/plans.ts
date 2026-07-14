@@ -17,8 +17,11 @@ export type PlanLimits = {
   showPoweredBy: boolean;
 };
 
+// Kunde-loftet er slaaet fra (ubegraenset paa begge planer) i test-/opstartsfasen,
+// saa ingen bliver blokeret. Konstanterne bevares, saa loftet nemt kan aktiveres
+// igen ved at saette FREE.maxCustomers = FREE_CUSTOMER_LIMIT.
 export const PLAN_LIMITS: Record<Plan, PlanLimits> = {
-  FREE: { maxCustomers: FREE_CUSTOMER_LIMIT, showPoweredBy: false },
+  FREE: { maxCustomers: null, showPoweredBy: false },
   PRO: { maxCustomers: null, showPoweredBy: false },
 };
 
