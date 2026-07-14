@@ -17,7 +17,7 @@ function ShieldIcon() {
   );
 }
 
-function RotateIcon() {
+function StaffIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -28,8 +28,9 @@ function RotateIcon() {
       strokeLinejoin="round"
       className="h-6 w-6"
     >
-      <path d="M20 11a8 8 0 0 0-14.3-4.5M5 4v3h3" />
-      <path d="M4 13a8 8 0 0 0 14.3 4.5M19 20v-3h-3" />
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3.5 20a5.5 5.5 0 0 1 11 0" />
+      <path d="M15.5 12.5l1.6 1.6 3-3" />
     </svg>
   );
 }
@@ -59,9 +60,9 @@ const POINTS = [
     body: "Hvert stempel er kryptografisk signeret. Det kan kun bruges én gang og kan ikke kopieres.",
   },
   {
-    icon: <RotateIcon />,
-    title: "Roterende QR-kode",
-    body: "Koden skifter løbende. Et gammelt skærmbillede fra en anden gang virker ikke.",
+    icon: <StaffIcon />,
+    title: "Kun personalet stempler",
+    body: "Et stempel gives kun, når jeres personale scanner kundens kort. Ingen kan stå og stemple sig selv.",
   },
   {
     icon: <LockIcon />,
