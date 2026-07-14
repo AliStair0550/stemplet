@@ -14,9 +14,10 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/kort", label: "Design" },
   { href: "/app/materialer", label: "Materialer" },
   { href: "/app/guide", label: "Sådan virker det" },
-  { href: "/app/integrationer", label: "Integrationer" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
+// "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
+// Siden findes stadig paa /app/integrationer for den, der kender adressen.
 
 export function DashboardNav({ businessName }: { businessName: string }) {
   const pathname = usePathname();

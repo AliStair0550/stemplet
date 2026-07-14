@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
 import { btnClass } from "@/components/ui";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
@@ -232,43 +231,12 @@ export function StartWizard() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {/* 1: QR-kode til download */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* 1: Se og del kortet online */}
             <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
                   1
-                </span>
-                <h3 className="font-[400] text-[1rem] text-ink">QR-kode</h3>
-              </div>
-              <div className="flex justify-center rounded-lg border border-fog bg-parchment p-3">
-                <Image
-                  src={created.qrDataUrl}
-                  alt="QR til dit stempelkort"
-                  width={140}
-                  height={140}
-                  className="h-32 w-32"
-                  unoptimized
-                />
-              </div>
-              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
-                Download koden og brug den, hvor du vil: på skærme,
-                klistermærker eller din egen plakat.
-              </p>
-              <a
-                href={created.qrDataUrl}
-                download={`stemplet-qr-${created.slug}.png`}
-                className={`${btnClass("outline")} mt-auto`}
-              >
-                Download QR
-              </a>
-            </div>
-
-            {/* 2: Se og del kortet online */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
-                  2
                 </span>
                 <h3 className="font-[400] text-[1rem] text-ink">
                   Se og del kortet
@@ -309,11 +277,11 @@ export function StartWizard() {
               </div>
             </div>
 
-            {/* 3: Faerdigt skilt til print */}
+            {/* 2: Faerdigt skilt til print */}
             <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
-                  3
+                  2
                 </span>
                 <h3 className="font-[400] text-[1rem] text-ink">
                   Færdigt skilt

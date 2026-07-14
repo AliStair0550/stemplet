@@ -96,13 +96,13 @@ export default function NoCheating() {
         {POINTS.map((p, i) => (
           <div
             key={p.title}
-            className={`py-9 md:px-9 ${
+            className={`flex flex-col items-center py-9 text-center md:px-9 ${
               i < POINTS.length - 1
                 ? "border-b border-parchment/15 md:border-b-0 md:border-r"
                 : ""
             }`}
           >
-            {/* Guld-maerke i midten af hver kasse: tydeligt paa sort, hvor den
+            {/* Guld-maerke centreret i hver kasse: tydeligt paa sort, hvor den
                 tidligere groenne var svaer at se. */}
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#D9B26A]/50 bg-[#D9B26A]/12 text-[#E4C081] shadow-[0_0_28px_-6px_rgba(217,178,106,0.5)]">
               {p.icon}
@@ -110,7 +110,7 @@ export default function NoCheating() {
             <h3 className="mt-6 font-[400] text-[1.1rem] tracking-[0.02em] text-parchment">
               {p.title}
             </h3>
-            <p className="mt-3 font-[300] text-[0.88rem] leading-[1.75] text-parchment/70">
+            <p className="mt-3 max-w-[16rem] font-[300] text-[0.88rem] leading-[1.75] text-parchment/70">
               {p.body}
             </p>
           </div>

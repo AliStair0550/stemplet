@@ -67,6 +67,9 @@ export default async function IndstillingerPage({
         </div>
       ) : null}
 
+      <h2 className="mb-4 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+        Din butik
+      </h2>
       <SettingsForms
         name={business.name}
         cooldown={business.stampCooldownMin}
@@ -74,8 +77,11 @@ export default async function IndstillingerPage({
         selfScan={business.selfScanEnabled}
       />
 
+      <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+        Ved kassen
+      </h2>
       {/* Kasse-enheder: giv personalet adgang uden dit login */}
-      <div className="mt-6">
+      <div>
         <KasseDevices devices={deviceList} />
       </div>
 
@@ -117,8 +123,11 @@ export default async function IndstillingerPage({
         </Panel>
       </div>
 
+      <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+        Kunder og marketing
+      </h2>
       {/* Placering til laaseskaerm: kortet dukker op naar kunden er i naerheden */}
-      <div className="mt-6">
+      <div>
         <Panel>
           <LocationCard
             initialLat={business.latitude}
@@ -145,8 +154,11 @@ export default async function IndstillingerPage({
         </Panel>
       </div>
 
+      <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+        Konto
+      </h2>
       {/* Abonnement */}
-      <div className="mt-6">
+      <div>
         <Panel>
           <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
             Abonnement

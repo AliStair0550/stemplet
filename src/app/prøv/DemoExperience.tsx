@@ -132,7 +132,7 @@ export function DemoExperience({
               }`}
             >
               <WalletIcon />
-              Læg i Apple Wallet
+              Hent mit stempelkort
             </a>
           </CtaGlow>
         ) : null}
