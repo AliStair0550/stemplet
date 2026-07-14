@@ -5,9 +5,36 @@ import Image from "next/image";
 import { Scanner } from "@/components/Scanner";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
+import { Celebration } from "@/components/Celebration";
 import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { hexToRgb, type StampIconKey } from "@/lib/brand";
+
+// Kort haptik paa personalets enhed (telefon/tablet). Valgfrit.
+function haptic(pattern: number | number[]) {
+  try {
+    navigator.vibrate?.(pattern);
+  } catch {
+    // haptik er valgfrit
+  }
+}
+
+// Gave-glyf til indloesnings-fejringen ("giv beloenningen nu").
+function GiftGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+    </svg>
+  );
+}
 
 export type KioskCard = {
   businessName: string;
@@ -437,6 +464,12 @@ function StaffCard({
   const [pin, setPin] = useState("");
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  // Stiger for hvert stempel: bruges som key til at gen-udloese kortets
+  // "burst"-animation og den flyvende "+1", saa personalet faar en tydelig
+  // kvittering paa skaermen (Wallet-pass'et opdaterer Apple lidt senere).
+  const [pulse, setPulse] = useState(0);
+  // Naar en beloenning lige er indloest: stor fejring + "giv beloenningen nu".
+  const [redeemed, setRedeemed] = useState<{ rewardText: string } | null>(null);
 
   const loadCard = useCallback(async (s: string) => {
     setLoading(true);
@@ -476,13 +509,17 @@ function StaffCard({
       });
       const data = await res.json();
       if (res.ok) {
+        // Opdater kortet DIREKTE fra svaret, ingen ekstra hentning: personalet
+        // ser stemplet med det samme (foer var der to kald i traek = langsomt).
+        setCard({ ...card, stamps: data.stamps, rewardReady: data.rewardReady });
+        setPulse((p) => p + 1);
+        haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
         setNote({
           ok: true,
           text: data.rewardReady
             ? "Kortet er nu fuldt. Belønning klar."
             : `Stempel givet. ${data.stamps} af ${data.required}.`,
         });
-        await loadCard(card.serial);
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
       }
@@ -505,9 +542,13 @@ function StaffCard({
       });
       const data = await res.json();
       if (res.ok) {
-        setNote({ ok: true, text: "Belønning indløst. Kortet er nulstillet." });
+        // Stor kvittering: markér tydeligt at beloenningen skal gives NU, og
+        // kraev et bevidst "OK" for at lukke, saa den ikke overses.
         setPin("");
-        await loadCard(card.serial);
+        haptic([30, 50, 30, 50, 120]);
+        setRedeemed({ rewardText: card.rewardText });
+        // Kortet er nulstillet paa serveren: afspejl det lokalt til bagefter.
+        setCard({ ...card, stamps: 0, rewardReady: false });
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke indløse." });
         setPin("");
@@ -517,6 +558,14 @@ function StaffCard({
     } finally {
       setBusy(false);
     }
+  }
+
+  // Personalet har givet beloenningen og trykker OK: luk fejringen og vis det
+  // nulstillede kort, saa de kan fortsaette eller afslutte.
+  function confirmRedeemed() {
+    setRedeemed(null);
+    setNote({ ok: true, text: "Belønning givet. Kortet er nulstillet." });
+    if (card) loadCard(card.serial);
   }
 
   async function undo() {
@@ -531,11 +580,15 @@ function StaffCard({
       });
       const data = await res.json();
       if (res.ok) {
+        setCard({
+          ...card,
+          stamps: data.stamps,
+          rewardReady: data.stamps >= data.required,
+        });
         setNote({
           ok: true,
           text: `Fortrudt. ${data.stamps} af ${data.required}.`,
         });
-        await loadCard(card.serial);
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke fortryde." });
       }
@@ -548,23 +601,96 @@ function StaffCard({
 
   return (
     <div className="flex w-full max-w-md flex-col gap-5 rounded-lg border border-fog bg-white p-6 shadow-[0_20px_50px_-30px_rgba(26,26,26,0.4)]">
-      {loading ? (
+      {redeemed ? (
+        <>
+          <Celebration show />
+          <div className="flex flex-col items-center gap-5 py-4 text-center">
+            <span className="relative flex h-20 w-20 items-center justify-center">
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-moss/20"
+                style={{ animation: "burstRing 0.9s ease-out forwards" }}
+              />
+              <span
+                className="relative flex h-20 w-20 items-center justify-center rounded-full bg-moss text-white"
+                style={{
+                  animation:
+                    "giftOpen 0.72s cubic-bezier(0.34,1.56,0.64,1) both",
+                }}
+              >
+                <GiftGlyph className="h-9 w-9" />
+              </span>
+            </span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+                Belønning indløst
+              </span>
+              <h2
+                className="font-fraunces text-[1.8rem] font-light italic leading-tight text-ink"
+                style={{
+                  animation:
+                    "countPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
+                }}
+              >
+                Giv belønningen nu
+              </h2>
+            </div>
+            <p className="max-w-xs font-[300] text-[0.95rem] leading-relaxed text-stone">
+              Giv{" "}
+              <span className="font-[400] text-ink">{redeemed.rewardText}</span>{" "}
+              til kunden.
+            </p>
+            <CtaGlow className="w-full max-w-xs">
+              <button
+                onClick={confirmRedeemed}
+                className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS} min-h-[3.6rem] text-[0.9rem]`}
+              >
+                OK, belønning givet
+              </button>
+            </CtaGlow>
+          </div>
+        </>
+      ) : loading ? (
         <div className="flex flex-col items-center gap-3 py-10">
           <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
           <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
         </div>
       ) : card ? (
         <>
-          <StampCard
-            businessName={card.businessName}
-            primaryColor={card.primaryColor}
-            textColor={card.textColor}
-            stampIcon={card.stampIcon as StampIconKey}
-            stamps={card.stamps}
-            required={card.required}
-            rewardText={card.rewardText}
-            serial={card.serial}
-          />
+          <div className="relative">
+            <div
+              key={pulse}
+              style={
+                pulse > 0
+                  ? {
+                      animation:
+                        "cardBurst 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
+                    }
+                  : undefined
+              }
+            >
+              <StampCard
+                businessName={card.businessName}
+                primaryColor={card.primaryColor}
+                textColor={card.textColor}
+                stampIcon={card.stampIcon as StampIconKey}
+                stamps={card.stamps}
+                required={card.required}
+                rewardText={card.rewardText}
+                serial={card.serial}
+              />
+            </div>
+            {pulse > 0 ? (
+              <span
+                key={pulse}
+                aria-hidden
+                className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
+                style={{ animation: "plusOne 1.15s ease-out forwards" }}
+              >
+                +1 stempel
+              </span>
+            ) : null}
+          </div>
 
           {note ? (
             <p
@@ -616,15 +742,15 @@ function StaffCard({
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               <p className="text-center text-[0.8rem] font-[300] text-slate">
-                Kortet er scannet. Tryk selv for at give stemplet.
+                Kortet er scannet. Tryk for at give stemplet.
               </p>
               <CtaGlow>
                 <button
                   onClick={giveStamp}
                   disabled={busy}
-                  className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
+                  className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS} min-h-[3.6rem] text-[0.9rem]`}
                 >
                   {busy ? (
                     "Et øjeblik..."

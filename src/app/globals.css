@@ -403,6 +403,27 @@ textarea:focus-visible {
   animation: rewardGlow 2.2s ease-in-out infinite;
 }
 
+/* Flyvende "+1"-badge naar et stempel lander: popper op, stiger og toner ud.
+   Lille dopamin-kvittering baade for kunden og for personalet. */
+@keyframes plusOne {
+  0% {
+    transform: translateY(8px) scale(0.7);
+    opacity: 0;
+  }
+  22% {
+    transform: translateY(0) scale(1.12);
+    opacity: 1;
+  }
+  68% {
+    transform: translateY(-12px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-34px) scale(0.92);
+    opacity: 0;
+  }
+}
+
 .delay-100 {
   animation-delay: 0.1s;
 }

@@ -111,8 +111,15 @@ export function StampConfirm({
         } catch {
           /* ignorer hvis localStorage er blokeret */
         }
-        // Reward: festlig rytme. Alm. stempel: et blOEdt "press-settle".
-        haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [14, 45, 26]);
+        // Reward: festlig rytme. Foerste kort (velkomst): en rigere puls. Alm.
+        // stempel: et blOEdt "press-settle".
+        haptic(
+          data.rewardReady
+            ? [30, 50, 30, 50, 90]
+            : data.created
+              ? [22, 40, 22, 55]
+              : [14, 45, 26],
+        );
         setState({
           phase: "done",
           stamps: data.stamps,
@@ -149,7 +156,11 @@ export function StampConfirm({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-12 text-center">
-      <Celebration show={state.phase === "done" && state.rewardReady} />
+      {/* Konfetti baade ved den fulde beloenning OG ved allerfoerste kort
+          (velkomst), saa kundens foerste indtryk gnistrer. */}
+      <Celebration
+        show={state.phase === "done" && (state.rewardReady || state.created)}
+      />
 
       {state.phase === "loading" ? (
         // Loading er en ghost af selve stemplet, saa den toner over i succes.
@@ -237,6 +248,18 @@ export function StampConfirm({
                 pop
               />
             </div>
+            {/* Flyvende "+1 stempel": en lille, tydelig dopamin-kvittering paa
+                hvert stempel (paa beloenningsskaermen taler gaven for sig selv). */}
+            {!state.rewardReady ? (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3.5 py-1 text-[0.82rem] font-[400] text-white shadow-lift"
+                style={{ animation: "plusOne 1.25s ease-out 0.15s both" }}
+              >
+                +{state.increment}{" "}
+                {state.increment === 1 ? "stempel" : "stempler"}
+              </span>
+            ) : null}
           </div>
 
           <p className="font-[300] text-[0.9rem] leading-relaxed text-stone">
