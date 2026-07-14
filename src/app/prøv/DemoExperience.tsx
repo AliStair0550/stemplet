@@ -163,29 +163,11 @@ export function DemoExperience({
   }
 
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-6">
+    <div className="flex w-full max-w-[17rem] flex-col items-center gap-4">
       <Celebration show={rewardReady} />
 
-      {/* Trin-indikator: hele loopet paa en linje */}
-      <ol className="flex items-center gap-2 text-[0.7rem] font-[400] uppercase tracking-[0.1em]">
-        {["Tilføj", "Stempl", "Se live"].map((s, i) => (
-          <li key={s} className="flex items-center gap-2">
-            <span
-              className={
-                (i === 0 && card) || (i === 1 && stamps > 0) || (i === 2 && stamps > 0)
-                  ? "text-moss"
-                  : "text-slate"
-              }
-            >
-              {i + 1}. {s}
-            </span>
-            {i < 2 ? <span className="text-clay">·</span> : null}
-          </li>
-        ))}
-      </ol>
-
       {/* Kortet med burst + flyvende "+1" ved stempel */}
-      <div className="relative">
+      <div className="relative w-[15.5rem]">
         <div
           key={pulse}
           style={
@@ -222,25 +204,10 @@ export function DemoExperience({
         ) : null}
       </div>
 
-      {rewardReady ? (
-        <p className="text-center font-[300] text-[0.92rem] leading-relaxed text-stone">
-          Kortet er fuldt. Præcis dét øjeblik dine kunder jagter, og hvorfor de
-          kommer igen.
-        </p>
-      ) : (
-        <p className="text-center font-[300] text-[0.9rem] leading-relaxed text-stone">
-          {stamps === 0
-            ? "Læg kortet i din Wallet, og giv dig selv et stempel. Se det opdatere live."
-            : `${required - stamps} ${
-                required - stamps === 1 ? "stempel" : "stempler"
-              } tilbage. Åbn din Wallet og se kortet følge med.`}
-        </p>
-      )}
-
       <div className="flex w-full flex-col items-center gap-3">
         {/* 1) Kortet i Wallet */}
         {walletEnabled ? (
-          <CtaGlow className="w-full max-w-xs">
+          <CtaGlow className="w-full">
             <a
               href={card ? `/api/wallet/pass/${card.serial}` : undefined}
               aria-disabled={!card}
@@ -260,7 +227,7 @@ export function DemoExperience({
             type="button"
             onClick={resetDemo}
             disabled={busy}
-            className={`${btnClass("outline", "lg")} w-full max-w-xs`}
+            className={`${btnClass("outline", "lg")} w-full`}
           >
             Nulstil og prøv igen
           </button>
@@ -269,12 +236,23 @@ export function DemoExperience({
             type="button"
             onClick={stampSelf}
             disabled={busy || !card}
-            className={`${btnClass(walletEnabled ? "outline" : "primary", "lg")} w-full max-w-xs gap-2`}
+            className={`${btnClass(walletEnabled ? "outline" : "primary", "lg")} w-full gap-2`}
           >
             <StampIcon icon={icon} className="h-[1.1rem] w-[1.1rem]" />
             {busy ? "Et øjeblik..." : "Giv dig selv et stempel"}
           </button>
         )}
+
+        {/* Kort forklaring under knapperne */}
+        <p className="mt-1 text-center font-[300] text-[0.82rem] leading-relaxed text-stone">
+          {rewardReady
+            ? "Kortet er fuldt. Præcis dét dine kunder kommer tilbage for."
+            : stamps === 0
+              ? "Åbn din Wallet og se kortet opdatere, hver gang du stempler."
+              : `${required - stamps} ${
+                  required - stamps === 1 ? "stempel" : "stempler"
+                } tilbage.`}
+        </p>
 
         {/* Android / uden Apple Wallet: webkort-fallback */}
         {card ? (

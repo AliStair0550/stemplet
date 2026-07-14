@@ -19,8 +19,8 @@ export default async function ProevPage() {
   const card = biz?.cards[0] ?? null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-9 bg-parchment px-6 py-14 text-center">
-      <div className="flex max-w-md flex-col items-center gap-3">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-8 text-center">
+      <div className="flex max-w-md flex-col items-center gap-2">
         <span className="text-[0.62rem] font-[500] uppercase tracking-[0.18em] text-moss">
           Prøv det selv
         </span>

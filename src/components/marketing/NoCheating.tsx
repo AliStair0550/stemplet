@@ -101,7 +101,9 @@ export default function NoCheating() {
                 : ""
             }`}
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-moss-light/40 bg-moss/10 text-moss-light">
+            {/* Guld-maerke i midten af hver kasse: tydeligt paa sort, hvor den
+                tidligere groenne var svaer at se. */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#D9B26A]/50 bg-[#D9B26A]/12 text-[#E4C081] shadow-[0_0_28px_-6px_rgba(217,178,106,0.5)]">
               {p.icon}
             </div>
             <h3 className="mt-6 font-[400] text-[1.1rem] tracking-[0.02em] text-parchment">

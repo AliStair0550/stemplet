@@ -39,9 +39,9 @@ export default async function TryItYourself() {
         </p>
       </div>
 
-      <div className="mt-14 grid items-center gap-12 md:grid-cols-[1.15fr_0.85fr] md:gap-16">
+      <div className="mt-14 grid items-center gap-12 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
         {/* Det rigtige demo-kort: levende, svaevende, med glOEd som i hero */}
-        <div className="order-2 flex justify-center md:order-1">
+        <div className="order-1 flex justify-center md:order-2">
           <div className="relative w-full max-w-sm">
             <div
               aria-hidden
@@ -65,7 +65,7 @@ export default async function TryItYourself() {
         </div>
 
         {/* Handling: desktop = QR (mindre end kortet), mobil = knapper */}
-        <div className="order-1 flex flex-col items-center gap-6 md:order-2">
+        <div className="order-2 flex flex-col items-center gap-6 md:order-1">
           {/* Desktop: QR til at scanne med telefonen */}
           <div className="hidden flex-col items-center gap-4 md:flex">
             <div className="rounded-[1.25rem] bg-white p-4 shadow-card ring-1 ring-black/5">
