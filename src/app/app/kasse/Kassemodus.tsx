@@ -711,7 +711,7 @@ function StaffCard({
         <>
           <div className="relative">
             <div
-              key={pulse}
+              key={`card-${pulse}`}
               style={
                 pulse > 0
                   ? {
@@ -734,7 +734,7 @@ function StaffCard({
             </div>
             {pulse > 0 ? (
               <span
-                key={pulse}
+                key={`plus-${pulse}`}
                 aria-hidden
                 className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
                 style={{ animation: "plusOne 1.15s ease-out forwards" }}
