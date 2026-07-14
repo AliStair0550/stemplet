@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { loadCardBySerial } from "@/lib/stamp";
 import { StampCard } from "@/components/StampCard";
@@ -8,13 +9,17 @@ import { WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
 
+// Dedup pr. request: metadata, viewport OG selve siden bruger kortet. Uden dette
+// koerte samme DB-opslag 3 gange pr. sideindlaesning.
+const getCard = cache((serial: string) => loadCardBySerial(serial));
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ serial: string }>;
 }): Promise<Metadata> {
   const { serial } = await params;
-  const cc = await loadCardBySerial(serial);
+  const cc = await getCard(serial);
   return {
     title: cc ? `Dit kort hos ${cc.card.business.name}` : "Stempelkort",
     robots: { index: false },
@@ -27,7 +32,7 @@ export async function generateViewport({
   params: Promise<{ serial: string }>;
 }): Promise<Viewport> {
   const { serial } = await params;
-  const cc = await loadCardBySerial(serial);
+  const cc = await getCard(serial);
   return { themeColor: cc?.card.business.primaryColor ?? "#FAF8F4" };
 }
 
@@ -37,7 +42,7 @@ export default async function WebCardPage({
   params: Promise<{ serial: string }>;
 }) {
   const { serial } = await params;
-  const cc = await loadCardBySerial(serial);
+  const cc = await getCard(serial);
   if (!cc) notFound();
 
   const business = cc.card.business;
