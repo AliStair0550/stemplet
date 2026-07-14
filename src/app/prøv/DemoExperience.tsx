@@ -2,29 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { btnClass, CtaGlow, WalletIcon, CTA_EMPHASIS } from "@/components/ui";
-import { Celebration } from "@/components/Celebration";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
 import type { StampIconKey } from "@/lib/brand";
 
-function haptic(p: number | number[]) {
-  try {
-    navigator.vibrate?.(p);
-  } catch {
-    // haptik er valgfrit
-  }
-}
+type Card = { serial: string; stamps: number; required: number };
 
-type Card = {
-  serial: string;
-  stamps: number;
-  required: number;
-  // Kortets token holdes i hukommelsen, saa stempling ALTID rammer SAMME kort,
-  // selv naar localStorage/cookie svigter (fx privat browsing paa iOS). Uden
-  // dette kunne hvert tryk oprette et nyt kort i stedet for at stemple.
-  token: string;
-};
-
+// "Prøv det selv": vis hvor nemt det er at FÅ kortet i sin egen Apple Wallet.
+// Selve stemplingen sker ved kassen (personalet scanner kortet), saa demoen
+// stopper her, praecis som en rigtig kunde starter.
 export function DemoExperience({
   slug,
   businessName,
@@ -50,9 +36,6 @@ export function DemoExperience({
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
-  const [pulse, setPulse] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const busyRef = useRef(false);
   const icon = stampIcon as StampIconKey;
   const storeKey = `stmpl_${slug}`;
 
@@ -75,87 +58,34 @@ export function DemoExperience({
     [storeKey],
   );
 
-  const ensureCard = useCallback(async () => {
-    try {
-      const res = await fetch("/api/demo/card", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ known: knownToken() }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        if (data.cardToken) remember(data.cardToken);
-        setCard({
-          serial: data.serial,
-          stamps: data.stamps,
-          required: data.required,
-          token: data.cardToken,
-        });
-        setStatus("ready");
-      } else {
-        setStatus("unavailable");
-      }
-    } catch {
-      setStatus("unavailable");
-    }
-  }, [knownToken, remember]);
-
   const ran = useRef(false);
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
-    ensureCard();
-  }, [ensureCard]);
-
-  const stamps = card?.stamps ?? 0;
-  const rewardReady = card ? card.stamps >= card.required : false;
-
-  async function stampSelf() {
-    if (!card || busyRef.current || rewardReady) return;
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      const res = await fetch("/api/demo/stamp", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        // Token fra hukommelsen foerst: rammer ALTID samme kort.
-        body: JSON.stringify({ known: card.token ?? knownToken() }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setCard((c) => (c ? { ...c, stamps: data.stamps } : c));
-        setPulse((p) => p + 1);
-        haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
-      } else if (data.code === "FULL") {
-        setCard((c) => (c ? { ...c, stamps: data.stamps ?? c.required } : c));
+    (async () => {
+      try {
+        const res = await fetch("/api/demo/card", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ known: knownToken() }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (data.cardToken) remember(data.cardToken);
+          setCard({
+            serial: data.serial,
+            stamps: data.stamps ?? 0,
+            required: data.required,
+          });
+          setStatus("ready");
+        } else {
+          setStatus("unavailable");
+        }
+      } catch {
+        setStatus("unavailable");
       }
-    } catch {
-      // stille: knappen kan trykkes igen
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-  }
-
-  async function resetDemo() {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      const res = await fetch("/api/demo/reset", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ known: card?.token ?? knownToken() }),
-      });
-      const data = await res.json();
-      if (data.ok) setCard((c) => (c ? { ...c, stamps: 0 } : c));
-    } catch {
-      // stille
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-  }
+    })();
+  }, [knownToken, remember]);
 
   if (status === "unavailable") {
     return (
@@ -171,49 +101,27 @@ export function DemoExperience({
   }
 
   return (
-    <div className="flex w-full max-w-[17rem] flex-col items-center gap-4">
-      <Celebration show={rewardReady} />
-
-      {/* Kortet med burst + flyvende "+1" ved stempel */}
-      <div className="relative w-[15.5rem]">
-        <div
-          key={pulse}
-          style={
-            pulse > 0
-              ? {
-                  animation:
-                    "cardBurst 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
-                }
-              : undefined
-          }
-        >
-          <StampCard
-            businessName={businessName}
-            logoUrl={logoUrl}
-            primaryColor={primaryColor}
-            textColor={textColor}
-            stampIcon={icon}
-            stamps={stamps}
-            required={required}
-            rewardText={rewardText}
-            serial={card?.serial}
-            pop={pulse > 0}
-          />
-        </div>
-        {pulse > 0 && !rewardReady ? (
-          <span
-            key={pulse}
-            aria-hidden
-            className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3.5 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
-            style={{ animation: "plusOne 1.15s ease-out forwards" }}
-          >
-            +1 stempel
-          </span>
-        ) : null}
+    <div className="flex w-full max-w-[20rem] flex-col items-center gap-6">
+      {/* Kortet i fuld bredde, saa alle felter er synlige (intet klippes). */}
+      <div className="w-full">
+        <StampCard
+          businessName={businessName}
+          logoUrl={logoUrl}
+          primaryColor={primaryColor}
+          textColor={textColor}
+          stampIcon={icon}
+          stamps={card?.stamps ?? 0}
+          required={required}
+          rewardText={rewardText}
+          serial={card?.serial}
+        />
       </div>
 
+      <p className="text-center font-[300] text-[0.9rem] leading-relaxed text-stone">
+        Læg kortet i din Wallet, så er du klar til at få stempler ved kassen.
+      </p>
+
       <div className="flex w-full flex-col items-center gap-3">
-        {/* 1) Kortet i Wallet */}
         {walletEnabled ? (
           <CtaGlow className="w-full">
             <a
@@ -228,47 +136,12 @@ export function DemoExperience({
             </a>
           </CtaGlow>
         ) : null}
-
-        {/* 2) Det magiske ekstra trin: stempl dig selv */}
-        {rewardReady ? (
-          <button
-            type="button"
-            onClick={resetDemo}
-            disabled={busy}
-            className={`${btnClass("outline", "lg")} w-full`}
-          >
-            Nulstil og prøv igen
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={stampSelf}
-            disabled={busy || !card}
-            className={`${btnClass(walletEnabled ? "outline" : "primary", "lg")} w-full gap-2`}
-          >
-            <StampIcon icon={icon} className="h-[1.1rem] w-[1.1rem]" />
-            {busy ? "Et øjeblik..." : "Giv dig selv et stempel"}
-          </button>
-        )}
-
-        {/* Kort forklaring under knapperne */}
-        <p className="mt-1 text-center font-[300] text-[0.82rem] leading-relaxed text-stone">
-          {rewardReady
-            ? "Kortet er fuldt. Præcis dét dine kunder kommer tilbage for."
-            : stamps === 0
-              ? "Åbn din Wallet og se kortet opdatere, hver gang du stempler."
-              : `${required - stamps} ${
-                  required - stamps === 1 ? "stempel" : "stempler"
-                } tilbage.`}
-        </p>
-
-        {/* Android / uden Apple Wallet: webkort-fallback */}
         {card ? (
           <a
             href={`/kort/${card.serial}?vis=1`}
             className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
           >
-            Bruger du Android? Åbn dit webkort
+            Bruger du Android? Åbn webkortet
           </a>
         ) : null}
       </div>
