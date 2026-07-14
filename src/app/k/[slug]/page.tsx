@@ -8,7 +8,6 @@ import { loadCardByToken } from "@/lib/stamp";
 import { StampCard } from "@/components/StampCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ButtonLink } from "@/components/ui";
-import { WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
 import { claimCard } from "./actions";
@@ -104,7 +103,7 @@ export default async function ClaimPage({
           <div className="flex flex-col items-center gap-4">
             <form action={claimCard.bind(null, slug)}>
               <SubmitButton variant="primary" size="lg" pendingText="Opretter dit kort...">
-                {WALLET_ENABLED ? "Læg i Apple Wallet" : "Hent dit stempelkort"}
+                Hent mit stempelkort
               </SubmitButton>
             </form>
             <Link

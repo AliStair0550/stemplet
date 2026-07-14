@@ -51,7 +51,10 @@ export default async function IndstillingerPage({
 
   return (
     <>
-      <PageHeading title="Indstillinger" subtitle="Profil, PIN, abonnement og log." />
+      <PageHeading
+        title="Indstillinger"
+        subtitle="Butik, PIN, kasse-enheder, kort-oplevelse og abonnement."
+      />
 
       {betaling === "ok" ? (
         <div className="mb-6 rounded-lg border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
@@ -68,6 +71,7 @@ export default async function IndstillingerPage({
         name={business.name}
         cooldown={business.stampCooldownMin}
         category={business.category}
+        selfScan={business.selfScanEnabled}
       />
 
       {/* Kasse-enheder: giv personalet adgang uden dit login */}

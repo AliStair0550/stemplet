@@ -286,7 +286,7 @@ export function GuideContent({ data }: { data: GuideData }) {
           <div className="flex items-start gap-3 text-moss">
             <IconShield />
             <ul className="flex flex-col gap-2 text-[1.05rem] leading-[1.6] text-ink">
-              <li>Koden på skærmen skifter hele tiden.</li>
+              <li>Kun personalet kan give stempler.</li>
               <li>Et stempel kan ikke kopieres.</li>
               <li>Kun personalet kan indløse en belønning.</li>
             </ul>

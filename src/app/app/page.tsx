@@ -75,7 +75,7 @@ function GettingStarted({ slug }: { slug: string }) {
     {
       icon: <IconStamp />,
       title: "Giv det første stempel",
-      body: "Vis stempel-QR'en eller scan kortet direkte fra kundens Wallet.",
+      body: "Scan kundens kort fra deres Wallet og giv det første stempel.",
       href: "/app/kasse",
       link: "Åbn Stempel",
     },
@@ -162,7 +162,7 @@ export default async function OverviewPage() {
   const statusLine =
     stats.stampsToday > 0
       ? `${formatDkNumber(stats.stampsToday)} ${stats.stampsToday === 1 ? "stempel" : "stempler"} i dag, og ${formatDkNumber(stats.activeCustomers)} aktive kunder lige nu.`
-      : `${formatDkNumber(stats.activeCustomers)} aktive kunder. Vis stempel-QR'en ved kassen, så begynder dagen at tælle.`;
+      : `${formatDkNumber(stats.activeCustomers)} aktive kunder. Scan kundens kort ved kassen, så begynder dagen at tælle.`;
 
   return (
     <>
@@ -240,7 +240,7 @@ export default async function OverviewPage() {
           </h2>
           {activity.length === 0 ? (
             <p className="font-[300] text-[0.85rem] text-slate">
-              Ingen aktivitet endnu. Sæt din QR op ved kassen.
+              Ingen aktivitet endnu. Sæt dit skilt op ved kassen.
             </p>
           ) : (
             <ul className="flex flex-col gap-3">

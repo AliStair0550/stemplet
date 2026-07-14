@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
-import QRCode from "qrcode";
 import { loadCardBySerial } from "@/lib/stamp";
 import { StampCard } from "@/components/StampCard";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -34,26 +33,16 @@ export async function generateViewport({
 
 export default async function WebCardPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ serial: string }>;
-  searchParams: Promise<{ vis?: string }>;
 }) {
   const { serial } = await params;
-  const { vis } = await searchParams;
   const cc = await loadCardBySerial(serial);
   if (!cc) notFound();
 
   const business = cc.card.business;
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
-
-  // Kortets egen QR (personalet scanner den i scan-modus / ved indløsning).
-  const serialQr = await QRCode.toDataURL(serial, {
-    margin: 1,
-    width: 480,
-    color: { dark: "#1A1A1A", light: "#FFFFFF" },
-  });
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-parchment px-6 py-12">
@@ -83,16 +72,11 @@ export default async function WebCardPage({
           </div>
         ) : null}
 
-        <WebCardActions
-          serial={cc.serial}
-          serialQr={serialQr}
-          walletEnabled={WALLET_ENABLED}
-          rewardReady={rewardReady}
-          openQr={vis === "1"}
-        />
+        <WebCardActions serial={cc.serial} walletEnabled={WALLET_ENABLED} />
 
         <p className="max-w-xs text-center text-[0.72rem] font-[200] leading-relaxed text-slate">
-          Føj kortet til hjemmeskærmen, så har du det altid ved hånden.
+          Bruger du Android? Vis QR-koden til personalet. Du kan også føje kortet
+          til hjemmeskærmen, så har du det altid ved hånden.
         </p>
       </div>
     </main>

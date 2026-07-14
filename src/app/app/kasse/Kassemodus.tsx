@@ -798,51 +798,29 @@ function StaffCard({
               <p className="text-center text-[0.8rem] font-[300] text-slate">
                 Kortet er scannet. Vælg antal og giv stemplet.
               </p>
-              {/* Antal-vaelger: fx tre kaffe = 3 stempler paa een gang */}
-              <div className="flex items-center justify-center gap-4">
+              {/* Antal: hurtig-vaelg med eet tryk (fx tre kaffe = 3) */}
+              <div className="flex flex-col items-center gap-2">
                 <span className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-slate">
-                  Antal
+                  Antal stempler
                 </span>
-                <div className="flex items-center gap-1 rounded-full border border-clay bg-white p-1">
-                  <button
-                    type="button"
-                    aria-label="Færre"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    disabled={busy || qty <= 1}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand disabled:opacity-40"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.8}
-                      strokeLinecap="round"
-                      className="h-4 w-4"
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setQty(n)}
+                      disabled={busy}
+                      aria-pressed={qty === n}
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-full text-[1rem] font-[400] tabular-nums transition-colors disabled:opacity-50",
+                        qty === n
+                          ? "bg-ink text-parchment"
+                          : "border border-clay bg-white text-ink hover:border-moss",
+                      )}
                     >
-                      <path d="M5 12h14" />
-                    </svg>
-                  </button>
-                  <span className="w-9 text-center text-[1.1rem] font-[400] tabular-nums text-ink">
-                    {qty}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label="Flere"
-                    onClick={() => setQty((q) => Math.min(20, q + 1))}
-                    disabled={busy || qty >= 20}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand disabled:opacity-40"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.8}
-                      strokeLinecap="round"
-                      className="h-4 w-4"
-                    >
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
-                  </button>
+                      {n}
+                    </button>
+                  ))}
                 </div>
               </div>
               <CtaGlow>

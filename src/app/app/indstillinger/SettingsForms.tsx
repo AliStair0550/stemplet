@@ -19,10 +19,12 @@ export function SettingsForms({
   name,
   cooldown,
   category,
+  selfScan,
 }: {
   name: string;
   cooldown: number;
   category: string | null;
+  selfScan: boolean;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -98,23 +100,30 @@ export function SettingsForms({
               Bruges til at give dig bedre indsigt senere.
             </span>
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
-              Selvbetjenings-interval (minutter)
-            </span>
-            <input
-              name="stampCooldownMin"
-              type="number"
-              min={0}
-              max={1440}
-              defaultValue={cooldown}
-              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-moss"
-            />
-            <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Hvor længe før den samme kunde selv kan scanne kiosk-QR&apos;en igen.
-              Personalet kan altid give stempler uden ventetid. Standard er 15 min.
-            </span>
-          </label>
+          {/* Cooldown gaelder KUN selvbetjening (kunde-scanning). Vises derfor
+              kun naar selvbetjening er slaaet til; ellers sendes vaerdien blot
+              uaendret med, saa den bevares. */}
+          {selfScan ? (
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
+                Selvbetjenings-interval (minutter)
+              </span>
+              <input
+                name="stampCooldownMin"
+                type="number"
+                min={0}
+                max={1440}
+                defaultValue={cooldown}
+                className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-moss"
+              />
+              <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+                Hvor længe før den samme kunde selv kan scanne igen. Personalet
+                kan altid give stempler uden ventetid. Standard er 15 min.
+              </span>
+            </label>
+          ) : (
+            <input type="hidden" name="stampCooldownMin" value={cooldown} />
+          )}
           <div className="flex items-center gap-3">
             <button
               type="submit"
