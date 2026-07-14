@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { btnClass } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 function ShareIcon() {
   return (
@@ -22,12 +23,18 @@ function ShareIcon() {
   );
 }
 
-export function ShareButton({
+// Genbrugelig deleknap: native deling af et link (fx tilmeldings-siden) med
+// kopier-link som fallback. Deles linket, viser previewet stempelkortet (OG).
+export function ShareLinkButton({
   businessName,
   url,
+  label = "Del kortet",
+  className,
 }: {
   businessName: string;
   url: string;
+  label?: string;
+  className?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -51,9 +58,12 @@ export function ShareButton({
   }
 
   return (
-    <button onClick={share} className={`${btnClass("outline", "md")} gap-2`}>
+    <button
+      onClick={share}
+      className={cn(btnClass("outline", "md"), "gap-2", className)}
+    >
       <ShareIcon />
-      {copied ? "Link kopieret" : "Del kortet med en ven"}
+      {copied ? "Link kopieret" : label}
     </button>
   );
 }

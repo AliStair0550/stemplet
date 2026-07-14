@@ -67,8 +67,8 @@ function GettingStarted({ slug }: { slug: string }) {
   const steps = [
     {
       icon: <IconQr />,
-      title: "Sæt din QR op",
-      body: "Hent plakat eller diskskilt og stil den ved kassen.",
+      title: "Del QR-kode",
+      body: "Placér QR-koden ved kassen, så kunderne nemt kan hente deres stempelkort.",
       href: "/app/materialer",
       link: "Hent materialer",
     },
@@ -82,7 +82,7 @@ function GettingStarted({ slug }: { slug: string }) {
     {
       icon: <IconShare />,
       title: "Del dit kort",
-      body: "Læg linket på sociale medier, så kunderne har kortet klar til næste besøg.",
+      body: "Del på sociale medier, så kunderne har kortet klar ved næste besøg.",
       href: `/k/${slug}`,
       link: "Se kundesiden",
     },
@@ -93,9 +93,6 @@ function GettingStarted({ slug }: { slug: string }) {
         <span className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
           Kom godt i gang
         </span>
-        <h2 className="mt-1.5 font-[300] text-[1.3rem] leading-tight text-ink">
-          Tre skridt til dine første stempler
-        </h2>
       </div>
       <ol className="grid gap-px bg-fog sm:grid-cols-3">
         {steps.map((s, i) => (
@@ -185,7 +182,7 @@ export default async function OverviewPage() {
               {statusLine}
             </p>
           </div>
-          <ButtonLink href="/app/kasse" variant="moss" size="md">
+          <ButtonLink href="/app/kasse" variant="primary" size="md">
             Stempel
           </ButtonLink>
         </div>

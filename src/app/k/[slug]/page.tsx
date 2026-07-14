@@ -12,7 +12,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { APP_URL } from "@/lib/env";
 import type { StampIconKey } from "@/lib/brand";
 import { claimCard } from "./actions";
-import { ShareButton } from "./ShareButton";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 
 export async function generateMetadata({
   params,
@@ -132,9 +132,10 @@ export default async function ClaimPage({
           <p className="text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
             Kender du nogen, der elsker {business.name}? Del kortet med dem.
           </p>
-          <ShareButton
+          <ShareLinkButton
             businessName={business.name}
             url={`${APP_URL}/k/${slug}`}
+            label="Del kortet med en ven"
           />
         </div>
 

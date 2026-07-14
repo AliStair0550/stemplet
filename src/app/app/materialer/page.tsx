@@ -5,6 +5,7 @@ import { requireBusiness } from "@/lib/session";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
 import { btnClass } from "@/components/ui";
+import { ShareLinkButton } from "@/components/ShareLinkButton";
 
 export const metadata: Metadata = { title: "Materialer" };
 export const dynamic = "force-dynamic";
@@ -63,8 +64,14 @@ export default async function MaterialerPage() {
               rel="noreferrer"
               className={btnClass("outline") + " w-full"}
             >
-              Åbn kortside
+              Åbn stempelkort
             </a>
+            <ShareLinkButton
+              businessName={business.name}
+              url={cardUrl}
+              label="Del stempelkort"
+              className="w-full"
+            />
           </div>
         </div>
 
