@@ -37,18 +37,31 @@ export default function Page() {
         <Hero />
         <HowItWorks />
         <Divider />
-        <TryItYourself />
+        {/* Under-fold-sektioner: spring browserens render-/paint-arbejde over,
+            indtil man scroller naer dem (content-visibility). Sparer meget paa
+            mobil, hvor hele siden ellers layoutes paa een gang. */}
+        <div className="cv-section">
+          <TryItYourself />
+        </div>
         <Divider />
-        <Problem />
+        <div className="cv-section">
+          <Problem />
+        </div>
         <Divider />
-        <NoCheating />
-        <StatsPreview />
-        <Pricing />
+        <div className="cv-section">
+          <NoCheating />
+        </div>
+        <div className="cv-section">
+          <StatsPreview />
+        </div>
+        <div className="cv-section">
+          <Pricing />
+        </div>
         <Divider />
-        <RoiCalculator />
+        <div className="cv-section">
+          <RoiCalculator />
+        </div>
         <Divider />
-        {/* Nederste sektioner: spring initialt render-arbejde over til der
-            scrolles naer dem (content-visibility). */}
         <div className="cv-section">
           <Faq />
         </div>

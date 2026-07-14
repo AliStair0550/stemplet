@@ -87,7 +87,7 @@ export default function HeroStampCard() {
   return (
     <div className="flex flex-col items-center gap-5">
       <Celebration show={celebrate} />
-      <div className="w-[28rem] max-w-full animate-float">
+      <div className="w-full max-w-[28rem] animate-float">
         <div
           ref={ref}
           role="button"

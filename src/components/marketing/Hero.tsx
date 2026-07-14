@@ -10,7 +10,7 @@ export default function Hero() {
       />
       <Container className="relative">
         <div className="grid items-center gap-14 md:grid-cols-2 md:gap-12">
-          <div className="animate-fade-up">
+          <div className="min-w-0 animate-fade-up">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
             <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.2] tracking-[0.01em] text-ink md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
@@ -33,7 +33,7 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="flex animate-fade-up justify-center delay-200 md:mt-20 md:justify-end">
+          <div className="flex min-w-0 animate-fade-up justify-center delay-200 md:mt-20 md:justify-end">
             <HeroStampCard />
           </div>
         </div>
