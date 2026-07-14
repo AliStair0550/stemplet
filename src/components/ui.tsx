@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// ── Knapper (Alius-stil: skarpe hjørner, uppercase, wide tracking) ────
+// ── Knapper (afrundede hjørner, uppercase, wide tracking) ────
 
 type Variant = "primary" | "outline" | "moss" | "ghost" | "light";
 type Size = "md" | "lg";
@@ -22,7 +22,7 @@ const SIZES: Record<Size, string> = {
 
 export function btnClass(variant: Variant = "primary", size: Size = "md"): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
+    "inline-flex items-center justify-center gap-2 rounded-xl font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
     // Synlig tastatur-fokus overalt (samme ring paa alle knapper).
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
     VARIANTS[variant],

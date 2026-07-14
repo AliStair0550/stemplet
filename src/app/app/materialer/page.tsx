@@ -49,9 +49,23 @@ export default async function MaterialerPage() {
               unoptimized
             />
           </div>
-          <span className="break-all text-center text-[0.78rem] font-[300] text-slate">
-            {cardUrl}
-          </span>
+          <div className="flex w-full flex-col gap-2">
+            <a
+              href={qr}
+              download={`stemplet-qr-${business.slug}.png`}
+              className={btnClass("primary") + " w-full"}
+            >
+              Download QR
+            </a>
+            <a
+              href={cardUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={btnClass("outline") + " w-full"}
+            >
+              Åbn kortside
+            </a>
+          </div>
         </div>
 
         {/* Print-materialer */}

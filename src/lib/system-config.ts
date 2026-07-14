@@ -20,7 +20,7 @@ export const STAMP_JTI_TTL_SECONDS = 10 * 60;
 export const DEFAULT_COOLDOWN_MIN = 120;
 
 /** Personale-PIN: antal forkerte forsoeg foer laasning. */
-export const PIN_MAX_ATTEMPTS = 3;
+export const PIN_MAX_ATTEMPTS = 5;
 
 /** Hvor laenge indloesning laases efter for mange forkerte forsoeg (sekunder). */
 export const PIN_LOCK_SECONDS = 5 * 60;
