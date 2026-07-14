@@ -207,7 +207,9 @@ export function StampConfirm({
             >
               {state.rewardReady
                 ? "Din belønning er klar"
-                : `${cap(talDk(state.stamps))} af ${talDk(state.required)}`}
+                : state.stamps === 0
+                  ? "Dit kort er klar"
+                  : `${cap(talDk(state.stamps))} af ${talDk(state.required)}`}
             </h1>
           </div>
 
@@ -257,7 +259,7 @@ export function StampConfirm({
             </div>
             {/* Flyvende "+1 stempel": en lille, tydelig dopamin-kvittering paa
                 hvert stempel (paa beloenningsskaermen taler gaven for sig selv). */}
-            {!state.rewardReady ? (
+            {!state.rewardReady && state.increment > 0 ? (
               <span
                 aria-hidden
                 className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3.5 py-1 text-[0.82rem] font-[400] text-white shadow-lift"

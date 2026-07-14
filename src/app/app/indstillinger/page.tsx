@@ -5,6 +5,7 @@ import { PageHeading, Panel } from "@/components/dash";
 import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
+import { WelcomeStampToggle } from "./WelcomeStampToggle";
 import { KasseDevices } from "./KasseDevices";
 import { LocationCard } from "./LocationCard";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -71,6 +72,25 @@ export default async function IndstillingerPage({
       {/* Kasse-enheder: giv personalet adgang uden dit login */}
       <div className="mt-6">
         <KasseDevices devices={deviceList} />
+      </div>
+
+      {/* Velkomststempel ved foerste scan */}
+      <div className="mt-6">
+        <Panel>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+                Velkomststempel
+              </h2>
+              <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
+                Giv kunden ét stempel allerede ved deres første scan. Slået fra:
+                første scan opretter kun kortet, og stempler gives derefter ved
+                køb.
+              </p>
+            </div>
+            <WelcomeStampToggle initial={business.welcomeStampEnabled} />
+          </div>
+        </Panel>
       </div>
 
       {/* Placering til laaseskaerm: kortet dukker op naar kunden er i naerheden */}

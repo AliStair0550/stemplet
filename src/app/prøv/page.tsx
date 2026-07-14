@@ -10,7 +10,9 @@ export const metadata: Metadata = {
     "Læg et rigtigt digitalt stempelkort i din Apple Wallet på fem sekunder. Ingen app, ingen tilmelding. Præcis som dine kunder vil opleve det.",
   robots: { index: false },
 };
-export const dynamic = "force-dynamic";
+// Statisk skal (branding + layout bages ind ved build) = hurtig foerste load.
+// Selve kort-tilstanden hentes klient-side, saa den er altid frisk.
+export const revalidate = 3600;
 
 export default async function ProevPage() {
   const biz = await loadDemoBusiness();
@@ -25,10 +27,6 @@ export default async function ProevPage() {
         <h1 className="font-fraunces text-[1.9rem] font-light italic leading-tight text-ink">
           Dit eget stempelkort. Lige nu.
         </h1>
-        <p className="font-[300] text-[0.92rem] leading-relaxed text-stone">
-          Læg kortet i din Apple Wallet på fem sekunder, og giv dig selv et
-          stempel. Se det opdatere live. Præcis som dine kunder vil opleve det.
-        </p>
       </div>
 
       {biz && card ? (

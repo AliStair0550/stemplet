@@ -184,6 +184,17 @@ export async function setWeeklyEmail(enabled: boolean): Promise<Result> {
   return { ok: true };
 }
 
+// Til/fra for velkomststempel ved kundens allerfoerste scan.
+export async function setWelcomeStamp(enabled: boolean): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { welcomeStampEnabled: enabled },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
 // Gemmer (eller rydder) butikkens placering, saa Wallet-passet kan dukke op paa
 // kundens laaseskaerm i naerheden. lat/lng=null rydder placeringen igen.
 export async function setBusinessLocation(

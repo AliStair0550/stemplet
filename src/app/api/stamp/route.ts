@@ -91,6 +91,31 @@ export async function POST(req: NextRequest) {
     if (!cc) return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
 
+  // Velkomststempel slaaet fra: kundens ALLERFOERSTE scan opretter KUN kortet
+  // (0 stempler), saa de lander paa Wallet uden et stempel. Stempler gives
+  // derefter ved koeb. Standard er TIL, saa denne gren springes normalt over.
+  if (createdCard && !cc.card.business.welcomeStampEnabled) {
+    const response = NextResponse.json({
+      ok: true,
+      created: true,
+      welcomeNoStamp: true,
+      cardToken: cc.authToken,
+      serial: cc.serial,
+      stamps: cc.stamps,
+      required: cc.card.stampsRequired,
+      rewardReady: false,
+      increment: 0,
+    });
+    if (newCookieToken) {
+      response.cookies.set(
+        cardCookieName(payload.businessId),
+        newCookieToken,
+        cardCookieOptions(),
+      );
+    }
+    return response;
+  }
+
   // Replay-beskyttelse PR. KORT: samme kort kan ikke bruge samme token to
   // gange, men en kø af forskellige kort kan dele samme skærm-QR. Redis er
   // primaer, den sammensatte unik [tokenJti, customerCardId] i databasen er

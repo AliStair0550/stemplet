@@ -35,6 +35,9 @@ model Business {
   apiKey           String?    @unique // til det offentlige API (Bearer + webhook-signatur)
   webhookUrl       String? // POST'es ved stempel/beloenning/indloesning
   weeklyEmailEnabled Boolean  @default(true) // ugentlig statistik-mail
+  // Giv et velkomststempel ved kundens ALLERFOERSTE scan (opretter kort + 1
+  // stempel). Slaaet fra: foerste scan opretter kun kortet. Standard til.
+  welcomeStampEnabled Boolean @default(true)
   // Butikkens placering (valgfri). Saettes kortet paa Wallet-passet som en
   // "location", saa kortet dukker op paa kundens laaseskaerm, naar de er i
   // naerheden. Native Apple Wallet, butikkens bedste paamindelse.
