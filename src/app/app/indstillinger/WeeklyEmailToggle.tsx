@@ -29,8 +29,8 @@ export function WeeklyEmailToggle({ initial }: { initial: boolean }) {
       } disabled:opacity-60`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-          on ? "translate-x-[1.375rem]" : "translate-x-0.5"
+        className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+          on ? "translate-x-5" : "translate-x-0"
         }`}
       />
     </button>

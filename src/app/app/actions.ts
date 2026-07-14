@@ -184,6 +184,46 @@ export async function setWeeklyEmail(enabled: boolean): Promise<Result> {
   return { ok: true };
 }
 
+// Gemmer (eller rydder) butikkens placering, saa Wallet-passet kan dukke op paa
+// kundens laaseskaerm i naerheden. lat/lng=null rydder placeringen igen.
+export async function setBusinessLocation(
+  lat: number | null,
+  lng: number | null,
+): Promise<Result> {
+  const { business } = await requireBusiness();
+  if (lat === null || lng === null) {
+    await prisma.business.update({
+      where: { id: business.id },
+      data: { latitude: null, longitude: null },
+    });
+    revalidatePath("/app/indstillinger");
+    return { ok: true };
+  }
+  if (
+    typeof lat !== "number" ||
+    typeof lng !== "number" ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    lat < -90 ||
+    lat > 90 ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return { ok: false, error: "Ugyldig placering. Prøv igen." };
+  }
+  await prisma.business.update({
+    where: { id: business.id },
+    // Afrund til ~11 m praecision: rigeligt til en geofence, og vi gemmer ikke
+    // mere praecist end noedvendigt.
+    data: {
+      latitude: Math.round(lat * 1e6) / 1e6,
+      longitude: Math.round(lng * 1e6) / 1e6,
+    },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
 export async function createCampaign(formData: FormData): Promise<Result> {
   const { business } = await requireBusiness();
   const parsed = campaignSchema.safeParse({

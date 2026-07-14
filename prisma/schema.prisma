@@ -35,6 +35,11 @@ model Business {
   apiKey           String?    @unique // til det offentlige API (Bearer + webhook-signatur)
   webhookUrl       String? // POST'es ved stempel/beloenning/indloesning
   weeklyEmailEnabled Boolean  @default(true) // ugentlig statistik-mail
+  // Butikkens placering (valgfri). Saettes kortet paa Wallet-passet som en
+  // "location", saa kortet dukker op paa kundens laaseskaerm, naar de er i
+  // naerheden. Native Apple Wallet, butikkens bedste paamindelse.
+  latitude         Float?
+  longitude        Float?
   termsAcceptedAt  DateTime? // accepterede vilkaar/privatliv/DPA ved oprettelse
   users            User[]
   cards            Card[]

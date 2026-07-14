@@ -21,6 +21,8 @@ type PassInput = {
   stamps: number;
   required: number;
   showPoweredBy: boolean;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 function rgbString(hex: string): string {
@@ -182,6 +184,24 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     messageEncoding: "iso-8859-1",
     altText: input.serial,
   });
+
+  // Har butikken sat sin placering, faar passet en "location". Saa dukker
+  // kortet op paa kundens laaseskaerm, naar de er i naerheden af butikken:
+  // butikken minder selv kunden om sig selv. Ren, native Apple Wallet.
+  if (
+    typeof input.latitude === "number" &&
+    typeof input.longitude === "number" &&
+    Number.isFinite(input.latitude) &&
+    Number.isFinite(input.longitude)
+  ) {
+    pass.setLocations({
+      latitude: input.latitude,
+      longitude: input.longitude,
+      relevantText: rewardReady
+        ? `Din belønning venter hos ${input.businessName}`
+        : `Velkommen tilbage hos ${input.businessName}`,
+    });
+  }
 
   return pass.getAsBuffer();
 }

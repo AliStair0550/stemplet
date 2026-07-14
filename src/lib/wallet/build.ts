@@ -28,6 +28,8 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     stamps: cc.stamps,
     required: cc.card.stampsRequired,
     showPoweredBy: PLAN_LIMITS[b.plan].showPoweredBy,
+    latitude: b.latitude,
+    longitude: b.longitude,
   });
 }
 

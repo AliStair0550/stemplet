@@ -6,6 +6,7 @@ import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { KasseDevices } from "./KasseDevices";
+import { LocationCard } from "./LocationCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
 import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
@@ -70,6 +71,16 @@ export default async function IndstillingerPage({
       {/* Kasse-enheder: giv personalet adgang uden dit login */}
       <div className="mt-6">
         <KasseDevices devices={deviceList} />
+      </div>
+
+      {/* Placering til laaseskaerm: kortet dukker op naar kunden er i naerheden */}
+      <div className="mt-6">
+        <Panel>
+          <LocationCard
+            initialLat={business.latitude}
+            initialLng={business.longitude}
+          />
+        </Panel>
       </div>
 
       {/* Ugentligt overblik */}
