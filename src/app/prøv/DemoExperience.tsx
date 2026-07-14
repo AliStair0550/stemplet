@@ -15,7 +15,15 @@ function haptic(p: number | number[]) {
   }
 }
 
-type Card = { serial: string; stamps: number; required: number };
+type Card = {
+  serial: string;
+  stamps: number;
+  required: number;
+  // Kortets token holdes i hukommelsen, saa stempling ALTID rammer SAMME kort,
+  // selv naar localStorage/cookie svigter (fx privat browsing paa iOS). Uden
+  // dette kunne hvert tryk oprette et nyt kort i stedet for at stemple.
+  token: string;
+};
 
 export function DemoExperience({
   slug,
@@ -81,6 +89,7 @@ export function DemoExperience({
           serial: data.serial,
           stamps: data.stamps,
           required: data.required,
+          token: data.cardToken,
         });
         setStatus("ready");
       } else {
@@ -109,7 +118,8 @@ export function DemoExperience({
       const res = await fetch("/api/demo/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ known: knownToken() }),
+        // Token fra hukommelsen foerst: rammer ALTID samme kort.
+        body: JSON.stringify({ known: card.token ?? knownToken() }),
       });
       const data = await res.json();
       if (data.ok) {
@@ -118,8 +128,6 @@ export function DemoExperience({
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
       } else if (data.code === "FULL") {
         setCard((c) => (c ? { ...c, stamps: data.stamps ?? c.required } : c));
-      } else if (data.needCard) {
-        await ensureCard();
       }
     } catch {
       // stille: knappen kan trykkes igen
@@ -137,7 +145,7 @@ export function DemoExperience({
       const res = await fetch("/api/demo/reset", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ known: knownToken() }),
+        body: JSON.stringify({ known: card?.token ?? knownToken() }),
       });
       const data = await res.json();
       if (data.ok) setCard((c) => (c ? { ...c, stamps: 0 } : c));

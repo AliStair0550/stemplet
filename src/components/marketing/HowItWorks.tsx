@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Section, Eyebrow } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
+import { Celebration } from "@/components/Celebration";
 import { cn } from "@/lib/utils";
 
 // Animeret forklaring: eet kort koerer hele livscyklussen igennem, og de tre
@@ -17,12 +18,12 @@ const STEPS: { kicker: string; title: string; body: string }[] = [
   {
     kicker: "01",
     title: "Kunden scanner QR-koden",
-    body: "Kameraet på skiltet ved disken, og kortet ligger i Apple Wallet, før kaffen er skænket. Ingen app, ingen tilmelding, ingen e-mail.",
+    body: "Scan QR-kode og kortet ligger i Apple Wallet. Ingen app. Ingen tilmelding. Ingen e-mail.",
   },
   {
     kicker: "02",
     title: "Hvert køb giver et stempel",
-    body: "Butikkens QR eller jeres scanning, ét tryk pr. kop. Kortet tæller op i Wallet og siger pænt goddag fra kundens låseskærm.",
+    body: "Ved hvert køb scanner I kundens kort og tilføjer det antal stempler, kunden har optjent. Kortet opdateres automatisk i Wallet, så kunden altid kan se sin aktuelle status.",
   },
   {
     kicker: "03",
@@ -36,6 +37,7 @@ export default function HowItWorks() {
   const [stamps, setStamps] = useState(0);
   const [pin, setPin] = useState(0);
   const [pop, setPop] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function HowItWorks() {
       setStamps(0);
       setPin(0);
       setPop(false);
+      setCelebrate(false);
 
       // Scan -> saml stempler
       wait(() => {
@@ -81,10 +84,16 @@ export default function HowItWorks() {
               setPhase("reward");
               const pinStep = (p: number) => {
                 setPin(p);
-                if (p < 4) wait(() => pinStep(p + 1), 280);
-                // Loop-punkt: fortsaet kun, hvis scenen stadig ses.
-                else if (visible) wait(cycle, 1700);
-                else running = false;
+                if (p < 4) {
+                  wait(() => pinStep(p + 1), 280);
+                } else {
+                  // PIN tastet -> stor fejring (konfetti + kort-burst), FOER
+                  // kortet nulstiller og jagten begynder forfra.
+                  setCelebrate(true);
+                  // Loop-punkt: fortsaet kun, hvis scenen stadig ses.
+                  if (visible) wait(cycle, 2600);
+                  else running = false;
+                }
               };
               wait(() => pinStep(1), 650);
             }, 950);
@@ -173,12 +182,21 @@ export default function HowItWorks() {
 
         {/* Den animerede scene: eet kort, hele livscyklussen */}
         <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-1">
+          <Celebration show={celebrate} />
           <div
             className={cn(
-              "w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "relative w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
               phase === "scan" ? "scale-[0.96] opacity-90" : "scale-100 opacity-100",
+              celebrate && "animate-[cardBurst_0.6s_ease-out]",
             )}
           >
+            {celebrate ? (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-2 -z-10 rounded-[1.7rem] ring-2 ring-moss"
+                style={{ animation: "burstRing 0.7s ease-out forwards" }}
+              />
+            ) : null}
             <StampCard
               businessName="Odense Craft Beer"
               landscape
