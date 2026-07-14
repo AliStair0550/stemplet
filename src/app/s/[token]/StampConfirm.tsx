@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ButtonLink, btnClass } from "@/components/ui";
+import {
+  ButtonLink,
+  btnClass,
+  CtaGlow,
+  WalletIcon,
+  CTA_EMPHASIS,
+} from "@/components/ui";
 import { Celebration } from "@/components/Celebration";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
@@ -53,25 +59,6 @@ type State =
     }
   | { phase: "needCard" }
   | { phase: "error"; code: string; message: string; serial?: string };
-
-function WalletIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.7}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-[1.1rem] w-[1.1rem]"
-      aria-hidden
-    >
-      <rect x="3" y="6" width="18" height="13" rx="2.5" />
-      <path d="M3 10.5h18" />
-      <path d="M16 14.5h2" />
-    </svg>
-  );
-}
 
 export function StampConfirm({
   token,
@@ -267,22 +254,15 @@ export function StampConfirm({
               (eller ingen Wallet), foerer knappen hen til kortets scanbare QR. */}
           <div className="flex w-full flex-col items-center gap-3">
             {walletEnabled && !state.rewardReady ? (
-              <div className="relative w-full max-w-xs">
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -inset-1 rounded-2xl bg-ink/20 blur-md animate-wallet-glow"
-                />
+              <CtaGlow className="w-full max-w-xs">
                 <a
                   href={`/api/wallet/pass/${state.serial}`}
-                  className={
-                    btnClass("primary", "lg") +
-                    " relative w-full rounded-xl shadow-lift"
-                  }
+                  className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
                 >
                   <WalletIcon />
                   Læg i Apple Wallet
                 </a>
-              </div>
+              </CtaGlow>
             ) : (
               <ButtonLink
                 href={`/kort/${state.serial}?vis=1`}

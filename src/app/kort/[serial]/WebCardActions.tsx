@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { btnClass } from "@/components/ui";
+import {
+  btnClass,
+  CtaGlow,
+  WalletIcon,
+  CTA_EMPHASIS,
+} from "@/components/ui";
 
 export function WebCardActions({
   serial,
@@ -31,12 +36,15 @@ export function WebCardActions({
       </button>
 
       {walletEnabled ? (
-        <a
-          href={`/api/wallet/pass/${serial}`}
-          className={btnClass("primary", "md") + " w-full"}
-        >
-          Læg i Apple Wallet
-        </a>
+        <CtaGlow className="w-full">
+          <a
+            href={`/api/wallet/pass/${serial}`}
+            className={`${btnClass("primary", "md")} ${CTA_EMPHASIS}`}
+          >
+            <WalletIcon />
+            Læg i Apple Wallet
+          </a>
+        </CtaGlow>
       ) : null}
 
       {showQr ? (

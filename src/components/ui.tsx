@@ -51,6 +51,51 @@ export function ButtonLink({
   );
 }
 
+// ── CTA-fremhaevning ──────────────────────────────────────────────────
+
+// Ekstra klasser paa en primaer CTA, saa den faar afrundede hjoerner + loeft
+// (bruges sammen med <CtaGlow> for at drage oejet til "tryk her").
+export const CTA_EMPHASIS = "relative w-full rounded-xl shadow-lift";
+
+/** BlOd, pulserende glOd bag en primaer CTA. Pak knappen/anchoren ind. */
+export function CtaGlow({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("relative", className)}>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -inset-1 rounded-2xl bg-ink/20 blur-md animate-cta-glow"
+      />
+      {children}
+    </div>
+  );
+}
+
+/** Kort/wallet-ikon til "Laeg i Apple Wallet"-CTA'er. */
+export function WalletIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("h-[1.1rem] w-[1.1rem]", className)}
+      aria-hidden
+    >
+      <rect x="3" y="6" width="18" height="13" rx="2.5" />
+      <path d="M3 10.5h18" />
+      <path d="M16 14.5h2" />
+    </svg>
+  );
+}
+
 // ── Layout-primitiver ─────────────────────────────────────────────────
 
 export function Container({

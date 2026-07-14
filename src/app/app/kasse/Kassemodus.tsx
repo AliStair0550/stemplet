@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Scanner } from "@/components/Scanner";
 import { StampCard } from "@/components/StampCard";
-import { btnClass } from "@/components/ui";
+import { StampIcon } from "@/components/StampIcon";
+import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { hexToRgb, type StampIconKey } from "@/lib/brand";
 
@@ -619,15 +620,25 @@ function StaffCard({
               <p className="text-center text-[0.8rem] font-[300] text-slate">
                 Kortet er scannet. Tryk selv for at give stemplet.
               </p>
-              <button
-                onClick={giveStamp}
-                disabled={busy}
-                className={btnClass("primary", "lg")}
-              >
-                {busy
-                  ? "Et øjeblik..."
-                  : `Giv stempel (${card.stamps} af ${card.required})`}
-              </button>
+              <CtaGlow>
+                <button
+                  onClick={giveStamp}
+                  disabled={busy}
+                  className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
+                >
+                  {busy ? (
+                    "Et øjeblik..."
+                  ) : (
+                    <>
+                      <StampIcon
+                        icon={card.stampIcon as StampIconKey}
+                        className="h-[1.1rem] w-[1.1rem]"
+                      />
+                      Giv stempel ({card.stamps} af {card.required})
+                    </>
+                  )}
+                </button>
+              </CtaGlow>
             </div>
           )}
 
