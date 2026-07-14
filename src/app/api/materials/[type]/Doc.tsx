@@ -71,8 +71,8 @@ export function MaterialsPdf({
       right: { width: 118 },
       brand: { fontFamily: BOLD, fontSize: 14, marginBottom: 5, letterSpacing: 0.4 },
       head: { fontFamily: BOLD, fontSize: 15, marginBottom: 8, lineHeight: 1.15 },
-      reward: { fontFamily: BOLD, fontSize: 11, color: "#2D5F4A", marginBottom: 8 },
-      foot: { fontFamily: BOLD, fontSize: 7.5, color: "#6B7B75" },
+      reward: { fontFamily: BOLD, fontSize: 11, color: "#1A1A1A", marginBottom: 8 },
+      foot: { fontFamily: BOLD, fontSize: 7.5, color: "#6B6B6B" },
     });
     return (
       <Document>
@@ -80,7 +80,7 @@ export function MaterialsPdf({
           <Image src={qrDataUrl} style={s.qr} />
           <View style={s.right}>
             <Text style={s.brand}>{businessName}</Text>
-            <Text style={s.head}>Scan og få dit stempelkort</Text>
+            <Text style={s.head}>Scan og få dit{"\n"}Stempelkort</Text>
             {rewardText ? <Text style={s.reward}>{rewardText}</Text> : null}
             <Text style={s.foot}>Ingen app. Ingen tilmelding.</Text>
           </View>
@@ -121,13 +121,13 @@ export function MaterialsPdf({
     reward: {
       fontFamily: BOLD,
       fontSize: t.reward,
-      color: "#2D5F4A",
+      color: "#1A1A1A",
       marginBottom: t.rewardMb,
     },
     foot: {
       fontFamily: BOLD,
       fontSize: t.foot,
-      color: "#6B7B75",
+      color: "#6B6B6B",
       letterSpacing: 0.5,
     },
   });
@@ -138,7 +138,7 @@ export function MaterialsPdf({
         <View style={styles.inner}>
           {logoUrl ? <Image src={logoUrl} style={styles.logo} /> : null}
           <Text style={styles.brand}>{businessName}</Text>
-          <Text style={styles.head}>Scan og få dit stempelkort</Text>
+          <Text style={styles.head}>Scan og få dit{"\n"}Stempelkort</Text>
           <Image src={qrDataUrl} style={styles.qr} />
           {rewardText ? <Text style={styles.reward}>{rewardText}</Text> : null}
           <Text style={styles.foot}>Ingen app. Ingen tilmelding.</Text>

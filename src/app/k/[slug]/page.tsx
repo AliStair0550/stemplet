@@ -9,8 +9,10 @@ import { StampCard } from "@/components/StampCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ButtonLink } from "@/components/ui";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { APP_URL } from "@/lib/env";
 import type { StampIconKey } from "@/lib/brand";
 import { claimCard } from "./actions";
+import { ShareButton } from "./ShareButton";
 
 export async function generateMetadata({
   params,
@@ -19,9 +21,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const business = await prisma.business.findUnique({ where: { slug } });
+  const title = business
+    ? `Stempelkort hos ${business.name}`
+    : "Stempelkort";
+  const description = business
+    ? `Hent dit digitale stempelkort hos ${business.name} direkte i Apple Wallet. Ingen app. Ingen tilmelding.`
+    : "Digitalt stempelkort i Apple Wallet.";
   return {
-    title: business ? `Stempelkort hos ${business.name}` : "Stempelkort",
+    title,
+    description,
+    // noindex: siden er personlig, men link-previews (OG) virker stadig.
     robots: { index: false },
+    openGraph: { title, description, type: "website" },
   };
 }
 
@@ -114,6 +125,18 @@ export default async function ClaimPage({
             </Link>
           </div>
         )}
+
+        {/* Inspirerende deling: laeg linket videre, saa venner ogsaa faar kortet.
+            Deles linket, viser previewet butikkens stempelkort (OG-billede). */}
+        <div className="flex flex-col items-center gap-2 border-t border-fog pt-6">
+          <p className="text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
+            Kender du nogen, der elsker {business.name}? Del kortet med dem.
+          </p>
+          <ShareButton
+            businessName={business.name}
+            url={`${APP_URL}/k/${slug}`}
+          />
+        </div>
 
         {showPoweredBy ? (
           <p className="text-[0.65rem] font-[300] tracking-[0.08em] text-slate">

@@ -163,7 +163,7 @@ export function ShareCardSection({
               rel="noreferrer"
               className={btnClass("outline")}
             >
-              Åbn
+              Åbn kortside
             </a>
             <button
               onClick={copyLink}
