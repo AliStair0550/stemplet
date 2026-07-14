@@ -4,6 +4,8 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
+import { clientIp } from "@/lib/http";
+import { durableRateLimit } from "@/lib/rate-limit";
 import { MaterialsPdf, type MaterialTier } from "./Doc";
 
 export const runtime = "nodejs";
@@ -33,6 +35,15 @@ export async function GET(
 ) {
   const { type } = await params;
   const fmt = FORMATS[type] ?? FORMATS.plakat;
+
+  // PDF-generering er tung: bremse pr. enhed, saa endpointet ikke kan hamres
+  // som en DoS-vektor. Rigeligt til en ejer, der henter alle stoerrelser.
+  const ip = clientIp(req) ?? "ukendt";
+  if (!(await durableRateLimit("materials", ip, 40, 300))) {
+    return new Response("For mange forespørgsler. Prøv igen om lidt.", {
+      status: 429,
+    });
+  }
 
   // Offentlig adgang via ?slug= (bruges i onboarding, foer brugeren har
   // et login). Uden slug kraeves en session (dashboardets materialer-side).

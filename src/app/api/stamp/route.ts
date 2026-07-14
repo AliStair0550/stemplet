@@ -8,6 +8,7 @@ import {
   StampError,
 } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
+import { durableRateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,6 +63,17 @@ export async function POST(req: NextRequest) {
   // samle op paa det samme.
   let newCookieToken: string | null = null;
   if (!cc) {
+    // Misbrugsvaern: en gyldig skaerm-kode (60 sek.) kunne ellers spamme mange
+    // nye kort. Legitime nye kunder rammer aldrig loftet; kun mange fra samme
+    // enhed paa kort tid stoppes. DB-backet, saa det holder selv uden Redis.
+    const ip = clientIp(req) ?? "ukendt";
+    if (!(await durableRateLimit("card-create", ip, 12, 600))) {
+      return apiError(
+        "RATE_LIMIT",
+        "For mange nye kort fra denne enhed. Prøv igen om lidt.",
+        429,
+      );
+    }
     const created = await createCustomerCard(payload.businessId);
     if (!created.ok) {
       // Butikken har ramt sit gratis-loft: send til claim-siden i stedet for
