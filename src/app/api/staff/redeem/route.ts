@@ -15,7 +15,7 @@ import { clientIp, apiError } from "@/lib/http";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Indløsning kræver personale-PIN. 3 fejl låser enheden i 5 minutter.
+// Indløsning kræver personale-PIN. 5 fejl låser enheden i 5 minutter.
 export async function POST(req: NextRequest) {
   const businessId = await requireKasseBusinessId();
   if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   try {
     locked = await pinLockRemaining(businessId, lockId);
   } catch (e) {
-    console.error("Redis (pin-lock) fejlede:", e);
+    console.error("PIN-laas-opslag fejlede:", e);
   }
   if (locked > 0) {
     return apiError(
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       const fail = await recordPinFail(businessId, lockId);
       failLocked = fail.locked;
     } catch (e) {
-      console.error("Redis (pin-fail) fejlede:", e);
+      console.error("PIN-fejl-optaelling fejlede:", e);
     }
     await prisma.auditLog.create({
       data: {

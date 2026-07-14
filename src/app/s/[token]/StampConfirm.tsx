@@ -82,6 +82,11 @@ export function StampConfirm({
   walletEnabled: boolean;
 }) {
   const [state, setState] = useState<State>({ phase: "loading" });
+  // Sandt hvis telefonen ikke kunne gemme kortet (privat browsing blokerer
+  // baade cookie og localStorage). Saa ville hver scanning ellers oprette et nyt
+  // kort i tavshed. Vi forklarer det og peger paa Apple Wallet, som husker
+  // kortet uanset browser-tilstand.
+  const [storageBlocked, setStorageBlocked] = useState(false);
   const ran = useRef(false);
   const icon = stampIcon as StampIconKey;
 
@@ -109,7 +114,9 @@ export function StampConfirm({
         try {
           if (data.cardToken) localStorage.setItem(storeKey, data.cardToken);
         } catch {
-          /* ignorer hvis localStorage er blokeret */
+          // localStorage blokeret (privat browsing) -> kortet kan ikke huskes
+          // her. Vis en venlig forklaring og peg paa Apple Wallet.
+          setStorageBlocked(true);
         }
         // Reward: festlig rytme. Foerste kort (velkomst): en rigere puls. Alm.
         // stempel: et blOEdt "press-settle".
@@ -297,6 +304,16 @@ export function StampConfirm({
               </ButtonLink>
             )}
           </div>
+
+          {/* Privat browsing: telefonen kan ikke huske kortet mellem besOEg.
+              Forklar det og peg paa Wallet, som husker det uanset. */}
+          {storageBlocked ? (
+            <p className="max-w-xs rounded-xl bg-sand/60 px-4 py-3 font-[300] text-[0.82rem] leading-relaxed text-stone">
+              Din browser husker ikke kortet automatisk (måske privat browsing).
+              Læg det i Apple Wallet, så har du det altid, eller åbn siden i en
+              normal fane.
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -327,7 +344,8 @@ export function StampConfirm({
             if (
               (s.code === "REPLAY" ||
                 s.code === "COOLDOWN" ||
-                s.code === "FULL") &&
+                s.code === "FULL" ||
+                s.code === "INACTIVE") &&
               s.serial
             ) {
               const copy =
@@ -347,13 +365,21 @@ export function StampConfirm({
                         cta: "Vis mit kort",
                         href: `/kort/${s.serial}?vis=1`,
                       }
-                    : {
-                        kicker: "Fuldt kort",
-                        title: "Dit kort er fuldt",
-                        body: "Vis det ved kassen, så får du din belønning.",
-                        cta: "Vis mit kort",
-                        href: `/kort/${s.serial}?vis=1`,
-                      };
+                    : s.code === "INACTIVE"
+                      ? {
+                          kicker: "Kort på pause",
+                          title: "Kortet er sat på pause",
+                          body: "Butikken tager ikke imod stempler på dette kort lige nu. Du kan stadig se dit kort her.",
+                          cta: "Se dit kort",
+                          href: `/kort/${s.serial}`,
+                        }
+                      : {
+                          kicker: "Fuldt kort",
+                          title: "Dit kort er fuldt",
+                          body: "Vis det ved kassen, så får du din belønning.",
+                          cta: "Vis mit kort",
+                          href: `/kort/${s.serial}?vis=1`,
+                        };
               return (
                 <div className="flex w-full max-w-sm flex-col items-center gap-5">
                   <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">

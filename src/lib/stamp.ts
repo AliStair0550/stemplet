@@ -345,7 +345,12 @@ export async function undoLastStamp(opts: {
 export async function redeemReward(opts: {
   customerCardId: string;
   ip?: string | null;
-}): Promise<{ serial: string; completedCount: number }> {
+}): Promise<{
+  serial: string;
+  completedCount: number;
+  stamps: number;
+  required: number;
+}> {
   const res = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
       where: { id: opts.customerCardId },
@@ -369,9 +374,13 @@ export async function redeemReward(opts: {
     await tx.redemption.create({ data: { customerCardId: cc.id } });
     const after = await tx.customerCard.findUnique({
       where: { id: cc.id },
-      select: { completedCount: true },
+      select: { completedCount: true, stamps: true },
     });
     const completedCount = after?.completedCount ?? cc.completedCount + 1;
+    // Rest efter indløsning: normalt 0, men et evt. kampagne-overskud (fx
+    // dobbeltstempel paa sidste felt) baeres over, saa klienten faar sandheden
+    // og ikke behoever et ekstra opslag.
+    const stampsAfter = after?.stamps ?? Math.max(0, cc.stamps - required);
     await tx.auditLog.create({
       data: {
         businessId: cc.card.business.id,
@@ -383,6 +392,8 @@ export async function redeemReward(opts: {
     return {
       serial: cc.serial,
       completedCount,
+      stamps: stampsAfter,
+      required,
       businessId: cc.card.business.id,
       webhookUrl: cc.card.business.webhookUrl,
       apiKey: cc.card.business.apiKey,
@@ -395,7 +406,12 @@ export async function redeemReward(opts: {
     { serial: res.serial, completedCount: res.completedCount },
   );
   void pushWallet(opts.customerCardId);
-  return { serial: res.serial, completedCount: res.completedCount };
+  return {
+    serial: res.serial,
+    completedCount: res.completedCount,
+    stamps: res.stamps,
+    required: res.required,
+  };
 }
 
 async function flagIfAnomalous(

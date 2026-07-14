@@ -464,12 +464,23 @@ function StaffCard({
   const [pin, setPin] = useState("");
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  // Synkron guard: to hurtige tryk (touch double-tap) kan begge naa at fyre
+  // onClick FOER React har sat disabled i DOM'en. En ref tjekkes/saettes
+  // synkront og lukker det vindue, saa man aldrig giver to stempler paa eet tryk.
+  const busyRef = useRef(false);
   // Stiger for hvert stempel: bruges som key til at gen-udloese kortets
   // "burst"-animation og den flyvende "+1", saa personalet faar en tydelig
   // kvittering paa skaermen (Wallet-pass'et opdaterer Apple lidt senere).
   const [pulse, setPulse] = useState(0);
+  // Hvor mange stempler seneste tryk gav (normalt 1, 2 ved dobbeltstempel-kampagne).
+  const [lastInc, setLastInc] = useState(1);
   // Naar en beloenning lige er indloest: stor fejring + "giv beloenningen nu".
-  const [redeemed, setRedeemed] = useState<{ rewardText: string } | null>(null);
+  // Baerer de reelle rest-stempler, saa kortet kan opdateres uden et ekstra kald.
+  const [redeemed, setRedeemed] = useState<{
+    rewardText: string;
+    stamps: number;
+    required: number;
+  } | null>(null);
 
   const loadCard = useCallback(async (s: string) => {
     setLoading(true);
@@ -498,7 +509,8 @@ function StaffCard({
   }, [serial, loadCard]);
 
   async function giveStamp() {
-    if (!card) return;
+    if (!card || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setNote(null);
     try {
@@ -512,6 +524,7 @@ function StaffCard({
         // Opdater kortet DIREKTE fra svaret, ingen ekstra hentning: personalet
         // ser stemplet med det samme (foer var der to kald i traek = langsomt).
         setCard({ ...card, stamps: data.stamps, rewardReady: data.rewardReady });
+        setLastInc(data.increment ?? 1);
         setPulse((p) => p + 1);
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
         setNote({
@@ -522,16 +535,21 @@ function StaffCard({
         });
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
+        // Kortet var maaske allerede fuldt (en anden enhed stemplede) -> hent
+        // den aktuelle tilstand, saa knappen matcher virkeligheden igen.
+        if (data.code === "FULL") await loadCard(card.serial);
       }
     } catch {
       setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
 
   async function redeem() {
-    if (!card) return;
+    if (!card || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setNote(null);
     try {
@@ -543,12 +561,15 @@ function StaffCard({
       const data = await res.json();
       if (res.ok) {
         // Stor kvittering: markér tydeligt at beloenningen skal gives NU, og
-        // kraev et bevidst "OK" for at lukke, saa den ikke overses.
+        // kraev et bevidst "OK" for at lukke, saa den ikke overses. Serveren
+        // giver de reelle rest-stempler (normalt 0, evt. kampagne-overskud).
         setPin("");
         haptic([30, 50, 30, 50, 120]);
-        setRedeemed({ rewardText: card.rewardText });
-        // Kortet er nulstillet paa serveren: afspejl det lokalt til bagefter.
-        setCard({ ...card, stamps: 0, rewardReady: false });
+        setRedeemed({
+          rewardText: card.rewardText,
+          stamps: data.stamps ?? 0,
+          required: data.required ?? card.required,
+        });
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke indløse." });
         setPin("");
@@ -556,20 +577,29 @@ function StaffCard({
     } catch {
       setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
 
   // Personalet har givet beloenningen og trykker OK: luk fejringen og vis det
-  // nulstillede kort, saa de kan fortsaette eller afslutte.
+  // nulstillede kort (opdateret lokalt fra svaret, saa intet ekstra kald kan
+  // fejle her). Kortet i sig selv er kvitteringen, saa ingen ekstra note.
   function confirmRedeemed() {
+    if (redeemed && card) {
+      setCard({
+        ...card,
+        stamps: redeemed.stamps,
+        rewardReady: redeemed.stamps >= redeemed.required,
+      });
+    }
+    setNote(null);
     setRedeemed(null);
-    setNote({ ok: true, text: "Belønning givet. Kortet er nulstillet." });
-    if (card) loadCard(card.serial);
   }
 
   async function undo() {
-    if (!card) return;
+    if (!card || busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setNote(null);
     try {
@@ -595,6 +625,7 @@ function StaffCard({
     } catch {
       setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
@@ -687,7 +718,7 @@ function StaffCard({
                 className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
                 style={{ animation: "plusOne 1.15s ease-out forwards" }}
               >
-                +1 stempel
+                +{lastInc} {lastInc === 1 ? "stempel" : "stempler"}
               </span>
             ) : null}
           </div>
@@ -778,6 +809,14 @@ function StaffCard({
               Fortryd sidste stempel
             </button>
           ) : null}
+
+          {/* Saa personalet ved besked, hvis kunden spoerger: Wallet-pass'et
+              opdaterer sig selv efter et oejeblik (Apples baggrunds-push). */}
+          <p className="rounded-lg bg-sand/50 px-4 py-3 text-center text-[0.74rem] font-[300] leading-relaxed text-slate">
+            Vises stemplet ikke straks i kundens Wallet, opdaterer det sig selv
+            om et øjeblik. Kunden kan åbne sit kort på telefonen og se det med
+            det samme.
+          </p>
         </>
       ) : (
         <div className="flex flex-col items-center gap-4 py-8 text-center">

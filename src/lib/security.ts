@@ -15,7 +15,7 @@ export async function verifyPin(pin: string, hash: string): Promise<boolean> {
 }
 
 // ── PIN-forsøg og låsning ──────────────────────────────────────────
-// 3 fejlforsøg låser indløsning i 5 minutter. DB-backet (ikke kun Redis), saa
+// 5 fejlforsøg låser indløsning i 5 minutter. DB-backet (ikke kun Redis), saa
 // laasningen ALDRIG kan omgaas ved et Redis-nedbrud. lockId er IP (eller
 // enheds-id). Den atomiske INCREMENT taeller korrekt selv ved mange samtidige
 // forsoeg (bruteforce).

@@ -99,8 +99,17 @@ export function Scanner({
     }
 
     start();
+    // Sikkerhedsnet: hvis getUserMedia hverken lykkes eller fejler (fx en
+    // tilladelses-prompt der bare afvises paa nogle browsere), saa kameraet
+    // "haenger", vis en paen fejl efter et stykke tid i stedet for evig venten.
+    const startTimeout = setTimeout(() => {
+      if (!cancelled && !doneRef.current) {
+        setStatus((s) => (s === "starting" ? "error" : s));
+      }
+    }, 12000);
     return () => {
       cancelled = true;
+      clearTimeout(startTimeout);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };

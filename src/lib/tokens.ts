@@ -60,6 +60,28 @@ export async function verifyStampToken(
   };
 }
 
+/**
+ * Læser businessId fra et stempel-token, SELV hvis det er udløbet. Signaturen
+ * tjekkes stadig (clockTolerance tolererer kun udløbet), saa en forfalsket token
+ * afvises. Bruges UDELUKKENDE til at pege en strandet kunde (udløbet skærm-QR)
+ * hen til deres eget kort, ALDRIG til at give et stempel. Returnerer null ved en
+ * ugyldig/uforstaaelig token.
+ */
+export async function readStampBusinessIdAllowExpired(
+  token: string,
+): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), {
+      algorithms: ["HS256"],
+      // Ét aar: accepter udløbet token til navigation (ikke til stempling).
+      clockTolerance: 60 * 60 * 24 * 365,
+    });
+    return payload.businessId ? String(payload.businessId) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Redis-noeglen for et forbrugt token: unik pr. (token, kort). */
 export function jtiKey(jti: string, customerCardId: string): string {
   return `stamp:${jti}:${customerCardId}`;
