@@ -31,6 +31,25 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
+// Lille pil til hoejre paa menu-raekkerne, saa de tydeligt laeses som tappbare
+// CTA'er (ikke bare tekst).
+function ChevronRight() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4 text-slate"
+      aria-hidden
+    >
+      <path d="M9 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -108,7 +127,8 @@ export default function Nav() {
         </button>
       </div>
 
-      {/* Mobil-menu: links + Log ind + Kom gratis i gang */}
+      {/* Mobil-menu: Saadan virker det + Pris (tydelige CTA-raekker) + Log ind
+          + primaer knap "Kom gratis i gang" */}
       {open ? (
         <div className="border-t border-fog bg-parchment/98 backdrop-blur-md md:hidden">
           <nav className="mx-auto flex w-full max-w-[1100px] flex-col gap-1 px-6 py-4">
@@ -117,22 +137,23 @@ export default function Nav() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-3 font-[300] text-[0.92rem] text-ink transition-colors hover:bg-sand"
+                className="flex items-center justify-between rounded-lg border border-fog bg-white/60 px-4 py-3.5 font-[400] text-[0.95rem] text-ink transition-colors hover:border-clay hover:bg-sand"
               >
                 {l.label}
+                <ChevronRight />
               </Link>
             ))}
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-2 py-3 font-[400] text-[0.92rem] text-ink transition-colors hover:bg-sand"
+              className="mt-1 rounded-lg px-4 py-3 font-[400] text-[0.9rem] text-slate transition-colors hover:bg-sand hover:text-ink"
             >
               Log ind
             </Link>
             <Link
               href="/start"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-ink px-5 py-3.5 text-[0.78rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone"
+              className="mt-1 inline-flex items-center justify-center rounded-full bg-ink px-5 py-3.5 text-[0.78rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone"
             >
               Kom gratis i gang
             </Link>
