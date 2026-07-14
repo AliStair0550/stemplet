@@ -287,6 +287,10 @@ export function GuideContent({ data }: { data: GuideData }) {
               a={`Tjek om kunden allerede har fået ét inden for de sidste ${cooldownText}. Ellers giv stemplet med Scan kort ved kassen.`}
             />
             <QA
+              q="Kunden får et nyt kort hver gang og samler ikke op"
+              a="Så bruger kunden sandsynligvis et privat browser-vindue (inkognito). Telefonen husker ikke kortet mellem besøg i privat browsing, så der oprettes et nyt kort hver gang. Bed kunden åbne uden privat vindue, eller endnu bedre: læg kortet i Apple Wallet, så følger stemplerne altid med, uanset browser."
+            />
+            <QA
               q="Kunden har ny telefon eller kan ikke finde kortet"
               a="Har kunden kortet i Apple Wallet, følger det med. Ellers kan de selv hente det igen på stemplet.alius.dk/find-kort ved at skrive serienummeret fra kortet. Kender de ikke nummeret, kan du slå kortet op under Scan kort."
             />
