@@ -124,7 +124,10 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={cn("py-20 md:py-28", className)}>
+    // overflow-x-clip: dekorative gloed (-inset/-right blur) maa aldrig goere
+    // sektionen bredere end skaermen. Klipper hver sektion ved kilden, saa
+    // "zoom-ud ved traek" ikke kan opstaa uanset hvilken sektion det er.
+    <section id={id} className={cn("py-20 md:py-28 overflow-x-clip", className)}>
       <Container className={containerClassName}>{children}</Container>
     </section>
   );

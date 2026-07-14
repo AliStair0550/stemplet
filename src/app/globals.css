@@ -42,14 +42,22 @@
 
 html {
   scroll-behavior: smooth;
+  /* Lys-only side: undgaar sort UA-baggrund paa telefoner i moerk tilstand. */
+  color-scheme: light;
+  /* Brand-baggrunden allerede paa rod-elementet, saa foerste paint er pergament
+     (ikke sort/hvid), mens resten tegnes. */
+  background: var(--color-parchment);
+  /* Ingen vandret scroll: paa iOS Safari skal klippet ligge paa BAADE html og
+     body, ellers kan en dekorativ gloed stadig goere siden bredere end skaermen
+     (og udloese "zoom-ud", naar man traekker). "clip" laver ingen scroll-
+     container, saa position: sticky virker stadig. */
+  overflow-x: clip;
 }
 
 body {
   background: var(--color-parchment);
   color: var(--color-stone);
   font-family: var(--font-sans);
-  /* Ingen vandret scroll (fx fra det skjulte 560px delekort ved PNG-eksport).
-     "clip" laver ikke en scroll-container, saa position: sticky virker stadig. */
   overflow-x: clip;
 }
 

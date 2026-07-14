@@ -75,6 +75,11 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#FAF8F4",
+  // Siden er lys-only. Uden dette viser iOS Safari en SORT baggrund, mens den
+  // render-blokerende CSS hentes (paa telefoner i moerk tilstand), saa foerste
+  // billede er sort i et par sekunder. Med color-scheme: light bruger browseren
+  // en lys baggrund fra foerste frame (meta'et staar i HTML foer CSS'en).
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
