@@ -1,6 +1,6 @@
 import { Section } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { StatsScene } from "./StatsScene";
+import { StatsSceneLazy } from "./lazy";
 
 const STATS = [
   { value: "68%", label: "vender tilbage" },
@@ -58,7 +58,7 @@ export default function Problem() {
           </div>
 
           <div className="shrink-0 self-center">
-            <StatsScene />
+            <StatsSceneLazy />
           </div>
         </div>
       </div>

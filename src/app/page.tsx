@@ -3,13 +3,15 @@ import Footer from "@/components/site/Footer";
 import { Divider } from "@/components/ui";
 import Hero from "@/components/marketing/Hero";
 import Problem from "@/components/marketing/Problem";
-import HowItWorks from "@/components/marketing/HowItWorks";
 import TryItYourself from "@/components/marketing/TryItYourself";
 import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
-import RoiCalculator from "@/components/marketing/RoiCalculator";
 import Pricing from "@/components/marketing/Pricing";
-import Faq from "@/components/marketing/Faq";
+import {
+  HowItWorksLazy,
+  RoiCalculatorLazy,
+  FaqLazy,
+} from "@/components/marketing/lazy";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -35,11 +37,12 @@ export default function Page() {
       <Nav />
       <main>
         <Hero />
-        <HowItWorks />
+        {/* Under-fold: de tunge klient-komponenter (HowItWorks, RoiCalculator,
+            Faq, statistik-grafen) lazy-loades foerst naar man scroller naer dem,
+            saa forsidens foerste load kun omfatter hero'en. Server-sektionerne
+            SSR'es stadig, men med content-visibility saa deres paint udskydes. */}
+        <HowItWorksLazy />
         <Divider />
-        {/* Under-fold-sektioner: spring browserens render-/paint-arbejde over,
-            indtil man scroller naer dem (content-visibility). Sparer meget paa
-            mobil, hvor hele siden ellers layoutes paa een gang. */}
         <div className="cv-section">
           <TryItYourself />
         </div>
@@ -58,13 +61,9 @@ export default function Page() {
           <Pricing />
         </div>
         <Divider />
-        <div className="cv-section">
-          <RoiCalculator />
-        </div>
+        <RoiCalculatorLazy />
         <Divider />
-        <div className="cv-section">
-          <Faq />
-        </div>
+        <FaqLazy />
       </main>
       <Footer />
     </>

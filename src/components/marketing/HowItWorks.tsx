@@ -129,7 +129,7 @@ export default function HowItWorks() {
   const activeIdx = PHASE_INDEX[phase];
 
   return (
-    <Section id="sådan" className="scroll-mt-24 bg-moss/[0.04]">
+    <Section className="bg-moss/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Få flere stamkunder</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
