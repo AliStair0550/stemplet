@@ -54,6 +54,25 @@ type State =
   | { phase: "needCard" }
   | { phase: "error"; code: string; message: string; serial?: string };
 
+function WalletIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-[1.1rem] w-[1.1rem]"
+      aria-hidden
+    >
+      <rect x="3" y="6" width="18" height="13" rx="2.5" />
+      <path d="M3 10.5h18" />
+      <path d="M16 14.5h2" />
+    </svg>
+  );
+}
+
 export function StampConfirm({
   token,
   slug,
@@ -248,12 +267,22 @@ export function StampConfirm({
               (eller ingen Wallet), foerer knappen hen til kortets scanbare QR. */}
           <div className="flex w-full flex-col items-center gap-3">
             {walletEnabled && !state.rewardReady ? (
-              <a
-                href={`/api/wallet/pass/${state.serial}`}
-                className={btnClass("primary", "lg") + " w-full max-w-xs"}
-              >
-                Læg i Apple Wallet
-              </a>
+              <div className="relative w-full max-w-xs">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-1 rounded-2xl bg-ink/20 blur-md animate-wallet-glow"
+                />
+                <a
+                  href={`/api/wallet/pass/${state.serial}`}
+                  className={
+                    btnClass("primary", "lg") +
+                    " relative w-full rounded-xl shadow-lift"
+                  }
+                >
+                  <WalletIcon />
+                  Læg i Apple Wallet
+                </a>
+              </div>
             ) : (
               <ButtonLink
                 href={`/kort/${state.serial}?vis=1`}
