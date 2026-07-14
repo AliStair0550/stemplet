@@ -8,6 +8,9 @@ export const runtime = "nodejs";
 export const alt = "Dit digitale stempelkort";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+// Cache billedet: font-hentning + generering sker een gang pr. dag pr. butik,
+// ikke ved hver deling/crawl (foer tog det ~1,7 sek. hver gang).
+export const revalidate = 86400;
 
 // Henter Jost (brand-fonten), saa danske tegn (aeoeaa/accenter) i butiksnavn og
 // beloenning tegnes korrekt. Fejler hentningen, falder vi tilbage til standard-

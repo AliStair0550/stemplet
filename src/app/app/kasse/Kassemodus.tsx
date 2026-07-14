@@ -1,14 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { Scanner } from "@/components/Scanner";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
 import { Celebration } from "@/components/Celebration";
 import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { hexToRgb, type StampIconKey } from "@/lib/brand";
+
+// Kamera-scanneren (med jsQR) loades foerst, naar kameraet aabnes, saa den ikke
+// ligger i kasse-sidens initiale JS-bundle.
+const Scanner = dynamic(
+  () => import("@/components/Scanner").then((m) => ({ default: m.Scanner })),
+  { ssr: false },
+);
 
 // Kort haptik paa personalets enhed (telefon/tablet). Valgfrit.
 function haptic(pattern: number | number[]) {

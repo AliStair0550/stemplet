@@ -3,16 +3,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCardToken } from "@/lib/cookies";
-import { loadCardByToken } from "@/lib/stamp";
 import { StampCard } from "@/components/StampCard";
 import { SubmitButton } from "@/components/SubmitButton";
-import { ButtonLink } from "@/components/ui";
-import { PLAN_LIMITS } from "@/lib/plans";
 import { APP_URL } from "@/lib/env";
+import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
 import { claimCard } from "./actions";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
+
+// ISR: siden er ens for alle (butikkens branding + "Hent mit stempelkort"), saa
+// den caches pr. butik. Foer var den dynamisk pr. request, saa kundens FOERSTE
+// scan kunne ramme en cold start (~2 sek.). Nu serveres den fra cache. Om en
+// kunde allerede har et kort, haandteres i claimCard ved klik (redirect til kortet).
+export const revalidate = 3600;
+
+// Pre-renderer de kendte butikker ved build, saa deres tilmeldings-side er ren
+// statisk (CDN, ingen cold start) fra allerfoerste scan. Nye butikker rendres
+// on-demand og caches derefter (ISR).
+export async function generateStaticParams() {
+  try {
+    const shops = await prisma.business.findMany({ select: { slug: true } });
+    return shops.map((s) => ({ slug: s.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -21,9 +36,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const business = await prisma.business.findUnique({ where: { slug } });
-  const title = business
-    ? `Stempelkort hos ${business.name}`
-    : "Stempelkort";
+  const title = business ? `Stempelkort hos ${business.name}` : "Stempelkort";
   const description = business
     ? `Hent dit digitale stempelkort hos ${business.name} direkte i Apple Wallet. Ingen app. Ingen tilmelding.`
     : "Digitalt stempelkort i Apple Wallet.";
@@ -38,14 +51,10 @@ export async function generateMetadata({
 
 export default async function ClaimPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ fejl?: string }>;
 }) {
   const { slug } = await params;
-  const { fejl } = await searchParams;
-
   const business = await prisma.business.findUnique({
     where: { slug },
     include: {
@@ -54,10 +63,6 @@ export default async function ClaimPage({
   });
   if (!business || business.cards.length === 0) notFound();
   const card = business.cards[0];
-
-  const existingToken = await getCardToken(business.id);
-  const existing = existingToken ? await loadCardByToken(existingToken) : null;
-  const hasCard = existing && existing.cardId === card.id;
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
 
   return (
@@ -87,44 +92,29 @@ export default async function ClaimPage({
           primaryColor={business.primaryColor}
           textColor={business.textColor}
           stampIcon={card.stampIcon as StampIconKey}
-          stamps={hasCard ? existing!.stamps : 0}
+          stamps={0}
           required={card.stampsRequired}
           rewardText={card.rewardText}
           showPoweredBy={showPoweredBy}
-          serial={hasCard ? existing!.serial : undefined}
         />
 
-        {fejl === "fuld" ? (
-          <p className="text-center text-[0.82rem] font-[200] text-stone">
-            Butikken tager ikke imod nye stempelkort lige nu. Spørg personalet,
-            de kan hurtigt åbne for flere.
-          </p>
-        ) : null}
-
-        {hasCard ? (
-          <div className="flex flex-col items-center gap-3">
-            <ButtonLink href={`/kort/${existing!.serial}`} variant="primary" size="lg">
-              Åbn dit kort
-            </ButtonLink>
-            <p className="text-[0.75rem] font-[200] text-slate">
-              Du har allerede et kort hos {business.name}.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-4">
-            <form action={claimCard.bind(null, slug)}>
-              <SubmitButton variant="primary" size="lg" pendingText="Opretter dit kort...">
-                Hent mit stempelkort
-              </SubmitButton>
-            </form>
-            <Link
-              href="/find-kort"
-              className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
+        <div className="flex flex-col items-center gap-4">
+          <form action={claimCard.bind(null, slug)}>
+            <SubmitButton
+              variant="primary"
+              size="lg"
+              pendingText="Opretter dit kort..."
             >
-              Har du allerede et kort? Find det her.
-            </Link>
-          </div>
-        )}
+              Hent mit stempelkort
+            </SubmitButton>
+          </form>
+          <Link
+            href="/find-kort"
+            className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
+          >
+            Har du allerede et kort? Find det her.
+          </Link>
+        </div>
 
         {/* Inspirerende deling: laeg linket videre, saa venner ogsaa faar kortet.
             Deles linket, viser previewet butikkens stempelkort (OG-billede). */}
