@@ -9,9 +9,10 @@ import { MaterialsPdf, type MaterialTier } from "./Doc";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type PageSize = "A4" | "A5" | "A6" | [number, number];
+type PageSize = "A4" | "A5" | "A6" | "A7" | [number, number];
 
-// Visitkort: 85x55 mm i punkter (1 mm = 2,8346 pt).
+// Visitkort: A7 i landskab (105x74 mm), et lille kort. En custom tuple-stoerrelse
+// fik react-pdf til at haenge paa serveren, saa vi bruger en navngivet stoerrelse.
 const FORMATS: Record<
   string,
   { pageSize: PageSize; tier: MaterialTier; file: string }
@@ -19,7 +20,7 @@ const FORMATS: Record<
   plakat: { pageSize: "A4", tier: "lg", file: "plakat-a4" },
   a5: { pageSize: "A5", tier: "md", file: "skilt-a5" },
   skilt: { pageSize: "A6", tier: "sm", file: "diskskilt-a6" },
-  visitkort: { pageSize: [241, 156], tier: "xs", file: "visitkort" },
+  visitkort: { pageSize: "A7", tier: "xs", file: "visitkort" },
 };
 
 const withCard = {

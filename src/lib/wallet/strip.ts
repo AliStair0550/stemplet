@@ -68,11 +68,16 @@ export async function buildStripImages(opts: {
   textColor: string;
 }): Promise<{ x1: Buffer; x2: Buffer; x3: Buffer }> {
   const W = 1125;
-  const H = 432;
   const P = 70;
-  const PT = 40;
+  // topAir: luft mellem butikkens logo/header og stemplerne (foer var der kun
+  // ~40 px, saa de laa taet paa logoet). PB: bund-padding.
+  const topAir = 116;
+  const PB = 48;
+  // D beregnes paa en fast gitter-hoejde, saa cirklerne har samme stoerrelse
+  // uanset den ekstra top-luft; strip'ens samlede hoejde vokser bare med luften.
+  const gridBoxH = 352;
   const usableW = W - 2 * P;
-  const usableH = H - 2 * PT;
+  const usableH = gridBoxH;
 
   const columns =
     opts.required <= 5 ? opts.required : Math.ceil(opts.required / 2);
@@ -85,7 +90,8 @@ export async function buildStripImages(opts: {
   const gapX = D * 0.33;
   const gapY = D * 0.28;
   const gridH = rows * D + (rows - 1) * gapY;
-  const startY = (H - gridH) / 2;
+  const startY = topAir;
+  const H = startY + gridH + PB;
 
   const tc = opts.textColor;
   const pc = opts.primaryColor;
@@ -146,10 +152,12 @@ export async function buildStripImages(opts: {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${cells}</svg>`;
   const base = Buffer.from(svg);
 
+  // Skaler kun paa bredden, saa hoejde-forholdet (som nu afhaenger af raekker +
+  // top-luft) altid bevares paa tvaers af @1x/@2x/@3x.
   const [x3, x2, x1] = await Promise.all([
     sharp(base).png().toBuffer(),
-    sharp(base).resize(750, 288).png().toBuffer(),
-    sharp(base).resize(375, 144).png().toBuffer(),
+    sharp(base).resize(750).png().toBuffer(),
+    sharp(base).resize(375).png().toBuffer(),
   ]);
   return { x1, x2, x3 };
 }

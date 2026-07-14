@@ -9,7 +9,7 @@ import {
 
 export type MaterialTier = "lg" | "md" | "sm" | "xs";
 
-type PageSize = "A4" | "A5" | "A6" | [number, number];
+type PageSize = "A4" | "A5" | "A6" | "A7" | [number, number];
 
 // Federe, universel skrift (indbygget bold) til navn, overskrift, beloenning og
 // tagline, saa materialet er tydeligt og spaendende men virker overalt.
@@ -54,29 +54,29 @@ export function MaterialsPdf({
   pageSize: PageSize;
   tier: MaterialTier;
 }) {
-  // Visitkort: vandret layout, QR til venstre og tekst til hoejre. Kompakt og
-  // wrap={false}, saa det aldrig floder over den lille faste side (det fik
-  // render-motoren til at haenge).
+  // Visitkort: A7 i landskab (navngivet stoerrelse, saa render-motoren ikke
+  // haenger som ved en custom tuple-stoerrelse). Vandret layout: QR til venstre,
+  // tekst til hoejre med eksplicit bredde (ingen flex, robust paa den lille side).
   if (tier === "xs") {
     const s = StyleSheet.create({
       page: {
         backgroundColor: "#FAF8F4",
         color: "#1A1A1A",
-        padding: 16,
+        padding: 22,
         fontFamily: "Helvetica",
         flexDirection: "row",
         alignItems: "center",
       },
-      qr: { width: 104, height: 104, marginRight: 14 },
-      right: { flex: 1 },
-      brand: { fontFamily: BOLD, fontSize: 12, marginBottom: 3, letterSpacing: 0.4 },
-      head: { fontFamily: BOLD, fontSize: 12.5, marginBottom: 5, lineHeight: 1.15 },
-      reward: { fontFamily: BOLD, fontSize: 10, color: "#2D5F4A", marginBottom: 5 },
-      foot: { fontFamily: BOLD, fontSize: 7, color: "#6B7B75" },
+      qr: { width: 120, height: 120, marginRight: 16 },
+      right: { width: 118 },
+      brand: { fontFamily: BOLD, fontSize: 14, marginBottom: 5, letterSpacing: 0.4 },
+      head: { fontFamily: BOLD, fontSize: 15, marginBottom: 8, lineHeight: 1.15 },
+      reward: { fontFamily: BOLD, fontSize: 11, color: "#2D5F4A", marginBottom: 8 },
+      foot: { fontFamily: BOLD, fontSize: 7.5, color: "#6B7B75" },
     });
     return (
       <Document>
-        <Page size={pageSize} style={s.page} wrap={false}>
+        <Page size={pageSize} orientation="landscape" style={s.page}>
           <Image src={qrDataUrl} style={s.qr} />
           <View style={s.right}>
             <Text style={s.brand}>{businessName}</Text>
