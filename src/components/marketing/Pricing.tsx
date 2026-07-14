@@ -60,7 +60,7 @@ export default function Pricing() {
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Gratis */}
         <div className="flex flex-col border border-moss bg-parchment p-8 md:p-10">
-          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-moss">
+          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-[#B0893A]">
             Gratis
           </span>
           <div className="mt-5 flex items-baseline gap-2">

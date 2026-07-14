@@ -27,7 +27,7 @@ export default async function TryItYourself() {
   const card = biz.cards[0];
 
   return (
-    <Section id="demo" className="scroll-mt-24 bg-moss/[0.04]">
+    <Section id="demo" className="scroll-mt-24 overflow-hidden bg-moss/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Prøv det selv</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">

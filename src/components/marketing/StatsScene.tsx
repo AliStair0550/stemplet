@@ -75,7 +75,7 @@ export function StatsScene() {
     >
       <div className="flex items-start justify-between">
         <div>
-          <span className="text-[0.58rem] font-[500] uppercase tracking-[0.14em] text-moss">
+          <span className="text-[0.58rem] font-[500] uppercase tracking-[0.14em] text-[#B0893A]">
             Genbesøg
           </span>
           <div className="mt-1 font-fraunces text-[2rem] font-light leading-none tabular-nums text-ink">

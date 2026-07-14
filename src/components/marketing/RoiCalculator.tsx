@@ -99,7 +99,7 @@ export default function RoiCalculator() {
         </div>
 
         <div className="flex flex-col justify-center gap-3 rounded-lg border border-moss bg-moss/[0.04] p-8 md:p-10">
-          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-moss">
+          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-[#B0893A]">
             Ekstra omsætning
           </span>
           <p className="font-[300] leading-none text-ink">

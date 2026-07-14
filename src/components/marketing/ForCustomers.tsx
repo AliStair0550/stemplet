@@ -35,7 +35,7 @@ function CheckMark() {
 function Benefits({ label, items }: { label: string; items: string[] }) {
   return (
     <div>
-      <span className="text-[0.65rem] font-[400] uppercase tracking-[0.14em] text-moss">
+      <span className="text-[0.65rem] font-[400] uppercase tracking-[0.14em] text-[#B0893A]">
         {label}
       </span>
       <ul className="mt-5 flex flex-col gap-3.5">

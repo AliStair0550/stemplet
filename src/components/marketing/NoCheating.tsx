@@ -80,7 +80,7 @@ export default function NoCheating() {
         className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-moss/20 blur-[130px]"
       />
       <div className="relative max-w-xl">
-        <span className="font-[400] text-[0.65rem] uppercase tracking-[0.14em] text-moss-light">
+        <span className="font-[400] text-[0.65rem] uppercase tracking-[0.14em] text-[#E4C081]">
           Sikkerhed
         </span>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-parchment">

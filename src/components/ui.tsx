@@ -140,7 +140,7 @@ export function Eyebrow({
   return (
     <span
       className={cn(
-        "text-label font-[400] uppercase tracking-[0.12em] text-moss",
+        "text-label font-[400] uppercase tracking-[0.12em] text-[#B0893A]",
         className,
       )}
     >
