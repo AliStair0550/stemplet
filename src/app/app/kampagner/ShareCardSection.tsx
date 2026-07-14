@@ -157,6 +157,14 @@ export function ShareCardSection({
             >
               {busy === "download" ? "Laver billede..." : "Download billede"}
             </button>
+            <a
+              href={cardUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={btnClass("outline")}
+            >
+              Åbn
+            </a>
             <button
               onClick={copyLink}
               disabled={busy !== null}
