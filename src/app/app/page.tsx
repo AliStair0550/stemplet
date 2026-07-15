@@ -68,7 +68,7 @@ function GettingStarted({ slug }: { slug: string }) {
     {
       icon: <IconQr />,
       title: "Del QR-kode",
-      body: "Placér QR-koden ved kassen, så kunderne nemt kan hente deres stempelkort.",
+      body: "QR-koden ved kassen, så kunderne nemt kan hente stempelkortet.",
       href: "/app/materialer",
       link: "Hent materialer",
     },
@@ -202,6 +202,7 @@ export default async function OverviewPage() {
           label="Nye kunder (30 dage)"
           icon={<IconSpark />}
           value={<AnimatedNumber value={stats.newCustomers30} />}
+          sub={`${formatDkNumber(stats.newCustomers7)} seneste 7 dage`}
         />
         <StatTile
           label="Stempler i dag"
@@ -218,18 +219,33 @@ export default async function OverviewPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
-        <Panel>
-          <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
-            Stempler seneste 7 dage
-          </h2>
-          <BarChart
-            data={stats.perDay.slice(-7).map((d) => ({
-              label: d.label,
-              count: d.count,
-              sublabel: d.weekday,
-            }))}
-          />
-        </Panel>
+        <div className="flex flex-col gap-6">
+          <Panel>
+            <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
+              Stempler seneste 7 dage
+            </h2>
+            <BarChart
+              data={stats.perDay.slice(-7).map((d) => ({
+                label: d.label,
+                count: d.count,
+                sublabel: d.weekday,
+              }))}
+            />
+          </Panel>
+
+          <Panel>
+            <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
+              Nye kunder seneste 7 dage
+            </h2>
+            <BarChart
+              data={stats.newPerDay.slice(-7).map((d) => ({
+                label: d.label,
+                count: d.count,
+                sublabel: d.weekday,
+              }))}
+            />
+          </Panel>
+        </div>
 
         <Panel>
           <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">

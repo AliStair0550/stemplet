@@ -3,7 +3,6 @@ import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, type BusinessStats } from "@/lib/stats";
 import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
-import { CategoryBars } from "@/components/CategoryBars";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { formatDkNumber } from "@/lib/utils";
 
@@ -51,6 +50,7 @@ export default async function StatistikPage() {
         <StatTile
           label="Nye kunder (30 dage)"
           value={<AnimatedNumber value={stats.newCustomers30} />}
+          sub={`${formatDkNumber(stats.newCustomers7)} seneste 7 dage`}
         />
       </div>
 
@@ -62,14 +62,6 @@ export default async function StatistikPage() {
 }
 
 function FullStats({ stats }: { stats: BusinessStats }) {
-  const methodData = [
-    { label: "Kassens QR", value: stats.byMethod.kiosk },
-    { label: "Personale-scan", value: stats.byMethod.staff },
-    ...(stats.byMethod.manual > 0
-      ? [{ label: "Manuelt", value: stats.byMethod.manual }]
-      : []),
-  ];
-
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -117,13 +109,16 @@ function FullStats({ stats }: { stats: BusinessStats }) {
           />
         </Panel>
         <Panel>
-          <h2 className="mb-1 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-            Sådan bliver der stemplet
+          <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+            Nye kunder seneste 7 dage
           </h2>
-          <p className="mb-4 text-[0.72rem] font-[200] text-slate">
-            Fordeling af stempler pr. metode.
-          </p>
-          <CategoryBars data={methodData} />
+          <BarChart
+            data={stats.newPerDay.slice(-7).map((d) => ({
+              label: d.label,
+              count: d.count,
+              sublabel: d.weekday,
+            }))}
+          />
         </Panel>
       </div>
 

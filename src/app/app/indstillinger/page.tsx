@@ -113,9 +113,10 @@ export default async function IndstillingerPage({
                 Velkomststempel
               </h2>
               <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
-                Giv kunden ét stempel allerede ved deres første scan. Slået fra:
-                første scan opretter kun kortet, og stempler gives derefter ved
-                køb.
+                Stemplingen sker altid på samme måde: 1. kunden henter kortet ved
+                første scan, 2. I giver stempler ved kassen. Slår du
+                velkomststempel til, får kunden også ét stempel med det samme ved
+                allerførste scan. Standard er fra, så flowet er ens hver gang.
               </p>
             </div>
             <WelcomeStampToggle initial={business.welcomeStampEnabled} />

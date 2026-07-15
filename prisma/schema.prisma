@@ -36,8 +36,10 @@ model Business {
   webhookUrl       String? // POST'es ved stempel/beloenning/indloesning
   weeklyEmailEnabled Boolean  @default(true) // ugentlig statistik-mail
   // Giv et velkomststempel ved kundens ALLERFOERSTE scan (opretter kort + 1
-  // stempel). Slaaet fra: foerste scan opretter kun kortet. Standard til.
-  welcomeStampEnabled Boolean @default(true)
+  // stempel). Standard FRA: foerste scan opretter KUN kortet, og stempler gives
+  // derefter ved koeb. Saa er strukturen altid den samme: 1. kortet hentes,
+  // 2. stempler gives ved kassen. Kan slaaes til i indstillinger.
+  welcomeStampEnabled Boolean @default(false)
   // Selvbetjening: maa kunden stemple sig selv ved at scanne en roterende QR
   // (kioskmodus)? Standard FRA: kun personalet scanner kundens kort. Holder
   // butikken enkel (eet statisk tilmeldings-skilt) og loeser snyd strukturelt.

@@ -2,10 +2,13 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
+type PerDay = { date: string; label: string; weekday: string; count: number };
+
 export type BusinessStats = {
   totalCustomers: number;
   activeCustomers: number;
   newCustomers30: number;
+  newCustomers7: number;
   stampsToday: number;
   stampsWeek: number;
   stampsTotal: number;
@@ -15,7 +18,8 @@ export type BusinessStats = {
   completionRate: number;
   avgDaysToFull: number | null;
   byMethod: { kiosk: number; staff: number; manual: number };
-  perDay: { date: string; label: string; weekday: string; count: number }[];
+  perDay: PerDay[];
+  newPerDay: PerDay[];
 };
 
 function daysAgo(n: number): Date {
@@ -35,6 +39,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       totalCustomers: 0,
       activeCustomers: 0,
       newCustomers30: 0,
+      newCustomers7: 0,
       stampsToday: 0,
       stampsWeek: 0,
       stampsTotal: 0,
@@ -45,6 +50,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       avgDaysToFull: null,
       byMethod: { kiosk: 0, staff: 0, manual: 0 },
       perDay: buildPerDay([]),
+      newPerDay: buildPerDay([]),
     };
   }
 
@@ -72,6 +78,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     redemptionsTotal,
     redemptions30,
     recentStamps,
+    recentCustomerCards,
     methodGroups,
     avgRows,
   ] = await Promise.all([
@@ -104,6 +111,11 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       where: { ...rel, createdAt: { gte: daysAgo(14) } },
       select: { createdAt: true },
     }),
+    // Nye kundekort seneste 14 dage, saa vi kan tegne "nye kunder pr. dag".
+    prisma.customerCard.findMany({
+      where: { ...inCards, createdAt: { gte: daysAgo(14) } },
+      select: { createdAt: true },
+    }),
     prisma.stamp.groupBy({
       by: ["method"],
       where: rel,
@@ -133,6 +145,9 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
   const stampsToday = perDay[perDay.length - 1]?.count ?? 0;
   const stampsWeek = perDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
 
+  const newPerDay = buildPerDay(recentCustomerCards.map((c) => c.createdAt));
+  const newCustomers7 = newPerDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
+
   const methodCount = new Map(
     methodGroups.map((g) => [g.method, g._count._all]),
   );
@@ -155,6 +170,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     totalCustomers,
     activeCustomers,
     newCustomers30,
+    newCustomers7,
     stampsToday,
     stampsWeek,
     stampsTotal,
@@ -165,6 +181,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     avgDaysToFull,
     byMethod,
     perDay,
+    newPerDay,
   };
 }
 

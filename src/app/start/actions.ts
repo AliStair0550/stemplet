@@ -85,6 +85,9 @@ export async function createBusinessAction(input: {
         logoUrl: design.data.logoUrl ?? null,
         staffPin,
         termsAcceptedAt: new Date(),
+        // Standard: velkomststempel FRA, saa flowet altid er 1. kort hentes,
+        // 2. stempler gives ved kassen. Kan slaas til i indstillinger.
+        welcomeStampEnabled: false,
         category:
           input.category && isBusinessCategory(input.category)
             ? input.category
