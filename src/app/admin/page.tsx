@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSuperadminEmail } from "@/lib/admin";
+import {
+  getSuperadminEmail,
+  isAdminUnlocked,
+  adminCodeConfigured,
+} from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
 import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
+import { AdminUnlock } from "./AdminUnlock";
 import {
   CopyEmail,
   PlanSelect,
   DeleteButton,
   ClearDemoButton,
+  ResetStampsButton,
+  EditOwner,
+  LockButton,
 } from "./AdminControls";
 
 export const metadata: Metadata = {
@@ -18,7 +26,12 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-type Owner = { email: string; name: string | null; verified: boolean };
+type Owner = {
+  id: string;
+  email: string;
+  name: string | null;
+  verified: boolean;
+};
 type Row = {
   id: string;
   name: string;
@@ -54,7 +67,12 @@ async function buildRow(b: {
   selfScanEnabled: boolean;
   welcomeStampEnabled: boolean;
   weeklyEmailEnabled: boolean;
-  users: { email: string; name: string | null; emailVerified: Date | null }[];
+  users: {
+    id: string;
+    email: string;
+    name: string | null;
+    emailVerified: Date | null;
+  }[];
   cards: { id: string }[];
 }): Promise<Row> {
   const cardIds = b.cards.map((c) => c.id);
@@ -85,6 +103,7 @@ async function buildRow(b: {
     welcomeStamp: b.welcomeStampEnabled,
     weeklyEmail: b.weeklyEmailEnabled,
     owners: b.users.map((u) => ({
+      id: u.id,
       email: u.email,
       name: u.name,
       verified: u.emailVerified != null,
@@ -103,10 +122,18 @@ export default async function AdminPage() {
   const admin = await getSuperadminEmail();
   if (!admin) notFound();
 
+  // Ekstra kode-laas: er ADMIN_ACCESS_CODE sat, kraeves koden ud over email-login.
+  if (!(await isAdminUnlocked())) {
+    return <AdminUnlock />;
+  }
+  const codeLock = adminCodeConfigured();
+
   const businesses = await prisma.business.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      users: { select: { email: true, name: true, emailVerified: true } },
+      users: {
+        select: { id: true, email: true, name: true, emailVerified: true },
+      },
       cards: { select: { id: true } },
     },
   });
@@ -146,13 +173,38 @@ export default async function AdminPage() {
               Logget ind som {admin}
             </p>
           </div>
-          <Link
-            href="/app"
-            className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
-          >
-            Til dashboard
-          </Link>
+          <div className="flex items-center gap-5">
+            <a
+              href="/admin/export"
+              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
+            >
+              Eksportér kontakter (CSV)
+            </a>
+            {codeLock ? <LockButton /> : null}
+            <Link
+              href="/app"
+              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
+            >
+              Til dashboard
+            </Link>
+          </div>
         </div>
+
+        {/* Advarsel: kode-laasen er ikke slaaet til endnu. */}
+        {!codeLock ? (
+          <div className="mt-6 rounded-lg border border-rust/30 bg-rust/5 px-5 py-4">
+            <p className="font-[400] text-[0.85rem] text-rust">
+              Ekstra kode-lås er ikke aktiv endnu.
+            </p>
+            <p className="mt-1 font-[300] text-[0.82rem] leading-relaxed text-stone">
+              Sæt miljøvariablen{" "}
+              <span className="font-mono text-ink">ADMIN_ACCESS_CODE</span> til en
+              hemmelig kode (kun du kender den) i Vercel, så kræves koden ud over
+              email-login for at åbne admin. Lige nu er adgangen kun beskyttet af
+              dit email-login.
+            </p>
+          </div>
+        ) : null}
 
         {/* Noegletal (kun rigtige butikker, demo ekskluderet) */}
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -258,8 +310,9 @@ function BusinessCard({ r }: { r: Row }) {
               : " · Vilkår ikke registreret"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PlanSelect businessId={r.id} plan={r.plan} />
+          <ResetStampsButton businessId={r.id} />
           <DeleteButton businessId={r.id} name={r.name} />
         </div>
       </div>
@@ -272,21 +325,21 @@ function BusinessCard({ r }: { r: Row }) {
         {r.owners.length ? (
           <ul className="mt-1.5 flex flex-col gap-1.5">
             {r.owners.map((o) => (
-              <li
-                key={o.email}
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem]"
-              >
-                <CopyEmail email={o.email} />
-                {o.name ? (
-                  <span className="font-[300] text-stone">{o.name}</span>
-                ) : null}
-                <span
-                  className={`text-[0.66rem] font-[400] uppercase tracking-[0.08em] ${
-                    o.verified ? "text-moss" : "text-rust/80"
-                  }`}
-                >
-                  {o.verified ? "✓ verificeret" : "ikke verificeret"}
-                </span>
+              <li key={o.id} className="text-[0.85rem]">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <CopyEmail email={o.email} />
+                  {o.name ? (
+                    <span className="font-[300] text-stone">{o.name}</span>
+                  ) : null}
+                  <span
+                    className={`text-[0.66rem] font-[400] uppercase tracking-[0.08em] ${
+                      o.verified ? "text-moss" : "text-rust/80"
+                    }`}
+                  >
+                    {o.verified ? "✓ verificeret" : "ikke verificeret"}
+                  </span>
+                  <EditOwner userId={o.id} email={o.email} name={o.name} />
+                </div>
               </li>
             ))}
           </ul>
