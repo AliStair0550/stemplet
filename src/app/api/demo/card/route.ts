@@ -41,8 +41,25 @@ export async function POST(req: NextRequest) {
     if (k && k.card.businessId === biz.id) cc = k;
   }
 
+  // Byg svaret i begge grene. Ved et NYT kort undgaar vi en ekstra DB-rundtur:
+  // createCustomerCard giver os serial + token, kortet er per definition paa 0
+  // stempler, og required har vi fra demo-butikkens kort-skabelon.
+  let payload: {
+    serial: string;
+    stamps: number;
+    required: number;
+    cardToken: string;
+  };
   let newCookieToken: string | null = null;
-  if (!cc) {
+
+  if (cc) {
+    payload = {
+      serial: cc.serial,
+      stamps: cc.stamps,
+      required: cc.card.stampsRequired,
+      cardToken: cc.authToken,
+    };
+  } else {
     const ip = clientIp(req) ?? "ukendt";
     if (!(await durableRateLimit("demo-card", ip, 20, 600))) {
       return apiError("RATE_LIMIT", "Prøv igen om lidt.", 429);
@@ -57,17 +74,15 @@ export async function POST(req: NextRequest) {
       );
     }
     newCookieToken = created.authToken;
-    cc = await loadCardByToken(created.authToken);
-    if (!cc) return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
+    payload = {
+      serial: created.serial,
+      stamps: 0,
+      required: biz.cards[0].stampsRequired,
+      cardToken: created.authToken,
+    };
   }
 
-  const res = NextResponse.json({
-    ok: true,
-    serial: cc.serial,
-    stamps: cc.stamps,
-    required: cc.card.stampsRequired,
-    cardToken: cc.authToken,
-  });
+  const res = NextResponse.json({ ok: true, ...payload });
   if (newCookieToken) {
     res.cookies.set(
       cardCookieName(biz.id),

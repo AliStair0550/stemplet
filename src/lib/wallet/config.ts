@@ -25,7 +25,18 @@ const CERT_RE =
 const KEY_RE =
   /-----BEGIN (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----[\s\S]+?-----END (?:RSA |EC |ENCRYPTED )?PRIVATE KEY-----/;
 
+// Certifikaterne aendrer sig ikke i en koerende proces. Vi parser dem (base64-
+// dekod + regex-udtraek) een gang og genbruger resultatet, saa hver pass-signering
+// ikke laver samme arbejde forfra.
+let certsCache: {
+  wwdr: string;
+  signerCert: string;
+  signerKey: string;
+  signerKeyPassphrase: string | undefined;
+} | null = null;
+
 export function walletCertificates() {
+  if (certsCache) return certsCache;
   const combined = Buffer.from(requireEnv("APPLE_PASS_CERT"), "base64").toString(
     "utf8",
   );
@@ -39,12 +50,13 @@ export function walletCertificates() {
       "APPLE_PASS_CERT skal indeholde baade et CERTIFICATE og en PRIVATE KEY (kombineret PEM).",
     );
   }
-  return {
+  certsCache = {
     wwdr,
     signerCert: cert,
     signerKey: key,
     signerKeyPassphrase: process.env.APPLE_PASS_CERT_PASSWORD,
   };
+  return certsCache;
 }
 
 export function apnsConfig() {

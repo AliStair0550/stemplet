@@ -40,35 +40,68 @@ function blendRgb(hexA: string, hexB: string, t: number): string {
   return `rgb(${m(a.r, b.r)}, ${m(a.g, b.g)}, ${m(a.b, b.b)})`;
 }
 
+// Logo-bufferen cachet pr. URL. utfs-URL'er er indholds-adresserede (et nyt logo
+// giver en ny URL), og data-URI'en ER selve indholdet, saa noeglen aendrer sig
+// altid ved nyt logo. Derfor slipper gentagne pass-bygninger for DNS-opslag +
+// hentning af det samme logo hver gang. Vi cacher kun succes, saa en midlertidig
+// fejl kan proeves igen naeste gang.
+const logoCache = new Map<string, Buffer>();
+const LOGO_CACHE_MAX = 50;
+
 async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
-  if (logoUrl) {
-    try {
-      // Data-URI (den normale vej fra kortdesigneren): ingen netvaerkshentning.
-      if (logoUrl.startsWith("data:")) {
-        const res = await fetch(logoUrl);
-        if (res.ok) return Buffer.from(await res.arrayBuffer());
-      } else {
-        // Fjern-URL: SSRF-vaern. Afvis interne/private adresser og foelg ikke
-        // redirects, saa et logo aldrig kan bruges til at naa intern metadata.
-        const url = new URL(logoUrl);
-        if (
-          (url.protocol === "https:" || url.protocol === "http:") &&
-          url.hostname
-        ) {
-          const resolved = await lookup(url.hostname, { all: true });
-          if (resolved.some((a) => isPrivateAddress(a.address))) {
-            console.error("Logo blokeret (privat adresse):", url.hostname);
-          } else {
-            const res = await fetch(logoUrl, { redirect: "manual" });
-            if (res.ok) return Buffer.from(await res.arrayBuffer());
-          }
+  if (!logoUrl) return null;
+  const cached = logoCache.get(logoUrl);
+  if (cached) return cached;
+  const buf = await fetchLogo(logoUrl);
+  if (buf) {
+    if (logoCache.size >= LOGO_CACHE_MAX) {
+      const oldest = logoCache.keys().next().value;
+      if (oldest !== undefined) logoCache.delete(oldest);
+    }
+    logoCache.set(logoUrl, buf);
+  }
+  return buf;
+}
+
+async function fetchLogo(logoUrl: string): Promise<Buffer | null> {
+  try {
+    // Data-URI (den normale vej fra kortdesigneren): ingen netvaerkshentning.
+    if (logoUrl.startsWith("data:")) {
+      const res = await fetch(logoUrl);
+      if (res.ok) return Buffer.from(await res.arrayBuffer());
+    } else {
+      // Fjern-URL: SSRF-vaern. Afvis interne/private adresser og foelg ikke
+      // redirects, saa et logo aldrig kan bruges til at naa intern metadata.
+      const url = new URL(logoUrl);
+      if (
+        (url.protocol === "https:" || url.protocol === "http:") &&
+        url.hostname
+      ) {
+        const resolved = await lookup(url.hostname, { all: true });
+        if (resolved.some((a) => isPrivateAddress(a.address))) {
+          console.error("Logo blokeret (privat adresse):", url.hostname);
+        } else {
+          const res = await fetch(logoUrl, { redirect: "manual" });
+          if (res.ok) return Buffer.from(await res.arrayBuffer());
         }
       }
-    } catch {
-      // ingen brugbar logo -> vis kun butiksnavnet (ingen Stemplet-badge)
     }
+  } catch {
+    // ingen brugbar logo -> vis kun butiksnavnet (ingen Stemplet-badge)
   }
   return null;
+}
+
+// Wallet-ikonet er en statisk fil, der aldrig aendrer sig. Laes den een gang pr.
+// proces i stedet for ved hver pass-bygning.
+let iconBufCache: Buffer | null = null;
+async function loadIcon(): Promise<Buffer> {
+  if (!iconBufCache) {
+    iconBufCache = await readFile(
+      path.join(process.cwd(), "public", "icon-192.png"),
+    );
+  }
+  return iconBufCache;
 }
 
 /** Bygger et .pkpass (storeCard) for et kundekort. */
@@ -76,25 +109,26 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
 
-  const iconBuf = await readFile(
-    path.join(process.cwd(), "public", "icon-192.png"),
-  );
-  const logoBuf = await loadLogo(input.logoUrl);
+  // Ikon (cache), logo (netvaerk) og strip-gitteret (sharp-render) afhaenger ikke
+  // af hinanden, saa vi koerer dem samtidig i stedet for i raekke. Det tunge trin
+  // (strip) overlapper med logo-hentningen.
+  const [iconBuf, logoBuf, strip] = await Promise.all([
+    loadIcon(),
+    loadLogo(input.logoUrl),
+    buildStripImages({
+      stamps: input.stamps,
+      required: input.required,
+      stampIcon: input.stampIcon,
+      primaryColor: input.primaryColor,
+      textColor: input.textColor,
+    }),
+  ]);
 
   const bg = rgbString(input.primaryColor);
   const fg = rgbString(contrastText(input.primaryColor));
   // Dæmpet label-farve (tekstfarven trukket ~1/3 mod baggrunden).
   const labelCol = blendRgb(contrastText(input.primaryColor), input.primaryColor, 0.34);
   const rewardReady = input.stamps >= input.required;
-
-  // Stempel-gitteret som strip-billede, saa kortet viser de faktiske stempler.
-  const strip = await buildStripImages({
-    stamps: input.stamps,
-    required: input.required,
-    stampIcon: input.stampIcon,
-    primaryColor: input.primaryColor,
-    textColor: input.textColor,
-  });
 
   const images: Record<string, Buffer> = {
     "icon.png": iconBuf,
