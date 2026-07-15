@@ -131,6 +131,7 @@ export default async function IndstillingerPage({
       <div>
         <Panel>
           <LocationCard
+            initialAddress={business.address}
             initialLat={business.latitude}
             initialLng={business.longitude}
           />

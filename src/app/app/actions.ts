@@ -218,7 +218,7 @@ export async function setBusinessLocation(
   if (lat === null || lng === null) {
     await prisma.business.update({
       where: { id: business.id },
-      data: { latitude: null, longitude: null },
+      data: { address: null, latitude: null, longitude: null },
     });
     revalidatePath("/app/indstillinger");
     return { ok: true };
@@ -238,14 +238,74 @@ export async function setBusinessLocation(
   await prisma.business.update({
     where: { id: business.id },
     // Afrund til ~11 m praecision: rigeligt til en geofence, og vi gemmer ikke
-    // mere praecist end noedvendigt.
+    // mere praecist end noedvendigt. Placering fra GPS: ingen adresse.
     data: {
+      address: null,
       latitude: Math.round(lat * 1e6) / 1e6,
       longitude: Math.round(lng * 1e6) / 1e6,
     },
   });
   revalidatePath("/app/indstillinger");
   return { ok: true };
+}
+
+// Geokod en adresse til lat/lng via OpenStreetMap (Nominatim). Gratis, ingen
+// noegle. Adressen er fast query-param mod et fast host (ingen SSRF). Bruges kun
+// sjaeldent (butik saetter sin adresse), saa vi er godt inden for brugspolitikken.
+async function geocode(
+  address: string,
+): Promise<{ lat: number; lng: number; label: string } | null> {
+  try {
+    const url =
+      "https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=0&countrycodes=dk&q=" +
+      encodeURIComponent(address);
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Stemplet/1.0 (+https://stemplet.alius.dk)",
+        "Accept-Language": "da",
+      },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { lat?: string; lon?: string; display_name?: string }[];
+    const hit = Array.isArray(data) ? data[0] : null;
+    if (!hit?.lat || !hit?.lon) return null;
+    const lat = parseFloat(hit.lat);
+    const lng = parseFloat(hit.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng, label: hit.display_name ?? address };
+  } catch {
+    return null;
+  }
+}
+
+type GeoResult =
+  | { ok: true; lat: number; lng: number; label: string }
+  | { ok: false; error: string };
+
+/** Saet placeringen ud fra en INDTASTET adresse (man er ikke noedvendigvis paa stedet). */
+export async function setLocationFromAddress(address: string): Promise<GeoResult> {
+  const { business } = await requireBusiness();
+  const q = address.trim();
+  if (q.length < 4) {
+    return { ok: false, error: "Skriv butikkens adresse, fx gade, nummer og by." };
+  }
+  const geo = await geocode(q);
+  if (!geo) {
+    return {
+      ok: false,
+      error: "Kunne ikke finde adressen. Tjek stavningen, eller tilføj postnummer og by.",
+    };
+  }
+  await prisma.business.update({
+    where: { id: business.id },
+    data: {
+      address: q,
+      latitude: Math.round(geo.lat * 1e6) / 1e6,
+      longitude: Math.round(geo.lng * 1e6) / 1e6,
+    },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true, lat: geo.lat, lng: geo.lng, label: geo.label };
 }
 
 export async function createCampaign(formData: FormData): Promise<Result> {

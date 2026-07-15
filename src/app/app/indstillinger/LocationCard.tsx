@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { btnClass } from "@/components/ui";
-import { setBusinessLocation } from "../actions";
+import { setBusinessLocation, setLocationFromAddress } from "../actions";
 
 function PinIcon() {
   return (
@@ -22,25 +22,48 @@ function PinIcon() {
 }
 
 export function LocationCard({
+  initialAddress,
   initialLat,
   initialLng,
 }: {
+  initialAddress: string | null;
   initialLat: number | null;
   initialLng: number | null;
 }) {
+  const hasInitial = initialLat != null && initialLng != null;
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    initialLat != null && initialLng != null
-      ? { lat: initialLat, lng: initialLng }
-      : null,
+    hasInitial ? { lat: initialLat as number, lng: initialLng as number } : null,
   );
+  const [savedAddress, setSavedAddress] = useState<string | null>(
+    initialAddress,
+  );
+  const [address, setAddress] = useState(initialAddress ?? "");
   const [pending, start] = useTransition();
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function saveAddress() {
+    setError(null);
+    const q = address.trim();
+    if (q.length < 4) {
+      setError("Skriv butikkens adresse, fx gade, nummer og by.");
+      return;
+    }
+    start(async () => {
+      const res = await setLocationFromAddress(q);
+      if (res.ok) {
+        setCoords({ lat: res.lat, lng: res.lng });
+        setSavedAddress(q);
+      } else {
+        setError(res.error);
+      }
+    });
+  }
+
   function useMyLocation() {
     setError(null);
     if (!("geolocation" in navigator)) {
-      setError("Din browser understøtter ikke placering. Prøv en anden enhed.");
+      setError("Din browser understøtter ikke placering. Skriv adressen i stedet.");
       return;
     }
     setLocating(true);
@@ -51,16 +74,19 @@ export function LocationCard({
         const lng = pos.coords.longitude;
         start(async () => {
           const res = await setBusinessLocation(lat, lng);
-          if (res.ok) setCoords({ lat, lng });
-          else setError(res.error ?? "Kunne ikke gemme placeringen.");
+          if (res.ok) {
+            setCoords({ lat, lng });
+            setSavedAddress(null);
+            setAddress("");
+          } else setError(res.error ?? "Kunne ikke gemme placeringen.");
         });
       },
       (err) => {
         setLocating(false);
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Du afviste adgang til placering. Giv adgang i browseren og prøv igen."
-            : "Kunne ikke finde din placering. Prøv igen, gerne mens du står i butikken.",
+            ? "Du afviste adgang til placering. Skriv adressen i stedet."
+            : "Kunne ikke finde din placering. Skriv adressen i stedet.",
         );
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
@@ -71,8 +97,11 @@ export function LocationCard({
     setError(null);
     start(async () => {
       const res = await setBusinessLocation(null, null);
-      if (res.ok) setCoords(null);
-      else setError(res.error ?? "Kunne ikke rydde placeringen.");
+      if (res.ok) {
+        setCoords(null);
+        setSavedAddress(null);
+        setAddress("");
+      } else setError(res.error ?? "Kunne ikke rydde placeringen.");
     });
   }
 
@@ -85,20 +114,27 @@ export function LocationCard({
           Placering til låseskærm
         </h2>
         <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
-          Sæt butikkens placering, så kundens stempelkort dukker op på deres
+          Skriv butikkens adresse, så kundens stempelkort dukker op på deres
           låseskærm, når de er i nærheden. Din butik minder selv kunden om sig
-          selv, helt uden app. Stå i butikken og tryk på knappen.
+          selv, helt uden app. Du behøver ikke stå i butikken; det er adressen,
+          der tæller.
         </p>
       </div>
 
       {coords ? (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <span className="inline-flex items-center gap-2 rounded-full bg-moss/10 px-3.5 py-1.5 text-[0.8rem] font-[300] text-moss">
             <PinIcon /> Placering sat
           </span>
-          <span className="font-[200] text-[0.78rem] tabular-nums text-slate">
-            {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-          </span>
+          {savedAddress ? (
+            <span className="font-[300] text-[0.82rem] text-stone">
+              {savedAddress}
+            </span>
+          ) : (
+            <span className="font-[200] text-[0.78rem] tabular-nums text-slate">
+              {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            </span>
+          )}
         </div>
       ) : (
         <p className="font-[200] text-[0.82rem] text-slate">
@@ -106,15 +142,43 @@ export function LocationCard({
         </p>
       )}
 
+      {/* Primaer: indtast adresse */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              saveAddress();
+            }
+          }}
+          placeholder="Fx Nørregade 12, 8000 Aarhus"
+          autoComplete="street-address"
+          disabled={busy}
+          className="w-full max-w-sm rounded-lg border border-fog bg-white px-4 py-2.5 font-[300] text-[0.9rem] text-ink outline-none transition-colors focus:border-moss disabled:opacity-60"
+        />
+        <button
+          type="button"
+          onClick={saveAddress}
+          disabled={busy}
+          className={btnClass("primary", "md") + " shrink-0 gap-2"}
+        >
+          <PinIcon />
+          {coords ? "Opdater" : "Gem adresse"}
+        </button>
+      </div>
+
+      {/* Sekundaer: brug nuvaerende placering, eller ryd */}
       <div className="flex flex-wrap items-center gap-4">
         <button
           type="button"
           onClick={useMyLocation}
           disabled={busy}
-          className={btnClass("primary", "md") + " gap-2"}
+          className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink disabled:opacity-50"
         >
-          <PinIcon />
-          {coords ? "Opdater placering" : "Brug min nuværende placering"}
+          Eller brug min nuværende placering
         </button>
         {coords ? (
           <button
@@ -129,7 +193,9 @@ export function LocationCard({
       </div>
 
       {busy ? (
-        <p className="font-[300] text-[0.8rem] text-slate">Henter placering...</p>
+        <p className="font-[300] text-[0.8rem] text-slate">
+          {locating ? "Henter placering..." : "Slår adressen op..."}
+        </p>
       ) : null}
       {error ? (
         <p className="font-[300] text-[0.8rem] text-rust">{error}</p>

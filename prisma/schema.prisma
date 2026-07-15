@@ -46,7 +46,9 @@ model Business {
   selfScanEnabled Boolean @default(false)
   // Butikkens placering (valgfri). Saettes kortet paa Wallet-passet som en
   // "location", saa kortet dukker op paa kundens laaseskaerm, naar de er i
-  // naerheden. Native Apple Wallet, butikkens bedste paamindelse.
+  // naerheden. Native Apple Wallet, butikkens bedste paamindelse. Adressen
+  // indtastes (man er ikke noedvendigvis paa stedet) og geokodes til lat/lng.
+  address          String?
   latitude         Float?
   longitude        Float?
   termsAcceptedAt  DateTime? // accepterede vilkaar/privatliv/DPA ved oprettelse

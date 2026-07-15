@@ -22,7 +22,7 @@ export function LoginForm() {
           name="email"
           required
           autoComplete="email"
-          placeholder="dig@dinvirksomhed.dk"
+          inputMode="email"
           className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
         />
       </label>
