@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import type { StampMethod } from "@prisma/client";
 import { prisma } from "./prisma";
 import { trackStampAnomaly } from "./security";
@@ -209,11 +210,11 @@ export async function applyStamp(opts: {
       },
     });
 
-    const after = await tx.customerCard.findUnique({
+    const updated = await tx.customerCard.findUnique({
       where: { id: cc.id },
       select: { stamps: true },
     });
-    const newStamps = Math.min(after?.stamps ?? cc.stamps + increment, required);
+    const newStamps = Math.min(updated?.stamps ?? cc.stamps + increment, required);
     const rewardReady = newStamps >= required;
 
     await tx.auditLog.create({
@@ -251,21 +252,23 @@ export async function applyStamp(opts: {
     opts.ip ?? null,
     result.serial,
   );
-  void fireWebhook(
-    {
-      id: result.businessId,
-      webhookUrl: result.webhookUrl,
-      apiKey: result.apiKey,
-    },
-    result.justCompleted ? "reward.ready" : "stamp.created",
-    {
-      serial: result.serial,
-      stamps: result.stamps,
-      required: result.required,
-      rewardReady: result.rewardReady,
-    },
+  runAfterResponse(() =>
+    fireWebhook(
+      {
+        id: result.businessId,
+        webhookUrl: result.webhookUrl,
+        apiKey: result.apiKey,
+      },
+      result.justCompleted ? "reward.ready" : "stamp.created",
+      {
+        serial: result.serial,
+        stamps: result.stamps,
+        required: result.required,
+        rewardReady: result.rewardReady,
+      },
+    ),
   );
-  void pushWallet(opts.customerCardId);
+  pushWallet(opts.customerCardId);
 
   return {
     serial: result.serial,
@@ -342,7 +345,7 @@ export async function undoLastStamp(opts: {
     };
   });
 
-  void pushWallet(opts.customerCardId);
+  pushWallet(opts.customerCardId);
   return res;
 }
 
@@ -377,15 +380,15 @@ export async function redeemReward(opts: {
     }
 
     await tx.redemption.create({ data: { customerCardId: cc.id } });
-    const after = await tx.customerCard.findUnique({
+    const updated = await tx.customerCard.findUnique({
       where: { id: cc.id },
       select: { completedCount: true, stamps: true },
     });
-    const completedCount = after?.completedCount ?? cc.completedCount + 1;
+    const completedCount = updated?.completedCount ?? cc.completedCount + 1;
     // Rest efter indløsning: normalt 0, men et evt. kampagne-overskud (fx
     // dobbeltstempel paa sidste felt) baeres over, saa klienten faar sandheden
     // og ikke behoever et ekstra opslag.
-    const stampsAfter = after?.stamps ?? Math.max(0, cc.stamps - required);
+    const stampsAfter = updated?.stamps ?? Math.max(0, cc.stamps - required);
     await tx.auditLog.create({
       data: {
         businessId: cc.card.business.id,
@@ -405,12 +408,14 @@ export async function redeemReward(opts: {
     };
   });
 
-  void fireWebhook(
-    { id: res.businessId, webhookUrl: res.webhookUrl, apiKey: res.apiKey },
-    "reward.redeemed",
-    { serial: res.serial, completedCount: res.completedCount },
+  runAfterResponse(() =>
+    fireWebhook(
+      { id: res.businessId, webhookUrl: res.webhookUrl, apiKey: res.apiKey },
+      "reward.redeemed",
+      { serial: res.serial, completedCount: res.completedCount },
+    ),
   );
-  void pushWallet(opts.customerCardId);
+  pushWallet(opts.customerCardId);
   return {
     serial: res.serial,
     completedCount: res.completedCount,
@@ -453,13 +458,39 @@ async function flagIfAnomalous(
   }
 }
 
-/** Skub Wallet-opdatering (kun når flaget er slået til). Non-blocking. */
-async function pushWallet(customerCardId: string) {
-  if (!WALLET_ENABLED) return;
+/**
+ * Koer baggrundsarbejde EFTER svaret er sendt, men hold funktionen i live, til
+ * det er faerdigt.
+ *
+ * VIGTIGT: tidligere blev Wallet-push og webhooks kaldt "fire-and-forget"
+ * (void ...(...)), men paa Vercel fryses/afsluttes funktionen, saa snart svaret
+ * er sendt, saa det uafventede arbejde blev DRAEBT, foer det naaede frem.
+ * Resultat: stemplet laa i databasen, men kortet i kundens Wallet blev aldrig
+ * opdateret (og webhooks naaede ikke ud). next/server "after" udskyder arbejdet
+ * til efter svaret OG holder funktionen i live (Vercel waitUntil), saa det altid
+ * naar frem, uden at forsinke selve stemplingen.
+ */
+function runAfterResponse(task: () => Promise<unknown>) {
+  const run = async () => {
+    try {
+      await task();
+    } catch (err) {
+      console.error("Baggrundsopgave fejlede", err);
+    }
+  };
   try {
+    after(run);
+  } catch {
+    // Uden en request-kontekst (fx et script): koer den bare direkte.
+    void run();
+  }
+}
+
+/** Skub Wallet-opdatering (kun naar flaget er slaaet til). */
+function pushWallet(customerCardId: string) {
+  if (!WALLET_ENABLED) return;
+  runAfterResponse(async () => {
     const { pushWalletUpdate } = await import("./wallet/apns");
     await pushWalletUpdate(customerCardId);
-  } catch (err) {
-    console.error("Wallet-push fejlede", err);
-  }
+  });
 }
