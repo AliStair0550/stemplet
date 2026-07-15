@@ -13,18 +13,20 @@ import {
 import { slugify } from "@/lib/utils";
 import { hashPin } from "@/lib/security";
 import { isBusinessCategory } from "@/lib/categories";
+import { geocodeAddress, roundCoord } from "@/lib/geocode";
 import { APP_URL } from "@/lib/env";
 import type { CardDesign } from "@/components/CardDesigner";
 
 export type CreateResult =
   | { ok: true; slug: string; cardUrl: string; qrDataUrl: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; field?: "address" };
 
 export async function createBusinessAction(input: {
   name: string;
   email: string;
   pin: string;
   category?: string;
+  address?: string;
   design: CardDesign;
   acceptedTerms: boolean;
 }): Promise<CreateResult> {
@@ -75,6 +77,30 @@ export async function createBusinessAction(input: {
 
   const staffPin = await hashPin(pinParsed.data);
 
+  // Valgfri placering: er der indtastet en adresse, geokoder vi den nu, saa kortet
+  // dukker op paa kundernes laaseskaerm fra dag et og bliver ved, indtil butikken
+  // selv slaar det fra. Fejler opslaget, siger vi det klart, saa de kan rette
+  // adressen eller lade feltet staa tomt.
+  let location: { address: string; latitude: number; longitude: number } | null =
+    null;
+  const addr = input.address?.trim();
+  if (addr && addr.length >= 4) {
+    const geo = await geocodeAddress(addr);
+    if (!geo) {
+      return {
+        ok: false,
+        field: "address",
+        error:
+          "Kunne ikke finde adressen til placeringen. Ret den, eller lad feltet stå tomt og tilføj den senere i indstillinger.",
+      };
+    }
+    location = {
+      address: addr,
+      latitude: roundCoord(geo.lat),
+      longitude: roundCoord(geo.lng),
+    };
+  }
+
   try {
     await prisma.business.create({
       data: {
@@ -88,6 +114,9 @@ export async function createBusinessAction(input: {
         // Standard: velkomststempel FRA, saa flowet altid er 1. kort hentes,
         // 2. stempler gives ved kassen. Kan slaas til i indstillinger.
         welcomeStampEnabled: false,
+        address: location?.address ?? null,
+        latitude: location?.latitude ?? null,
+        longitude: location?.longitude ?? null,
         category:
           input.category && isBusinessCategory(input.category)
             ? input.category

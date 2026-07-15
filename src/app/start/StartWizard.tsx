@@ -8,12 +8,31 @@ import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 const STEPS = ["Din butik", "Design kortet", "Print og gå i gang"];
 
+function PinIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4 text-moss"
+      aria-hidden
+    >
+      <path d="M12 21s-6-5.686-6-10a6 6 0 1 1 12 0c0 4.314-6 10-6 10z" />
+      <circle cx="12" cy="11" r="2" />
+    </svg>
+  );
+}
+
 export function StartWizard() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
   const [category, setCategory] = useState("");
+  const [address, setAddress] = useState("");
   const [design, setDesign] = useState<CardDesign>(DEFAULT_DESIGN);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,12 +83,14 @@ export function StartWizard() {
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createBusinessAction({ name, email, pin, category, design, acceptedTerms });
+      const res = await createBusinessAction({ name, email, pin, category, address, design, acceptedTerms });
       if (res.ok) {
         setCreated(res);
         setStep(2);
       } else {
         setError(res.error);
+        // Adressefeltet ligger paa trin 0: hop tilbage, saa fejlen giver mening.
+        if (res.field === "address") setStep(0);
       }
     });
   }
@@ -103,7 +124,7 @@ export function StartWizard() {
       </ol>
 
       {step === 0 ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 animate-step">
           <h2 className="font-[300] text-[1.5rem] text-ink">Din butik</h2>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -124,7 +145,8 @@ export function StartWizard() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="dig@dinvirksomhed.dk"
+              autoComplete="email"
+              inputMode="email"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
             />
           </label>
@@ -161,11 +183,33 @@ export function StartWizard() {
               ))}
             </select>
           </label>
+
+          {/* Valgfri: placering til laaseskaerm allerede fra start */}
+          <div className="flex flex-col gap-1.5 rounded-lg border border-fog bg-sand/40 p-4">
+            <div className="flex items-center gap-2">
+              <PinIcon />
+              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                Placering til låseskærm (valgfri)
+              </span>
+            </div>
+            <p className="font-[200] text-[0.8rem] leading-relaxed text-stone">
+              Skriv butikkens adresse, så dukker kundens stempelkort op på deres
+              låseskærm, når de er i nærheden. En gratis påmindelse, helt uden
+              app. Så kører det, indtil du selv slår det fra.
+            </p>
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Fx Nørregade 12, 8000 Aarhus"
+              autoComplete="street-address"
+              className="mt-1 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+            />
+          </div>
         </div>
       ) : null}
 
       {step === 1 ? (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 animate-step">
           <h2 className="font-[300] text-[1.5rem] text-ink">Design kortet</h2>
           <CardDesigner
             value={design}
@@ -219,7 +263,7 @@ export function StartWizard() {
       ) : null}
 
       {step === 2 && created ? (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 animate-step">
           <div className="text-center">
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
               Du er klar
