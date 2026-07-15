@@ -1,11 +1,23 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCardToken, setCardToken } from "@/lib/cookies";
 import { loadCardByToken } from "@/lib/stamp";
 import { generateSerial, generateAuthToken } from "@/lib/ids";
 import { canCreateCustomer } from "@/lib/plans";
+import { WALLET_ENABLED } from "@/lib/env";
+
+// Hele pointen er, at kortet ryger i Apple Wallet. Paa iPhone/iPad sender vi
+// derfor kunden DIREKTE til .pkpass'et, saa Wallet aabner med det samme (ikke en
+// mellemside med QR). Paa Android/desktop, hvor Wallet ikke findes, viser vi
+// webkortet med QR + knap i stedet.
+async function claimDestination(serial: string): Promise<string> {
+  const ua = (await headers()).get("user-agent") ?? "";
+  const ios = /iPhone|iPad|iPod/i.test(ua);
+  return ios && WALLET_ENABLED ? `/api/wallet/pass/${serial}` : `/kort/${serial}`;
+}
 
 /** Opretter (eller genfinder) kundens kort og sætter device-cookie. */
 export async function claimCard(slug: string) {
@@ -25,7 +37,7 @@ export async function claimCard(slug: string) {
   if (existingToken) {
     const cc = await loadCardByToken(existingToken);
     if (cc && cc.cardId === card.id) {
-      redirect(`/kort/${cc.serial}`);
+      redirect(await claimDestination(cc.serial));
     }
   }
 
@@ -49,5 +61,5 @@ export async function claimCard(slug: string) {
     },
   });
   await setCardToken(business.id, cc.authToken);
-  redirect(`/kort/${cc.serial}`);
+  redirect(await claimDestination(cc.serial));
 }

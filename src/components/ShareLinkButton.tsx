@@ -39,12 +39,13 @@ export function ShareLinkButton({
   const [copied, setCopied] = useState(false);
 
   async function share() {
-    const text = `Hent dit digitale stempelkort hos ${businessName}. Ingen app, ingen tilmelding.`;
     try {
       if (navigator.share) {
+        // Kun link (og en kort titel). Ingen ekstra brOdtekst: previewet af selve
+        // stempelkortet (OG-billedet) fortaeller historien, saa beskeden bliver
+        // ren og klikbar.
         await navigator.share({
           title: `Stempelkort hos ${businessName}`,
-          text,
           url,
         });
       } else {

@@ -125,7 +125,7 @@ export default async function ClaimPage({
           <ShareLinkButton
             businessName={business.name}
             url={`${APP_URL}/k/${slug}`}
-            label="Del kortet med en ven"
+            label="Del kortet"
           />
         </div>
 
