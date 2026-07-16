@@ -4,18 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // Selvkoerende "saadan virker det": tre roller som faner (Kunde, Medarbejder,
-// Ejer), hver med trin der spiller automatisk, mens en telefon-mockup viser hvad
-// der sker paa skaermen. Pauser ved hover, respekterer reduceret bevaegelse, og
-// stabler telefonen over trinene paa smalle skaerme.
+// Ejer), hver med trin der spiller automatisk, mens en telefon-mockup viser
+// skaermen. Pauser ved hover, respekterer reduceret bevaegelse, stabler telefonen
+// over trinene paa smalle skaerme. Passet er tegnet praecis som vores rigtige
+// Apple Wallet-pass: butikkens farve, guld-stempler, gylden "naeste"-ring,
+// stiplet gitter og gaveikon paa plads 10.
 
-// Passet holdes i "rigtig Wallet"-udtryk: moerkeblaat med guld-stempler, stiplet
-// gitter og gaveikon paa plads 10. Resten er sitets brand (blaek + moss).
-const NAVY = "#0D1F3C";
 const GOLD = "#C9A24B";
-const ON_NAVY_MUTED = "#8FA0BC";
+const DASH = "rgba(255,255,255,0.30)";
+const MUTED = "rgba(255,255,255,0.55)";
+const DEMO_SERIAL = "K7M4QXP2R9";
 
 type Role = "kunde" | "medarbejder" | "ejer";
-type Step = { t: string; u: string; e?: number; ms: number };
+type Step = { t: string; u: string; ms: number };
 
 const LABEL: Record<Role, string> = {
   kunde: "Kunde",
@@ -25,7 +26,7 @@ const LABEL: Record<Role, string> = {
 
 const ROLES: Record<Role, Step[]> = {
   kunde: [
-    { t: "Scan butikkens QR", u: "Med kameraet. Ingen app skal hentes.", ms: 1300 },
+    { t: "Scan butikkens QR", u: "Med kameraet. Ingen app skal hentes.", ms: 850 },
     { t: "Tryk Hent mit stempelkort", u: "Kortet lægger sig i Apple Wallet.", ms: 2200 },
     {
       t: "Vis kortet, se stemplerne vokse",
@@ -40,13 +41,20 @@ const ROLES: Record<Role, Step[]> = {
     { t: "Giv belønning ved fuldt kort", u: "Kortet nulstilles automatisk.", ms: 2800 },
   ],
   ejer: [
-    { t: "Print QR til disken", u: "Færdige materialer følger med.", e: 0, ms: 2100 },
-    { t: "Del linket online", u: "Instagram, hjemmeside, nyhedsbrev.", e: 1, ms: 2100 },
-    { t: "Giv personalet adgang", u: "Stempelsiden er login-beskyttet.", e: 2, ms: 2100 },
-    { t: "Så kører alt af sig selv", u: "Ingen drift. Ingen vedligehold.", e: 3, ms: 2600 },
+    { t: "Print QR til disken", u: "Færdige materialer følger med.", ms: 2100 },
+    { t: "Del linket online", u: "Instagram, hjemmeside, nyhedsbrev.", ms: 2100 },
+    { t: "Giv personalet adgang", u: "Stempelsiden er login-beskyttet.", ms: 2100 },
+    { t: "Så kører alt af sig selv", u: "Ingen drift. Ingen vedligehold.", ms: 2600 },
   ],
 };
 const ORDER: Role[] = ["kunde", "medarbejder", "ejer"];
+
+type PassProps = {
+  businessName: string;
+  reward: string;
+  passColor: string;
+  qrImage: string;
+};
 
 // ── Ikoner ───────────────────────────────────────────────────────────────
 function GiftIcon({ className }: { className?: string }) {
@@ -90,44 +98,56 @@ function LockIcon({ className }: { className?: string }) {
   );
 }
 
-// ── Wallet-pass (moerkeblaat, guld-stempler, gaveikon paa plads 10) ────────
-function StampGrid({ filled, pop }: { filled: number; pop?: boolean }) {
+// ── Wallet-pass (praecis som det rigtige) ──────────────────────────────────
+function StampGrid({ filled, color }: { filled: number; color: string }) {
   const full = filled >= 10;
   return (
-    <div className="grid grid-cols-5 gap-[7px]">
+    <div className="grid grid-cols-5 gap-2">
       {Array.from({ length: 10 }).map((_, i) => {
         const isGift = i === 9;
         const isFilled = i < filled;
+        const isNext = !isGift && i === filled;
         if (isGift) {
           return (
             <span
               key={i}
               className={cn(
-                "flex aspect-square items-center justify-center rounded-full border-2",
-                full ? "border-solid animate-demo-jubel" : "border-dashed",
+                "flex aspect-square items-center justify-center rounded-full",
+                full && "animate-demo-jubel",
               )}
               style={{
-                borderColor: GOLD,
+                border: `2px ${full ? "solid" : "dashed"} ${GOLD}`,
                 background: full ? GOLD : "transparent",
-                color: full ? NAVY : GOLD,
+                color: full ? color : GOLD,
               }}
             >
-              <GiftIcon className="h-3 w-3" />
+              <GiftIcon className="h-1/2 w-1/2" />
             </span>
+          );
+        }
+        if (isFilled) {
+          return (
+            <span
+              key={i}
+              className="aspect-square rounded-full animate-stamp-pop"
+              style={{ background: GOLD }}
+            />
+          );
+        }
+        if (isNext) {
+          return (
+            <span
+              key={i}
+              className="aspect-square rounded-full"
+              style={{ border: `2.5px solid ${GOLD}` }}
+            />
           );
         }
         return (
           <span
             key={i}
-            className={cn(
-              "aspect-square rounded-full border-2",
-              isFilled ? "border-solid" : "border-dashed",
-              isFilled && pop && "animate-stamp-pop",
-            )}
-            style={{
-              borderColor: isFilled ? GOLD : "rgba(143,160,188,0.65)",
-              background: isFilled ? GOLD : "transparent",
-            }}
+            className="aspect-square rounded-full"
+            style={{ border: `2px dashed ${DASH}` }}
           />
         );
       })}
@@ -138,81 +158,62 @@ function StampGrid({ filled, pop }: { filled: number; pop?: boolean }) {
 function Pass({
   filled,
   showQr,
-  pop,
   slideIn,
+  pass,
 }: {
   filled: number;
   showQr?: boolean;
-  pop?: boolean;
   slideIn?: boolean;
+  pass: PassProps;
 }) {
   const shown = Math.min(filled, 10);
   return (
     <div
-      className={cn("rounded-2xl px-4 pb-4 pt-3.5", slideIn && "animate-demo-pass-in")}
-      style={{ background: NAVY }}
+      className={cn("rounded-[18px] px-4 pb-4 pt-3.5", slideIn && "animate-demo-pass-in")}
+      style={{ background: pass.passColor }}
     >
-      <div className="mb-3 flex items-baseline justify-between">
-        <span className="text-[11px] font-[600] tracking-[0.05em]" style={{ color: ON_NAVY_MUTED }}>
-          KAFFEBAREN
+      <div className="flex items-start justify-between">
+        <span
+          className="text-[12px] font-[600] uppercase tracking-[0.04em]"
+          style={{ color: MUTED }}
+        >
+          {pass.businessName}
         </span>
-        <span className="text-right text-[13px] font-[600] leading-none text-white">
-          <span className="mb-0.5 block text-[7px] font-[700] tracking-[0.14em]" style={{ color: ON_NAVY_MUTED }}>
+        <span className="text-right leading-none">
+          <span className="mb-1 block text-[7.5px] font-[700] tracking-[0.16em]" style={{ color: MUTED }}>
             STEMPLER
           </span>
-          {shown}/10
+          <span className="text-[15px] font-[600] text-white">{shown}/10</span>
         </span>
       </div>
-      <StampGrid filled={filled} pop={pop} />
-      <div className="mt-3 flex justify-between text-[10px]" style={{ color: "#DCE4F0" }}>
-        <span>10. kop er gratis</span>
+
+      <div className="mt-4">
+        <StampGrid filled={filled} color={pass.passColor} />
+      </div>
+
+      <div className="mt-4 flex items-end justify-between text-[11px] text-white/85">
+        <span>{pass.reward}</span>
         <span>{10 - shown} tilbage</span>
       </div>
+
       {showQr ? (
-        <div
-          className="mx-auto mt-3 h-[58px] w-[58px] rounded-md bg-white"
-          style={{
-            backgroundImage:
-              "conic-gradient(#0B0B0C 0 25%, #fff 0 50%, #0B0B0C 0 75%, #fff 0)",
-            backgroundSize: "14px 14px",
-            backgroundPosition: "center",
-            backgroundClip: "content-box",
-            padding: "5px",
-          }}
-        />
+        <div className="mt-4 flex flex-col items-center">
+          <div className="rounded-lg bg-white p-1.5">
+            <div
+              className="h-[60px] w-[60px] bg-contain bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${pass.qrImage})` }}
+            />
+          </div>
+          <span className="mt-1 font-mono text-[8px] tracking-[0.12em] text-white/55">
+            {DEMO_SERIAL}
+          </span>
+        </div>
       ) : null}
     </div>
   );
 }
 
 // ── Telefon-skaerme pr. rolle/trin ─────────────────────────────────────────
-function FakeQr({ size }: { size: number }) {
-  const f = Math.round(size * 0.24);
-  const corner = (extra: string) => (
-    <span
-      className={cn("absolute rounded-[3px] border-[4px] border-[#0B0B0C] bg-white", extra)}
-      style={{ width: f, height: f }}
-    />
-  );
-  return (
-    <div
-      className="relative rounded-md"
-      style={{
-        width: size,
-        height: size,
-        background: "#fff",
-        backgroundImage:
-          "conic-gradient(#0B0B0C 0 25%, #fff 0 50%, #0B0B0C 0 75%, #fff 0)",
-        backgroundSize: `${Math.round(size / 4.5)}px ${Math.round(size / 4.5)}px`,
-      }}
-    >
-      {corner("left-1.5 top-1.5")}
-      {corner("right-1.5 top-1.5")}
-      {corner("bottom-1.5 left-1.5")}
-    </div>
-  );
-}
-
 function StaffHead({ status }: { status: string }) {
   return (
     <div className="mb-3 flex items-center justify-between border-b border-fog pb-2.5 text-[11px] font-[700] text-ink">
@@ -224,22 +225,35 @@ function StaffHead({ status }: { status: string }) {
 
 const SCREEN = "flex h-full flex-col px-4 pb-4 pt-14";
 
-function Screen({ role, step, grow }: { role: Role; step: number; grow: number }) {
+function Screen({
+  role,
+  step,
+  grow,
+  pass,
+}: {
+  role: Role;
+  step: number;
+  grow: number;
+  pass: PassProps;
+}) {
   if (role === "kunde") {
     if (step === 0) {
       return (
-        <div className={cn(SCREEN, "bg-[#1B1D22]")}>
+        <div className={cn(SCREEN, "bg-[#0E0F12]")}>
           <div
-            className="relative m-auto flex h-[148px] w-[148px] items-center justify-center rounded-2xl border-2"
-            style={{ borderColor: `${GOLD}55` }}
+            className="relative m-auto flex h-[150px] w-[150px] items-center justify-center rounded-2xl"
+            style={{ boxShadow: `inset 0 0 0 2px ${GOLD}55` }}
           >
-            <FakeQr size={104} />
+            <div
+              className="h-[104px] w-[104px] rounded bg-white bg-contain bg-center bg-no-repeat p-1"
+              style={{ backgroundImage: `url(${pass.qrImage})` }}
+            />
             <span
-              className="absolute left-3 right-3 top-3 h-0.5 animate-demo-scan"
-              style={{ background: GOLD, boxShadow: `0 0 12px ${GOLD}` }}
+              className="absolute left-3 right-3 top-4 h-0.5 animate-demo-scan"
+              style={{ background: GOLD, boxShadow: `0 0 10px ${GOLD}` }}
             />
           </div>
-          <p className="pb-1 text-center text-[11px]" style={{ color: "#9BA3B0" }}>
+          <p className="pb-1 text-center text-[11px] text-white/55">
             Peg kameraet på butikkens QR
           </p>
         </div>
@@ -248,12 +262,17 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
     if (step === 1) {
       return (
         <div className={cn(SCREEN, "bg-parchment")}>
-          <div className="m-auto w-full rounded-2xl bg-white p-5 text-center shadow-[0_2px_10px_rgba(26,26,26,0.08)]">
-            <div className="text-[15px] font-[700] text-ink">Kaffebaren</div>
-            <p className="mt-1 text-[12px] leading-snug text-stone">
-              10 stempler. 10. kop er gratis.
+          <div className="m-auto w-full text-center">
+            <div className="text-[13px] font-[400] leading-tight text-ink">
+              Dit stempelkort hos {pass.businessName}
+            </div>
+            <p className="mx-auto mt-1 max-w-[85%] text-[9.5px] leading-snug text-stone">
+              {pass.reward}. Ingen app. Ingen tilmelding.
             </p>
-            <span className="mt-4 inline-block rounded-[10px] bg-ink px-4 py-3 text-[13px] font-[600] text-parchment animate-demo-press">
+            <div className="mt-3">
+              <Pass filled={0} pass={pass} />
+            </div>
+            <span className="mt-3 inline-block w-full rounded-[10px] bg-ink px-4 py-2.5 text-[11px] font-[500] uppercase tracking-[0.08em] text-parchment animate-demo-press">
               Hent mit stempelkort
             </span>
           </div>
@@ -262,7 +281,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
     }
     return (
       <div className={cn(SCREEN, "justify-end bg-black px-3")}>
-        <Pass filled={grow} showQr slideIn pop />
+        <Pass filled={grow} showQr slideIn pass={pass} />
       </div>
     );
   }
@@ -286,7 +305,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
         <div className={cn(SCREEN, "bg-parchment")}>
           <StaffHead status="Kort fundet" />
           <div className="my-auto">
-            <Pass filled={1} pop />
+            <Pass filled={1} pass={pass} />
             <p className="mt-3 text-center text-[12px] font-[700] text-moss">
               1 stempel givet
             </p>
@@ -299,7 +318,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
         <div className={cn(SCREEN, "bg-parchment")}>
           <StaffHead status="Vælg antal" />
           <div className="my-auto">
-            <Pass filled={4} />
+            <Pass filled={4} pass={pass} />
             <div className="mt-3 flex justify-center gap-2">
               {[1, 2, 3].map((n) => (
                 <span
@@ -326,7 +345,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
       <div className={cn(SCREEN, "bg-parchment")}>
         <StaffHead status="Fuldt kort" />
         <div className="my-auto">
-          <Pass filled={10} />
+          <Pass filled={10} pass={pass} />
           <p className="mt-3 text-center text-[12px] font-[700] text-moss">
             Belønning givet. Kortet nulstilles
           </p>
@@ -336,7 +355,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
   }
 
   // ejer
-  const level = ROLES.ejer[step].e ?? -1;
+  const level = step;
   const points = [
     { icon: <PrintIcon className="h-4 w-4 text-parchment" />, t: "Print QR til disken" },
     { icon: <ShareIcon className="h-4 w-4 text-parchment" />, t: "Del linket online" },
@@ -372,7 +391,7 @@ function Screen({ role, step, grow }: { role: Role; step: number; grow: number }
 }
 
 // ── Hovedkomponent ─────────────────────────────────────────────────────────
-export function HowItWorksDemo() {
+export function HowItWorksDemo(pass: PassProps) {
   const [role, setRole] = useState<Role>("kunde");
   const [step, setStep] = useState(0);
   const [grow, setGrow] = useState(0);
@@ -380,7 +399,7 @@ export function HowItWorksDemo() {
   const [hovered, setHovered] = useState(false);
   const reduced = useRef(false);
 
-  // Reduceret bevaegelse: spil ikke automatisk (brugeren styrer selv via faner).
+  // Reduceret bevaegelse: spil ikke automatisk (brugeren styrer selv).
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       reduced.current = true;
@@ -513,24 +532,10 @@ export function HowItWorksDemo() {
           <div className="relative h-[468px] w-[230px] overflow-hidden rounded-[38px] border-[6px] border-[#2E2E32] bg-[#101012] shadow-[0_24px_48px_-22px_rgba(26,26,26,0.4)]">
             <span className="absolute left-1/2 top-3 z-30 h-[19px] w-[68px] -translate-x-1/2 rounded-full bg-black" />
             <div key={viewKey} className="absolute inset-0 animate-demo-screen">
-              <Screen role={role} step={step} grow={grow} />
+              <Screen role={role} step={step} grow={grow} pass={pass} />
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Diskret afspil/pause */}
-      <div className="mt-5 flex items-center gap-3 lg:justify-center">
-        <button
-          type="button"
-          onClick={() => setPlaying((p) => !p)}
-          className="rounded-lg border border-fog bg-white px-3.5 py-1.5 text-[0.72rem] font-[500] uppercase tracking-[0.08em] text-ink transition-colors hover:border-clay focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/50"
-        >
-          {playing ? "Pause" : "Afspil"}
-        </button>
-        <span className="text-[0.72rem] font-[300] text-slate">
-          {playing ? "Afspiller automatisk" : "På pause"}
-        </span>
       </div>
     </div>
   );

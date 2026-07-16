@@ -25,6 +25,7 @@ export default async function TryItYourself() {
   } catch {
     return null;
   }
+  const card = biz.cards[0];
 
   return (
     <Section id="demo" className="scroll-mt-24 overflow-hidden bg-moss/[0.04]">
@@ -78,9 +79,14 @@ export default async function TryItYourself() {
           </div>
         </div>
 
-        {/* Hoejre: animeret "saadan virker det" */}
+        {/* Hoejre: animeret "saadan virker det" med butikkens rigtige data */}
         <div className="order-2 w-full">
-          <HowItWorksDemo />
+          <HowItWorksDemo
+            businessName={biz.name}
+            reward={card.rewardText}
+            passColor={biz.primaryColor}
+            qrImage={qr}
+          />
         </div>
       </div>
     </Section>
