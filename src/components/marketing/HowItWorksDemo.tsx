@@ -524,12 +524,11 @@ export function HowItWorksDemo(pass: PassProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Faner med progress */}
-      <div className="grid grid-cols-3 gap-2.5" role="tablist" aria-label="Roller">
+      {/* Faner: enkle labels med en tynd moss-streg, der viser fremdrift */}
+      <div className="flex gap-7 border-b border-fog" role="tablist" aria-label="Roller">
         {ORDER.map((r) => {
           const active = r === role;
-          const done = ORDER.indexOf(r) < ORDER.indexOf(role);
-          const pct = active ? ((step + 1) / ROLES[r].length) * 100 : done ? 100 : 0;
+          const pct = active ? ((step + 1) / ROLES[r].length) * 100 : 0;
           return (
             <button
               key={r}
@@ -541,24 +540,15 @@ export function HowItWorksDemo(pass: PassProps) {
                 setStep(0);
               }}
               className={cn(
-                "rounded-xl border px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/50",
-                active ? "border-ink bg-white" : "border-fog hover:border-clay",
+                "relative -mb-px pb-2.5 text-[0.72rem] font-[600] uppercase tracking-[0.1em] transition-colors focus-visible:text-ink focus-visible:outline-none",
+                active ? "text-ink" : "text-slate hover:text-stone",
               )}
             >
+              {LABEL[r]}
               <span
-                className={cn(
-                  "mb-2 block text-[11px] font-[700] uppercase tracking-[0.06em] sm:text-[12px]",
-                  active ? "text-ink" : "text-slate",
-                )}
-              >
-                {LABEL[r]}
-              </span>
-              <span className="block h-[3px] overflow-hidden rounded-full bg-fog">
-                <span
-                  className="block h-full rounded-full bg-moss transition-[width] duration-500 ease-linear"
-                  style={{ width: `${pct}%` }}
-                />
-              </span>
+                className="absolute bottom-0 left-0 h-[2px] rounded-full bg-moss transition-all duration-500 ease-linear"
+                style={{ width: active ? `${pct}%` : "0%" }}
+              />
             </button>
           );
         })}
