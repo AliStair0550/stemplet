@@ -1,16 +1,17 @@
 import Image from "next/image";
 import QRCode from "qrcode";
 import { Section, Eyebrow, btnClass, CtaGlow, WalletIcon, CTA_EMPHASIS } from "@/components/ui";
-import { StampCard } from "@/components/StampCard";
 import { loadDemoBusiness } from "@/lib/demo";
 import { APP_URL } from "@/lib/env";
-import type { StampIconKey } from "@/lib/brand";
+import { HowItWorksDemo } from "./HowItWorksDemo";
 
-// "Prøv det selv": besoegeren laegger et RIGTIGT demo-kort i sin egen Wallet.
-// Desktop viser QR (scannes med telefonen), mobil viser knapperne direkte.
+// "Prøv det selv": venstre side lader besoegeren laegge et RIGTIGT demo-kort i sin
+// egen Wallet (QR paa desktop, knap paa mobil). Hoejre side viser en selvkoerende
+// "saadan virker det" med tre roller (kunde, medarbejder, ejer).
 export default async function TryItYourself() {
-  // Robust: fejler DB'en (fx ved build), springes sektionen bare over i stedet
-  // for at vaelte forsiden.
+  // Robust: fejler DB'en (fx ved build), eller er demoen ikke sat op, springes
+  // sektionen bare over i stedet for at vaelte forsiden. (Demoen skal findes,
+  // ellers virker /prøv ikke.)
   let biz: Awaited<ReturnType<typeof loadDemoBusiness>> = null;
   let qr = "";
   try {
@@ -24,7 +25,6 @@ export default async function TryItYourself() {
   } catch {
     return null;
   }
-  const card = biz.cards[0];
 
   return (
     <Section id="demo" className="scroll-mt-24 overflow-hidden bg-moss/[0.04]">
@@ -39,34 +39,9 @@ export default async function TryItYourself() {
         </p>
       </div>
 
-      <div className="mt-14 grid items-center gap-12 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
-        {/* Det rigtige demo-kort: levende, svaevende, med glOEd som i hero */}
-        <div className="order-1 flex justify-center md:order-2">
-          <div className="relative w-full max-w-sm">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -inset-8 -z-10 rounded-[2.6rem] opacity-25 blur-[80px]"
-              style={{ background: biz.primaryColor }}
-            />
-            <div className="animate-float">
-              <StampCard
-                businessName={biz.name}
-                logoUrl={biz.logoUrl}
-                primaryColor={biz.primaryColor}
-                textColor={biz.textColor}
-                stampIcon={card.stampIcon as StampIconKey}
-                stamps={4}
-                required={card.stampsRequired}
-                rewardText={card.rewardText}
-                shine
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Handling: desktop = QR (mindre end kortet), mobil = knapper */}
-        <div className="order-2 flex flex-col items-center gap-6 md:order-1">
-          {/* Desktop: QR til at scanne med telefonen */}
+      <div className="mt-14 grid items-center gap-12 md:grid-cols-[0.7fr_1.3fr] md:gap-14">
+        {/* Venstre: proev det selv (desktop = QR, mobil = knap) */}
+        <div className="order-1 flex flex-col items-center gap-6">
           <div className="hidden flex-col items-center gap-4 md:flex">
             <div className="rounded-[1.25rem] bg-white p-4 shadow-card ring-1 ring-black/5">
               <Image
@@ -75,7 +50,7 @@ export default async function TryItYourself() {
                 height={180}
                 alt="Scan for at prøve stempelkortet i din Wallet"
                 unoptimized
-                className="h-[min(34vw,160px)] w-[min(34vw,160px)]"
+                className="h-[min(30vw,150px)] w-[min(30vw,150px)]"
               />
             </div>
             <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
@@ -84,7 +59,6 @@ export default async function TryItYourself() {
             </p>
           </div>
 
-          {/* Mobil: ét tryk direkte i Wallet, plus Android-fallback */}
           <div className="flex w-full max-w-xs flex-col items-center gap-3 md:hidden">
             <CtaGlow className="w-full">
               <a
@@ -102,6 +76,11 @@ export default async function TryItYourself() {
               Bruger du Android? Åbn webkortet
             </a>
           </div>
+        </div>
+
+        {/* Hoejre: animeret "saadan virker det" */}
+        <div className="order-2 w-full">
+          <HowItWorksDemo />
         </div>
       </div>
     </Section>
