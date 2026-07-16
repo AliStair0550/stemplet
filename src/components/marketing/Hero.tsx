@@ -9,10 +9,27 @@ export default function Hero() {
         className="pointer-events-none absolute right-[-8%] top-16 h-[460px] w-[460px] rounded-full bg-moss/10 blur-[120px]"
       />
       <Container className="relative">
-        <div className="grid items-center gap-14 md:grid-cols-2 md:gap-12">
-          <div className="min-w-0 animate-fade-up">
+        {/* Mobil: eyebrow oeverst, saa selve stempelkortet (lidt mindre), saa
+            overskrift + CTA'er. Saa moedes man af kortet med det samme. Desktop:
+            to kolonner (tekst til venstre, kort til hoejre) praecis som foer. */}
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:items-center md:gap-12">
+          {/* Eyebrow, kun mobil (oeverst) */}
+          <div className="animate-fade-up md:hidden">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
-            <h1 className="mt-6 font-[300] text-[2.5rem] leading-[1.2] tracking-[0.01em] text-ink md:text-[3.1rem]">
+          </div>
+
+          {/* Stempelkortet: mobil nr. 2, desktop hoejre kolonne */}
+          <div className="flex animate-fade-up justify-center delay-100 md:order-2 md:mt-20 md:justify-end">
+            <HeroStampCard />
+          </div>
+
+          {/* Overskrift + tekst + CTA'er: mobil nr. 3, desktop venstre kolonne.
+              Eyebrow gentages her, men vises kun paa desktop. */}
+          <div className="min-w-0 animate-fade-up delay-200 md:order-1">
+            <div className="hidden md:block">
+              <Eyebrow>Det digitale stempelkort</Eyebrow>
+            </div>
+            <h1 className="font-[300] text-[2.5rem] leading-[1.2] tracking-[0.01em] text-ink md:mt-6 md:text-[3.1rem]">
               Stempelkortet, der skaber{" "}
               <span className="inline-block whitespace-nowrap pb-[0.08em] font-fraunces font-[400] italic leading-[1.1]">
                 flere gensyn.
@@ -31,10 +48,6 @@ export default function Hero() {
                 Se hvordan det virker
               </ButtonLink>
             </div>
-          </div>
-
-          <div className="flex min-w-0 animate-fade-up justify-center delay-200 md:mt-20 md:justify-end">
-            <HeroStampCard />
           </div>
         </div>
       </Container>

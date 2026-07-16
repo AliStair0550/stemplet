@@ -6,7 +6,7 @@ import { StampCard } from "@/components/StampCard";
 // for hastighed, saa foerste load paa mobil er markant lettere.
 export default function HeroStampCard() {
   return (
-    <div className="w-full max-w-[28rem] animate-float">
+    <div className="w-full max-w-[18rem] animate-float sm:max-w-[22rem] md:max-w-[28rem]">
       <div className="rounded-[1.4rem] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5">
         <StampCard
           businessName="Copenhagen Coffee Lab"
