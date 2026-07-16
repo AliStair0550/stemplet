@@ -35,6 +35,7 @@ export type KasseAccess = {
   businessId: string;
   source: "device" | "owner";
   deviceId?: string;
+  userId?: string;
 };
 
 /**
@@ -65,7 +66,9 @@ export async function kasseAccess(touch = false): Promise<KasseAccess | null> {
   }
   const session = await auth();
   const businessId = session?.user?.businessId;
-  if (businessId) return { businessId, source: "owner" };
+  if (businessId) {
+    return { businessId, source: "owner", userId: session?.user?.id };
+  }
   return null;
 }
 

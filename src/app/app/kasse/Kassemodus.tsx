@@ -473,6 +473,8 @@ type CardState = {
   primaryColor: string;
   textColor: string;
   businessName: string;
+  // Livstid: samlet antal stempler kunden nogensinde har optjent hos butikken.
+  lifetimeStamps: number;
 };
 
 function StaffCard({
@@ -550,7 +552,12 @@ function StaffCard({
       if (res.ok) {
         // Opdater kortet DIREKTE fra svaret, ingen ekstra hentning: personalet
         // ser stemplet med det samme (foer var der to kald i traek = langsomt).
-        setCard({ ...card, stamps: data.stamps, rewardReady: data.rewardReady });
+        setCard({
+          ...card,
+          stamps: data.stamps,
+          rewardReady: data.rewardReady,
+          lifetimeStamps: data.lifetimeStamps ?? card.lifetimeStamps,
+        });
         setLastInc(data.increment ?? 1);
         setPulse((p) => p + 1);
         setQty(1);
@@ -642,6 +649,7 @@ function StaffCard({
           ...card,
           stamps: data.stamps,
           rewardReady: data.stamps >= data.required,
+          lifetimeStamps: data.lifetimeStamps ?? card.lifetimeStamps,
         });
         setNote({
           ok: true,
@@ -750,6 +758,17 @@ function StaffCard({
               </span>
             ) : null}
           </div>
+
+          {/* Diskret livstidstal: forstyrrer ikke stempel-flowet, men lader
+              personalet se hvor loyal kunden er. */}
+          {card.lifetimeStamps > 0 ? (
+            <p className="text-center text-[0.78rem] font-[300] text-slate">
+              <span className="font-[400] tabular-nums text-stone">
+                {card.lifetimeStamps}
+              </span>{" "}
+              {card.lifetimeStamps === 1 ? "stempel" : "stempler"} i alt hos jer
+            </p>
+          ) : null}
 
           {note ? (
             <p

@@ -32,5 +32,6 @@ export async function GET(req: NextRequest) {
     textColor: cc.card.business.textColor,
     businessName: cc.card.business.name,
     completedCount: cc.completedCount,
+    lifetimeStamps: cc.lifetimeStamps,
   });
 }

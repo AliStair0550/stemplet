@@ -57,8 +57,10 @@ export default function PrivatlivPage() {
           </Li>
           <Li>
             <strong>Stempelkort (på butikkens vegne):</strong> et serienummer,
-            antal stempler, tidspunkter og en valgfri e-mail, hvis kunden selv
-            oplyser den. En kunde kan bruge kortet helt anonymt.
+            din stempelhistorik (antal stempler over tid og tidspunkter) og en
+            valgfri e-mail, hvis kunden selv oplyser den. Historikken bruges til
+            at optjene stempler og give dig belønninger og loyalitetsfordele. En
+            kunde kan bruge kortet helt anonymt.
           </Li>
           <Li>
             <strong>Teknisk og sikkerhed:</strong> IP-adresse og en hændelseslog

@@ -70,11 +70,12 @@ model Device {
   id         String    @id @default(cuid())
   businessId String
   business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name       String    @default("Kasse")
-  tokenHash  String    @unique // sha256 af enheds-token (cookie)
-  lastSeenAt DateTime?
-  revokedAt  DateTime?
-  createdAt  DateTime  @default(now())
+  name         String    @default("Kasse")
+  tokenHash    String    @unique // sha256 af enheds-token (cookie)
+  lastSeenAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  stampsGiven  Stamp[]   @relation("DeviceStamps")
 
   @@index([businessId])
 }
@@ -109,6 +110,7 @@ model User {
   business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   accounts      Account[]
   sessions      Session[]
+  stampsGiven   Stamp[]   @relation("StaffStamps")
 
   @@index([businessId])
 }
@@ -182,6 +184,11 @@ model CustomerCard {
   authToken      String               @unique // hemmeligt, til Wallet web service
   stamps         Int                  @default(0)
   completedCount Int                  @default(0)
+  // Livstidstaeller: samlet antal stempler kunden NOGENSINDE har optjent hos
+  // butikken. Kortet (stamps) nulstilles ved fuldt kort, men denne goer aldrig.
+  // Taelles atomisk op ved hver stempling; backfilles fra sum(Stamp.multiplier).
+  // Fundament for milepaele, stamkunde-status og win-back senere.
+  lifetimeStamps Int                  @default(0)
   contactEmail   String? // valgfrit
   stampsLog      Stamp[]
   redemptions    Redemption[]
@@ -202,9 +209,27 @@ model Stamp {
   id             String       @id @default(cuid())
   customerCardId String
   customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  // Denormaliseret butik: transaktionsloggen skal kunne svare paa "hvilken butik"
+  // uden at joine gennem card. Billigt nu, dyrt at eftermontere. Backfilles.
+  businessId     String?
   method         StampMethod
   tokenJti       String?
   multiplier     Int          @default(1)
+  // Medarbejder-attribution: hvem gav stemplet. Kassen er enten en parret ENHED
+  // eller ejerens LOGIN, saa vi logger begge (den relevante er sat). Vigtigt til
+  // anti-snyd (opdage en medarbejder der stempler venner) og senere statistik.
+  // NULL for kunde-QR og API-stempler samt historik foer attribution fandtes.
+  staffUserId    String?
+  staffUser      User?        @relation("StaffStamps", fields: [staffUserId], references: [id], onDelete: SetNull)
+  staffDeviceId  String?
+  staffDevice    Device?      @relation("DeviceStamps", fields: [staffDeviceId], references: [id], onDelete: SetNull)
+  // Livstidstal EFTER denne transaktion (loebende sum). Lader os finde praecis
+  // hvornaar en milepael (50/100/250) blev naaet uden omberegning. Billigt nu,
+  // dyrt at eftermontere. Backfilles som running sum.
+  lifetimeAfter  Int?
+  // Udloeste denne stempling et fuldt kort? Billigt at logge nu, dyrt at udlede
+  // bagud. Historik: false (kan ikke rekonstrueres praecist).
+  filledCard     Boolean      @default(false)
   // Fremtidssikring til per-butik statistik (lokations-model paa roadmap Q1 2027).
   // Ingen Location-tabel eller logik endnu - kun feltet, saa historik ikke gaar
   // tabt, naar featuren bygges.
@@ -218,6 +243,8 @@ model Stamp {
   // Tids-vinduer i statistik (i dag/uge/14 dage) + ugebrev-cron: dette indeks
   // daekker baade relations-semi-joinet og createdAt-range i eet scan.
   @@index([customerCardId, createdAt])
+  // Per-butik-analyser (milepaele, win-back, medarbejder-moenstre) over tid.
+  @@index([businessId, createdAt])
 }
 
 model Redemption {

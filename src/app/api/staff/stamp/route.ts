@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { requireKasseBusinessId } from "@/lib/kasse";
+import { kasseAccess } from "@/lib/kasse";
 import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic";
 
 // Scan-modus: personalet scanner kundens kort og stempler.
 export async function POST(req: NextRequest) {
-  const businessId = await requireKasseBusinessId();
-  if (!businessId) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
+  const access = await kasseAccess(true);
+  if (!access) return apiError("UNAUTHORIZED", "Ikke logget ind.", 401);
 
   const parsed = staffStampSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Ugyldigt kort.");
 
   const cc = await loadCardBySerial(parsed.data.serial);
-  if (!cc || cc.card.businessId !== businessId) {
+  if (!cc || cc.card.businessId !== access.businessId) {
     return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
       skipCooldown: true,
       // Antal stempler personalet valgte (fx tre kaffe = 3).
       count: parsed.data.count,
+      // Medarbejder-attribution: parret enhed ELLER ejer-login.
+      staffUserId: access.source === "owner" ? access.userId ?? null : null,
+      staffDeviceId: access.source === "device" ? access.deviceId ?? null : null,
     });
     return Response.json({ ok: true, ...res });
   } catch (e) {

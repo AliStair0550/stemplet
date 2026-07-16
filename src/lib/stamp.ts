@@ -67,6 +67,8 @@ export type StampResult = {
   rewardReady: boolean;
   justCompleted: boolean;
   increment: number;
+  /** Samlet antal stempler kunden nogensinde har optjent hos butikken. */
+  lifetimeStamps: number;
 };
 
 /** Live-opslag af kort via serial (webkort) med virksomhed og skabelon. */
@@ -98,6 +100,9 @@ export async function applyStamp(opts: {
   skipCooldown?: boolean;
   /** Antal stempler paa een scanning (fx tre kaffe = tre). Standard 1. */
   count?: number;
+  /** Medarbejder-attribution: sat naar kassen er ejer-login hhv. parret enhed. */
+  staffUserId?: string | null;
+  staffDeviceId?: string | null;
 }): Promise<StampResult> {
   const now = new Date();
 
@@ -169,7 +174,13 @@ export async function applyStamp(opts: {
             }
           : {}),
       },
-      data: { stamps: { increment: scanIncrement }, lastStampAt: now },
+      data: {
+        stamps: { increment: scanIncrement },
+        // Livstidstaelleren foelger med op ATOMISK i samme guardede update, saa
+        // den aldrig kan komme ud af trit med de faktiske stempler.
+        lifetimeStamps: { increment: scanIncrement },
+        lastStampAt: now,
+      },
     });
     if (applied.count === 0) {
       // Skeln mellem fuldt kort og tabt cooldown-race for en god fejlbesked.
@@ -196,19 +207,13 @@ export async function applyStamp(opts: {
     if (hasWelcome && cc.completedCount === 0) {
       const bonus = await tx.customerCard.updateMany({
         where: { id: cc.id, stamps: scanIncrement },
-        data: { stamps: { increment: 1 } },
+        data: {
+          stamps: { increment: 1 },
+          lifetimeStamps: { increment: 1 },
+        },
       });
       if (bonus.count === 1) increment += 1;
     }
-
-    await tx.stamp.create({
-      data: {
-        customerCardId: cc.id,
-        method: opts.method,
-        tokenJti: opts.tokenJti ?? null,
-        multiplier: increment,
-      },
-    });
 
     const updated = await tx.customerCard.findUnique({
       where: { id: cc.id },
@@ -216,6 +221,23 @@ export async function applyStamp(opts: {
     });
     const newStamps = Math.min(updated?.stamps ?? cc.stamps + increment, required);
     const rewardReady = newStamps >= required;
+    // Livstid EFTER denne transaktion (loebende sum). Kortet nulstilles, men denne
+    // goer aldrig; gemmes ogsaa paa selve transaktionen til milepaels-analyse.
+    const lifetimeStamps = cc.lifetimeStamps + increment;
+
+    await tx.stamp.create({
+      data: {
+        customerCardId: cc.id,
+        businessId: business.id,
+        method: opts.method,
+        tokenJti: opts.tokenJti ?? null,
+        multiplier: increment,
+        staffUserId: opts.staffUserId ?? null,
+        staffDeviceId: opts.staffDeviceId ?? null,
+        lifetimeAfter: lifetimeStamps,
+        filledCard: rewardReady,
+      },
+    });
 
     await tx.auditLog.create({
       data: {
@@ -240,6 +262,7 @@ export async function applyStamp(opts: {
       rewardReady,
       justCompleted: rewardReady,
       increment,
+      lifetimeStamps,
       webhookUrl: business.webhookUrl,
       apiKey: business.apiKey,
     };
@@ -277,6 +300,7 @@ export async function applyStamp(opts: {
     rewardReady: result.rewardReady,
     justCompleted: result.justCompleted,
     increment: result.increment,
+    lifetimeStamps: result.lifetimeStamps,
   };
 }
 
@@ -293,6 +317,7 @@ export async function undoLastStamp(opts: {
   stamps: number;
   required: number;
   rewardReady: boolean;
+  lifetimeStamps: number;
 }> {
   const res = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
@@ -322,9 +347,12 @@ export async function undoLastStamp(opts: {
       where: { id: cc.id },
       data: {
         stamps: Math.max(0, cc.stamps - removed),
+        // Livstid reverseres med hele multiplier (uklampet), saa taelleren forbliver
+        // lig sum(Stamp.multiplier). En fejl-stempling skal ikke puste livstiden op.
+        lifetimeStamps: Math.max(0, cc.lifetimeStamps - last.multiplier),
         lastStampAt: prev?.createdAt ?? null,
       },
-      select: { stamps: true },
+      select: { stamps: true, lifetimeStamps: true },
     });
 
     const required = cc.card.stampsRequired;
@@ -342,6 +370,7 @@ export async function undoLastStamp(opts: {
       stamps: updated.stamps,
       required,
       rewardReady: updated.stamps >= required,
+      lifetimeStamps: updated.lifetimeStamps,
     };
   });
 

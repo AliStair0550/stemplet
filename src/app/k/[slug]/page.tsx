@@ -114,6 +114,21 @@ export default async function ClaimPage({
           >
             Har du allerede et kort? Find det her.
           </Link>
+          {/* GDPR-formaal: gjort klart FOER kortet hentes, at vi gemmer
+              stempelhistorik og hvorfor (belOEnninger + fordele). */}
+          <p className="max-w-xs text-center text-[0.7rem] font-[300] leading-relaxed text-slate">
+            Når du henter kortet, gemmer {business.name} din stempelhistorik, så
+            du kan optjene stempler og få belønninger og fordele. Se{" "}
+            <a
+              href="/privatliv"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2 hover:text-ink"
+            >
+              privatlivspolitikken
+            </a>
+            .
+          </p>
         </div>
 
         {/* Inspirerende deling: laeg linket videre, saa venner ogsaa faar kortet.
