@@ -27,7 +27,8 @@ const LABEL: Record<Role, string> = {
 const ROLES: Record<Role, Step[]> = {
   kunde: [
     { t: "Scan butikkens QR", u: "Med kameraet. Ingen app skal hentes.", ms: 850 },
-    { t: "Tryk Hent mit stempelkort", u: "Kortet lægger sig i Apple Wallet.", ms: 2200 },
+    { t: "Tryk Hent mit stempelkort", u: "Ét tryk. Ingen app, ingen tilmelding.", ms: 2000 },
+    { t: "Tilføj til Wallet", u: "Tryk Tilføj, så ligger kortet i din Wallet.", ms: 2200 },
     {
       t: "Vis kortet, se stemplerne vokse",
       u: "Det er alt. Kunden scanner ikke selv.",
@@ -36,7 +37,7 @@ const ROLES: Record<Role, Step[]> = {
   ],
   medarbejder: [
     { t: "Åbn stempelsiden", u: "Login-beskyttet. Virker på enhver telefon.", ms: 2000 },
-    { t: "Scan kundens kort", u: "Ét stempel gives med det samme.", ms: 2400 },
+    { t: "Scan kundens kort", u: "Scan QR-koden på kundens kort.", ms: 2600 },
     { t: "Vælg antal", u: "Fx 3 kaffe = 3 stempler.", ms: 2600 },
     { t: "Giv belønning ved fuldt kort", u: "Kortet nulstilles automatisk.", ms: 2800 },
   ],
@@ -94,6 +95,13 @@ function LockIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <rect x="3" y="11" width="18" height="10" rx="2" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 13l4 4L19 7" />
     </svg>
   );
 }
@@ -213,12 +221,32 @@ function Pass({
   );
 }
 
-// ── Telefon-skaerme pr. rolle/trin ─────────────────────────────────────────
+// ── Telefon-skaerme ────────────────────────────────────────────────────────
 function StaffHead({ status }: { status: string }) {
   return (
     <div className="mb-3 flex items-center justify-between border-b border-fog pb-2.5 text-[11px] font-[700] text-ink">
       <span>Stemplet · Personale</span>
       <span className="text-[10px] font-[600] text-moss">{status}</span>
+    </div>
+  );
+}
+
+// Kamera der scanner en QR. Genbrugt: kunden scanner butikkens QR, personalet
+// scanner QR-koden paa kundens kort. Samme udtryk begge steder.
+function CameraScan({ qrImage }: { qrImage: string }) {
+  return (
+    <div
+      className="relative flex h-[150px] w-[150px] items-center justify-center rounded-2xl"
+      style={{ boxShadow: `inset 0 0 0 2px ${GOLD}55` }}
+    >
+      <div
+        className="h-[104px] w-[104px] rounded bg-white bg-contain bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${qrImage})` }}
+      />
+      <span
+        className="absolute left-3 right-3 top-4 h-0.5 animate-demo-scan"
+        style={{ background: GOLD, boxShadow: `0 0 10px ${GOLD}` }}
+      />
     </div>
   );
 }
@@ -237,28 +265,18 @@ function Screen({
   pass: PassProps;
 }) {
   if (role === "kunde") {
+    // 0: scan butikkens QR
     if (step === 0) {
       return (
-        <div className={cn(SCREEN, "bg-[#0E0F12]")}>
-          <div
-            className="relative m-auto flex h-[150px] w-[150px] items-center justify-center rounded-2xl"
-            style={{ boxShadow: `inset 0 0 0 2px ${GOLD}55` }}
-          >
-            <div
-              className="h-[104px] w-[104px] rounded bg-white bg-contain bg-center bg-no-repeat p-1"
-              style={{ backgroundImage: `url(${pass.qrImage})` }}
-            />
-            <span
-              className="absolute left-3 right-3 top-4 h-0.5 animate-demo-scan"
-              style={{ background: GOLD, boxShadow: `0 0 10px ${GOLD}` }}
-            />
-          </div>
-          <p className="pb-1 text-center text-[11px] text-white/55">
+        <div className={cn(SCREEN, "items-center justify-center bg-[#0E0F12]")}>
+          <CameraScan qrImage={pass.qrImage} />
+          <p className="mt-4 text-center text-[11px] text-white/55">
             Peg kameraet på butikkens QR
           </p>
         </div>
       );
     }
+    // 1: tilmeldings-side (/k)
     if (step === 1) {
       return (
         <div className={cn(SCREEN, "bg-parchment")}>
@@ -279,6 +297,28 @@ function Screen({
         </div>
       );
     }
+    // 2: tilfoej til Apple Wallet (iOS-skaerm)
+    if (step === 2) {
+      return (
+        <div className="flex h-full flex-col bg-black px-3 pb-4 pt-12">
+          <div className="mb-3 flex items-center justify-between px-1">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[11px] text-white">
+              ✕
+            </span>
+            <span className="text-[10.5px] font-[600] text-white">
+              Stempelkort - {pass.businessName}
+            </span>
+            <span className="rounded-full bg-[#0A84FF] px-3 py-1 text-[11px] font-[600] text-white animate-demo-press">
+              Tilføj
+            </span>
+          </div>
+          <div className="my-auto">
+            <Pass filled={0} showQr pass={pass} />
+          </div>
+        </div>
+      );
+    }
+    // 3: kortet i Wallet, stempler vokser
     return (
       <div className={cn(SCREEN, "justify-end bg-black px-3")}>
         <Pass filled={grow} showQr slideIn pass={pass} />
@@ -287,6 +327,7 @@ function Screen({
   }
 
   if (role === "medarbejder") {
+    // 0: aabn stempelsiden
     if (step === 0) {
       return (
         <div className={cn(SCREEN, "bg-parchment")}>
@@ -295,36 +336,43 @@ function Screen({
             <div className="mx-auto mb-3 flex h-[100px] w-[100px] items-center justify-center rounded-full bg-ink animate-demo-press">
               <ScanIcon className="h-10 w-10 text-parchment" />
             </div>
-            <p className="text-[13px] font-[600] text-ink">Scan kundens kort</p>
+            <p className="text-[13px] font-[600] text-ink">Åbn stempelsiden</p>
           </div>
         </div>
       );
     }
+    // 1: scan kundens kort (QR + scanline) -> stempel givet
     if (step === 1) {
       return (
-        <div className={cn(SCREEN, "bg-parchment")}>
-          <StaffHead status="Kort fundet" />
-          <div className="my-auto">
-            <Pass filled={1} pass={pass} />
-            <p className="mt-3 text-center text-[12px] font-[700] text-moss">
-              1 stempel givet
-            </p>
+        <div className={cn(SCREEN, "items-center bg-[#0E0F12]")}>
+          <div className="text-[10px] font-[600] uppercase tracking-[0.12em] text-white/50">
+            Scan kundens kort
           </div>
+          <div className="flex flex-1 items-center">
+            <CameraScan qrImage={pass.qrImage} />
+          </div>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full bg-moss px-3 py-1.5 text-[11px] font-[600] text-parchment animate-demo-screen"
+            style={{ animationDelay: "0.7s" }}
+          >
+            <CheckIcon className="h-3 w-3" /> 1 stempel givet
+          </span>
         </div>
       );
     }
+    // 2: vaelg antal (1-5, 3 valgt)
     if (step === 2) {
       return (
         <div className={cn(SCREEN, "bg-parchment")}>
           <StaffHead status="Vælg antal" />
           <div className="my-auto">
             <Pass filled={4} pass={pass} />
-            <div className="mt-3 flex justify-center gap-2">
-              {[1, 2, 3].map((n) => (
+            <div className="mt-3 flex justify-center gap-1.5">
+              {[1, 2, 3, 4, 5].map((n) => (
                 <span
                   key={n}
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-[10px] border text-[14px]",
+                    "flex h-8 w-8 items-center justify-center rounded-[9px] border text-[13px]",
                     n === 3
                       ? "border-ink bg-ink text-parchment animate-stamp-pop"
                       : "border-clay bg-white text-slate",
@@ -341,6 +389,7 @@ function Screen({
         </div>
       );
     }
+    // 3: fuldt kort -> beloenning
     return (
       <div className={cn(SCREEN, "bg-parchment")}>
         <StaffHead status="Fuldt kort" />
@@ -354,36 +403,67 @@ function Screen({
     );
   }
 
-  // ejer
+  // ── ejer (flottere: kort der lyser op med flueben, gylden afslutning) ──
   const level = step;
   const points = [
-    { icon: <PrintIcon className="h-4 w-4 text-parchment" />, t: "Print QR til disken" },
-    { icon: <ShareIcon className="h-4 w-4 text-parchment" />, t: "Del linket online" },
-    { icon: <LockIcon className="h-4 w-4 text-parchment" />, t: "Giv personalet adgang" },
+    { icon: <PrintIcon className="h-[18px] w-[18px]" />, t: "Print QR til disken" },
+    { icon: <ShareIcon className="h-[18px] w-[18px]" />, t: "Del linket online" },
+    { icon: <LockIcon className="h-[18px] w-[18px]" />, t: "Giv personalet adgang" },
   ];
   return (
-    <div className={cn(SCREEN, "gap-2.5 bg-parchment")}>
-      {points.map((p, i) => (
-        <div
-          key={i}
-          className={cn(
-            "flex items-center gap-3 rounded-xl bg-white p-3 text-[12px] font-[600] text-ink shadow-[0_1px_4px_rgba(26,26,26,0.06)] transition-all duration-300",
-            i <= level ? "translate-x-0 opacity-100" : "translate-x-2 opacity-30",
-          )}
-        >
-          <span className="flex h-8 w-8 flex-none items-center justify-center rounded-[9px] bg-ink">
-            {p.icon}
-          </span>
-          {p.t}
-        </div>
-      ))}
+    <div className={cn(SCREEN, "justify-center gap-3.5 bg-gradient-to-b from-parchment to-sand")}>
+      {points.map((p, i) => {
+        const lit = i <= level;
+        return (
+          <div
+            key={i}
+            className={cn(
+              "flex items-center gap-3 rounded-2xl border p-3.5 transition-all duration-500",
+              lit
+                ? "border-moss/25 bg-white shadow-[0_10px_22px_-14px_rgba(45,95,74,0.55)]"
+                : "scale-[0.97] border-fog/70 bg-white/45",
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-9 w-9 flex-none items-center justify-center rounded-xl transition-colors duration-500",
+                lit ? "bg-moss text-parchment" : "bg-fog text-slate",
+              )}
+            >
+              {p.icon}
+            </span>
+            <span
+              className={cn(
+                "text-[12.5px] font-[600] transition-colors duration-500",
+                lit ? "text-ink" : "text-slate",
+              )}
+            >
+              {p.t}
+            </span>
+            <span
+              className={cn(
+                "ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-moss text-parchment transition-all duration-300",
+                lit ? "scale-100 opacity-100" : "scale-0 opacity-0",
+              )}
+            >
+              <CheckIcon className="h-3 w-3" />
+            </span>
+          </div>
+        );
+      })}
       <div
         className={cn(
-          "mt-auto rounded-xl border p-3 text-center text-[13px] font-[800] text-ink transition-opacity duration-500",
-          level >= 3 ? "opacity-100" : "opacity-0",
+          "mt-1 flex items-center justify-center gap-2 rounded-2xl border p-3.5 text-[13px] font-[800] text-ink transition-all duration-500",
+          level >= 3 ? "scale-100 opacity-100" : "scale-95 opacity-0",
         )}
-        style={{ background: `${GOLD}26`, borderColor: `${GOLD}80` }}
+        style={{ background: `${GOLD}22`, borderColor: `${GOLD}80` }}
       >
+        <span
+          className="flex h-5 w-5 items-center justify-center rounded-full"
+          style={{ background: GOLD, color: pass.passColor }}
+        >
+          <CheckIcon className="h-3 w-3" />
+        </span>
         Så kører alt af sig selv
       </div>
     </div>
@@ -422,9 +502,9 @@ export function HowItWorksDemo(pass: PassProps) {
     return () => clearTimeout(id);
   }, [role, step, playing, hovered]);
 
-  // Kundens stempler vokser 0 -> 3, mens Wallet-kortet vises.
+  // Kundens stempler vokser 0 -> 3 paa det sidste kunde-trin (kortet i Wallet).
   useEffect(() => {
-    if (role !== "kunde" || step !== 2) return;
+    if (role !== "kunde" || step !== ROLES.kunde.length - 1) return;
     if (reduced.current) {
       setGrow(3);
       return;
