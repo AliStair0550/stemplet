@@ -10,7 +10,7 @@ import sharp from "sharp";
 // erstattes med ikon-farven ved brug.
 const ICON_MARKUP: Record<string, string> = {
   coffee:
-    '<path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z"/><path d="M16 9h2.5a2 2 0 0 1 0 4H16"/><path d="M8 3.5c-.4.7-.4 1.3 0 2M11.5 3.5c-.4.7-.4 1.3 0 2"/>',
+    '<path d="M6 8h9v4.5a4.5 4.5 0 0 1-4.5 4.5 4.5 4.5 0 0 1-4.5-4.5V8Z"/><path d="M15 9.3h2.2a2.3 2.3 0 0 1 0 4.6H15"/><path d="M6 19.6h9"/><path d="M8.6 2.7c-.5.8-.5 1.6 0 2.4M11.7 2.7c-.5.8-.5 1.6 0 2.4"/>',
   scissors:
     '<circle cx="6" cy="7" r="2.2"/><circle cx="6" cy="17" r="2.2"/><path d="M8 8.5 20 17M8 15.5 20 7"/>',
   croissant:
@@ -20,7 +20,7 @@ const ICON_MARKUP: Record<string, string> = {
   burger:
     '<path d="M4 9.5c0-3 3.6-5 8-5s8 2 8 5"/><path d="M4 14h16M5 11h14"/><path d="M5 14c0 2.5 3 4 7 4s7-1.5 7-4"/>',
   beer:
-    '<path d="M7 8h8v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8Z"/><path d="M15 10h2.5a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H15"/><path d="M7 8c-.5-2.5 1-4 2.5-3.5C10 3 11.5 3 12.5 4c1.2-.8 2.5.2 2.5 1.5 0 .9-.5 1.7-1 2.5"/>',
+    '<path d="M7 9h8v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9Z"/><path d="M15 11h2a1.6 1.6 0 0 1 0 4h-2"/><path d="M7 9c-.3-1.9.7-3 1.9-2.6C9.5 5 10.9 5 11.7 5.9 12.9 5.2 14.1 6 14.1 7.2c0 .7-.3 1.3-.8 1.8"/><path d="M9.2 12.2v4.6M12 12.2v4.6"/>',
   icecream:
     '<path d="M8 10a4 4 0 0 1 8 0"/><path d="M7.5 11h9l-4.5 9-4.5-9Z"/><path d="M8.5 14h7"/>',
   wine: '<path d="M7 4h10c0 4-2 7-5 7S7 8 7 4Z"/><path d="M12 11v6M9 20h6"/>',
@@ -120,10 +120,8 @@ export async function buildStripImages(opts: {
   const pc = opts.primaryColor;
   // Kant paa moenterne, saa de loefter sig rent fra baggrunden.
   const rim = mix(tc, [0, 0, 0], 0.32);
-  // Diskret spotlight bag gitteret: en anelse lysere i midten, som toner ud til
-  // kortets egen farve ved kanten, saa strip'en flyder saemloest sammen med
-  // passets baggrund (ingen synlig kasse) men giver kortet dybde.
-  const glowCenter = mix(pc, [255, 255, 255], 0.1);
+  // Strip'en har INGEN baggrund: kun stemplerne tegnes, saa de flyder rent paa
+  // passets egen farve. Ingen kasse omkring gitteret. Rent og enkelt.
   let cells = "";
 
   for (let i = 0; i < opts.required; i++) {
@@ -139,12 +137,12 @@ export async function buildStripImages(opts: {
     const isGift = i === opts.required - 1;
     const isNext = i === opts.stamps;
 
-    const iconSize = D * 0.5;
+    const iconSize = D * 0.52;
     const s = iconSize / 24;
     const tx = cx - iconSize / 2;
     const ty = cy - iconSize / 2;
     const dash = `${esc(D * 0.09)} ${esc(D * 0.09)}`;
-    const icon = (color: string, markup: string, w = 1.7) =>
+    const icon = (color: string, markup: string, w = 1.9) =>
       `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${markup}</g>`;
 
     if (isGift) {
@@ -188,10 +186,6 @@ export async function buildStripImages(opts: {
   // Guldmoenten (gaven) har sit eget varme praeg, og filtre giver blode skygger.
   const defs =
     `<defs>` +
-    `<radialGradient id="bgGlow" gradientUnits="userSpaceOnUse" cx="${esc(W / 2)}" cy="${esc(startY + gridH / 2)}" r="${esc(W * 0.62)}">` +
-    `<stop offset="0" stop-color="${glowCenter}"/>` +
-    `<stop offset="1" stop-color="${pc}"/>` +
-    `</radialGradient>` +
     `<radialGradient id="coin" cx="0.36" cy="0.30" r="0.85">` +
     `<stop offset="0" stop-color="${mix(tc, [255, 255, 255], 0.16)}"/>` +
     `<stop offset="0.62" stop-color="${tc}"/>` +
@@ -210,8 +204,7 @@ export async function buildStripImages(opts: {
     `</filter>` +
     `</defs>`;
 
-  const bg = `<rect x="0" y="0" width="${W}" height="${H}" fill="url(#bgGlow)"/>`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${bg}${cells}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${cells}</svg>`;
   const base = Buffer.from(svg);
 
   // Skaler kun paa bredden, saa hoejde-forholdet (som nu afhaenger af raekker +

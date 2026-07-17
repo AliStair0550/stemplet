@@ -15,7 +15,7 @@ export function StampIcon({
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.6,
+    strokeWidth: 1.7,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
   };
@@ -24,9 +24,10 @@ export function StampIcon({
     case "coffee":
       return (
         <svg {...common}>
-          <path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
-          <path d="M16 9h2.5a2 2 0 0 1 0 4H16" />
-          <path d="M8 3.5c-.4.7-.4 1.3 0 2M11.5 3.5c-.4.7-.4 1.3 0 2" />
+          <path d="M6 8h9v4.5a4.5 4.5 0 0 1-4.5 4.5 4.5 4.5 0 0 1-4.5-4.5V8Z" />
+          <path d="M15 9.3h2.2a2.3 2.3 0 0 1 0 4.6H15" />
+          <path d="M6 19.6h9" />
+          <path d="M8.6 2.7c-.5.8-.5 1.6 0 2.4M11.7 2.7c-.5.8-.5 1.6 0 2.4" />
         </svg>
       );
     case "scissors":
@@ -63,9 +64,10 @@ export function StampIcon({
     case "beer":
       return (
         <svg {...common}>
-          <path d="M7 8h8v10a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8Z" />
-          <path d="M15 10h2.5a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5H15" />
-          <path d="M7 8c-.5-2.5 1-4 2.5-3.5C10 3 11.5 3 12.5 4c1.2-.8 2.5.2 2.5 1.5 0 .9-.5 1.7-1 2.5" />
+          <path d="M7 9h8v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9Z" />
+          <path d="M15 11h2a1.6 1.6 0 0 1 0 4h-2" />
+          <path d="M7 9c-.3-1.9.7-3 1.9-2.6C9.5 5 10.9 5 11.7 5.9 12.9 5.2 14.1 6 14.1 7.2c0 .7-.3 1.3-.8 1.8" />
+          <path d="M9.2 12.2v4.6M12 12.2v4.6" />
         </svg>
       );
     case "icecream":
