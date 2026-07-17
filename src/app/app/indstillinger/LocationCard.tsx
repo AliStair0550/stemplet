@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { btnClass } from "@/components/ui";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { setBusinessLocation, setLocationFromAddress } from "../actions";
 
 function PinIcon() {
@@ -144,21 +145,16 @@ export function LocationCard({
 
       {/* Primaer: indtast adresse */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              saveAddress();
-            }
-          }}
-          placeholder="Fx Nørregade 12, 8000 Aarhus"
-          autoComplete="street-address"
-          disabled={busy}
-          className="w-full max-w-sm rounded-lg border border-fog bg-white px-4 py-2.5 font-[300] text-[0.9rem] text-ink outline-none transition-colors focus:border-terracotta disabled:opacity-60"
-        />
+        <div className="w-full sm:max-w-sm">
+          <AddressAutocomplete
+            value={address}
+            onChange={setAddress}
+            onEnter={saveAddress}
+            placeholder="Begynd at skrive, og vælg din adresse"
+            disabled={busy}
+            className="w-full rounded-lg border border-fog bg-white px-4 py-2.5 font-[300] text-[0.9rem] text-ink outline-none transition-colors focus:border-terracotta disabled:opacity-60"
+          />
+        </div>
         <button
           type="button"
           onClick={saveAddress}

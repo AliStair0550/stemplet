@@ -1,34 +1,34 @@
 import "server-only";
 
-// Geokod en adresse til lat/lng via OpenStreetMap (Nominatim). Gratis, ingen
-// noegle. Adressen er en fast query-param mod et fast host (ingen SSRF). Bruges
-// kun sjaeldent (butik saetter sin adresse), saa vi er godt inden for
-// brugspolitikken. Bias mod danske adresser.
+// Geokod en dansk adresse til lat/lng via DAWA (Danmarks Adressers Web API,
+// dataforsyningen.dk). Officielt, gratis, ingen noegle, og altid korrekt
+// postnummer. Adressen er en fast query-param mod et fast host (ingen SSRF).
+// Samme datakilde som autocomplete paa klienten, saa en valgt adresse altid
+// kan slaas op.
 export type GeoHit = { lat: number; lng: number; label: string };
 
 export async function geocodeAddress(address: string): Promise<GeoHit | null> {
   try {
+    // struktur=mini giver et fladt svar med x (laengdegrad) og y (breddegrad)
+    // i WGS84 samt betegnelse (den fulde, formaterede adresse).
     const url =
-      "https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=0&countrycodes=dk&q=" +
+      "https://api.dataforsyningen.dk/adgangsadresser?struktur=mini&per_side=1&q=" +
       encodeURIComponent(address);
     const res = await fetch(url, {
-      headers: {
-        "User-Agent": "Stemplet/1.0 (+https://stemplet.alius.dk)",
-        "Accept-Language": "da",
-      },
+      headers: { "User-Agent": "Stemplet/1.0 (+https://stemplet.alius.dk)" },
     });
     if (!res.ok) return null;
     const data = (await res.json()) as {
-      lat?: string;
-      lon?: string;
-      display_name?: string;
+      x?: number;
+      y?: number;
+      betegnelse?: string;
     }[];
     const hit = Array.isArray(data) ? data[0] : null;
-    if (!hit?.lat || !hit?.lon) return null;
-    const lat = parseFloat(hit.lat);
-    const lng = parseFloat(hit.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    return { lat, lng, label: hit.display_name ?? address };
+    if (!hit || typeof hit.x !== "number" || typeof hit.y !== "number") {
+      return null;
+    }
+    if (!Number.isFinite(hit.x) || !Number.isFinite(hit.y)) return null;
+    return { lat: hit.y, lng: hit.x, label: hit.betegnelse ?? address };
   } catch {
     return null;
   }

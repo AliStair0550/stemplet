@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
+import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
@@ -199,13 +200,14 @@ export function StartWizard() {
               låseskærm, når de er i nærheden. En gratis påmindelse, helt uden
               app. Så kører det, indtil du selv slår det fra.
             </p>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Fx Nørregade 12, 8000 Aarhus"
-              autoComplete="street-address"
-              className="mt-1 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-            />
+            <div className="mt-1">
+              <AddressAutocomplete
+                value={address}
+                onChange={setAddress}
+                placeholder="Begynd at skrive, og vælg din adresse"
+                className="w-full border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+              />
+            </div>
           </div>
         </div>
       ) : null}
