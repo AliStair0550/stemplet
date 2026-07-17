@@ -22,7 +22,7 @@ const STEPS: { kicker: string; title: string; body: string }[] = [
   {
     kicker: "2",
     title: "Hvert køb giver et stempel",
-    body: "Ved hvert køb scanner I kundens kort og tilføjer det antal stempler, kunden har optjent. Kortet opdateres automatisk i Wallet, så kunden altid kan se sin aktuelle status.",
+    body: "Scan kundens kort ved købet og tilføj stemplerne. Kortet opdateres i Wallet med det samme.",
   },
   {
     kicker: "3",

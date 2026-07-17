@@ -10,13 +10,13 @@ const BARS = [42, 55, 38, 64, 72, 58, 80, 68, 90, 76, 84, 96];
 
 export default function StatsPreview() {
   return (
-    <Section>
+    <Section className="bg-terracotta/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Statistik</Eyebrow>
         <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Se hvad der faktisk virker.
         </h2>
-        <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
+        <p className="mt-5 max-w-lg font-[200] text-[0.95rem] leading-[1.7] text-stone">
           Du kan følge genbesøg, stempler og indløsninger fra din telefon. Ingen
           gætterier om, hvem der kommer igen.
         </p>

@@ -53,17 +53,27 @@ export default function Pricing() {
       <div className="max-w-xl">
         <Eyebrow>Pris</Eyebrow>
         <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
-          Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Alt er med.
+          Gratis op til{" "}
+          <span className="whitespace-nowrap">
+            {FREE_CUSTOMER_LIMIT} kortholdere.
+          </span>{" "}
+          Alt er med.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.7] text-stone">
-          Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Derefter Pro:{" "}
-          {PRO_PRICE_DKK} kr./md. ekskl. moms.
+          Gratis op til{" "}
+          <span className="whitespace-nowrap">
+            {FREE_CUSTOMER_LIMIT} kortholdere.
+          </span>{" "}
+          Derefter Pro:{" "}
+          <span className="whitespace-nowrap">
+            {PRO_PRICE_DKK} kr./md. ekskl. moms.
+          </span>
         </p>
       </div>
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Gratis */}
-        <div className="flex flex-col border border-terracotta bg-parchment p-8 md:p-10">
+        <div className="flex flex-col rounded-[24px] border border-terracotta bg-parchment p-8 md:p-10">
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-taupe-light">
             Gratis
           </span>
@@ -92,7 +102,7 @@ export default function Pricing() {
         </div>
 
         {/* Pro */}
-        <div className="flex flex-col border border-clay bg-parchment p-8 md:p-10">
+        <div className="flex flex-col rounded-[24px] border border-clay bg-parchment p-8 md:p-10">
           <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-slate">
             Pro
           </span>

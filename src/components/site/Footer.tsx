@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
@@ -25,6 +26,13 @@ export default function Footer() {
               hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
               statistik og købsmønstre.
             </p>
+            <Image
+              src="/stemplet-appikon.png"
+              alt="Stemplet"
+              width={44}
+              height={44}
+              className="mt-1 h-11 w-11 rounded-[10px]"
+            />
           </div>
 
           {/* Genveje */}

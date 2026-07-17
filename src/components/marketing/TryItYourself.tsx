@@ -47,7 +47,7 @@ export default async function TryItYourself() {
           {/* Android-link lige under teksten */}
           <a
             href="/prøv"
-            className="mt-5 inline-flex items-center gap-1.5 text-[0.9rem] font-medium text-terracotta transition-colors hover:text-terracotta-dark"
+            className="mt-5 inline-flex items-center gap-1.5 text-[0.8rem] font-medium text-terracotta transition-colors hover:text-terracotta-dark"
           >
             Bruger du Android? Åbn webkortet
             <span aria-hidden>&rarr;</span>
@@ -67,7 +67,7 @@ export default async function TryItYourself() {
         </div>
 
         {/* QR taet paa teksten (desktop) */}
-        <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-10 md:flex">
+        <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-14 md:ml-6 md:flex">
           <div className="rounded-[20px] bg-white p-4 shadow-card ring-1 ring-black/5">
             <Image
               src={qr}
