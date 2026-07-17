@@ -2,22 +2,12 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { auth } from "./auth";
+import { isSuperadminEmail } from "./superadmin-emails";
 
-// Superadmin-adgang til platform-overblikket (/admin). Emails laeses fra env
-// (SUPERADMIN_EMAIL, kommasepareret) - ALDRIG hardkodet, da repoet er offentligt.
-// Er env ikke sat, er admin-siden utilgaengelig for alle.
-function superadminEmails(): string[] {
-  return (process.env.SUPERADMIN_EMAIL ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-export function isSuperadminEmail(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const list = superadminEmails();
-  return list.length > 0 && list.includes(email.toLowerCase());
-}
+// Superadmin-adgang til platform-overblikket (/admin). Selve email-listen parses
+// i superadmin-emails.ts (uden auth-import, saa baggrundsjobs kan bruge den). Er
+// SUPERADMIN_EMAIL ikke sat, er admin-siden utilgaengelig for alle.
+export { isSuperadminEmail, superadminRecipients } from "./superadmin-emails";
 
 /** Returnerer den indloggede superadmins email, ellers null. */
 export async function getSuperadminEmail(): Promise<string | null> {

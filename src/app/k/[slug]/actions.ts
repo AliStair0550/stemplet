@@ -7,6 +7,7 @@ import { getCardToken, setCardToken } from "@/lib/cookies";
 import { loadCardByToken } from "@/lib/stamp";
 import { generateSerial, generateAuthToken } from "@/lib/ids";
 import { canCreateCustomer } from "@/lib/plans";
+import { maybeFireCardholderThresholds, signupBlockReason } from "@/lib/billing";
 import { WALLET_ENABLED } from "@/lib/env";
 
 // Hele pointen er, at kortet ryger i Apple Wallet. Paa iPhone/iPad sender vi
@@ -41,6 +42,11 @@ export async function claimCard(slug: string) {
     }
   }
 
+  // NYT kort: superadmin kan have stoppet butikken eller sat nye kortholdere paa
+  // pause. Eksisterende kort ovenfor er allerede sendt videre til deres kort.
+  const block = signupBlockReason(business);
+  if (block) redirect(`/k/${slug}?fejl=${block}`);
+
   // Vaekstmur paa Gratis: loftet tæller ALLE oprettede kort. Kun oprettelse af
   // NYE kort spærres ved loftet - eksisterende kunder stempler og indløser
   // uhindret (det haandteres helt andre steder end her).
@@ -61,5 +67,7 @@ export async function claimCard(slug: string) {
     },
   });
   await setCardToken(business.id, cc.authToken);
+  // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
+  await maybeFireCardholderThresholds(business.id);
   redirect(await claimDestination(cc.serial));
 }

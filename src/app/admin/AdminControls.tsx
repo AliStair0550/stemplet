@@ -9,6 +9,9 @@ import {
   resetStamps,
   updateOwner,
   lockAdmin,
+  setBilling,
+  setSignupsPaused,
+  setStopped,
 } from "./actions";
 
 // ── Kopiér ejer-email (til at skrive til dem) ──────────────────────────
@@ -272,6 +275,199 @@ export function ClearDemoButton({ count }: { count: number }) {
         className="rounded-md border border-rust bg-rust px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-white transition-colors hover:bg-rust/90 disabled:opacity-50"
       >
         {pending ? "Nulstiller..." : `Bekræft: slet ${count} demo-kort`}
+      </button>
+      <button
+        type="button"
+        onClick={() => setArmed(false)}
+        disabled={pending}
+        className="rounded-md border border-fog px-2 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:text-ink"
+      >
+        Fortryd
+      </button>
+    </span>
+  );
+}
+
+// ── Pro-pris + faktureringsdato (manuel fakturering via Billy) ─────────
+export function EditBilling({
+  businessId,
+  proPriceKr,
+  proPriceUntil,
+  lastInvoicedAt,
+}: {
+  businessId: string;
+  proPriceKr: number;
+  proPriceUntil: string; // YYYY-MM-DD eller ""
+  lastInvoicedAt: string; // YYYY-MM-DD eller ""
+}) {
+  const [open, setOpen] = useState(false);
+  const [state, formAction, pending] = useActionState(setBilling, {
+    error: null as string | null,
+    ok: false as boolean | undefined,
+  });
+
+  useEffect(() => {
+    if (state.ok) setOpen(false);
+  }, [state.ok]);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-2 rounded-md border border-fog px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:border-clay hover:text-ink"
+      >
+        Redigér pris / faktura
+      </button>
+    );
+  }
+  return (
+    <form action={formAction} className="mt-2 flex flex-wrap items-end gap-2.5">
+      <input type="hidden" name="businessId" value={businessId} />
+      <label className="flex flex-col gap-0.5">
+        <span className="text-[0.58rem] font-[400] uppercase tracking-[0.1em] text-slate">
+          Pro-pris (kr./md.)
+        </span>
+        <input
+          name="proPriceKr"
+          type="number"
+          step="1"
+          min="0"
+          defaultValue={proPriceKr}
+          className="w-24 rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+        />
+      </label>
+      <label className="flex flex-col gap-0.5">
+        <span className="text-[0.58rem] font-[400] uppercase tracking-[0.1em] text-slate">
+          Specialpris til (valgfri)
+        </span>
+        <input
+          name="proPriceUntil"
+          type="date"
+          defaultValue={proPriceUntil}
+          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+        />
+      </label>
+      <label className="flex flex-col gap-0.5">
+        <span className="text-[0.58rem] font-[400] uppercase tracking-[0.1em] text-slate">
+          Sidst faktureret
+        </span>
+        <input
+          name="lastInvoicedAt"
+          type="date"
+          defaultValue={lastInvoicedAt}
+          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+        />
+      </label>
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-md border border-moss bg-moss px-3 py-1 text-[0.72rem] font-[400] text-parchment transition-colors hover:bg-moss-light disabled:opacity-50"
+      >
+        {pending ? "Gemmer..." : "Gem"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        disabled={pending}
+        className="rounded-md border border-fog px-2.5 py-1 text-[0.72rem] font-[400] text-slate transition-colors hover:text-ink"
+      >
+        Fortryd
+      </button>
+      {state.error ? (
+        <span className="w-full text-[0.72rem] text-rust">{state.error}</span>
+      ) : null}
+    </form>
+  );
+}
+
+// ── Pause nye kortholdere (eksisterende kort virker uændret) ───────────
+export function PauseButton({
+  businessId,
+  paused,
+}: {
+  businessId: string;
+  paused: boolean;
+}) {
+  const [pending, start] = useTransition();
+  if (paused) {
+    return (
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => start(() => setSignupsPaused(businessId, false))}
+        className="rounded-md border border-moss px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-moss transition-colors hover:bg-moss/5 disabled:opacity-50"
+      >
+        {pending ? "..." : "Genoptag nye"}
+      </button>
+    );
+  }
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={() => start(() => setSignupsPaused(businessId, true))}
+      className="rounded-md border border-fog px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:border-clay hover:text-ink disabled:opacity-50"
+    >
+      {pending ? "..." : "Pause nye kortholdere"}
+    </button>
+  );
+}
+
+// ── Stop butik (to-trins) / genåbn ─────────────────────────────────────
+export function StopButton({
+  businessId,
+  stopped,
+  name,
+}: {
+  businessId: string;
+  stopped: boolean;
+  name: string;
+}) {
+  const [armed, setArmed] = useState(false);
+  const [pending, start] = useTransition();
+
+  if (stopped) {
+    return (
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            await setStopped(businessId, false);
+          })
+        }
+        className="rounded-md border border-moss px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-moss transition-colors hover:bg-moss/5 disabled:opacity-50"
+      >
+        {pending ? "..." : "Genåbn butik"}
+      </button>
+    );
+  }
+  if (!armed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setArmed(true)}
+        className="rounded-md border border-fog px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-rust/80 transition-colors hover:border-rust/40 hover:text-rust"
+      >
+        Stop butik
+      </button>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            await setStopped(businessId, true);
+            setArmed(false);
+          })
+        }
+        className="rounded-md border border-rust bg-rust px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-white transition-colors disabled:opacity-50"
+      >
+        {pending ? "Stopper..." : `Bekræft: stop ${name}`}
       </button>
       <button
         type="button"

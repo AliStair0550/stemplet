@@ -18,9 +18,18 @@ const LINKS: { href: string; label: string }[] = [
 ];
 // "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
 // Siden findes stadig paa /app/integrationer for den, der kender adressen.
+// "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
+const AGREEMENT_LINK = { href: "/app/aftale", label: "Pro-aftale" };
 
-export function DashboardNav({ businessName }: { businessName: string }) {
+export function DashboardNav({
+  businessName,
+  showAgreement = false,
+}: {
+  businessName: string;
+  showAgreement?: boolean;
+}) {
   const pathname = usePathname();
+  const links = showAgreement ? [...LINKS, AGREEMENT_LINK] : LINKS;
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname.startsWith(href);
@@ -35,7 +44,7 @@ export function DashboardNav({ businessName }: { businessName: string }) {
         </span>
 
         <nav className="mt-10 flex flex-col gap-1">
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -69,7 +78,7 @@ export function DashboardNav({ businessName }: { businessName: string }) {
           </form>
         </div>
         <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
-          {LINKS.map((l) => (
+          {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}

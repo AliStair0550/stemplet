@@ -179,3 +179,102 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
   };
 }
 
+// ── Kortholder-varsel ved 80 (til ejeren) ────────────────────────────
+// Venligt varsel, ingen betalingsmur. Ejeren har allerede accepteret modellen
+// ved onboarding, saa det er varsling, ikke forhandling.
+
+export type CardholderWarningData = {
+  businessName: string;
+  cardholders: number;
+  limit: number;
+  priceKr: number;
+  agreementUrl: string;
+};
+
+export function cardholderWarningEmail(d: CardholderWarningData): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se aftalen</a>
+    </td></tr></table>`;
+
+  const inner = `
+    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      I nærmer jer ${d.limit} kortholdere.
+    </p>
+    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      ${d.businessName} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.
+    </p>
+    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen, når det passer jer.
+    </p>
+    ${button}`;
+
+  const text = [
+    `I nærmer jer ${d.limit} kortholdere.`,
+    "",
+    `${d.businessName} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.`,
+    "",
+    "Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen her:",
+    d.agreementUrl,
+    "",
+    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+  ].join("\n");
+
+  return {
+    subject: `I nærmer jer ${d.limit} kortholdere hos Stemplet`,
+    html: shell(`${d.businessName} nærmer sig ${d.limit} kortholdere.`, inner),
+    text,
+  };
+}
+
+// ── Kortholder-varsel ved 80 (til superadmin/Ali) ────────────────────
+
+export type SuperadminThresholdData = {
+  businessName: string;
+  slug: string;
+  cardholders: number;
+  limit: number;
+  ownerEmails: string;
+  adminUrl: string;
+};
+
+export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+    </td></tr></table>`;
+
+  const inner = `
+    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      ${d.businessName} nærmer sig ${d.limit} kortholdere.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;">
+      ${statRow("Kortholdere", d.cardholders, `af ${d.limit}`)}
+    </table>
+    <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+      Butik: ${d.businessName} (${d.slug})<br>
+      Ejer: ${d.ownerEmails}
+    </p>
+    <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+      Ejeren har fået varsel og et link til at godkende Pro-aftalen. Sæt evt. en individuel pris i admin, før de krydser ${d.limit}.
+    </p>
+    ${button}`;
+
+  const text = [
+    `${d.businessName} nærmer sig ${d.limit} kortholdere.`,
+    "",
+    `Kortholdere: ${d.cardholders} af ${d.limit}`,
+    `Butik: ${d.businessName} (${d.slug})`,
+    `Ejer: ${d.ownerEmails}`,
+    "",
+    `Ejeren har fået varsel og et godkendelses-link. Sæt evt. en individuel pris i admin, før de krydser ${d.limit}.`,
+    d.adminUrl,
+  ].join("\n");
+
+  return {
+    subject: `[Stemplet] ${d.businessName} nærmer sig ${d.limit} kortholdere`,
+    html: shell(`${d.businessName}: ${d.cardholders} kortholdere.`, inner),
+    text,
+  };
+}
+

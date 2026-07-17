@@ -52,6 +52,17 @@ model Business {
   latitude         Float?
   longitude        Float?
   termsAcceptedAt  DateTime? // accepterede vilkaar/privatliv/DPA ved oprettelse
+  // ── Prismodel / manuel fakturering (Billy, ingen Stripe endnu) ──────
+  // Kortholder = antal CustomerCard-raekker for butikken (se lib/billing).
+  cardholderWarnedAt DateTime? // 80-kortholder-varsel sendt (udloeses kun EEN gang)
+  reached100At       DateTime? // dagen butikken foerst krydsede 100 (faktura-start-reference)
+  proApprovedAt      DateTime? // ejeren har godkendt Pro-aftalen
+  proApprovedById    String? // hvilken bruger (User.id) godkendte
+  proPriceKr         Int       @default(99) // individuel maanedspris i kr (founding members mv.)
+  proPriceUntil      DateTime? // udloeb for en specialpris; derefter gaelder standard 99
+  lastInvoicedAt     DateTime? // sidste faktureringsdato, superadmin vedligeholder manuelt
+  newSignupsPaused   Boolean   @default(false) // afvis nye kortholdere paent (kun superadmin)
+  stopped            Boolean   @default(false) // superadmin har stoppet butikken (kun superadmin)
   users            User[]
   cards            Card[]
   auditLogs        AuditLog[]

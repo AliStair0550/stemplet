@@ -11,6 +11,8 @@ import { useSearchParams } from "next/navigation";
 const MESSAGES: Record<string, string> = {
   lukket: "Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken.",
   fuld: "Butikken kan ikke tage imod flere stempelkort lige nu. Spørg personalet.",
+  pause: "Butikken tager ikke imod nye stempelkort lige nu. Spørg personalet.",
+  stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
 };
 
 export function ClaimCta({ children }: { children: React.ReactNode }) {

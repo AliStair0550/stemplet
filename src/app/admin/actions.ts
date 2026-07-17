@@ -66,6 +66,72 @@ export async function setPlan(businessId: string, plan: Plan): Promise<void> {
 }
 
 /**
+ * Sæt butikkens Pro-pris (individuel, fx founding member), et valgfrit udløb for
+ * specialprisen (derefter standard 99), og sidste faktureringsdato (vedligeholdes
+ * manuelt, da fakturering sker via Billy). Alt superadmin-gated.
+ */
+export async function setBilling(
+  _prev: { error: string | null; ok?: boolean },
+  formData: FormData,
+): Promise<{ error: string | null; ok?: boolean }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { error: "Ikke tilladt." };
+  }
+  const businessId = String(formData.get("businessId") ?? "");
+  if (!businessId) return { error: "Mangler butik." };
+
+  const price = Number(String(formData.get("proPriceKr") ?? "").trim());
+  if (!Number.isFinite(price) || price < 0 || price > 100000) {
+    return { error: "Ugyldig pris (0 til 100000 kr.)." };
+  }
+  const untilRaw = String(formData.get("proPriceUntil") ?? "").trim();
+  const invoicedRaw = String(formData.get("lastInvoicedAt") ?? "").trim();
+  const proPriceUntil = untilRaw ? new Date(untilRaw) : null;
+  const lastInvoicedAt = invoicedRaw ? new Date(invoicedRaw) : null;
+  if (proPriceUntil && isNaN(proPriceUntil.getTime())) {
+    return { error: "Ugyldig udløbsdato." };
+  }
+  if (lastInvoicedAt && isNaN(lastInvoicedAt.getTime())) {
+    return { error: "Ugyldig faktureringsdato." };
+  }
+
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { proPriceKr: Math.round(price), proPriceUntil, lastInvoicedAt },
+  });
+  revalidatePath("/admin");
+  return { error: null, ok: true };
+}
+
+/** Pause/genoptag NYE kortholdere. Eksisterende kort virker uændret. */
+export async function setSignupsPaused(
+  businessId: string,
+  paused: boolean,
+): Promise<void> {
+  await requireAdmin();
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { newSignupsPaused: paused },
+  });
+  revalidatePath("/admin");
+}
+
+/** Stop/genåbn butikken. Stoppet: ingen nye kort OG ingen nye stempler. */
+export async function setStopped(
+  businessId: string,
+  stopped: boolean,
+): Promise<void> {
+  await requireAdmin();
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { stopped },
+  });
+  revalidatePath("/admin");
+}
+
+/**
  * Slet en butik og ALT dens data (kort, kunder, stempler via cascade).
  * DESTRUKTIVT. Demo-butikken er spaerret, den er rygraden i "Prøv det selv".
  */

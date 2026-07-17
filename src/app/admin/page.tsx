@@ -8,6 +8,7 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
+import { effectiveProPriceKr, CARDHOLDER_LIMIT } from "@/lib/billing";
 import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
 import { AdminUnlock } from "./AdminUnlock";
 import {
@@ -18,6 +19,9 @@ import {
   ResetStampsButton,
   EditOwner,
   LockButton,
+  EditBilling,
+  PauseButton,
+  StopButton,
 } from "./AdminControls";
 
 export const metadata: Metadata = {
@@ -51,6 +55,15 @@ type Row = {
   redemptions: number;
   lastActive: Date | null;
   isDemo: boolean;
+  // Prismodel / manuel fakturering
+  proApprovedAt: Date | null;
+  reached100At: Date | null;
+  proPriceKr: number;
+  proPriceUntil: Date | null;
+  effectivePriceKr: number;
+  lastInvoicedAt: Date | null;
+  newSignupsPaused: boolean;
+  stopped: boolean;
 };
 
 async function buildRow(b: {
@@ -67,6 +80,13 @@ async function buildRow(b: {
   selfScanEnabled: boolean;
   welcomeStampEnabled: boolean;
   weeklyEmailEnabled: boolean;
+  proApprovedAt: Date | null;
+  reached100At: Date | null;
+  proPriceKr: number;
+  proPriceUntil: Date | null;
+  lastInvoicedAt: Date | null;
+  newSignupsPaused: boolean;
+  stopped: boolean;
   users: {
     id: string;
     email: string;
@@ -113,6 +133,14 @@ async function buildRow(b: {
     redemptions,
     lastActive: lastStamp?.createdAt ?? null,
     isDemo: b.slug === DEMO_SLUG,
+    proApprovedAt: b.proApprovedAt,
+    reached100At: b.reached100At,
+    proPriceKr: b.proPriceKr,
+    proPriceUntil: b.proPriceUntil,
+    effectivePriceKr: effectiveProPriceKr(b),
+    lastInvoicedAt: b.lastInvoicedAt,
+    newSignupsPaused: b.newSignupsPaused,
+    stopped: b.stopped,
   };
 }
 
@@ -156,7 +184,7 @@ export default async function AdminPage() {
 
   const stat = [
     { label: "Butikker", value: totals.businesses },
-    { label: "Kunder", value: totals.customers },
+    { label: "Kortholdere", value: totals.customers },
     { label: "Stempler", value: totals.stamps },
     { label: "Indløsninger", value: totals.redemptions },
   ];
@@ -238,7 +266,7 @@ export default async function AdminPage() {
                 {demo.lastActive
                   ? `Sidste aktivitet ${formatDkDateTime(demo.lastActive)}.`
                   : ""}{" "}
-                Tæller ikke med i {'"'}Kunder{'"'} ovenfor.
+                Tæller ikke med i {'"'}Kortholdere{'"'} ovenfor.
               </p>
             </div>
             <ClearDemoButton count={demo.customers} />
@@ -352,12 +380,65 @@ function BusinessCard({ r }: { r: Row }) {
 
       {/* Aktivitet */}
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Metric label="Kunder" value={formatDkNumber(r.customers)} />
+        <Metric label="Kortholdere" value={formatDkNumber(r.customers)} />
         <Metric label="Stempler" value={formatDkNumber(r.stamps)} />
         <Metric label="Indløst" value={formatDkNumber(r.redemptions)} />
         <Metric
           label="Sidst aktiv"
           value={r.lastActive ? formatDkDateTime(r.lastActive) : "Ingen"}
+        />
+      </div>
+
+      {/* Prismodel / manuel fakturering (Billy) */}
+      <div className="mt-4 rounded-md border border-fog bg-sand/40 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
+            Pro &amp; fakturering
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <PauseButton businessId={r.id} paused={r.newSignupsPaused} />
+            <StopButton businessId={r.id} stopped={r.stopped} name={r.name} />
+          </div>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5">
+          <Fact
+            label="Kortholdere"
+            value={`${formatDkNumber(r.customers)} / ${CARDHOLDER_LIMIT}${
+              r.customers >= CARDHOLDER_LIMIT ? " (over)" : ""
+            }`}
+          />
+          <Fact
+            label="Godkendt"
+            value={r.proApprovedAt ? formatDkDateTime(r.proApprovedAt) : "Nej"}
+          />
+          <Fact
+            label="Krydsede 100"
+            value={r.reached100At ? formatDkDate(r.reached100At) : "-"}
+          />
+          <Fact
+            label="Pris/md"
+            value={`${formatDkNumber(r.effectivePriceKr)} kr.${
+              r.proPriceUntil ? ` (til ${formatDkDate(r.proPriceUntil)})` : ""
+            }`}
+          />
+          <Fact
+            label="Sidst faktureret"
+            value={r.lastInvoicedAt ? formatDkDate(r.lastInvoicedAt) : "-"}
+          />
+          {r.newSignupsPaused ? (
+            <Fact label="Nye kortholdere" value="PÅ PAUSE" />
+          ) : null}
+          {r.stopped ? <Fact label="Butik" value="STOPPET" /> : null}
+        </div>
+        <EditBilling
+          businessId={r.id}
+          proPriceKr={r.proPriceKr}
+          proPriceUntil={
+            r.proPriceUntil ? r.proPriceUntil.toISOString().slice(0, 10) : ""
+          }
+          lastInvoicedAt={
+            r.lastInvoicedAt ? r.lastInvoicedAt.toISOString().slice(0, 10) : ""
+          }
         />
       </div>
 
@@ -368,7 +449,6 @@ function BusinessCard({ r }: { r: Row }) {
         <Fact label="Selvscan" value={r.selfScan ? "Til" : "Fra"} />
         <Fact label="Velkomststempel" value={r.welcomeStamp ? "Til" : "Fra"} />
         <Fact label="Ugebrev" value={r.weeklyEmail ? "Til" : "Fra"} />
-        <Fact label="Stripe" value={r.stripeCustomerId ? "Ja" : "-"} />
       </div>
     </div>
   );

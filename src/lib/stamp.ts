@@ -7,6 +7,7 @@ import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
 import { generateSerial, generateAuthToken } from "./ids";
 import { canCreateCustomer } from "./plans";
+import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
 
 /**
  * Opretter et nyt kundekort for butikkens aktive kort. Bruges naar en ny kunde
@@ -18,12 +19,14 @@ export async function createCustomerCard(
   businessId: string,
 ): Promise<
   | { ok: true; id: string; serial: string; authToken: string }
-  | { ok: false; reason: "full" | "error" }
+  | { ok: false; reason: "full" | "error" | "paused" }
 > {
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     select: {
       plan: true,
+      stopped: true,
+      newSignupsPaused: true,
       cards: {
         where: { active: true },
         orderBy: { createdAt: "asc" },
@@ -35,6 +38,8 @@ export async function createCustomerCard(
   if (!business || business.cards.length === 0) {
     return { ok: false, reason: "error" };
   }
+  // Superadmin har stoppet butikken eller sat nye kortholdere paa pause.
+  if (signupBlockReason(business)) return { ok: false, reason: "paused" };
   if (business.plan === "FREE") {
     const total = await prisma.customerCard.count({
       where: { card: { businessId } },
@@ -48,6 +53,8 @@ export async function createCustomerCard(
       authToken: generateAuthToken(),
     },
   });
+  // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
+  await maybeFireCardholderThresholds(businessId);
   return { ok: true, id: cc.id, serial: cc.serial, authToken: cc.authToken };
 }
 
@@ -118,6 +125,15 @@ export async function applyStamp(opts: {
 
     const required = cc.card.stampsRequired;
     const business = cc.card.business;
+
+    // Superadmin har stoppet butikken: ingen nye stempler (eksisterende kort kan
+    // stadig ses). Kun manuel handling, ingen automatik.
+    if (business.stopped) {
+      throw new StampError(
+        "INACTIVE",
+        "Butikken tager ikke imod stempler lige nu.",
+      );
+    }
 
     // Fuldt kort: bloker flere stempler indtil belønningen er indløst.
     if (cc.stamps >= required) {

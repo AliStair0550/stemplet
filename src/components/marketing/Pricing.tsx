@@ -18,7 +18,7 @@ function Check() {
 }
 
 const FREE = [
-  `Op til ${FREE_CUSTOMER_LIMIT} kunder, helt gratis`,
+  `Op til ${FREE_CUSTOMER_LIMIT} kortholdere, helt gratis`,
   "Alle funktioner fra dag ét",
   "Dit eget brand, uden Stemplet-logo",
   "Ser flot ud i kundens Apple Wallet",
@@ -26,7 +26,7 @@ const FREE = [
 ];
 
 const PRO = [
-  "Ubegrænset antal kunder",
+  "Ubegrænset antal kortholdere",
   "Se dine stamkunder: hvem kommer igen",
   "Fang dem, der er ved at falde fra",
   "Alt fra Gratis, uden loft",
@@ -53,8 +53,12 @@ export default function Pricing() {
       <div className="max-w-xl">
         <Eyebrow>Pris</Eyebrow>
         <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
-          Gratis op til {FREE_CUSTOMER_LIMIT} kunder. Alt er med.
+          Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Alt er med.
         </h2>
+        <p className="mt-4 font-[300] text-[0.95rem] leading-[1.7] text-stone">
+          Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Derefter Pro:{" "}
+          {PRO_PRICE_DKK} kr./md. ekskl. moms.
+        </p>
       </div>
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
@@ -72,7 +76,7 @@ export default function Pricing() {
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
             Et fuldt brugbart stempelkort med dit eget brand. Det ser godt ud i
             kundens Wallet og reklamerer for dig. Gratis op til{" "}
-            {FREE_CUSTOMER_LIMIT} kunder.
+            {FREE_CUSTOMER_LIMIT} kortholdere.
           </p>
           <Features items={FREE} />
           <div className="mt-auto pt-8">
@@ -96,12 +100,14 @@ export default function Pricing() {
             <span className="font-[300] text-[2.6rem] leading-none tabular-nums text-ink">
               {PRO_PRICE_DKK} kr.
             </span>
-            <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
+            <span className="font-[200] text-[0.85rem] text-slate">
+              /md. ekskl. moms
+            </span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kunder. Ubegrænsede kort,
-            plus svaret på, hvem der er dine stamkunder, og hvem der er ved at
-            forsvinde.
+            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kortholdere. Ubegrænsede
+            kort, plus svaret på, hvem der er dine stamkunder, og hvem der er ved
+            at forsvinde.
           </p>
           <Features items={PRO} />
           <div className="mt-auto pt-8">
