@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
   { href: "/#sådan", label: "Sådan virker det" },
@@ -61,36 +62,29 @@ export default function Nav() {
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-16 w-full max-w-[1100px] items-center justify-between px-6 md:px-8">
-        <Link
-          href="/"
-          onClick={() => setOpen(false)}
-          className="font-[400] text-[1.05rem] tracking-[0.02em] text-ink"
-          aria-label="Stemplet, til forsiden"
-        >
-          Stemplet<span className="text-moss">.</span>
-        </Link>
+      <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-6 md:px-8">
+        <Wordmark href="/" />
 
         {/* Desktop: links + Log ind + CTA */}
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-lg font-[300] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
+              className="rounded-full font-medium text-[0.9rem] text-taupe transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment"
             >
               {l.label}
             </Link>
           ))}
           <Link
             href="/login"
-            className="rounded-lg font-[400] text-[0.78rem] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
+            className="rounded-full font-medium text-[0.9rem] text-taupe transition-colors hover:text-ink"
           >
             Log ind
           </Link>
           <Link
             href="/start"
-            className="inline-flex min-h-9 items-center rounded-full bg-ink px-4 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone"
+            className="inline-flex min-h-10 items-center rounded-full bg-terracotta px-5 text-[0.9rem] font-medium text-parchment transition-colors hover:bg-terracotta-dark"
           >
             Kom gratis i gang
           </Link>
@@ -102,7 +96,7 @@ export default function Nav() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Luk menu" : "Åbn menu"}
           aria-expanded={open}
-          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 md:hidden"
+          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 md:hidden"
         >
           <MenuIcon open={open} />
         </button>
@@ -111,14 +105,14 @@ export default function Nav() {
       {/* Mobil-menu: Saadan virker det + Pris (tydelige CTA-raekker) + Log ind
           + primaer knap "Kom gratis i gang" */}
       {open ? (
-        <div className="border-t border-fog bg-parchment/98 backdrop-blur-md md:hidden">
-          <nav className="mx-auto flex w-full max-w-[1100px] flex-col gap-1 px-6 py-4">
+        <div className="border-t border-ink/[0.08] bg-parchment/98 backdrop-blur-md md:hidden">
+          <nav className="mx-auto flex w-full max-w-[1120px] flex-col gap-1 px-6 py-4">
             {LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-2 py-3 font-[400] text-[0.92rem] text-ink transition-colors hover:bg-sand"
+                className="rounded-xl px-2 py-3 font-medium text-[0.95rem] text-ink transition-colors hover:bg-sand"
               >
                 {l.label}
               </Link>
@@ -126,14 +120,14 @@ export default function Nav() {
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-2 py-3 font-[400] text-[0.92rem] text-ink transition-colors hover:bg-sand"
+              className="rounded-xl px-2 py-3 font-medium text-[0.95rem] text-ink transition-colors hover:bg-sand"
             >
               Log ind
             </Link>
             <Link
               href="/start"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-ink px-5 py-3.5 text-[0.78rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-stone"
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-terracotta px-5 py-3.5 text-[0.9rem] font-medium text-parchment transition-colors hover:bg-terracotta-dark"
             >
               Kom gratis i gang
             </Link>

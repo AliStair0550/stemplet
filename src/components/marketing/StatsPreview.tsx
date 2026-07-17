@@ -13,7 +13,7 @@ export default function StatsPreview() {
     <Section>
       <div className="max-w-xl">
         <Eyebrow>Statistik</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Se hvad der faktisk virker.
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
@@ -43,7 +43,7 @@ export default function StatsPreview() {
                   {t.value}
                 </span>
                 {t.delta ? (
-                  <span className="mb-0.5 font-[300] text-[0.72rem] tabular-nums text-moss">
+                  <span className="mb-0.5 font-[300] text-[0.72rem] tabular-nums text-terracotta">
                     {t.delta}
                   </span>
                 ) : null}

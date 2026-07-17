@@ -10,7 +10,7 @@ function Check() {
       strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="mt-[3px] h-4 w-4 shrink-0 text-moss"
+      className="mt-[3px] h-4 w-4 shrink-0 text-terracotta"
     >
       <path d="M20 6 9 17l-5-5" />
     </svg>
@@ -52,7 +52,7 @@ export default function Pricing() {
     <Section id="pris" className="scroll-mt-24 bg-sand">
       <div className="max-w-xl">
         <Eyebrow>Pris</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Alt er med.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.7] text-stone">
@@ -63,8 +63,8 @@ export default function Pricing() {
 
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Gratis */}
-        <div className="flex flex-col border border-moss bg-parchment p-8 md:p-10">
-          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-[#B0893A]">
+        <div className="flex flex-col border border-terracotta bg-parchment p-8 md:p-10">
+          <span className="font-[400] text-[0.7rem] uppercase tracking-[0.14em] text-taupe-light">
             Gratis
           </span>
           <div className="mt-5 flex items-baseline gap-2">

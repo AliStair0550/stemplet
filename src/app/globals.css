@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
-/* ── Alius designsprog. Tokens genbrugt 1:1 fra alius.dk ────────────── */
+/* ── Stemplet designsprog ───────────────────────────────────────────────
+   Varm off-white baggrund, aldrig ren hvid. Een accent: rust/terracotta,
+   brugt sparsomt (CTA, prik i logo, noegletal). Instrument Sans overalt. ── */
 @theme inline {
-  --color-ink: #1a1a1a;
-  --color-stone: #4a4a4a;
+  --color-ink: #1c1917; /* varm naesten-sort (tekst) */
+  --color-taupe: #57534e; /* sekundaer tekst */
+  --color-taupe-light: #78716c; /* tertiaer tekst */
+  --color-terracotta: #a6502e; /* DEN accent: rust */
+  --color-terracotta-dark: #8f4326; /* hover paa accent */
+  --color-parchment: #faf8f4; /* varm off-white baggrund */
+  --color-sand: #f4f1ec; /* let toonet flade */
+  --color-fog: #eceae5; /* haarfin flade */
+  --color-clay: #e2ddd5; /* let border */
+  /* Bevaret til dashboard/admin (fase 2): den gamle groenne accent + fejlfarve. */
+  --color-stone: #57534e;
+  --color-slate: #78716c;
   --color-moss: #2d5f4a;
   --color-moss-light: #4a7d68;
-  --color-sand: #f5f3ef;
-  --color-clay: #d4d0c8;
-  --color-fog: #e8e5df;
-  --color-slate: #6b7b75;
-  --color-parchment: #faf8f4;
   --color-forest: #1a2e24;
-  --color-rust: #9e3b2e;
-  --font-sans: var(--font-jost), "Jost", sans-serif;
+  --color-rust: #9e3b2e; /* fejlfarve (text-rust) */
+  --font-sans: var(--font-instrument), -apple-system, "Segoe UI", sans-serif;
   --font-fraunces: var(--font-fraunces-face), "Fraunces", serif;
 
-  /* ── Elevation: to bloede, konsekvente niveauer, saa kort loefter sig
-     diskret fra pergamenten (premium dybde, ikke tunge kasser). ────────── */
-  --shadow-card: 0 1px 2px rgba(26, 26, 26, 0.03),
-    0 10px 26px -18px rgba(26, 26, 26, 0.13);
-  --shadow-lift: 0 2px 8px rgba(26, 26, 26, 0.05),
-    0 18px 40px -22px rgba(26, 26, 26, 0.2);
+  /* ── Elevation: haarfine borders frem for skygger. Skygger kun paa hero-
+     elementer og fremhaevede kort, og da bloede og store. ───────────────── */
+  --shadow-card: 0 1px 2px rgba(28, 25, 23, 0.03),
+    0 10px 30px -20px rgba(28, 25, 23, 0.1);
+  --shadow-lift: 0 2px 8px rgba(28, 25, 23, 0.05),
+    0 18px 40px -22px rgba(28, 25, 23, 0.16);
+  --shadow-hero: 0 32px 64px -24px rgba(28, 25, 23, 0.18);
 
   /* ── Type-skala (modulaer ~1.25). Brug disse i stedet for vilkaarlige
      text-[Xrem]-vaerdier, saa stoerrelserne konvergerer over tid.
@@ -100,7 +108,7 @@ p {
 }
 
 ::selection {
-  background: var(--color-moss);
+  background: var(--color-terracotta);
   color: var(--color-parchment);
 }
 
@@ -118,7 +126,7 @@ textarea {
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--color-moss);
+  outline: 2px solid var(--color-terracotta);
   outline-offset: 1px;
 }
 
@@ -193,7 +201,7 @@ textarea:focus-visible {
   50% {
     /* Gloeden tager kortets EGEN tekstfarve (sat inline), ikke fast moss,
        saa loeftet "altid i butikkens brand" holder. Moss er kun fallback. */
-    box-shadow: 0 0 0 8px var(--glow-color, rgba(45, 95, 74, 0.16));
+    box-shadow: 0 0 0 8px var(--glow-color, rgba(166, 80, 46, 0.16));
   }
 }
 

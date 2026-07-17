@@ -18,7 +18,7 @@ const TOTAL = 6;
 
 function PersonGlyph() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-moss">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 text-terracotta">
       <circle cx="12" cy="8.5" r="3.4" />
       <path d="M4.6 20c0-4 3.3-6.6 7.4-6.6s7.4 2.6 7.4 6.6z" />
     </svg>
@@ -98,7 +98,7 @@ export function RelationshipGraphic() {
       {/* Blødt baggrundsskær */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/12 blur-3xl"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/12 blur-3xl"
       />
 
       {/* Forbindelser (glødende linjer, der flyder ind mod midten) */}
@@ -147,7 +147,7 @@ export function RelationshipGraphic() {
           style={{ left: `${n.x}%`, top: `${n.y}%` }}
         >
           <div className="animate-float" style={{ animationDelay: `${n.d}s` }}>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-parchment shadow-[0_5px_16px_-5px_rgba(26,26,26,0.35)] ring-1 ring-moss/25">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-parchment shadow-[0_5px_16px_-5px_rgba(26,26,26,0.35)] ring-1 ring-terracotta/25">
               <PersonGlyph />
             </div>
           </div>
@@ -158,14 +158,14 @@ export function RelationshipGraphic() {
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <span
           aria-hidden
-          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/18 blur-lg"
+          className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/18 blur-lg"
         />
         <span
-          className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/25"
+          className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/25"
           style={{ animation: "presencePulse 3s ease-out infinite" }}
         />
         <span
-          className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-moss/25"
+          className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/25"
           style={{ animation: "presencePulse 3s ease-out 1.5s infinite" }}
         />
 
@@ -173,7 +173,7 @@ export function RelationshipGraphic() {
         {celebrate ? (
           <span
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-moss"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-terracotta"
             style={{ animation: "burstRing 0.75s ease-out forwards" }}
           />
         ) : null}

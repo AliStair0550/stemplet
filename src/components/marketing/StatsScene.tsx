@@ -75,17 +75,17 @@ export function StatsScene() {
     >
       <div className="flex items-start justify-between">
         <div>
-          <span className="text-[0.58rem] font-[500] uppercase tracking-[0.14em] text-[#B0893A]">
+          <span className="text-[0.58rem] font-[500] uppercase tracking-[0.14em] text-taupe-light">
             Genbesøg
           </span>
-          <div className="mt-1 font-fraunces text-[2rem] font-light leading-none tabular-nums text-ink">
+          <div className="mt-1 text-[2rem] font-bold leading-none tracking-[-0.02em] tabular-nums text-terracotta">
             {pct}%
           </div>
           <span className="text-[0.62rem] font-[300] text-stone">
             vender tilbage
           </span>
         </div>
-        <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-moss/10 px-2 py-1 text-[0.6rem] font-[500] text-moss">
+        <span className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-terracotta/10 px-2 py-1 text-[0.6rem] font-[500] text-terracotta">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -111,7 +111,7 @@ export function StatsScene() {
               key={i}
               className={cn(
                 "flex-1 origin-bottom rounded-t-[3px] transition-all duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-                isPeak ? "bg-[#C9A24B]" : "bg-moss",
+                isPeak ? "bg-[#C9A24B]" : "bg-terracotta",
               )}
               style={{ height: on ? `${h}%` : "4%", opacity: on ? 1 : 0.25 }}
             />

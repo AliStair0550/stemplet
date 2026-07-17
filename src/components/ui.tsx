@@ -1,30 +1,35 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// ── Knapper (afrundede hjørner, uppercase, wide tracking) ────
+// ── Knapper (helt runde pills, normal case, een accent: terracotta) ────
 
-type Variant = "primary" | "outline" | "moss" | "ghost" | "light";
+type Variant = "primary" | "ink" | "outline" | "moss" | "ghost" | "light";
 type Size = "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-ink text-parchment border border-ink hover:bg-stone hover:border-stone",
-  outline: "border border-clay text-ink hover:border-moss hover:text-moss",
-  moss: "bg-moss text-parchment border border-moss hover:bg-moss-light hover:border-moss-light",
-  ghost: "text-slate hover:text-ink",
-  // Lys knap til moerke sektioner (fx den afsluttende CTA).
-  light: "bg-parchment text-ink border border-parchment hover:bg-sand hover:border-sand",
+  // DEN CTA: rust. Brugt sparsomt.
+  primary: "bg-terracotta text-parchment hover:bg-terracotta-dark",
+  // Staerk, neutral handling paa lys flade.
+  ink: "bg-ink text-parchment hover:bg-ink/90",
+  // Sekundaer: haarfin border, ingen skygge.
+  outline: "border border-ink/15 text-ink hover:border-ink/30 hover:bg-ink/[0.03]",
+  // Bevaret til dashboard/admin (fase 2).
+  moss: "bg-moss text-parchment hover:bg-moss-light",
+  ghost: "text-taupe hover:text-ink",
+  // Lys knap til moerke sektioner (#1C1917-baggrund).
+  light: "bg-parchment text-ink hover:bg-sand",
 };
 
 const SIZES: Record<Size, string> = {
-  md: "min-h-11 px-7 py-3",
-  lg: "min-h-12 px-9 py-3.5",
+  md: "min-h-11 px-6 py-2.5 text-[0.9rem]",
+  lg: "min-h-[3.25rem] px-8 py-3.5 text-[0.95rem]",
 };
 
 export function btnClass(variant: Variant = "primary", size: Size = "md"): string {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-xl font-[300] text-[0.82rem] tracking-[0.08em] uppercase transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
-    // Synlig tastatur-fokus overalt (samme ring paa alle knapper).
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/60 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-[-0.01em] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
+    // Synlig tastatur-fokus overalt (terracotta-ring).
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
     VARIANTS[variant],
     SIZES[size],
   );
@@ -53,9 +58,9 @@ export function ButtonLink({
 
 // ── CTA-fremhaevning ──────────────────────────────────────────────────
 
-// Ekstra klasser paa en primaer CTA, saa den faar afrundede hjoerner + loeft
+// Ekstra klasser paa en primaer CTA, saa den faar pill-form + bloedt loeft
 // (bruges sammen med <CtaGlow> for at drage oejet til "tryk her").
-export const CTA_EMPHASIS = "relative w-full rounded-xl shadow-lift";
+export const CTA_EMPHASIS = "relative w-full rounded-full shadow-lift";
 
 /** BlOd, pulserende glOd bag en primaer CTA. Pak knappen/anchoren ind. */
 export function CtaGlow({
@@ -69,7 +74,7 @@ export function CtaGlow({
     <div className={cn("relative", className)}>
       <span
         aria-hidden
-        className="pointer-events-none absolute -inset-1 rounded-2xl bg-ink/20 blur-md animate-cta-glow"
+        className="pointer-events-none absolute -inset-1 rounded-full bg-terracotta/25 blur-md animate-cta-glow"
       />
       {children}
     </div>
@@ -106,7 +111,7 @@ export function Container({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-[1100px] px-6 md:px-8", className)}>
+    <div className={cn("mx-auto w-full max-w-[1120px] px-6 md:px-8", className)}>
       {children}
     </div>
   );
@@ -127,7 +132,7 @@ export function Section({
     // overflow-x-clip: dekorative gloed (-inset/-right blur) maa aldrig goere
     // sektionen bredere end skaermen. Klipper hver sektion ved kilden, saa
     // "zoom-ud ved traek" ikke kan opstaa uanset hvilken sektion det er.
-    <section id={id} className={cn("py-20 md:py-28 overflow-x-clip", className)}>
+    <section id={id} className={cn("py-20 md:py-24 overflow-x-clip", className)}>
       <Container className={containerClassName}>{children}</Container>
     </section>
   );
@@ -143,7 +148,7 @@ export function Eyebrow({
   return (
     <span
       className={cn(
-        "text-label font-[400] uppercase tracking-[0.12em] text-[#B0893A]",
+        "text-label font-medium uppercase tracking-[0.08em] text-taupe-light",
         className,
       )}
     >
@@ -153,5 +158,7 @@ export function Eyebrow({
 }
 
 export function Divider({ className }: { className?: string }) {
-  return <div className={cn("mx-auto h-px max-w-[1100px] bg-clay", className)} />;
+  return (
+    <div className={cn("mx-auto h-px max-w-[1120px] bg-ink/[0.08]", className)} />
+  );
 }

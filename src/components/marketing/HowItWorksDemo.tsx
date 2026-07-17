@@ -226,7 +226,7 @@ function StaffHead({ status }: { status: string }) {
   return (
     <div className="mb-3 flex items-center justify-between border-b border-fog pb-2.5 text-[11px] font-[700] text-ink">
       <span>Stemplet · Personale</span>
-      <span className="text-[10px] font-[600] text-moss">{status}</span>
+      <span className="text-[10px] font-[600] text-terracotta">{status}</span>
     </div>
   );
 }
@@ -352,7 +352,7 @@ function Screen({
             <CameraScan qrImage={pass.qrImage} />
           </div>
           <span
-            className="inline-flex items-center gap-1.5 rounded-full bg-moss px-3 py-1.5 text-[11px] font-[600] text-parchment animate-demo-screen"
+            className="inline-flex items-center gap-1.5 rounded-full bg-terracotta px-3 py-1.5 text-[11px] font-[600] text-parchment animate-demo-screen"
             style={{ animationDelay: "0.7s" }}
           >
             <CheckIcon className="h-3 w-3" /> 1 stempel givet
@@ -382,7 +382,7 @@ function Screen({
                 </span>
               ))}
             </div>
-            <p className="mt-2.5 text-center text-[12px] font-[700] text-moss">
+            <p className="mt-2.5 text-center text-[12px] font-[700] text-terracotta">
               3 kaffe = 3 stempler
             </p>
           </div>
@@ -395,7 +395,7 @@ function Screen({
         <StaffHead status="Fuldt kort" />
         <div className="my-auto">
           <Pass filled={10} pass={pass} />
-          <p className="mt-3 text-center text-[12px] font-[700] text-moss">
+          <p className="mt-3 text-center text-[12px] font-[700] text-terracotta">
             Belønning givet. Kortet nulstilles
           </p>
         </div>
@@ -420,14 +420,14 @@ function Screen({
             className={cn(
               "flex items-center gap-3 rounded-2xl border p-3.5 transition-all duration-500",
               lit
-                ? "border-moss/25 bg-white shadow-[0_10px_22px_-14px_rgba(45,95,74,0.55)]"
+                ? "border-terracotta/25 bg-white shadow-[0_10px_22px_-14px_rgba(28,25,23,0.55)]"
                 : "scale-[0.97] border-fog/70 bg-white/45",
             )}
           >
             <span
               className={cn(
                 "flex h-9 w-9 flex-none items-center justify-center rounded-xl transition-colors duration-500",
-                lit ? "bg-moss text-parchment" : "bg-fog text-slate",
+                lit ? "bg-terracotta text-parchment" : "bg-fog text-slate",
               )}
             >
               {p.icon}
@@ -442,7 +442,7 @@ function Screen({
             </span>
             <span
               className={cn(
-                "ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-moss text-parchment transition-all duration-300",
+                "ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-terracotta text-parchment transition-all duration-300",
                 lit ? "scale-100 opacity-100" : "scale-0 opacity-0",
               )}
             >
@@ -524,7 +524,7 @@ export function HowItWorksDemo(pass: PassProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Faner: enkle labels med en tynd moss-streg, der viser fremdrift */}
+      {/* Faner: enkle labels med en tynd terracotta-streg, der viser fremdrift */}
       <div className="flex gap-7 border-b border-fog" role="tablist" aria-label="Roller">
         {ORDER.map((r) => {
           const active = r === role;
@@ -546,7 +546,7 @@ export function HowItWorksDemo(pass: PassProps) {
             >
               {LABEL[r]}
               <span
-                className="absolute bottom-0 left-0 h-[2px] rounded-full bg-moss transition-all duration-500 ease-linear"
+                className="absolute bottom-0 left-0 h-[2px] rounded-full bg-terracotta transition-all duration-500 ease-linear"
                 style={{ width: active ? `${pct}%` : "0%" }}
               />
             </button>
@@ -566,7 +566,7 @@ export function HowItWorksDemo(pass: PassProps) {
                   type="button"
                   onClick={() => setStep(i)}
                   className={cn(
-                    "flex w-full gap-3 rounded-xl p-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss/50",
+                    "flex w-full gap-3 rounded-xl p-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50",
                     active
                       ? "bg-white opacity-100 shadow-[0_1px_0_rgba(26,26,26,0.06)]"
                       : done
@@ -578,9 +578,9 @@ export function HowItWorksDemo(pass: PassProps) {
                     className={cn(
                       "mt-0.5 h-[22px] w-[22px] flex-none rounded-full border-2 transition-colors",
                       active
-                        ? "border-solid border-moss"
+                        ? "border-solid border-terracotta"
                         : done
-                          ? "border-solid border-moss bg-moss"
+                          ? "border-solid border-terracotta bg-terracotta"
                           : "border-dashed border-slate",
                     )}
                   />

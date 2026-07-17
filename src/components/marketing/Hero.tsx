@@ -6,7 +6,7 @@ export default function Hero() {
     <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
       <div
         aria-hidden
-        className="pointer-events-none absolute right-[-8%] top-16 h-[460px] w-[460px] rounded-full bg-moss/10 blur-[120px]"
+        className="pointer-events-none absolute right-[-8%] top-16 h-[460px] w-[460px] rounded-full bg-terracotta/[0.07] blur-[120px]"
       />
       <Container className="relative">
         {/* Mobil: eyebrow oeverst, saa selve stempelkortet (lidt mindre), saa
@@ -29,13 +29,11 @@ export default function Hero() {
             <div className="hidden md:block">
               <Eyebrow>Det digitale stempelkort</Eyebrow>
             </div>
-            <h1 className="font-[300] text-[2.5rem] leading-[1.2] tracking-[0.01em] text-ink md:mt-6 md:text-[3.1rem]">
+            <h1 className="text-[2.7rem] font-bold leading-[1.04] tracking-[-0.04em] text-ink md:mt-6 md:text-[3.7rem]">
               Stempelkortet, der skaber{" "}
-              <span className="inline-block whitespace-nowrap pb-[0.08em] font-fraunces font-[400] italic leading-[1.1]">
-                flere gensyn.
-              </span>
+              <span className="text-terracotta">flere gensyn.</span>
             </h1>
-            <p className="mt-6 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
+            <p className="mt-6 max-w-md text-[1.05rem] leading-[1.6] text-taupe">
               Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
               hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
               statistik og købsmønstre. Dine første 100 kunder er gratis.

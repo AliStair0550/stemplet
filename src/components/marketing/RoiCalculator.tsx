@@ -42,7 +42,7 @@ function Slider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label={label}
-        className="w-full cursor-pointer accent-moss"
+        className="w-full cursor-pointer accent-terracotta"
       />
     </div>
   );
@@ -60,7 +60,7 @@ export default function RoiCalculator() {
     <Section id="vaerd">
       <div className="max-w-xl">
         <Eyebrow>Regn på det</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Hvad er én stamkunde værd?
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
@@ -98,8 +98,8 @@ export default function RoiCalculator() {
           />
         </div>
 
-        <div className="flex flex-col justify-center gap-3 rounded-lg border border-moss bg-moss/[0.04] p-8 md:p-10">
-          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-[#B0893A]">
+        <div className="flex flex-col justify-center gap-3 rounded-lg border border-terracotta bg-terracotta/[0.04] p-8 md:p-10">
+          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-taupe-light">
             Ekstra omsætning
           </span>
           <p className="font-[300] leading-none text-ink">

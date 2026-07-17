@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Jost, Fraunces } from "next/font/google";
+import { Instrument_Sans, Fraunces } from "next/font/google";
 import "./globals.css";
 
 // Selv-hostede fonts (next/font): ingen render-blokerende eksterne
-// forbindelser, automatisk preload og font-display: swap. Begge er variable
-// fonts, saa alle vaegte daekkes af én fil pr. familie.
-const jost = Jost({
+// forbindelser, automatisk preload og font-display: swap. Variable fonts, saa
+// alle vaegte daekkes af én fil pr. familie.
+//
+// Instrument Sans er Stemplets brand-font (overalt). Fraunces beholdes indtil
+// videre som fallback for gamle overskrifter, mens rebranden ruller ud.
+const instrument = Instrument_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-jost",
+  variable: "--font-instrument",
 });
 
 const fraunces = Fraunces({
@@ -64,9 +67,10 @@ export const metadata: Metadata = {
       "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding.",
   },
   icons: {
+    // Nyt logo: rust prik (selve stemplet). SVG er skarp paa alle skaerme;
+    // apple-touch-icon er rust-kvadratet med hvid prik.
     icon: [
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/stemplet-prik.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
     apple: "/apple-touch-icon.png",
@@ -91,7 +95,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da" className={`${jost.variable} ${fraunces.variable}`}>
+    <html lang="da" className={`${instrument.variable} ${fraunces.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

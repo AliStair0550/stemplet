@@ -74,16 +74,16 @@ const POINTS = [
 export default function NoCheating() {
   return (
     <Section className="relative overflow-hidden bg-ink text-parchment">
-      {/* Blødt moss-lys i hjørnet, saa den sorte sektion faar dybde og brand. */}
+      {/* Blødt terracotta-lys i hjørnet, saa den sorte sektion faar dybde og brand. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-moss/20 blur-[130px]"
+        className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-terracotta/20 blur-[130px]"
       />
       <div className="relative max-w-xl">
         <span className="font-[400] text-[0.65rem] uppercase tracking-[0.14em] text-[#E4C081]">
           Sikkerhed
         </span>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-parchment">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-parchment">
           Ingen kan snyde systemet.
         </h2>
         <p className="mt-5 max-w-md font-[300] text-[0.95rem] leading-[1.8] text-parchment/70">

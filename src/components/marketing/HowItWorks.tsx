@@ -129,10 +129,10 @@ export default function HowItWorks() {
   const activeIdx = PHASE_INDEX[phase];
 
   return (
-    <Section className="bg-moss/[0.04]">
+    <Section className="bg-terracotta/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Få flere stamkunder</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Fra scan til fast gæst.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
@@ -154,14 +154,14 @@ export default function HowItWorks() {
                 className={cn(
                   "flex gap-5 rounded-lg border p-5 transition-all duration-500",
                   active
-                    ? "border-moss/30 bg-white shadow-[0_12px_34px_-20px_rgba(45,95,74,0.55)]"
+                    ? "border-terracotta/30 bg-white shadow-[0_12px_34px_-20px_rgba(28,25,23,0.55)]"
                     : "border-transparent opacity-55",
                 )}
               >
                 <span
                   className={cn(
-                    "font-fraunces text-[1.2rem] font-light italic transition-colors duration-500",
-                    active ? "text-moss" : "text-slate",
+                    "text-[1.2rem] font-semibold tracking-[-0.02em] transition-colors duration-500",
+                    active ? "text-terracotta" : "text-slate",
                   )}
                 >
                   {s.kicker}
@@ -191,7 +191,7 @@ export default function HowItWorks() {
             {celebrate ? (
               <span
                 aria-hidden
-                className="pointer-events-none absolute -inset-2 -z-10 rounded-[1.7rem] ring-2 ring-moss"
+                className="pointer-events-none absolute -inset-2 -z-10 rounded-[1.7rem] ring-2 ring-terracotta"
                 style={{ animation: "burstRing 0.7s ease-out forwards" }}
               />
             ) : null}
@@ -213,7 +213,7 @@ export default function HowItWorks() {
           <div className="flex min-h-[2.75rem] items-center justify-center text-center">
             {phase === "scan" ? (
               <span className="inline-flex items-center gap-2 rounded-full border border-clay bg-white px-4 py-2 text-[0.78rem] font-[300] text-stone">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-moss" />
+                <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
                 Kortet lander i Apple Wallet på fem sekunder
               </span>
             ) : null}
@@ -223,7 +223,7 @@ export default function HowItWorks() {
               </span>
             ) : null}
             {phase === "reward" ? (
-              <div className="inline-flex items-center gap-3 rounded-full border border-moss/30 bg-moss/5 px-4 py-2 text-[0.78rem] font-[300] text-moss">
+              <div className="inline-flex items-center gap-3 rounded-full border border-terracotta/30 bg-terracotta/5 px-4 py-2 text-[0.78rem] font-[300] text-terracotta">
                 {pin < 4 ? (
                   <>
                     <span>Personale-PIN</span>
@@ -233,7 +233,7 @@ export default function HowItWorks() {
                           key={d}
                           className={cn(
                             "h-2 w-2 rounded-full transition-colors duration-200",
-                            d < pin ? "bg-moss" : "bg-moss/25",
+                            d < pin ? "bg-terracotta" : "bg-terracotta/25",
                           )}
                         />
                       ))}

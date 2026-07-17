@@ -34,11 +34,11 @@ export default function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <Section className="bg-moss/[0.05]">
+    <Section className="bg-terracotta/[0.05]">
       <div className="grid gap-12 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
         <div>
           <Eyebrow>Spørgsmål</Eyebrow>
-          <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+          <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
             Det du gerne vil vide.
           </h2>
           <p className="mt-5 max-w-xs font-[200] text-[0.95rem] leading-[1.8] text-stone">

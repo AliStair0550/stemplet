@@ -28,10 +28,10 @@ export default async function TryItYourself() {
   const card = biz.cards[0];
 
   return (
-    <Section id="demo" className="scroll-mt-24 overflow-hidden bg-moss/[0.04]">
+    <Section id="demo" className="scroll-mt-24 overflow-hidden bg-terracotta/[0.04]">
       <div className="max-w-xl">
         <Eyebrow>Prøv det selv</Eyebrow>
-        <h2 className="mt-4 font-[300] text-[2rem] leading-[1.3] tracking-[0.03em] text-ink">
+        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
           Få det digitale stempelkort i din egen Wallet. Lige nu.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
@@ -55,7 +55,7 @@ export default async function TryItYourself() {
               />
             </div>
             <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-moss" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
               Scan med dit kamera
             </p>
           </div>
