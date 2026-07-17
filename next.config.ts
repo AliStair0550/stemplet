@@ -33,7 +33,9 @@ const nextConfig: NextConfig = {
 // upload, saa de ikke laekker.
 export default withSentryConfig(nextConfig, {
   org: "alius-15",
-  project: "stemplet",
+  // Sentry-projektets slug (Next.js-projektet fik auto-navnet javascript-nextjs).
+  // Kan omdoebes i Sentry senere; saa skal denne linje opdateres tilsvarende.
+  project: "javascript-nextjs",
   // authToken laeses automatisk fra SENTRY_AUTH_TOKEN i miljoeet (Vercel).
   silent: !process.env.CI,
   sourcemaps: { deleteSourcemapsAfterUpload: true },
