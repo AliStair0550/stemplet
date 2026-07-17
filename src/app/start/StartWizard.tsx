@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
 import { btnClass } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
@@ -64,7 +65,8 @@ export function StartWizard() {
         return;
       }
     } catch {
-      // brugeren afbroed delingen; falder tilbage til kopiér nedenfor
+      // Brugeren afbroed delingen (eller den fejlede). Goer intet: "Kopiér link"
+      // staar lige ved siden af som fallback.
       return;
     }
     copyLink();
@@ -361,9 +363,13 @@ export function StartWizard() {
           <div className="flex flex-col items-center gap-3 rounded-lg border border-moss/30 bg-moss/[0.05] p-8 text-center">
             <form action={sendOnboardingLogin}>
               <input type="hidden" name="email" value={email} />
-              <button className={btnClass("primary", "lg")}>
+              <SubmitButton
+                variant="primary"
+                size="lg"
+                pendingText="Sender login-link..."
+              >
                 Log ind på dit dashboard
-              </button>
+              </SubmitButton>
             </form>
             <p className="max-w-sm font-[200] text-[0.74rem] leading-relaxed text-slate">
               Vi sender et login-link til {email}. Klik det, og du er inde i
