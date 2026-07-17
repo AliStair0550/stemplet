@@ -9,43 +9,12 @@ import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
+import { MaterialsPrint } from "./MaterialsPrint";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Materialer" };
 export const dynamic = "force-dynamic";
-
-const MATERIALS = [
-  {
-    title: "A4-plakat",
-    body: "Til opslagstavlen eller vinduet.",
-    href: "/api/materials/plakat",
-  },
-  {
-    title: "A5-skilt",
-    body: "Mellemstort skilt til disken eller væggen.",
-    href: "/api/materials/a5",
-  },
-  {
-    title: "A6-diskskilt",
-    body: "Lille skilt til at stå ved kassen.",
-    href: "/api/materials/skilt",
-  },
-  {
-    title: "Visitkort",
-    body: "Til hånden eller ved betalingen. 85 x 55 mm.",
-    href: "/api/materials/visitkort",
-  },
-] as const;
-
-function IconDoc() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
-      <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
-      <path d="M14 3v5h5M9 13h6M9 17h6" />
-    </svg>
-  );
-}
 
 export default async function MaterialerPage() {
   const { business } = await requireBusiness();
@@ -65,7 +34,7 @@ export default async function MaterialerPage() {
     <>
       <PageHeading
         title="Materialer"
-        subtitle="Print et færdigt skilt med dit eget design, eller download QR-koden og send den til trykkeriet."
+        subtitle="Print et færdigt skilt i dit eget design, eller download QR-koden og send den til trykkeriet."
         action={
           <Link
             href="/app/kort"
@@ -107,8 +76,8 @@ export default async function MaterialerPage() {
             />
           </div>
           <p className="mt-5 text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
-            Skiltene herunder bruger præcis dette design, dine farver og dit
-            logo. Ret det på Design-siden, så følger materialerne med.
+            Skiltene bruger dine farver og de samme stempler. Ret designet på
+            Design-siden, så følger materialerne med.
           </p>
         </Panel>
 
@@ -152,44 +121,15 @@ export default async function MaterialerPage() {
               />
             </div>
             <p className="max-w-xs text-center text-[0.74rem] font-[300] leading-relaxed text-slate">
-              Send PNG-filen til trykkeriet, eller brug et af de færdige skilte
-              herunder, de er klar til print.
+              Send PNG-filen til trykkeriet for et skilt i høj kvalitet, eller
+              print et af de færdige skilte herunder med det samme.
             </p>
           </div>
         </Panel>
       </div>
 
-      {/* Faerdige skilte med butikkens design */}
       <div className="mt-8">
-        <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
-          Færdige skilte, klar til print
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {MATERIALS.map((m) => (
-            <div
-              key={m.title}
-              className="flex items-center gap-5 rounded-lg border border-fog bg-white p-6 shadow-card"
-            >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-                <IconDoc />
-              </span>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-[400] text-[1rem] text-ink">{m.title}</h3>
-                <p className="mt-0.5 font-[300] text-[0.84rem] leading-relaxed text-stone">
-                  {m.body}
-                </p>
-              </div>
-              <a
-                href={m.href}
-                target="_blank"
-                rel="noopener"
-                className={btnClass("outline")}
-              >
-                Hent PDF
-              </a>
-            </div>
-          ))}
-        </div>
+        <MaterialsPrint />
       </div>
     </>
   );

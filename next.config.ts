@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // Pakker der bruger Node-native ting (fs, node-forge, streams) og ikke skal
   // bundles af Turbopack. Wallet og PDF koerer kun server-side.
   serverExternalPackages: ["passkit-generator", "@react-pdf/renderer"],
+  // Bundl Instrument Sans-TTF'erne ind i materials-ruten (serverless), saa
+  // react-pdf kan indlejre den nye font i print-PDF'erne.
+  outputFileTracingIncludes: {
+    "/api/materials/*": ["src/fonts/*.ttf"],
+  },
   // Generér ogsaa KLIENT-source maps, saa fejl i browseren faar laesbare stack
   // traces i Sentry (server-maps laves i forvejen). Sentry uploader dem ved
   // build og fjerner dem igen fra klienten (deleteSourcemapsAfterUpload), saa de

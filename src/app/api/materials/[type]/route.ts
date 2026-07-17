@@ -1,15 +1,32 @@
 import type { NextRequest } from "next/server";
+import path from "node:path";
 import QRCode from "qrcode";
-import { renderToBuffer } from "@react-pdf/renderer";
+import sharp from "sharp";
+import { renderToBuffer, Font } from "@react-pdf/renderer";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
+import { buildStripImages } from "@/lib/wallet/strip";
+import { isStampIcon } from "@/lib/brand";
 import { MaterialsPdf, type MaterialTier } from "./Doc";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Indlejr brand-fonten Instrument Sans i PDF'erne. Registreres her (samme
+// react-pdf-instans som renderToBuffer), saa den altid er tilgaengelig ved
+// render. TTF'erne bundles ind i serverless via outputFileTracingIncludes.
+Font.register({
+  family: "Instrument Sans",
+  fonts: [
+    { src: path.join(process.cwd(), "src/fonts/InstrumentSans-Regular.ttf"), fontWeight: 400 },
+    { src: path.join(process.cwd(), "src/fonts/InstrumentSans-Bold.ttf"), fontWeight: 700 },
+  ],
+});
+// Ingen hyphenering af danske ord midt over.
+Font.registerHyphenationCallback((word) => [word]);
 
 type PageSize = "A4" | "A5" | "A6" | "A7" | [number, number];
 
@@ -73,22 +90,54 @@ export async function GET(
   }
 
   const cardUrl = `${APP_URL}/k/${business.slug}`;
-  const qrDataUrl = await QRCode.toDataURL(cardUrl, {
-    margin: 1,
-    width: 600,
-    color: { dark: "#1A1A1A", light: "#FFFFFF" },
-  });
+  const card = business.cards[0];
+  const required = card?.stampsRequired ?? 10;
+  const stampIcon =
+    card && isStampIcon(card.stampIcon) ? card.stampIcon : "coffee";
+
+  // Standard: uden navn/logo. ?navn=1 tilfoejer butiksnavn/logo.
+  const showBrand = req.nextUrl.searchParams.get("navn") === "1";
+
+  const [qrDataUrl, grid] = await Promise.all([
+    QRCode.toDataURL(cardUrl, {
+      margin: 1,
+      width: 600,
+      color: { dark: "#1A1A1A", light: "#FFFFFF" },
+    }),
+    // Tomt stempel-gitter (samme ikoner som kortet) til de store formater.
+    // Transparent PNG, saa det lander rent paa den farvede baggrund.
+    fmt.tier === "lg" || fmt.tier === "md"
+      ? buildStripImages({
+          stamps: 0,
+          required,
+          stampIcon,
+          primaryColor: business.primaryColor,
+          textColor: business.textColor,
+        })
+      : null,
+  ]);
+
+  let stampGrid: string | null = null;
+  let stampAspect = 2;
+  if (grid) {
+    const meta = await sharp(grid.x2).metadata();
+    stampAspect = (meta.width ?? 1125) / (meta.height ?? 516);
+    stampGrid = `data:image/png;base64,${grid.x2.toString("base64")}`;
+  }
 
   const element = MaterialsPdf({
     businessName: business.name,
     qrDataUrl,
-    rewardText: business.cards[0]?.rewardText ?? "",
+    rewardText: card?.rewardText ?? "",
     logoUrl: business.logoUrl,
     pageSize: fmt.pageSize,
     tier: fmt.tier,
     // Butikkens egne kortfarver, saa skiltet matcher det designede kort.
     primaryColor: business.primaryColor,
     textColor: business.textColor,
+    showBrand,
+    stampGrid,
+    stampAspect,
   });
   const buffer = await renderToBuffer(element);
 
