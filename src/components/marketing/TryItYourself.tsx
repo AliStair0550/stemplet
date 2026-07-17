@@ -29,38 +29,27 @@ export default async function TryItYourself() {
 
   return (
     <Section id="demo" className="scroll-mt-24 overflow-hidden bg-terracotta/[0.04]">
-      <div className="max-w-xl">
-        <Eyebrow>Prøv det selv</Eyebrow>
-        <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
-          Få det digitale stempelkort i din egen Wallet. Lige nu.
-        </h2>
-        <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
-          Scan koden. Få kortet direkte i Apple Wallet. Ingen app. Ingen
-          tilmelding. En enkel oplevelse, dine kunder vil elske.
-        </p>
-      </div>
-
-      <div className="mt-14 grid items-center gap-12 md:grid-cols-[0.7fr_1.3fr] md:gap-14">
-        {/* Venstre: proev det selv (desktop = QR, mobil = knap) */}
-        <div className="order-1 flex flex-col items-center gap-6">
-          <div className="hidden flex-col items-center gap-4 md:flex">
-            <div className="rounded-[1.25rem] bg-white p-4 shadow-card ring-1 ring-black/5">
-              <Image
-                src={qr}
-                width={180}
-                height={180}
-                alt="Scan for at prøve stempelkortet i din Wallet"
-                unoptimized
-                className="h-[min(30vw,150px)] w-[min(30vw,150px)]"
-              />
-            </div>
-            <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
-              Scan med dit kamera
-            </p>
-          </div>
-
-          <div className="flex w-full max-w-xs flex-col items-center gap-3 md:hidden">
+      {/* Top: tekst til venstre, QR ved siden af (desktop) */}
+      <div className="grid gap-10 md:grid-cols-[1.15fr_0.85fr] md:items-center md:gap-14">
+        <div className="max-w-xl">
+          <Eyebrow>Prøv det selv</Eyebrow>
+          <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
+            Få det digitale stempelkort i din egen Wallet. Lige nu.
+          </h2>
+          <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
+            Scan koden. Få kortet direkte i Apple Wallet. Ingen app. Ingen
+            tilmelding. En enkel oplevelse, dine kunder vil elske.
+          </p>
+          {/* Android-link lige under teksten */}
+          <a
+            href="/prøv"
+            className="mt-5 inline-flex items-center gap-1.5 text-[0.9rem] font-medium text-terracotta transition-colors hover:text-terracotta-dark"
+          >
+            Bruger du Android? Åbn webkortet
+            <span aria-hidden>&rarr;</span>
+          </a>
+          {/* Mobil: knap (QR kan ikke scannes paa egen skaerm) */}
+          <div className="mt-6 max-w-xs md:hidden">
             <CtaGlow className="w-full">
               <a
                 href="/prøv"
@@ -70,24 +59,36 @@ export default async function TryItYourself() {
                 Læg i Apple Wallet
               </a>
             </CtaGlow>
-            <a
-              href="/prøv"
-              className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
-            >
-              Bruger du Android? Åbn webkortet
-            </a>
           </div>
         </div>
 
-        {/* Hoejre: animeret "saadan virker det" med butikkens rigtige data */}
-        <div className="order-2 w-full">
-          <HowItWorksDemo
-            businessName={biz.name}
-            reward={card.rewardText}
-            passColor={biz.primaryColor}
-            qrImage={qr}
-          />
+        {/* QR ved siden af teksten (desktop) */}
+        <div className="hidden flex-col items-center gap-4 md:flex md:justify-self-end">
+          <div className="rounded-[20px] bg-white p-4 shadow-card ring-1 ring-black/5">
+            <Image
+              src={qr}
+              width={180}
+              height={180}
+              alt="Scan for at prøve stempelkortet i din Wallet"
+              unoptimized
+              className="h-[170px] w-[170px]"
+            />
+          </div>
+          <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
+            Scan med dit kamera
+          </p>
         </div>
+      </div>
+
+      {/* Under: den animerede demo med butikkens rigtige data */}
+      <div className="mt-16">
+        <HowItWorksDemo
+          businessName={biz.name}
+          reward={card.rewardText}
+          passColor={biz.primaryColor}
+          qrImage={qr}
+        />
       </div>
     </Section>
   );

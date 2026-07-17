@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // Hero-stempelkort: en ren, Wallet-agtig mockup i brandets rust. Server-komponent
 // (ingen JS, let foerste load). Kaffekopper som stempler, og den sidste plads er
 // selve beloenningen (den gratis kop). Udtrykket kan ogsaa laves i et rigtigt
@@ -29,12 +31,16 @@ export default function HeroStampCard() {
   return (
     <div className="w-full max-w-[19rem] animate-float sm:max-w-[23rem] md:max-w-[29rem]">
       <div className="rotate-[-1.5deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-6 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-7 md:p-8">
-        {/* Top: butik + korttype */}
-        <div className="flex items-start justify-between">
-          <span className="text-[1.15rem] font-bold tracking-[-0.02em] md:text-[1.3rem]">
-            Coffee Lab
-          </span>
-          <span className="text-[0.6rem] font-medium uppercase tracking-[0.14em] text-[#F7EFE6]/60 md:text-[0.66rem]">
+        {/* Top: butikkens logo + korttype */}
+        <div className="flex items-start justify-between gap-4">
+          <Image
+            src="/coffeelab.png"
+            alt="Copenhagen Coffee Lab"
+            width={124}
+            height={36}
+            className="h-8 w-auto opacity-95 [filter:brightness(0)_invert(1)] md:h-9"
+          />
+          <span className="mt-1 shrink-0 text-[0.6rem] font-medium uppercase tracking-[0.14em] text-[#F7EFE6]/60 md:text-[0.66rem]">
             Stempelkort
           </span>
         </div>
