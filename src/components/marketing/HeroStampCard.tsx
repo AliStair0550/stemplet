@@ -29,8 +29,13 @@ function Coffee({ stroke }: { stroke: string }) {
 
 export default function HeroStampCard() {
   return (
-    <div className="w-full max-w-[19rem] animate-float sm:max-w-[23rem] md:max-w-[29rem]">
-      <div className="rotate-[-1.5deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-6 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-7 md:p-8">
+    <div className="w-full max-w-[16rem] animate-float sm:max-w-[19rem] md:max-w-[24rem]">
+      <div className="relative overflow-hidden rotate-[2deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-6 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-7 md:p-8">
+        {/* Glimt: et bloedt lys-sweep henover kortet */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[sheenSweep_4.5s_ease-in-out_infinite]"
+        />
         {/* Top: butikkens logo + korttype */}
         <div className="flex items-start justify-between gap-4">
           <Image

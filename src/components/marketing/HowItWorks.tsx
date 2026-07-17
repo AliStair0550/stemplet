@@ -15,17 +15,17 @@ const PHASE_INDEX: Record<Phase, number> = { scan: 0, fill: 1, reward: 2 };
 
 const STEPS: { kicker: string; title: string; body: string }[] = [
   {
-    kicker: "01",
+    kicker: "1",
     title: "Kunden scanner QR-koden",
     body: "Scan QR-kode og kortet ligger i Apple Wallet. Ingen app. Ingen tilmelding. Ingen e-mail.",
   },
   {
-    kicker: "02",
+    kicker: "2",
     title: "Hvert køb giver et stempel",
     body: "Ved hvert køb scanner I kundens kort og tilføjer det antal stempler, kunden har optjent. Kortet opdateres automatisk i Wallet, så kunden altid kan se sin aktuelle status.",
   },
   {
-    kicker: "03",
+    kicker: "3",
     title: "Fuldt kort, fortjent belønning",
     body: "Personalet frigiver med PIN, kortet nulstiller, og kunden har allerede en god grund til at kigge forbi igen.",
   },
@@ -183,7 +183,7 @@ export default function HowItWorks() {
         <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-1">
           <div
             className={cn(
-              "relative w-full max-w-md transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "relative w-full max-w-[17rem] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
               phase === "scan" ? "scale-[0.96] opacity-90" : "scale-100 opacity-100",
               celebrate && "animate-[cardBurst_0.6s_ease-out]",
             )}
@@ -197,9 +197,8 @@ export default function HowItWorks() {
             ) : null}
             <StampCard
               businessName="Odense Craft Beer"
-              landscape
-              primaryColor="#1E4535"
-              textColor="#EFE9DB"
+              primaryColor="#2A211A"
+              textColor="#F1E7D8"
               stampIcon="beer"
               stamps={stamps}
               required={REQUIRED}

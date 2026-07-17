@@ -63,7 +63,7 @@ export default function Nav() {
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-6 md:px-8">
-        <Wordmark href="/" />
+        <Wordmark href="/" className="text-[1.35rem]" />
 
         {/* Desktop: links + Log ind + CTA */}
         <div className="hidden items-center gap-8 md:flex">

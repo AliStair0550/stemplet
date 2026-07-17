@@ -1,17 +1,22 @@
 import Image from "next/image";
 import QRCode from "qrcode";
-import { Section, Eyebrow, btnClass, CtaGlow, WalletIcon, CTA_EMPHASIS } from "@/components/ui";
+import {
+  Section,
+  Eyebrow,
+  btnClass,
+  CtaGlow,
+  WalletIcon,
+  CTA_EMPHASIS,
+} from "@/components/ui";
 import { loadDemoBusiness } from "@/lib/demo";
 import { APP_URL } from "@/lib/env";
-import { HowItWorksDemo } from "./HowItWorksDemo";
+import { StepTabs } from "./StepTabs";
 
-// "Prøv det selv": venstre side lader besoegeren laegge et RIGTIGT demo-kort i sin
-// egen Wallet (QR paa desktop, knap paa mobil). Hoejre side viser en selvkoerende
-// "saadan virker det" med tre roller (kunde, medarbejder, ejer).
+// "Prøv det selv": laeg et RIGTIGT demo-kort i din egen Wallet (QR paa desktop,
+// knap paa mobil), og se de fire trin for hver rolle (kunde, medarbejder, ejer).
 export default async function TryItYourself() {
   // Robust: fejler DB'en (fx ved build), eller er demoen ikke sat op, springes
-  // sektionen bare over i stedet for at vaelte forsiden. (Demoen skal findes,
-  // ellers virker /prøv ikke.)
+  // sektionen bare over i stedet for at vaelte forsiden.
   let biz: Awaited<ReturnType<typeof loadDemoBusiness>> = null;
   let qr = "";
   try {
@@ -20,17 +25,16 @@ export default async function TryItYourself() {
     qr = await QRCode.toDataURL(`${APP_URL}/prøv`, {
       margin: 1,
       width: 360,
-      color: { dark: "#1A1A1A", light: "#FFFFFF" },
+      color: { dark: "#1C1917", light: "#FFFFFF" },
     });
   } catch {
     return null;
   }
-  const card = biz.cards[0];
 
   return (
     <Section id="demo" className="scroll-mt-24 overflow-hidden bg-terracotta/[0.04]">
-      {/* Top: tekst til venstre, QR ved siden af (desktop) */}
-      <div className="grid gap-10 md:grid-cols-[1.15fr_0.85fr] md:items-center md:gap-14">
+      {/* Top: tekst med QR taet ved siden af (desktop) */}
+      <div className="md:flex md:items-center md:gap-12">
         <div className="max-w-xl">
           <Eyebrow>Prøv det selv</Eyebrow>
           <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
@@ -62,8 +66,8 @@ export default async function TryItYourself() {
           </div>
         </div>
 
-        {/* QR ved siden af teksten (desktop) */}
-        <div className="hidden flex-col items-center gap-4 md:flex md:justify-self-end">
+        {/* QR taet paa teksten (desktop) */}
+        <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-0 md:flex">
           <div className="rounded-[20px] bg-white p-4 shadow-card ring-1 ring-black/5">
             <Image
               src={qr}
@@ -75,21 +79,20 @@ export default async function TryItYourself() {
             />
           </div>
           <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#22C55E]" />
             Scan med dit kamera
           </p>
         </div>
       </div>
 
-      {/* Under: den animerede demo med butikkens rigtige data */}
-      <div className="mt-16">
-        <HowItWorksDemo
-          businessName={biz.name}
-          reward={card.rewardText}
-          passColor={biz.primaryColor}
-          qrImage={qr}
-        />
+      {/* Saadan virker det: fire trin pr. rolle */}
+      <div className="mx-auto mt-20 max-w-xl text-center">
+        <Eyebrow>Sådan virker det</Eyebrow>
+        <h2 className="mt-4 text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.7rem]">
+          Fire trin. Nul friktion.
+        </h2>
       </div>
+      <StepTabs />
     </Section>
   );
 }
