@@ -46,18 +46,20 @@ export default function TermsPage() {
       <LegalSection title="3. Priser og betaling">
         <ul className="flex flex-col gap-2.5">
           <Li>
-            Stemplet er gratis op til 100 kundekort med alle funktioner og dit
+            Stemplet er gratis op til 100 kortholdere med alle funktioner og dit
             eget brand.
           </Li>
           <Li>
-            Derover koster Pro 99 kr. om måneden. De til enhver tid gældende
-            priser fremgår på sitet.
+            Derover koster Pro 99 kr. om måneden ekskl. moms. De til enhver tid
+            gældende priser fremgår på sitet.
           </Li>
           <Li>
             Der er ingen binding. Du kan opsige når som helst og betaler kun for
             den periode, du er i gang.
           </Li>
-          <Li>Betaling håndteres af Stripe. Vi gemmer ikke dine kortoplysninger.</Li>
+          <Li>
+            Betaling sker mod faktura, der sendes månedsvis forud.
+          </Li>
         </ul>
       </LegalSection>
 
