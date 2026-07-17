@@ -53,7 +53,13 @@ async function buildRow(b: {
   const where = { customerCard: { cardId: { in: cardIds } } };
   const [customers, stamps, redemptions, lastStamp] = await Promise.all([
     prisma.customerCard.count({ where: { cardId: { in: cardIds } } }),
-    cardIds.length ? prisma.stamp.count({ where }) : Promise.resolve(0),
+    // Faktiske stempler (sum af multiplier), ikke antal raekker: konsistent med
+    // resten af statistikken.
+    cardIds.length
+      ? prisma.stamp
+          .aggregate({ where, _sum: { multiplier: true } })
+          .then((a) => a._sum.multiplier ?? 0)
+      : Promise.resolve(0),
     cardIds.length ? prisma.redemption.count({ where }) : Promise.resolve(0),
     cardIds.length
       ? prisma.stamp.findFirst({

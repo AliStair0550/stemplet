@@ -78,7 +78,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     atLeast1,
     atLeast2,
     distinctRedeemers,
-    stampsTotal,
+    stampsTotalAgg,
     redemptionsTotal,
     redemptions30,
     recentStamps,
@@ -112,12 +112,16 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     prisma.customerCard.count({
       where: { ...inCards, redemptions: { some: {} } },
     }),
-    prisma.stamp.count({ where: rel }),
+    // Stempler i alt: SUM af multiplier (faktiske stempler), ikke antal raekker.
+    // Et stempel kan taelle for flere (personalet giver flere paa en gang, eller
+    // dobbelt-stempel-kampagne), saa raekker !== stempler. Summen matcher kundens
+    // lifetimeStamps, saa "i alt" aldrig er mindre end "flest hos een kunde".
+    prisma.stamp.aggregate({ where: rel, _sum: { multiplier: true } }),
     prisma.redemption.count({ where: rel }),
     prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
     prisma.stamp.findMany({
       where: { ...rel, createdAt: { gte: daysAgo(14) } },
-      select: { createdAt: true },
+      select: { createdAt: true, multiplier: true },
     }),
     // Nye kundekort seneste 14 dage, saa vi kan tegne "nye kunder pr. dag".
     prisma.customerCard.findMany({
@@ -127,7 +131,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     prisma.stamp.groupBy({
       by: ["method"],
       where: rel,
-      _count: { _all: true },
+      _sum: { multiplier: true },
     }),
     // avgDaysToFull PR. CYKLUS: maal hver indloesning fra den FORRIGE indloesning
     // (eller kort-oprettelsen ved den foerste), ikke fra kortets oprettelse hver
@@ -162,17 +166,20 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     }),
   ]);
 
+  const stampsTotal = stampsTotalAgg._sum.multiplier ?? 0;
+
   // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
   // saa noegletal og graf altid er enige (ingen UTC/CET-forskydning ved midnat).
-  const perDay = buildPerDay(recentStamps.map((s) => s.createdAt));
+  // Grafen vejer med multiplier, saa den ogsaa viser faktiske stempler.
+  const perDay = buildPerDay(recentStamps);
   const stampsToday = perDay[perDay.length - 1]?.count ?? 0;
   const stampsWeek = perDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
 
-  const newPerDay = buildPerDay(recentCustomerCards.map((c) => c.createdAt));
+  const newPerDay = buildPerDay(recentCustomerCards);
   const newCustomers7 = newPerDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
 
   const methodCount = new Map(
-    methodGroups.map((g) => [g.method, g._count._all]),
+    methodGroups.map((g) => [g.method, g._sum.multiplier ?? 0]),
   );
   const byMethod = {
     kiosk: methodCount.get("KIOSK_QR") ?? 0,
@@ -214,7 +221,11 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
   };
 }
 
-function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
+// Buckets pr. dag. Hver haendelse vejer med multiplier (default 1), saa
+// stempel-grafen viser faktiske stempler, mens nye-kunder-grafen bare taeller.
+function buildPerDay(
+  events: { createdAt: Date; multiplier?: number }[],
+): BusinessStats["perDay"] {
   // Bucket OG etiket i dansk tidszone, saa stempler ved midnat lander paa
   // den rigtige dag (ikke UTC-dagen).
   const keyFmt = new Intl.DateTimeFormat("en-CA", {
@@ -247,9 +258,9 @@ function buildPerDay(dates: Date[]): BusinessStats["perDay"] {
       count: 0,
     });
   }
-  for (const dt of dates) {
-    const key = keyFmt.format(dt);
-    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  for (const e of events) {
+    const key = keyFmt.format(e.createdAt);
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + (e.multiplier ?? 1));
   }
   return days.map((d) => ({ ...d, count: buckets.get(d.date) ?? 0 }));
 }
@@ -290,10 +301,11 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
   const d21 = daysAgo(21);
   const d60 = daysAgo(60);
 
-  const [stampsWeek, stampsPrevWeek, newCustomers, redemptions, churn, topAgg, regulars] =
+  const [stampsWeekAgg, stampsPrevWeekAgg, newCustomers, redemptions, churn, topAgg, regulars] =
     await Promise.all([
-      prisma.stamp.count({ where: { ...rel, createdAt: { gte: d7 } } }),
-      prisma.stamp.count({ where: { ...rel, createdAt: { gte: d14, lt: d7 } } }),
+      // Faktiske stempler (sum af multiplier), saa ugebrevet er enigt med resten.
+      prisma.stamp.aggregate({ where: { ...rel, createdAt: { gte: d7 } }, _sum: { multiplier: true } }),
+      prisma.stamp.aggregate({ where: { ...rel, createdAt: { gte: d14, lt: d7 } }, _sum: { multiplier: true } }),
       prisma.customerCard.count({
         where: { ...inCards, createdAt: { gte: d7 } },
       }),
@@ -314,6 +326,9 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
         where: { ...inCards, lifetimeStamps: { gte: 100 } },
       }),
     ]);
+
+  const stampsWeek = stampsWeekAgg._sum.multiplier ?? 0;
+  const stampsPrevWeek = stampsPrevWeekAgg._sum.multiplier ?? 0;
 
   return {
     stampsWeek,

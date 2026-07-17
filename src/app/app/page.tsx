@@ -159,8 +159,8 @@ export default async function OverviewPage() {
 
   const statusLine =
     stats.stampsToday > 0
-      ? `${formatDkNumber(stats.stampsToday)} ${stats.stampsToday === 1 ? "stempel" : "stempler"} i dag, og ${formatDkNumber(stats.activeCustomers)} aktive kunder lige nu.`
-      : `${formatDkNumber(stats.activeCustomers)} aktive kunder. Scan kundens kort ved kassen, så begynder dagen at tælle.`;
+      ? `${formatDkNumber(stats.stampsToday)} ${stats.stampsToday === 1 ? "stempel" : "stempler"} i dag. Du har ${formatDkNumber(stats.totalCustomers)} kortholdere ude.`
+      : `Du har ${formatDkNumber(stats.totalCustomers)} kortholdere ude. Scan kundens kort ved kassen, så begynder dagen at tælle.`;
 
   return (
     <>
@@ -194,10 +194,10 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
-          label="Aktive kunder"
+          label="Kortholdere i alt"
           icon={<IconUsers />}
-          value={<AnimatedNumber value={stats.activeCustomers} />}
-          sub={`${formatDkNumber(stats.totalCustomers)} i alt`}
+          value={<AnimatedNumber value={stats.totalCustomers} />}
+          sub={`${formatDkNumber(stats.activeCustomers)} aktive seneste 60 dage`}
         />
         <StatTile
           label="Nye kunder (30 dage)"
