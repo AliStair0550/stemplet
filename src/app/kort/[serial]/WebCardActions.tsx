@@ -22,7 +22,17 @@ export function WebCardActions({
   // blev den regenereret paa serveren ved hvert live-refresh (hvert 6. sek.),
   // hvilket var spildt CPU og baandbredde.
   const [qr, setQr] = useState<string | null>(null);
+  // Bro-QR til desktop: peger paa DENNE kort-side, saa telefonen kan aabne den og
+  // laegge kortet i Apple Wallet. Apple Wallet findes kun paa iPhone, saa paa en
+  // computer er en direkte .pkpass-download blind vej: vi bygger bro til telefonen.
+  const [phoneQr, setPhoneQr] = useState<string | null>(null);
+  // null = ikke afgjort endnu (undgaar at blinke forkert knap frem foer hydrering).
+  const [isIos, setIsIos] = useState<boolean | null>(null);
+
   useEffect(() => {
+    const ua = navigator.userAgent || "";
+    setIsIos(/iPhone|iPad|iPod/i.test(ua));
+
     let alive = true;
     QRCode.toDataURL(serial, {
       width: 420,
@@ -33,6 +43,15 @@ export function WebCardActions({
         if (alive) setQr(d);
       })
       .catch(() => {});
+    QRCode.toDataURL(window.location.href, {
+      width: 360,
+      margin: 1,
+      color: { dark: "#1A1A1A", light: "#FFFFFF" },
+    })
+      .then((d) => {
+        if (alive) setPhoneQr(d);
+      })
+      .catch(() => {});
     return () => {
       alive = false;
     };
@@ -40,7 +59,7 @@ export function WebCardActions({
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      {/* QR vises med det samme, stort og tydeligt. */}
+      {/* Kortets eget QR: vises stort, personalet scanner den for at stemple. */}
       <div className="flex w-full flex-col items-center gap-2.5 rounded-xl border border-fog bg-white p-5 shadow-card">
         {qr ? (
           <Image
@@ -63,7 +82,8 @@ export function WebCardActions({
         </span>
       </div>
 
-      {walletEnabled ? (
+      {/* iPhone/iPad: læg direkte i Apple Wallet. */}
+      {walletEnabled && isIos === true ? (
         <CtaGlow className="w-full">
           <a
             href={`/api/wallet/pass/${serial}`}
@@ -73,6 +93,33 @@ export function WebCardActions({
             Læg i Apple Wallet
           </a>
         </CtaGlow>
+      ) : null}
+
+      {/* Computer (eller Android): Apple Wallet findes kun paa iPhone, saa vi
+          viser en QR, man scanner med telefonen for at faa kortet i Wallet. */}
+      {walletEnabled && isIos === false ? (
+        <div className="flex w-full flex-col items-center gap-3 rounded-xl border border-fog bg-white p-5 shadow-card">
+          <span className="inline-flex items-center gap-2 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
+            <WalletIcon />
+            Apple Wallet
+          </span>
+          {phoneQr ? (
+            <Image
+              src={phoneQr}
+              alt="Scan med din telefon for at lægge kortet i Apple Wallet"
+              width={150}
+              height={150}
+              className="h-36 w-36"
+              unoptimized
+            />
+          ) : (
+            <div className="h-36 w-36 animate-pulse rounded-lg bg-fog" />
+          )}
+          <p className="max-w-[15rem] text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
+            Har du en iPhone? Scan koden med telefonens kamera, så lægger du
+            kortet direkte i Apple Wallet.
+          </p>
+        </div>
       ) : null}
     </div>
   );

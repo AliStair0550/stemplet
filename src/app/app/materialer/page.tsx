@@ -64,7 +64,7 @@ export default async function MaterialerPage() {
               rel="noreferrer"
               className={btnClass("outline") + " w-full"}
             >
-              Åbn stempelkort
+              Vis stempelkort
             </a>
             <ShareLinkButton
               businessName={business.name}
