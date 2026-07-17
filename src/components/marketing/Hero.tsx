@@ -36,7 +36,7 @@ export default function Hero() {
             <p className="mt-6 max-w-md text-[1.05rem] leading-[1.6] text-taupe">
               Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
               hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
-              statistik og købsmønstre. Dine første 100 kunder er gratis.
+              statistik og købsmønstre.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
               <ButtonLink href="/start" variant="primary" size="lg">
@@ -46,6 +46,9 @@ export default function Hero() {
                 Se hvordan det virker
               </ButtonLink>
             </div>
+            <p className="mt-4 text-[0.85rem] text-taupe-light">
+              Dine første 100 kunder er gratis.
+            </p>
           </div>
         </div>
       </Container>

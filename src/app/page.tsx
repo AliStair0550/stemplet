@@ -4,6 +4,7 @@ import { Divider } from "@/components/ui";
 import Hero from "@/components/marketing/Hero";
 import Problem from "@/components/marketing/Problem";
 import TryItYourself from "@/components/marketing/TryItYourself";
+import TrySteps from "@/components/marketing/TrySteps";
 import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
 import Pricing from "@/components/marketing/Pricing";
@@ -45,6 +46,12 @@ export default function Page() {
         <Divider />
         <div className="cv-section">
           <TryItYourself />
+        </div>
+        <Divider />
+        {/* Alternativ til ovenstaaende: statiske rolle-trin + scan-QR, saa vi kan
+            sammenligne og vaelge det bedste. */}
+        <div className="cv-section">
+          <TrySteps />
         </div>
         <Divider />
         <div className="cv-section">
