@@ -15,9 +15,6 @@ export type MaterialTier = "lg" | "md" | "sm" | "xs";
 
 type PageSize = "A4" | "A5" | "A6" | "A7" | [number, number];
 
-// Subtil kant om QR-feltet, saa det ogsaa staar tydeligt paa lyse kortfarver.
-const TILE_BORDER = "#00000014";
-
 // Lodrette skilte (A4/A5/A6): samme opbygning, skaleret pr. stoerrelse.
 const TIERS: Record<
   "lg" | "md" | "sm",
@@ -51,8 +48,11 @@ export function MaterialsPdf({
   logoUrl,
   pageSize,
   tier,
-  primaryColor,
-  textColor,
+  // Oploeste side-farver: farvet (kortets farve) eller lys baggrund.
+  pageBg,
+  pageFg,
+  tileBorder,
+  headline,
   // Standard: uden navn/logo. Butikker skriver ofte navnet med egen font eller
   // har et specielt logo, saa materialet er rent brandet paa farver + stempler.
   showBrand,
@@ -66,20 +66,19 @@ export function MaterialsPdf({
   logoUrl: string | null;
   pageSize: PageSize;
   tier: MaterialTier;
-  primaryColor: string;
-  textColor: string;
+  pageBg: string;
+  pageFg: string;
+  tileBorder: string;
+  headline: string;
   showBrand: boolean;
   stampGrid: string | null;
   stampAspect: number;
 }) {
-  const bg = primaryColor;
-  const fg = textColor;
-
   const brand =
     showBrand && logoUrl ? (
       <Image src={logoUrl} style={{ maxWidth: 160, objectFit: "contain" }} />
     ) : showBrand && businessName ? (
-      <Text style={{ fontFamily: FONT, fontWeight: 700, color: fg }}>
+      <Text style={{ fontFamily: FONT, fontWeight: 700, color: pageFg }}>
         {businessName}
       </Text>
     ) : null;
@@ -88,14 +87,14 @@ export function MaterialsPdf({
   // haenger som ved en custom tuple-stoerrelse). QR til venstre, tekst til hoejre.
   if (tier === "xs") {
     const s = StyleSheet.create({
-      page: { backgroundColor: bg, color: fg, padding: 20, fontFamily: FONT, flexDirection: "row", alignItems: "center" },
-      tile: { backgroundColor: "#FFFFFF", borderRadius: 10, padding: 9, marginRight: 16, borderWidth: 1, borderColor: TILE_BORDER },
+      page: { backgroundColor: pageBg, color: pageFg, padding: 20, fontFamily: FONT, flexDirection: "row", alignItems: "center" },
+      tile: { backgroundColor: "#FFFFFF", borderRadius: 10, padding: 9, marginRight: 16, borderWidth: 1, borderColor: tileBorder },
       qr: { width: 104, height: 104 },
       right: { width: 128 },
-      brand: { fontSize: 12, fontWeight: 700, marginBottom: 5, color: fg },
-      head: { fontSize: 14, fontWeight: 700, marginBottom: 8, lineHeight: 1.15, color: fg },
-      reward: { fontSize: 10.5, fontWeight: 700, color: fg, marginBottom: 8 },
-      foot: { fontSize: 7.5, color: fg, opacity: 0.72 },
+      brand: { fontSize: 12, fontWeight: 700, marginBottom: 5, color: pageFg },
+      head: { fontSize: 14, fontWeight: 700, marginBottom: 8, lineHeight: 1.15, color: pageFg },
+      reward: { fontSize: 10.5, fontWeight: 700, color: pageFg, marginBottom: 8 },
+      foot: { fontSize: 7.5, color: pageFg, opacity: 0.72 },
     });
     return (
       <Document>
@@ -105,7 +104,7 @@ export function MaterialsPdf({
           </View>
           <View style={s.right}>
             {showBrand && businessName ? <Text style={s.brand}>{businessName}</Text> : null}
-            <Text style={s.head}>Scan og få dit{"\n"}Stempelkort</Text>
+            <Text style={s.head}>{headline}</Text>
             {rewardText ? <Text style={s.reward}>{rewardText}</Text> : null}
             <Text style={s.foot}>Ingen app. Ingen tilmelding.</Text>
           </View>
@@ -117,15 +116,15 @@ export function MaterialsPdf({
   const t = TIERS[tier];
   const showGrid = t.grid > 0 && !!stampGrid;
   const styles = StyleSheet.create({
-    page: { backgroundColor: bg, color: fg, paddingVertical: t.padV, paddingHorizontal: t.padH, fontFamily: FONT },
+    page: { backgroundColor: pageBg, color: pageFg, paddingVertical: t.padV, paddingHorizontal: t.padH, fontFamily: FONT },
     inner: { alignItems: "center", textAlign: "center" },
     brand: { marginBottom: t.brandMb, alignItems: "center" },
-    head: { fontSize: t.head, fontWeight: 700, marginBottom: t.headMb, lineHeight: 1.15, color: fg },
+    head: { fontSize: t.head, fontWeight: 700, marginBottom: t.headMb, lineHeight: 1.15, color: pageFg },
     grid: { width: t.grid, height: t.grid / stampAspect, marginBottom: t.gridMb },
-    tile: { backgroundColor: "#FFFFFF", borderRadius: t.tileR, padding: t.tilePad, marginBottom: t.qrMb, borderWidth: 1, borderColor: TILE_BORDER },
+    tile: { backgroundColor: "#FFFFFF", borderRadius: t.tileR, padding: t.tilePad, marginBottom: t.qrMb, borderWidth: 1, borderColor: tileBorder },
     qr: { width: t.qr, height: t.qr },
-    reward: { fontSize: t.reward, fontWeight: 700, color: fg, marginBottom: t.rewardMb },
-    foot: { fontSize: t.foot, color: fg, opacity: 0.72 },
+    reward: { fontSize: t.reward, fontWeight: 700, color: pageFg, marginBottom: t.rewardMb },
+    foot: { fontSize: t.foot, color: pageFg, opacity: 0.72 },
   });
 
   return (
@@ -133,7 +132,7 @@ export function MaterialsPdf({
       <Page size={pageSize} style={styles.page} wrap={false}>
         <View style={styles.inner}>
           {brand ? <View style={styles.brand}>{brand}</View> : null}
-          <Text style={styles.head}>Scan og få dit{"\n"}Stempelkort</Text>
+          <Text style={styles.head}>{headline}</Text>
           {showGrid ? <Image src={stampGrid as string} style={styles.grid} /> : null}
           {rewardText ? <Text style={styles.reward}>{rewardText}</Text> : null}
           <View style={styles.tile}>

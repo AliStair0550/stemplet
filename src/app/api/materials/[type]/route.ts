@@ -9,7 +9,8 @@ import { APP_URL } from "@/lib/env";
 import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { buildStripImages } from "@/lib/wallet/strip";
-import { isStampIcon } from "@/lib/brand";
+import { isStampIcon, contrastRatio } from "@/lib/brand";
+import { headlineFromParam } from "@/lib/materials";
 import { MaterialsPdf, type MaterialTier } from "./Doc";
 
 export const runtime = "nodejs";
@@ -95,8 +96,29 @@ export async function GET(
   const stampIcon =
     card && isStampIcon(card.stampIcon) ? card.stampIcon : "coffee";
 
-  // Standard: uden navn/logo. ?navn=1 tilfoejer butiksnavn/logo.
-  const showBrand = req.nextUrl.searchParams.get("navn") === "1";
+  // Valgmuligheder (query): navn/logo, baggrund, overskrift, stempel-gitter.
+  const sp = req.nextUrl.searchParams;
+  const showBrand = sp.get("navn") === "1";
+  const light = sp.get("bg") === "lys";
+  const showGridOpt = sp.get("stempler") !== "0";
+  const headline = headlineFromParam(sp.get("titel"));
+
+  // Oploeste side-farver. Farvet: kortets egne farver. Lys: blaeksparende
+  // parchment med en laesbar moerk tekst (kortets farve hvis den staar klart paa
+  // lys, ellers en neutral moerk). Gitteret tegnes i samme laesbare farve.
+  const LIGHT_BG = "#FAF8F4";
+  const brandReadsOnLight = contrastRatio(business.primaryColor, LIGHT_BG) >= 3.2;
+  const pageBg = light ? LIGHT_BG : business.primaryColor;
+  const pageFg = light
+    ? brandReadsOnLight
+      ? business.primaryColor
+      : "#1C1917"
+    : business.textColor;
+  const tileBorder = light ? "#00000022" : "#00000014";
+  const gridPrimary = light ? LIGHT_BG : business.primaryColor;
+  const gridText = light ? pageFg : business.textColor;
+
+  const wantGrid = showGridOpt && (fmt.tier === "lg" || fmt.tier === "md");
 
   const [qrDataUrl, grid] = await Promise.all([
     QRCode.toDataURL(cardUrl, {
@@ -104,15 +126,15 @@ export async function GET(
       width: 600,
       color: { dark: "#1A1A1A", light: "#FFFFFF" },
     }),
-    // Tomt stempel-gitter (samme ikoner som kortet) til de store formater.
-    // Transparent PNG, saa det lander rent paa den farvede baggrund.
-    fmt.tier === "lg" || fmt.tier === "md"
+    // Tomt stempel-gitter (samme ikoner som kortet). Transparent PNG, saa det
+    // lander rent paa baggrunden, tegnet i den valgte laesbare farve.
+    wantGrid
       ? buildStripImages({
           stamps: 0,
           required,
           stampIcon,
-          primaryColor: business.primaryColor,
-          textColor: business.textColor,
+          primaryColor: gridPrimary,
+          textColor: gridText,
         })
       : null,
   ]);
@@ -132,9 +154,10 @@ export async function GET(
     logoUrl: business.logoUrl,
     pageSize: fmt.pageSize,
     tier: fmt.tier,
-    // Butikkens egne kortfarver, saa skiltet matcher det designede kort.
-    primaryColor: business.primaryColor,
-    textColor: business.textColor,
+    pageBg,
+    pageFg,
+    tileBorder,
+    headline,
     showBrand,
     stampGrid,
     stampAspect,
