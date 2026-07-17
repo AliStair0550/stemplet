@@ -2,6 +2,7 @@
 
 import QRCode from "qrcode";
 import { headers } from "next/headers";
+import { unstable_rethrow, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
 import { durableRateLimit } from "@/lib/rate-limit";
@@ -176,5 +177,15 @@ export async function sendOnboardingLogin(formData: FormData) {
   // gentagne mails hvis nogen spammer knappen.
   if (!emailOk || !ipOk) return;
 
-  await signIn("resend", { email, redirectTo: "/app" });
+  // signIn redirecter til /login/tjek-mail ved succes (den redirect SKAL boble
+  // op). Ved en forbigaaende fejl (mail, DB, Vercel-runtime) sender vi brugeren
+  // pænt til login-siden, hvor de kan hente linket igen, i stedet for den
+  // generiske fejlside. Butikken er allerede oprettet paa dette tidspunkt.
+  try {
+    await signIn("resend", { email, redirectTo: "/app" });
+  } catch (e) {
+    unstable_rethrow(e); // lad succes-redirect passere
+    console.error("Onboarding-login fejlede:", e);
+    redirect("/login?fejl=onboarding");
+  }
 }

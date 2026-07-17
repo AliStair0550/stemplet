@@ -66,17 +66,43 @@ export default async function TryItYourself() {
           </div>
         </div>
 
-        {/* QR taet paa teksten (desktop) */}
+        {/* QR taet paa teksten (desktop): et lille scan-kort med kamera-soegerens
+            hjoerner, saa det tydeligt ligner noget man scanner */}
         <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-14 md:ml-6 md:flex">
-          <div className="rounded-[20px] bg-white p-4 shadow-card ring-1 ring-black/5">
-            <Image
-              src={qr}
-              width={180}
-              height={180}
-              alt="Scan for at prøve stempelkortet i din Wallet"
-              unoptimized
-              className="h-[170px] w-[170px]"
-            />
+          <div className="rounded-[22px] bg-white p-5 shadow-[0_24px_60px_-28px_rgba(28,25,23,0.32)] ring-1 ring-ink/[0.06]">
+            <div className="mb-3 flex items-center justify-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-terracotta" />
+              <span className="text-[0.6rem] font-medium uppercase tracking-[0.16em] text-slate">
+                Prøvekort
+              </span>
+            </div>
+            <div className="relative p-2.5">
+              <Image
+                src={qr}
+                width={180}
+                height={180}
+                alt="Scan for at prøve stempelkortet i din Wallet"
+                unoptimized
+                className="h-[168px] w-[168px] rounded-[6px]"
+              />
+              {/* Fire soeger-hjoerner rammer koden ind uden at daekke den */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 h-6 w-6 rounded-tl-[10px] border-l-[2.5px] border-t-[2.5px] border-terracotta"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-0 top-0 h-6 w-6 rounded-tr-[10px] border-r-[2.5px] border-t-[2.5px] border-terracotta"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-0 left-0 h-6 w-6 rounded-bl-[10px] border-b-[2.5px] border-l-[2.5px] border-terracotta"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-0 right-0 h-6 w-6 rounded-br-[10px] border-b-[2.5px] border-r-[2.5px] border-terracotta"
+              />
+            </div>
           </div>
           <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#22C55E]" />

@@ -5,7 +5,17 @@ import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = { title: "Log ind" };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fejl?: string }>;
+}) {
+  const { fejl } = await searchParams;
+  const notice =
+    fejl === "onboarding"
+      ? "Din butik er oprettet. Log ind her, så kommer du ind i dashboardet."
+      : null;
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
       <div className="flex w-full max-w-sm flex-col gap-8">
@@ -17,6 +27,11 @@ export default function LoginPage() {
             e-mail.
           </p>
         </div>
+        {notice ? (
+          <p className="rounded-lg border border-terracotta/30 bg-terracotta/[0.06] px-4 py-3 text-center text-[0.82rem] font-[300] leading-relaxed text-terracotta">
+            {notice}
+          </p>
+        ) : null}
         <LoginForm />
         <p className="text-center text-[0.8rem] font-[200] text-slate">
           Har du ikke en konto endnu?{" "}

@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { emailSchema } from "@/lib/validation";
@@ -52,7 +53,19 @@ export async function requestMagicLink(
     };
   }
 
-  // signIn sender magic link og redirecter til /login/tjek-mail.
-  await signIn("resend", { email, redirectTo: "/app" });
-  return {};
+  // signIn sender magic link og redirecter til /login/tjek-mail (den redirect
+  // kastes som en fejl, som SKAL boble op). Alt ANDET, fx en forbigaaende fejl i
+  // mail-afsendelse, database eller Vercels runtime, fanger vi, saa brugeren ser
+  // en rolig "prøv igen"-besked i stedet for den generiske fejlside.
+  try {
+    await signIn("resend", { email, redirectTo: "/app" });
+    return {};
+  } catch (e) {
+    unstable_rethrow(e); // lad redirect (succes) passere
+    console.error("Login-link fejlede:", e);
+    return {
+      error:
+        "Vi kunne ikke sende linket lige nu. Det er som regel forbigående, prøv igen om et øjeblik.",
+    };
+  }
 }
