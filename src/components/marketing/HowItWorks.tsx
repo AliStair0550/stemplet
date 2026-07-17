@@ -183,7 +183,7 @@ export default function HowItWorks() {
         <div ref={stageRef} className="order-1 flex flex-col items-center gap-6 md:order-1">
           <div
             className={cn(
-              "relative w-full max-w-[17rem] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "relative w-full max-w-[19.5rem] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
               phase === "scan" ? "scale-[0.96] opacity-90" : "scale-100 opacity-100",
               celebrate && "animate-[cardBurst_0.6s_ease-out]",
             )}

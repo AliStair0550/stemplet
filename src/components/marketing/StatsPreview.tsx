@@ -79,8 +79,8 @@ export default function StatsPreview() {
                     height: `${(count / Math.max(...BARS)) * 100}%`,
                     background:
                       i === BARS.length - 1
-                        ? "repeating-linear-gradient(135deg, #4A7D68 0 5px, #3a6252 5px 6px)"
-                        : "repeating-linear-gradient(135deg, #2D5F4A 0 5px, #21483795 5px 6px)",
+                        ? "repeating-linear-gradient(135deg, #C9A24B 0 5px, #b08c3e 5px 6px)"
+                        : "repeating-linear-gradient(135deg, #A6502E 0 5px, #8f4326 5px 6px)",
                   }}
                 />
               </div>

@@ -28,7 +28,7 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
     },
     {
       title: "Vis kortet, se stemplerne vokse",
-      body: "Det er alt. Kunden scanner ikke selv.",
+      body: "Det er alt.",
     },
   ],
   medarbejder: [
@@ -38,10 +38,10 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
     },
     {
       title: "Scan kundens kort",
-      body: "Kunden viser Wallet-kortet, og I scanner det.",
+      body: "Scan stempelkortet direkte fra kundens Wallet.",
     },
     {
-      title: "Stemplet gives automatisk",
+      title: "Automatisk stempel",
       body: "Signeret engangsstempel. Kan ikke kopieres.",
     },
     {
@@ -103,7 +103,7 @@ export function StepTabs() {
         {steps.map((s, i) => (
           <div
             key={s.title}
-            className="flex flex-col gap-4 rounded-[20px] border border-ink/[0.08] bg-white p-6 shadow-card"
+            className="flex flex-col items-center gap-4 rounded-[20px] border border-ink/[0.08] bg-white p-6 text-center shadow-card"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-terracotta/10 text-[0.85rem] font-bold text-terracotta">
               {i + 1}

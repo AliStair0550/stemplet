@@ -65,7 +65,7 @@ export default function Hero() {
                 Se hvordan det virker
               </ButtonLink>
             </div>
-            <p className="mt-4 text-[0.85rem] text-taupe-light">
+            <p className="mt-7 text-[0.85rem] text-taupe-light">
               Dine første 100 kunder er gratis. Intet kreditkort.
             </p>
           </div>

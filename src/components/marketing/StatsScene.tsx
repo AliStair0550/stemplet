@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 
 // Lille statistik-widget: en stigende genbesoegs-graf, hvor soejlerne vokser op
 // eet efter eet og procenten taeller op. Fortaeller "du kan se, hvem der kommer
@@ -109,11 +108,14 @@ export function StatsScene() {
           return (
             <div
               key={i}
-              className={cn(
-                "flex-1 origin-bottom rounded-t-[3px] transition-all duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-                isPeak ? "bg-[#C9A24B]" : "bg-terracotta",
-              )}
-              style={{ height: on ? `${h}%` : "4%", opacity: on ? 1 : 0.25 }}
+              className="flex-1 origin-bottom rounded-t-[3px] transition-all duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+              style={{
+                height: on ? `${h}%` : "4%",
+                opacity: on ? 1 : 0.25,
+                background: isPeak
+                  ? "repeating-linear-gradient(135deg, #C9A24B 0 4px, #b08c3e 4px 5px)"
+                  : "repeating-linear-gradient(135deg, #A6502E 0 4px, #8f4326 4px 5px)",
+              }}
             />
           );
         })}

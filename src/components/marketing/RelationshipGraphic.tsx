@@ -115,8 +115,8 @@ export function RelationshipGraphic() {
             cy="50"
             r="42"
           >
-            <stop offset="0%" stopColor="#2D5F4A" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#2D5F4A" stopOpacity="0.08" />
+            <stop offset="0%" stopColor="#A6502E" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#A6502E" stopOpacity="0.08" />
           </radialGradient>
         </defs>
 

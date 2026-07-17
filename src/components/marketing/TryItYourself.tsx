@@ -67,7 +67,7 @@ export default async function TryItYourself() {
         </div>
 
         {/* QR taet paa teksten (desktop) */}
-        <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-0 md:flex">
+        <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-10 md:flex">
           <div className="rounded-[20px] bg-white p-4 shadow-card ring-1 ring-black/5">
             <Image
               src={qr}
@@ -85,11 +85,10 @@ export default async function TryItYourself() {
         </div>
       </div>
 
-      {/* Saadan virker det: fire trin pr. rolle */}
+      {/* Loyalitet gjort enkelt: fire trin pr. rolle */}
       <div className="mx-auto mt-20 max-w-xl text-center">
-        <Eyebrow>Sådan virker det</Eyebrow>
-        <h2 className="mt-4 text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.7rem]">
-          Fire trin. Nul friktion.
+        <h2 className="text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.7rem]">
+          Loyalitet gjort enkelt.
         </h2>
       </div>
       <StepTabs />
