@@ -7,15 +7,23 @@ import { prisma } from "./prisma";
 export const DEMO_SLUG = process.env.DEMO_SLUG || "demo-kaffebar";
 
 /** Loader demo-butikken med dens aktive kort-skabelon (til branding + oprettelse). */
-export function loadDemoBusiness() {
-  return prisma.business.findUnique({
-    where: { slug: DEMO_SLUG },
-    include: {
-      cards: {
-        where: { active: true },
-        orderBy: { createdAt: "asc" },
-        take: 1,
+export async function loadDemoBusiness() {
+  try {
+    return await prisma.business.findUnique({
+      where: { slug: DEMO_SLUG },
+      include: {
+        cards: {
+          where: { active: true },
+          orderBy: { createdAt: "asc" },
+          take: 1,
+        },
       },
-    },
-  });
+    });
+  } catch {
+    // Databasen kan kortvarigt vaere utilgaengelig (fx en Neon-blip, netop mens
+    // /proev prerenderes ved build). Fald tilbage til null i stedet for at kaste,
+    // saa siden viser sin "demoen er ikke tilgaengelig"-fallback og buildet ikke
+    // faelder. Naar databasen er tilbage, henter ISR (revalidate) friske data.
+    return null;
+  }
 }
