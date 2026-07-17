@@ -8,6 +8,7 @@ const C = {
   parchment: "#FAF8F4",
   card: "#FFFFFF",
   terracotta: "#A6502E",
+  tint: "#F7EDE7", // lys terracotta-tone til fremhaevede blokke
   ink: "#1A1A1A",
   stone: "#4A4A4A",
   slate: "#6B7B75",
@@ -97,6 +98,8 @@ export type WeeklyEmailData = {
   newCustomers: number;
   redemptions: number;
   churn: number;
+  topStamps: number;
+  regulars: number;
   dashboardUrl: string;
   unsubscribeUrl: string;
 };
@@ -127,6 +130,23 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
     ${statRow("Indløsninger", d.redemptions, "")}
   </table>`;
 
+  // Loyalitets-hoejdepunkt: en lille dopamin-hilsen til ejeren om deres stamkunder.
+  const regularsNote =
+    d.regulars > 0
+      ? ` ${d.regulars} ${d.regulars === 1 ? "kunde har" : "kunder har"} rundet 100 stempler.`
+      : "";
+  const loyaltyBlock =
+    d.topStamps > 0
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 0;background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:16px 18px;font-family:Arial,Helvetica,sans-serif;">
+        <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${C.terracotta};">Stamkunder</span>
+        <p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:${C.stone};">
+          Din mest trofaste kunde har <span style="font-weight:700;color:${C.ink};">${d.topStamps}</span> stempler.${regularsNote}
+        </p>
+      </td></tr>
+    </table>`
+      : "";
+
   const churnBlock =
     d.churn > 0
       ? `<p style="margin:20px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
@@ -144,6 +164,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
       Her er din uge hos ${d.businessName}.
     </p>
     ${stats}
+    ${loyaltyBlock}
     ${churnBlock}
     ${button}`;
 
@@ -163,6 +184,16 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
     })`,
     `Nye kunder: ${d.newCustomers}`,
     `Indløsninger: ${d.redemptions}`,
+    ...(d.topStamps > 0
+      ? [
+          "",
+          `Stamkunder: din mest trofaste kunde har ${d.topStamps} stempler.${
+            d.regulars > 0
+              ? ` ${d.regulars} ${d.regulars === 1 ? "kunde har" : "kunder har"} rundet 100 stempler.`
+              : ""
+          }`,
+        ]
+      : []),
     ...(d.churn > 0
       ? ["", `${d.churn} kunder er ved at glide fra dig. Et lille skub kan hente dem tilbage.`]
       : []),

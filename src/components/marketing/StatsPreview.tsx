@@ -3,7 +3,15 @@ import { Section, Eyebrow } from "@/components/ui";
 const TILES = [
   { label: "Genbesøg", value: "68%", note: "kommer igen", delta: "+9%" },
   { label: "Stempler", value: "1.240", note: "denne måned", delta: "+18%" },
-  { label: "Indløsninger", value: "92", note: "belønninger", delta: null },
+  { label: "Stamkunder", value: "34", note: "100+ stempler", delta: "+5" },
+];
+
+// Loyalitets-stribe: rekordholder + antal pr. niveau, som paa selve dashboardet.
+const LOYALTY = [
+  { label: "Flest hos én kunde", value: "210", dot: "bg-terracotta" },
+  { label: "50+ stempler", value: "88", dot: "bg-terracotta/40" },
+  { label: "100+ stempler", value: "34", dot: "bg-terracotta" },
+  { label: "250+ stempler", value: "6", dot: "bg-[#C9A24B]" },
 ];
 
 const BARS = [42, 55, 38, 64, 72, 58, 80, 68, 90, 76, 84, 96];
@@ -17,8 +25,8 @@ export default function StatsPreview() {
           Se hvad der faktisk virker.
         </h2>
         <p className="mt-5 max-w-lg font-[200] text-[0.95rem] leading-[1.7] text-stone">
-          Du kan følge genbesøg, stempler og indløsninger fra din telefon. Ingen
-          gætterier om, hvem der kommer igen.
+          Følg genbesøg, stempler og dine mest loyale stamkunder direkte fra
+          telefonen. Ingen gætterier om, hvem der kommer igen.
         </p>
       </div>
 
@@ -53,6 +61,25 @@ export default function StatsPreview() {
               </span>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 rounded-lg border border-fog p-5">
+          <span className="font-[400] text-[0.62rem] uppercase tracking-[0.12em] text-slate">
+            Stamkunder
+          </span>
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {LOYALTY.map((l) => (
+              <div key={l.label}>
+                <span className="flex items-center gap-1.5 font-[300] text-[0.66rem] text-slate">
+                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${l.dot}`} />
+                  {l.label}
+                </span>
+                <span className="mt-1.5 block font-[300] text-[1.5rem] leading-none tabular-nums text-ink">
+                  {l.value}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 rounded-lg border border-fog p-5">

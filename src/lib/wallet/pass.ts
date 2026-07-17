@@ -171,12 +171,23 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
 
   pass.type = "storeCard";
 
+  // Dopamin: naar passet opdateres (efter en stempling), viser iOS denne besked
+  // som en notifikation paa laaseskaermen - saa kunden faar et lille "ping" hver
+  // gang. %@ erstattes af den nye vaerdi. Beskeden er kontekstuel: et ekstra kick
+  // naar kortet bliver fuldt, og en venlig hilsen naar en ny omgang begynder.
+  const changeMessage = rewardReady
+    ? "Kortet er fuldt. Din belønning er klar."
+    : input.stamps === 0
+      ? "Ny omgang begynder. Godt gået."
+      : "Nyt stempel. Du har nu %@.";
+
   pass.headerFields.push({
     key: "stamps",
     // Klamp visningen: under carry-vinduet kan raa stamps vaere required+1,
     // men kortet skal aldrig vise "11/10".
     label: "STEMPLER",
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
+    changeMessage,
   });
 
   // Rent og elegant: strip-gitteret staar oeverst, og kun to SMAA felter under.
@@ -197,6 +208,13 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   );
 
   pass.backFields.push(
+    {
+      key: "progress",
+      label: "Fremgang",
+      value: rewardReady
+        ? "Kortet er fuldt. Vis det ved kassen og få din belønning."
+        : `${input.stamps} af ${input.required} stempler. ${left} til din belønning.`,
+    },
     {
       key: "how",
       label: "Sådan virker det",

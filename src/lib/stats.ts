@@ -18,6 +18,9 @@ export type BusinessStats = {
   completionRate: number;
   avgDaysToFull: number | null;
   byMethod: { kiosk: number; staff: number; manual: number };
+  // Loyalitet: din mest trofaste kunde og hvor mange stamkunder du har paa hvert
+  // niveau (samlede stempler nogensinde, ikke det nuvaerende korts stand).
+  loyalty: { topStamps: number; over50: number; over100: number; over250: number };
   perDay: PerDay[];
   newPerDay: PerDay[];
 };
@@ -49,6 +52,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
       completionRate: 0,
       avgDaysToFull: null,
       byMethod: { kiosk: 0, staff: 0, manual: 0 },
+      loyalty: { topStamps: 0, over50: 0, over100: 0, over250: 0 },
       perDay: buildPerDay([]),
       newPerDay: buildPerDay([]),
     };
@@ -81,6 +85,10 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     recentCustomerCards,
     methodGroups,
     avgRows,
+    topStampsAgg,
+    over50,
+    over100,
+    over250,
   ] = await Promise.all([
     prisma.customerCard.count({ where: inCards }),
     prisma.customerCard.count({
@@ -137,6 +145,21 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
         WHERE cc."cardId" IN (${Prisma.join(cardIds)})
       ) s
     `),
+    // Loyalitet: din mest trofaste kunde og antal stamkunder pr. niveau.
+    // lifetimeStamps taeller alle stempler kunden nogensinde har optjent.
+    prisma.customerCard.aggregate({
+      where: inCards,
+      _max: { lifetimeStamps: true },
+    }),
+    prisma.customerCard.count({
+      where: { ...inCards, lifetimeStamps: { gte: 50 } },
+    }),
+    prisma.customerCard.count({
+      where: { ...inCards, lifetimeStamps: { gte: 100 } },
+    }),
+    prisma.customerCard.count({
+      where: { ...inCards, lifetimeStamps: { gte: 250 } },
+    }),
   ]);
 
   // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
@@ -180,6 +203,12 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     completionRate,
     avgDaysToFull,
     byMethod,
+    loyalty: {
+      topStamps: topStampsAgg._max.lifetimeStamps ?? 0,
+      over50,
+      over100,
+      over250,
+    },
     perDay,
     newPerDay,
   };
@@ -231,6 +260,8 @@ export type WeeklyStats = {
   newCustomers: number;
   redemptions: number;
   churn: number; // kunder der er ved at glide fra dig
+  topStamps: number; // din mest trofaste kundes samlede stempler
+  regulars: number; // antal stamkunder (100+ stempler nogensinde)
 };
 
 /** Tal til den ugentlige statistik-mail. Rullende 7-dages vinduer. */
@@ -241,30 +272,46 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
   });
   const cardIds = cards.map((c) => c.id);
   if (cardIds.length === 0) {
-    return { stampsWeek: 0, stampsDelta: 0, newCustomers: 0, redemptions: 0, churn: 0 };
+    return {
+      stampsWeek: 0,
+      stampsDelta: 0,
+      newCustomers: 0,
+      redemptions: 0,
+      churn: 0,
+      topStamps: 0,
+      regulars: 0,
+    };
   }
 
   const rel = { customerCard: { cardId: { in: cardIds } } };
+  const inCards = { cardId: { in: cardIds } };
   const d7 = daysAgo(7);
   const d14 = daysAgo(14);
   const d21 = daysAgo(21);
   const d60 = daysAgo(60);
 
-  const [stampsWeek, stampsPrevWeek, newCustomers, redemptions, churn] =
+  const [stampsWeek, stampsPrevWeek, newCustomers, redemptions, churn, topAgg, regulars] =
     await Promise.all([
       prisma.stamp.count({ where: { ...rel, createdAt: { gte: d7 } } }),
       prisma.stamp.count({ where: { ...rel, createdAt: { gte: d14, lt: d7 } } }),
       prisma.customerCard.count({
-        where: { cardId: { in: cardIds }, createdAt: { gte: d7 } },
+        where: { ...inCards, createdAt: { gte: d7 } },
       }),
       prisma.redemption.count({ where: { ...rel, createdAt: { gte: d7 } } }),
       // "Ved at glide fra dig": var engagerede, men ikke set i 21-60 dage.
       prisma.customerCard.count({
         where: {
-          cardId: { in: cardIds },
+          ...inCards,
           lastStampAt: { gte: d60, lt: d21 },
           OR: [{ completedCount: { gte: 1 } }, { stamps: { gte: 2 } }],
         },
+      }),
+      prisma.customerCard.aggregate({
+        where: inCards,
+        _max: { lifetimeStamps: true },
+      }),
+      prisma.customerCard.count({
+        where: { ...inCards, lifetimeStamps: { gte: 100 } },
       }),
     ]);
 
@@ -274,6 +321,8 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
     newCustomers,
     redemptions,
     churn,
+    topStamps: topAgg._max.lifetimeStamps ?? 0,
+    regulars,
   };
 }
 

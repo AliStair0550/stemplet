@@ -4,6 +4,7 @@ import { getBusinessStats, getRecentActivity } from "@/lib/stats";
 import { StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { LoyaltyPanel } from "@/components/LoyaltyPanel";
 import { ButtonLink } from "@/components/ui";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
 
@@ -217,6 +218,12 @@ export default async function OverviewPage() {
           sub={`${formatDkNumber(stats.redemptions30)} seneste 30 dage`}
         />
       </div>
+
+      {stats.stampsTotal > 0 ? (
+        <div className="mt-6">
+          <LoyaltyPanel loyalty={stats.loyalty} />
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr] lg:items-start">
         <div className="flex flex-col gap-6">

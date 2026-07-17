@@ -4,6 +4,7 @@ import { getBusinessStats, type BusinessStats } from "@/lib/stats";
 import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { LoyaltyPanel } from "@/components/LoyaltyPanel";
 import { formatDkNumber } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Statistik" };
@@ -94,6 +95,8 @@ function FullStats({ stats }: { stats: BusinessStats }) {
           sub="i snit fra første til fyldt kort"
         />
       </div>
+
+      <LoyaltyPanel loyalty={stats.loyalty} />
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Panel>
