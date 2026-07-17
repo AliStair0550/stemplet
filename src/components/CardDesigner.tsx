@@ -34,16 +34,16 @@ export const DEFAULT_DESIGN: CardDesign = {
 };
 
 /**
- * Læser logoet én gang i browseren: skalerer det ned og giver både en
- * komprimeret data-URL (gemmes direkte, ingen ekstern tjeneste) og et
- * dominerende farveforslag.
+ * Læser logoet én gang i browseren: skalerer det ned til en komprimeret
+ * data-URL (gemmes direkte, ingen ekstern tjeneste). Farverne vaelger butikken
+ * selv, saa logoet aendrer aldrig kortets farver.
  */
 function processLogo(
   file: File,
   // 512 px, saa logoet ogsaa staar knivskarpt i Apple Wallet (op til 480 px
   // paa @3x-skaerme). Skaleres altid ned til visning, aldrig op.
   maxDim = 512,
-): Promise<{ dataUrl: string; color: string | null }> {
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     const url = URL.createObjectURL(file);
@@ -55,44 +55,12 @@ function processLogo(
         const canvas = document.createElement("canvas");
         canvas.width = w;
         canvas.height = h;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const ctx = canvas.getContext("2d");
         if (!ctx) throw new Error("canvas");
         ctx.drawImage(img, 0, 0, w, h);
-
-        const { data } = ctx.getImageData(0, 0, w, h);
-        let r = 0,
-          g = 0,
-          b = 0,
-          count = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i + 3] < 128) continue;
-          const rr = data[i],
-            gg = data[i + 1],
-            bb = data[i + 2];
-          const mx = Math.max(rr, gg, bb);
-          const mn = Math.min(rr, gg, bb);
-          const sat = mx === 0 ? 0 : (mx - mn) / mx;
-          const weight = sat * sat + 0.08;
-          r += rr * weight;
-          g += gg * weight;
-          b += bb * weight;
-          count += weight;
-        }
-        const color =
-          count === 0
-            ? null
-            : (
-                "#" +
-                [r, g, b]
-                  .map((v) =>
-                    Math.round(v / count).toString(16).padStart(2, "0"),
-                  )
-                  .join("")
-              ).toUpperCase();
-
         const dataUrl = canvas.toDataURL("image/png");
         URL.revokeObjectURL(url);
-        resolve({ dataUrl, color });
+        resolve(dataUrl);
       } catch (e) {
         URL.revokeObjectURL(url);
         reject(e);
@@ -158,12 +126,8 @@ export function CardDesigner({
     }
     setUploading(true);
     try {
-      const { dataUrl, color } = await processLogo(file);
-      onChange({
-        ...value,
-        logoUrl: dataUrl,
-        ...(color ? { primaryColor: color, textColor: contrastText(color) } : {}),
-      });
+      const dataUrl = await processLogo(file);
+      onChange({ ...value, logoUrl: dataUrl });
     } catch {
       setLogoError("Kunne ikke læse billedet. Prøv et andet.");
     } finally {
@@ -369,8 +333,7 @@ export function CardDesigner({
               ) : null}
             </div>
             <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Vi henter automatisk et farveforslag fra dit logo. Har du et logo,
-              viser kortet det i stedet for butikkens navn.
+              Har du et logo, viser kortet det i stedet for butikkens navn.
             </p>
             {logoError ? (
               <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
