@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
@@ -35,6 +36,8 @@ export function StartWizard() {
   const [pin, setPin] = useState("");
   const [category, setCategory] = useState("");
   const [address, setAddress] = useState("");
+  // Sat naar en rigtig adresse er valgt fra listen (til synlig bekraeftelse).
+  const [addrConfirmed, setAddrConfirmed] = useState(false);
   const [design, setDesign] = useState<CardDesign>(DEFAULT_DESIGN);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +139,6 @@ export function StartWizard() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Coffee Lab"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
@@ -203,10 +205,35 @@ export function StartWizard() {
             <div className="mt-1">
               <AddressAutocomplete
                 value={address}
-                onChange={setAddress}
+                onChange={(next) => {
+                  setAddress(next);
+                  setAddrConfirmed(false);
+                }}
+                onSelect={() => setAddrConfirmed(true)}
                 placeholder="Begynd at skrive, og vælg din adresse"
                 className="w-full border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
               />
+              {addrConfirmed ? (
+                <p className="mt-2 inline-flex items-center gap-1.5 text-[0.78rem] font-[400] text-terracotta">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3.5 w-3.5"
+                    aria-hidden
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Adresse fundet og bekræftet
+                </p>
+              ) : (
+                <p className="mt-2 text-[0.74rem] font-[200] text-slate">
+                  Vælg din adresse fra listen, så er postnummeret altid rigtigt.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -267,116 +294,161 @@ export function StartWizard() {
       ) : null}
 
       {step === 2 && created ? (
-        <div className="flex flex-col gap-8 animate-step">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 animate-step">
           <div className="text-center">
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
               Du er klar
             </h2>
             <p className="mx-auto mt-3 max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
-              Gør to ting nu: sæt kortet op i butikken, og del det online. Så
-              begynder dine kunder at samle stempler direkte i deres Apple
-              Wallet.
+              Sæt kortet op i butikken og del det online, så samler kunderne
+              stempler i deres Wallet.
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* 1: Se og del kortet online */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta/10 text-[0.8rem] font-[500] text-terracotta">
-                  1
-                </span>
-                <h3 className="font-[400] text-[1rem] text-ink">
-                  Se og del kortet
-                </h3>
-              </div>
-              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
-                Åbn dit kort og del linket online, så folk lægger det i deres
-                Wallet.
-              </p>
-              <span className="break-all rounded-md bg-sand px-3 py-2 text-center text-[0.74rem] font-[300] text-slate">
-                {created.cardUrl}
+          {/* Dit stempelkort: QR vist pænt, klar til download og deling */}
+          <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
+            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
+              Dit stempelkort
+            </span>
+            <div className="relative p-2.5">
+              <Image
+                src={created.qrDataUrl}
+                width={190}
+                height={190}
+                alt="QR-kode til dit stempelkort"
+                unoptimized
+                className="h-[180px] w-[180px] rounded-[6px]"
+              />
+              {(
+                [
+                  "left-0 top-0 rounded-tl-[10px] border-l-[2.5px] border-t-[2.5px]",
+                  "right-0 top-0 rounded-tr-[10px] border-r-[2.5px] border-t-[2.5px]",
+                  "bottom-0 left-0 rounded-bl-[10px] border-b-[2.5px] border-l-[2.5px]",
+                  "bottom-0 right-0 rounded-br-[10px] border-b-[2.5px] border-r-[2.5px]",
+                ] as const
+              ).map((c) => (
+                <span
+                  key={c}
+                  aria-hidden
+                  className={`pointer-events-none absolute h-6 w-6 border-terracotta ${c}`}
+                />
+              ))}
+            </div>
+            <span className="max-w-full break-all rounded-md bg-sand px-3 py-2 text-center text-[0.74rem] font-[300] text-slate">
+              {created.cardUrl}
+            </span>
+            <div className="flex w-full flex-wrap justify-center gap-2">
+              <a
+                href={created.qrDataUrl}
+                download={`${created.slug}-stempelkort-qr.png`}
+                className={btnClass("primary")}
+              >
+                Download QR
+              </a>
+              <button
+                type="button"
+                onClick={shareCard}
+                className={btnClass("outline")}
+              >
+                Del
+              </button>
+              <button
+                type="button"
+                onClick={copyLink}
+                className={btnClass("outline")}
+              >
+                {copied ? "Kopieret" : "Kopiér link"}
+              </button>
+            </div>
+            <a
+              href={created.cardUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[0.8rem] font-[400] text-terracotta transition-opacity hover:opacity-70"
+            >
+              Se Stempelkort
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+                aria-hidden
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </div>
+
+          {/* Sådan kommer du i gang: to klare, nummererede skridt */}
+          <div className="flex flex-col gap-4">
+            <h3 className="text-center text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
+              Sådan kommer du i gang
+            </h3>
+
+            {/* 1: Log ind (primaer vej videre) */}
+            <div className="flex gap-4 rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta text-[0.85rem] font-[500] text-parchment">
+                1
               </span>
-              <div className="mt-auto flex flex-col gap-2">
-                <a
-                  href={created.cardUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={btnClass("terracotta")}
-                >
-                  Se mit kort
-                </a>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={shareCard}
-                    className={`${btnClass("outline")} flex-1`}
+              <div className="flex flex-1 flex-col items-start gap-3">
+                <h4 className="font-[400] text-[1rem] text-ink">
+                  Log ind på dit dashboard
+                </h4>
+                <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
+                  Vi har sendt et login-link til {email}. Klik det, så er du
+                  inde. Herfra styrer du kort, stempler og statistik. Tjek
+                  spam-mappen, hvis mailen ikke dukker op.
+                </p>
+                <form action={sendOnboardingLogin}>
+                  <input type="hidden" name="email" value={email} />
+                  <SubmitButton
+                    variant="primary"
+                    size="md"
+                    pendingText="Sender login-link..."
                   >
-                    Del
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyLink}
-                    className={`${btnClass("outline")} flex-1`}
-                  >
-                    {copied ? "Kopieret" : "Kopiér link"}
-                  </button>
+                    Log ind
+                  </SubmitButton>
+                </form>
+              </div>
+            </div>
+
+            {/* 2: Print et skilt til butikken */}
+            <div className="flex gap-4 rounded-lg border border-fog bg-white p-5 shadow-card">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-[0.85rem] font-[500] text-terracotta">
+                2
+              </span>
+              <div className="flex flex-1 flex-col items-start gap-3">
+                <h4 className="font-[400] text-[1rem] text-ink">
+                  Sæt et skilt op i butikken
+                </h4>
+                <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
+                  Print et færdigt skilt med QR-koden og stil det ved kassen, så
+                  kunderne selv henter kortet.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["plakat", "A4-plakat"],
+                      ["a5", "A5-skilt"],
+                      ["visitkort", "Visitkort"],
+                    ] as const
+                  ).map(([t, label]) => (
+                    <a
+                      key={t}
+                      href={`/api/materials/${t}?slug=${created.slug}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={btnClass("outline")}
+                    >
+                      {label}
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
-
-            {/* 2: Faerdigt skilt til print */}
-            <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
-              <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta/10 text-[0.8rem] font-[500] text-terracotta">
-                  2
-                </span>
-                <h3 className="font-[400] text-[1rem] text-ink">
-                  Færdigt skilt
-                </h3>
-              </div>
-              <p className="font-[200] text-[0.82rem] leading-relaxed text-stone">
-                Et flot, færdigt skilt du bare printer og sætter op. Vælg
-                størrelse:
-              </p>
-              <div className="mt-auto flex flex-col gap-2">
-                {(
-                  [
-                    ["plakat", "A4-plakat"],
-                    ["a5", "A5-skilt"],
-                    ["visitkort", "Visitkort"],
-                  ] as const
-                ).map(([t, label]) => (
-                  <a
-                    key={t}
-                    href={`/api/materials/${t}?slug=${created.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={btnClass("outline")}
-                  >
-                    {label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Tydelig login-CTA i midten */}
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-8 text-center">
-            <form action={sendOnboardingLogin}>
-              <input type="hidden" name="email" value={email} />
-              <SubmitButton
-                variant="primary"
-                size="lg"
-                pendingText="Sender login-link..."
-              >
-                Log ind på dit dashboard
-              </SubmitButton>
-            </form>
-            <p className="max-w-sm font-[200] text-[0.74rem] leading-relaxed text-slate">
-              Vi sender et login-link til {email}. Klik det, og du er inde i
-              dashboardet. Husk at tjekke spam-mappen, hvis det ikke dukker op.
-            </p>
           </div>
         </div>
       ) : null}

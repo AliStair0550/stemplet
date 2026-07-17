@@ -11,6 +11,7 @@ type Suggestion = { tekst: string; id: string };
 export function AddressAutocomplete({
   value,
   onChange,
+  onSelect,
   onEnter,
   placeholder,
   disabled,
@@ -19,6 +20,9 @@ export function AddressAutocomplete({
 }: {
   value: string;
   onChange: (next: string) => void;
+  // Kaldes KUN naar brugeren vaelger en rigtig adresse fra listen (til en
+  // synlig bekraeftelse), ikke ved fri indtastning.
+  onSelect?: (tekst: string) => void;
   // Kaldes naar brugeren trykker Enter UDEN et aktivt forslag (fx "gem").
   onEnter?: () => void;
   placeholder?: string;
@@ -87,6 +91,7 @@ export function AddressAutocomplete({
   function pick(s: Suggestion) {
     justPicked.current = true;
     onChange(s.tekst);
+    onSelect?.(s.tekst);
     setItems([]);
     setOpen(false);
     setActive(-1);
