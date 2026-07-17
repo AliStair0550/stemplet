@@ -8,63 +8,17 @@ import {
 } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
-import { effectiveProPriceKr, CARDHOLDER_LIMIT } from "@/lib/billing";
-import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
+import { effectiveProPriceKr } from "@/lib/billing";
+import { formatDkNumber, formatDkDateTime } from "@/lib/utils";
 import { AdminUnlock } from "./AdminUnlock";
-import {
-  CopyEmail,
-  PlanSelect,
-  DeleteButton,
-  ClearDemoButton,
-  ResetStampsButton,
-  EditOwner,
-  LockButton,
-  EditBilling,
-  PauseButton,
-  StopButton,
-} from "./AdminControls";
+import { ClearDemoButton, LockButton } from "./AdminControls";
+import { AdminBusinesses, type Row } from "./AdminBusinesses";
 
 export const metadata: Metadata = {
   title: "Admin",
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
-
-type Owner = {
-  id: string;
-  email: string;
-  name: string | null;
-  verified: boolean;
-};
-type Row = {
-  id: string;
-  name: string;
-  slug: string;
-  plan: "FREE" | "PRO";
-  category: string | null;
-  createdAt: Date;
-  termsAcceptedAt: Date | null;
-  stripeCustomerId: string | null;
-  hasLocation: boolean;
-  selfScan: boolean;
-  welcomeStamp: boolean;
-  weeklyEmail: boolean;
-  owners: Owner[];
-  customers: number;
-  stamps: number;
-  redemptions: number;
-  lastActive: Date | null;
-  isDemo: boolean;
-  // Prismodel / manuel fakturering
-  proApprovedAt: Date | null;
-  reached100At: Date | null;
-  proPriceKr: number;
-  proPriceUntil: Date | null;
-  effectivePriceKr: number;
-  lastInvoicedAt: Date | null;
-  newSignupsPaused: boolean;
-  stopped: boolean;
-};
 
 async function buildRow(b: {
   id: string;
@@ -117,7 +71,6 @@ async function buildRow(b: {
     category: b.category,
     createdAt: b.createdAt,
     termsAcceptedAt: b.termsAcceptedAt,
-    stripeCustomerId: b.stripeCustomerId,
     hasLocation: b.latitude != null && b.longitude != null,
     selfScan: b.selfScanEnabled,
     welcomeStamp: b.welcomeStampEnabled,
@@ -278,178 +231,15 @@ export default async function AdminPage() {
           Tilmeldinger ({real.length})
         </h2>
 
-        <div className="mt-4 flex flex-col gap-4">
-          {real.map((r) => (
-            <BusinessCard key={r.id} r={r} />
-          ))}
-        </div>
-
         {real.length === 0 ? (
           <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
             Ingen rigtige tilmeldinger endnu. De dukker op her, saa snart en butik
             opretter sig, med ejerens email til at skrive til dem.
           </p>
-        ) : null}
-      </div>
-    </main>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[0.6rem] font-[400] uppercase tracking-[0.12em] text-slate">
-        {label}
-      </p>
-      <p className="mt-0.5 font-[400] text-[0.95rem] tabular-nums text-ink">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="text-[0.76rem] font-[300] text-stone">
-      <span className="text-slate">{label}:</span> {value}
-    </span>
-  );
-}
-
-function BusinessCard({ r }: { r: Row }) {
-  return (
-    <div className="rounded-lg border border-fog bg-white p-5 shadow-card">
-      {/* Titel + plan + slet */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-[400] text-[1.05rem] text-ink">{r.name}</span>
-            <Link
-              href={`/k/${r.slug}`}
-              className="font-[300] text-[0.78rem] text-slate underline-offset-2 hover:text-ink hover:underline"
-            >
-              /{r.slug}
-            </Link>
-          </div>
-          <p className="mt-1 font-[300] text-[0.76rem] text-slate">
-            Oprettet {formatDkDate(r.createdAt)}
-            {r.termsAcceptedAt
-              ? ` · Vilkår accepteret ${formatDkDate(r.termsAcceptedAt)}`
-              : " · Vilkår ikke registreret"}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <PlanSelect businessId={r.id} plan={r.plan} />
-          <ResetStampsButton businessId={r.id} />
-          <DeleteButton businessId={r.id} name={r.name} />
-        </div>
-      </div>
-
-      {/* Kontaktinfo (til at skrive til dem) */}
-      <div className="mt-4 rounded-md border border-fog bg-sand/40 px-4 py-3">
-        <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
-          Ejer / kontakt
-        </p>
-        {r.owners.length ? (
-          <ul className="mt-1.5 flex flex-col gap-1.5">
-            {r.owners.map((o) => (
-              <li key={o.id} className="text-[0.85rem]">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <CopyEmail email={o.email} />
-                  {o.name ? (
-                    <span className="font-[300] text-stone">{o.name}</span>
-                  ) : null}
-                  <span
-                    className={`text-[0.66rem] font-[400] uppercase tracking-[0.08em] ${
-                      o.verified ? "text-moss" : "text-rust/80"
-                    }`}
-                  >
-                    {o.verified ? "✓ verificeret" : "ikke verificeret"}
-                  </span>
-                  <EditOwner userId={o.id} email={o.email} name={o.name} />
-                </div>
-              </li>
-            ))}
-          </ul>
         ) : (
-          <p className="mt-1 font-[300] text-[0.82rem] text-slate">
-            Ingen ejer-konto tilknyttet.
-          </p>
+          <AdminBusinesses rows={real} />
         )}
       </div>
-
-      {/* Aktivitet */}
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Metric label="Kortholdere" value={formatDkNumber(r.customers)} />
-        <Metric label="Stempler" value={formatDkNumber(r.stamps)} />
-        <Metric label="Indløst" value={formatDkNumber(r.redemptions)} />
-        <Metric
-          label="Sidst aktiv"
-          value={r.lastActive ? formatDkDateTime(r.lastActive) : "Ingen"}
-        />
-      </div>
-
-      {/* Prismodel / manuel fakturering (Billy) */}
-      <div className="mt-4 rounded-md border border-fog bg-sand/40 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
-            Pro &amp; fakturering
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <PauseButton businessId={r.id} paused={r.newSignupsPaused} />
-            <StopButton businessId={r.id} stopped={r.stopped} name={r.name} />
-          </div>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5">
-          <Fact
-            label="Kortholdere"
-            value={`${formatDkNumber(r.customers)} / ${CARDHOLDER_LIMIT}${
-              r.customers >= CARDHOLDER_LIMIT ? " (over)" : ""
-            }`}
-          />
-          <Fact
-            label="Godkendt"
-            value={r.proApprovedAt ? formatDkDateTime(r.proApprovedAt) : "Nej"}
-          />
-          <Fact
-            label="Krydsede 100"
-            value={r.reached100At ? formatDkDate(r.reached100At) : "-"}
-          />
-          <Fact
-            label="Pris/md"
-            value={`${formatDkNumber(r.effectivePriceKr)} kr.${
-              r.proPriceUntil ? ` (til ${formatDkDate(r.proPriceUntil)})` : ""
-            }`}
-          />
-          <Fact
-            label="Sidst faktureret"
-            value={r.lastInvoicedAt ? formatDkDate(r.lastInvoicedAt) : "-"}
-          />
-          {r.newSignupsPaused ? (
-            <Fact label="Nye kortholdere" value="PÅ PAUSE" />
-          ) : null}
-          {r.stopped ? <Fact label="Butik" value="STOPPET" /> : null}
-        </div>
-        <EditBilling
-          businessId={r.id}
-          proPriceKr={r.proPriceKr}
-          proPriceUntil={
-            r.proPriceUntil ? r.proPriceUntil.toISOString().slice(0, 10) : ""
-          }
-          lastInvoicedAt={
-            r.lastInvoicedAt ? r.lastInvoicedAt.toISOString().slice(0, 10) : ""
-          }
-        />
-      </div>
-
-      {/* Indstillinger */}
-      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-fog pt-3">
-        <Fact label="Branche" value={r.category || "-"} />
-        <Fact label="Placering" value={r.hasLocation ? "Ja" : "Nej"} />
-        <Fact label="Selvscan" value={r.selfScan ? "Til" : "Fra"} />
-        <Fact label="Velkomststempel" value={r.welcomeStamp ? "Til" : "Fra"} />
-        <Fact label="Ugebrev" value={r.weeklyEmail ? "Til" : "Fra"} />
-      </div>
-    </div>
+    </main>
   );
 }
