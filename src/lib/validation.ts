@@ -84,9 +84,12 @@ export const redeemSchema = z.object({
 });
 
 // Personale-scan (stempl via serial). count: antal stempler paa denne scanning.
+// idempotencyKey: samme noegle paa et retry (fx daarligt wifi) deduplikeres
+// server-side, saa kunden ikke faar et ekstra stempel.
 export const staffStampSchema = z.object({
   serial: z.string().min(4),
   count: z.number().int().min(1).max(20).optional(),
+  idempotencyKey: z.string().min(8).max(200).optional(),
 });
 
 export type CardDesignInput = z.infer<typeof cardDesignSchema>;

@@ -26,6 +26,17 @@ function haptic(pattern: number | number[]) {
   }
 }
 
+// Unik noegle pr. stempel-handling. Bruges til server-side idempotens: samme
+// noegle paa et retry (fx tabt svar paa daarligt wifi) giver ikke et ekstra
+// stempel. Fallback hvis crypto.randomUUID ikke findes (meget gamle browsere).
+function newIdemKey(): string {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+}
+
 // Gave-glyf til indloesnings-fejringen ("giv beloenningen nu").
 function GiftGlyph({ className }: { className?: string }) {
   return (
@@ -502,6 +513,10 @@ function StaffCard({
   // onClick FOER React har sat disabled i DOM'en. En ref tjekkes/saettes
   // synkront og lukker det vindue, saa man aldrig giver to stempler paa eet tryk.
   const busyRef = useRef(false);
+  // Idempotens-noegle for det NUVAERENDE stempel. Roteres foerst naar vi faar et
+  // endeligt svar; beholdes ved tabt forbindelse, saa et nyt tryk deduplikeres
+  // server-side i stedet for at give kunden et ekstra stempel.
+  const stampKeyRef = useRef(newIdemKey());
   // Stiger for hvert stempel: bruges som key til at gen-udloese kortets
   // "burst"-animation og den flyvende "+1", saa personalet faar en tydelig
   // kvittering paa skaermen (Wallet-pass'et opdaterer Apple lidt senere).
@@ -555,9 +570,25 @@ function StaffCard({
       const res = await fetch("/api/staff/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial, count: qty }),
+        body: JSON.stringify({
+          serial: card.serial,
+          count: qty,
+          // Samme noegle paa et retry -> server-side dedup (ingen dobbelt stempel).
+          idempotencyKey: stampKeyRef.current,
+        }),
       });
       const data = await res.json();
+      if (res.status === 409) {
+        // Et identisk forsoeg behandles stadig. Behold noeglen, saa et nyt tryk
+        // henter DET foerste resultat i stedet for at stemple igen.
+        setNote({
+          ok: false,
+          text: data.message ?? "Stemplet behandles. Prøv igen om lidt.",
+        });
+        return;
+      }
+      // Vi fik et endeligt svar -> naeste stempel er en NY handling.
+      stampKeyRef.current = newIdemKey();
       if (res.ok) {
         // Opdater kortet DIREKTE fra svaret, ingen ekstra hentning: personalet
         // ser stemplet med det samme (foer var der to kald i traek = langsomt).
@@ -584,6 +615,8 @@ function StaffCard({
         if (data.code === "FULL") await loadCard(card.serial);
       }
     } catch {
+      // Intet svar (daarligt wifi): BEHOLD noeglen, saa et nyt tryk deduplikeres
+      // server-side i stedet for at give kunden et ekstra stempel.
       setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
     } finally {
       busyRef.current = false;
