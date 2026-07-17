@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   // Pakker der bruger Node-native ting (fs, node-forge, streams) og ikke skal
   // bundles af Turbopack. Wallet og PDF koerer kun server-side.
   serverExternalPackages: ["passkit-generator", "@react-pdf/renderer"],
+  // Generér ogsaa KLIENT-source maps, saa fejl i browseren faar laesbare stack
+  // traces i Sentry (server-maps laves i forvejen). Sentry uploader dem ved
+  // build og fjerner dem igen fra klienten (deleteSourcemapsAfterUpload), saa de
+  // ikke serveres til brugere.
+  productionBrowserSourceMaps: true,
   experimental: {
     // Logo-upload via server action kan vaere op til et par MB.
     serverActions: { bodySizeLimit: "5mb" },
