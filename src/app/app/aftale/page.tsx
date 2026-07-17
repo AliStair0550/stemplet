@@ -91,7 +91,7 @@ export default async function AftalePage() {
               ) : null}
             </Term>
             <Term>Månedsvis faktura, forud</Term>
-            <Term>Opsigelse: løbende måned plus 30 dage</Term>
+            <Term>Ingen binding: opsig når som helst</Term>
             <Term>
               Betaling starter først den dag, I krydser {v.limit} kortholdere
             </Term>
