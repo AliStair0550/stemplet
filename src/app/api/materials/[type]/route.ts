@@ -86,6 +86,9 @@ export async function GET(
     logoUrl: business.logoUrl,
     pageSize: fmt.pageSize,
     tier: fmt.tier,
+    // Butikkens egne kortfarver, saa skiltet matcher det designede kort.
+    primaryColor: business.primaryColor,
+    textColor: business.textColor,
   });
   const buffer = await renderToBuffer(element);
 
