@@ -7,7 +7,7 @@ import { walletIds, walletCertificates } from "./config";
 import { buildStripImages } from "./strip";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
-import { hexToRgb, contrastText } from "../brand";
+import { hexToRgb, contrastText, isCardReadable } from "../brand";
 
 type PassInput = {
   serial: string;
@@ -125,9 +125,15 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   ]);
 
   const bg = rgbString(input.primaryColor);
-  const fg = rgbString(contrastText(input.primaryColor));
+  // Passets tekst foelger butikkens valgte tekstfarve (samme som web-kortet og
+  // stemplerne), saa kortet foeles ud i eet. Kun hvis den farve er ulaeselig paa
+  // baggrunden, falder vi tilbage til en garanteret laesbar kontrastfarve.
+  const fgHex = isCardReadable(input.primaryColor, input.textColor)
+    ? input.textColor
+    : contrastText(input.primaryColor);
+  const fg = rgbString(fgHex);
   // Dæmpet label-farve (tekstfarven trukket ~1/3 mod baggrunden).
-  const labelCol = blendRgb(contrastText(input.primaryColor), input.primaryColor, 0.34);
+  const labelCol = blendRgb(fgHex, input.primaryColor, 0.34);
   const rewardReady = input.stamps >= input.required;
 
   const images: Record<string, Buffer> = {

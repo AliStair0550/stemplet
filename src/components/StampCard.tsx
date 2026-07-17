@@ -63,8 +63,8 @@ function GiftIcon({ className }: { className?: string }) {
 export function StampCard({
   businessName,
   logoUrl,
-  primaryColor = "#061C3D",
-  textColor = "#FFFFFF",
+  primaryColor = "#2A1A10",
+  textColor = "#F6EEE4",
   stampIcon = "coffee",
   stamps,
   required,

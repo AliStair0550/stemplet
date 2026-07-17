@@ -42,6 +42,17 @@ function esc(n: number): string {
   return Number(n.toFixed(2)).toString();
 }
 
+// En lille firetakket gnist (koncave sider), til den optjente gave.
+function sparkle(x: number, y: number, r: number): string {
+  const q = r * 0.3;
+  return (
+    `<path d="M ${esc(x)} ${esc(y - r)} Q ${esc(x + q)} ${esc(y - q)} ${esc(x + r)} ${esc(y)} ` +
+    `Q ${esc(x + q)} ${esc(y + q)} ${esc(x)} ${esc(y + r)} ` +
+    `Q ${esc(x - q)} ${esc(y + q)} ${esc(x - r)} ${esc(y)} ` +
+    `Q ${esc(x - q)} ${esc(y - q)} ${esc(x)} ${esc(y - r)} Z" fill="#FBEED0"/>`
+  );
+}
+
 // Blander en hex-farve mod hvid/sort (til mont-praeg paa fyldte stempler).
 function mix(hex: string, target: [number, number, number], t: number): string {
   const h = hex.replace("#", "");
@@ -107,6 +118,12 @@ export async function buildStripImages(opts: {
 
   const tc = opts.textColor;
   const pc = opts.primaryColor;
+  // Kant paa moenterne, saa de loefter sig rent fra baggrunden.
+  const rim = mix(tc, [0, 0, 0], 0.32);
+  // Diskret spotlight bag gitteret: en anelse lysere i midten, som toner ud til
+  // kortets egen farve ved kanten, saa strip'en flyder saemloest sammen med
+  // passets baggrund (ingen synlig kasse) men giver kortet dybde.
+  const glowCenter = mix(pc, [255, 255, 255], 0.1);
   let cells = "";
 
   for (let i = 0; i < opts.required; i++) {
@@ -127,41 +144,74 @@ export async function buildStripImages(opts: {
     const tx = cx - iconSize / 2;
     const ty = cy - iconSize / 2;
     const dash = `${esc(D * 0.09)} ${esc(D * 0.09)}`;
+    const icon = (color: string, markup: string, w = 1.7) =>
+      `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${markup}</g>`;
 
     if (isGift) {
-      // Beloennings-gaven. Optjent: guldfyldt (aabnet) med gave-ikon i
-      // kortfarven. Ikke optjent: guld stiplet cirkel med gave-ikon i guld,
-      // saa praemien er synlig hele vejen.
+      // Beloennings-gaven. Optjent: guldmoent (med praeg + skygge) og gave-ikon i
+      // kortfarven, flankeret af to smaa gnister. Ikke optjent: guld stiplet
+      // cirkel med gave-ikon i guld, saa praemien er synlig hele vejen.
       if (filled) {
+        const sp = R * 0.62;
         cells +=
-          `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="${GOLD}"/>` +
-          `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${pc}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${GIFT_MARKUP}</g>`;
+          `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="url(#giftCoin)" filter="url(#coinShadow)"/>` +
+          `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="#8A6A26" stroke-width="2" stroke-opacity="0.55"/>` +
+          icon(pc, GIFT_MARKUP) +
+          sparkle(cx + sp, cy - sp, D * 0.07) +
+          sparkle(cx - sp * 0.9, cy + sp * 0.9, D * 0.05);
       } else {
         cells +=
           `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${GOLD}" stroke-width="4" stroke-dasharray="${dash}"/>` +
-          `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${GOLD}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${GIFT_MARKUP}</g>`;
+          icon(GOLD, GIFT_MARKUP, 1.6);
       }
     } else if (filled) {
       cells +=
-        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="url(#coin)"/>` +
-        `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${pc}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(opts.stampIcon, pc)}</g>`;
+        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="url(#coin)" filter="url(#coinShadow)"/>` +
+        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${rim}" stroke-width="1.5" stroke-opacity="0.45"/>` +
+        icon(pc, iconMarkup(opts.stampIcon, pc));
     } else if (isNext) {
-      cells += `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R - 3)}" fill="none" stroke="${GOLD}" stroke-width="6"/>`;
+      // Naeste stempel: en indbydende guldring med et bloedt skaer, saa oejet
+      // ledes hen paa den plads der skal fyldes.
+      cells +=
+        `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R - 3)}" fill="none" stroke="${GOLD}" stroke-width="6" filter="url(#nextGlow)"/>` +
+        icon(GOLD, iconMarkup(opts.stampIcon, GOLD), 1.4).replace(
+          'stroke-width="1.4"',
+          'stroke-width="1.4" stroke-opacity="0.4"',
+        );
     } else {
-      cells += `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${tc}" stroke-opacity="0.3" stroke-width="4" stroke-dasharray="${dash}"/>`;
+      cells += `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${tc}" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="${dash}"/>`;
     }
   }
 
   // Mont-praeg paa de fyldte stempler: lys top-venstre, en anelse moerkere
   // nederst, saa de faar dybde og ser mere kvalitetsfulde ud (ingen fladt fyld).
+  // Guldmoenten (gaven) har sit eget varme praeg, og filtre giver blode skygger.
   const defs =
-    `<defs><radialGradient id="coin" cx="0.36" cy="0.30" r="0.85">` +
+    `<defs>` +
+    `<radialGradient id="bgGlow" gradientUnits="userSpaceOnUse" cx="${esc(W / 2)}" cy="${esc(startY + gridH / 2)}" r="${esc(W * 0.62)}">` +
+    `<stop offset="0" stop-color="${glowCenter}"/>` +
+    `<stop offset="1" stop-color="${pc}"/>` +
+    `</radialGradient>` +
+    `<radialGradient id="coin" cx="0.36" cy="0.30" r="0.85">` +
     `<stop offset="0" stop-color="${mix(tc, [255, 255, 255], 0.16)}"/>` +
     `<stop offset="0.62" stop-color="${tc}"/>` +
     `<stop offset="1" stop-color="${mix(tc, [0, 0, 0], 0.1)}"/>` +
-    `</radialGradient></defs>`;
+    `</radialGradient>` +
+    `<radialGradient id="giftCoin" cx="0.36" cy="0.30" r="0.9">` +
+    `<stop offset="0" stop-color="#F1DB92"/>` +
+    `<stop offset="0.6" stop-color="${GOLD}"/>` +
+    `<stop offset="1" stop-color="#9C7A2E"/>` +
+    `</radialGradient>` +
+    `<filter id="coinShadow" x="-45%" y="-45%" width="190%" height="190%">` +
+    `<feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#0B0705" flood-opacity="0.38"/>` +
+    `</filter>` +
+    `<filter id="nextGlow" x="-70%" y="-70%" width="240%" height="240%">` +
+    `<feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="${GOLD}" flood-opacity="0.55"/>` +
+    `</filter>` +
+    `</defs>`;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${cells}</svg>`;
+  const bg = `<rect x="0" y="0" width="${W}" height="${H}" fill="url(#bgGlow)"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${defs}${bg}${cells}</svg>`;
   const base = Buffer.from(svg);
 
   // Skaler kun paa bredden, saa hoejde-forholdet (som nu afhaenger af raekker +

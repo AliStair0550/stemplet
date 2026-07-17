@@ -1,8 +1,10 @@
 // Brand-hjælpere for kundekortene: stempel-ikoner, farver, kontrast.
 // Ren logik uden server-afhængigheder, så den kan bruges på klienten.
 
-export const DEFAULT_PRIMARY = "#061C3D";
-export const DEFAULT_TEXT = "#FFFFFF";
+// Espresso: foerste indbyggede tema, varmt og laesbart. Bruges som reserve, saa
+// et kort uden eksplicit farve stadig lander paa det nye brand.
+export const DEFAULT_PRIMARY = "#2A1A10";
+export const DEFAULT_TEXT = "#F6EEE4";
 
 export type StampIconKey =
   | "coffee"
@@ -35,21 +37,35 @@ export function isStampIcon(v: string): v is StampIconKey {
   return STAMP_ICONS.some((i) => i.key === v);
 }
 
-// Faerdige, gennemtaenkte farvetemaer, saa alle kan lave et flot kort i eet klik.
-export const CARD_THEMES: { name: string; primary: string; text: string }[] = [
+// Seks indbyggede temaer, hvert med sit eget navn: gennemtaenkte farvepar, saa
+// enhver kan lave et flot, laesbart kort i eet klik. Raekkefoelgen er bevidst:
+// varm -> koel, med en enkelt lys i bunden til dem der vil have et lyst kort.
+// Ud over disse kan man altid vaelge sin egen farve (custom).
+export type CardTheme = {
+  name: string;
+  primary: string;
+  text: string;
+};
+
+export const CARD_THEMES: CardTheme[] = [
   { name: "Espresso", primary: "#2A1A10", text: "#F6EEE4" },
+  { name: "Terrakotta", primary: "#8A3B24", text: "#FBEDE6" },
   { name: "Skov", primary: "#1F3A2E", text: "#F3F7F4" },
   { name: "Midnat", primary: "#101F33", text: "#EAF0F8" },
-  { name: "Terrakotta", primary: "#7A3B2A", text: "#FBEDE6" },
-  { name: "Vin", primary: "#5E2438", text: "#F7E7EE" },
-  { name: "Kul", primary: "#1A1A1A", text: "#F5F3EF" },
-  { name: "Hav", primary: "#123B47", text: "#E6F3F6" },
-  { name: "Sand", primary: "#E8E2D6", text: "#2A2118" },
-  { name: "Creme", primary: "#F4ECDD", text: "#3B2F1E" },
-  { name: "Himmel", primary: "#DBE7F3", text: "#1D3654" },
-  { name: "Mint", primary: "#DCEDE2", text: "#1F4536" },
-  { name: "Rosa", primary: "#F3E0E4", text: "#5C2739" },
+  { name: "Bordeaux", primary: "#5E2438", text: "#F7E7EE" },
+  { name: "Sand", primary: "#E8E2D6", text: "#3B2F1E" },
 ];
+
+/** Navnet paa et indbygget tema der matcher farverne, ellers null (custom). */
+export function themeNameFor(primary: string, text: string): string | null {
+  const p = primary.toUpperCase();
+  const t = text.toUpperCase();
+  return (
+    CARD_THEMES.find(
+      (th) => th.primary.toUpperCase() === p && th.text.toUpperCase() === t,
+    )?.name ?? null
+  );
+}
 
 const HEX_RE = /^#([0-9a-fA-F]{6})$/;
 

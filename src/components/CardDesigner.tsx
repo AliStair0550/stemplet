@@ -6,6 +6,7 @@ import { StampIcon } from "./StampIcon";
 import {
   STAMP_ICONS,
   CARD_THEMES,
+  themeNameFor,
   contrastText,
   isCardReadable,
   normalizeHex,
@@ -26,8 +27,9 @@ export const DEFAULT_DESIGN: CardDesign = {
   stampsRequired: 10,
   rewardText: "10. kop er gratis",
   stampIcon: "coffee",
-  primaryColor: "#1F3A2E",
-  textColor: "#FFFFFF",
+  // Espresso: det foerste indbyggede tema, varmt og laesbart for de fleste.
+  primaryColor: "#2A1A10",
+  textColor: "#F6EEE4",
   logoUrl: null,
 };
 
@@ -141,6 +143,9 @@ export function CardDesigner({
     onChange({ ...value, [key]: val });
   }
 
+  // Navnet paa det aktive tema, eller null hvis kunden har valgt sin egen farve.
+  const activeThemeName = themeNameFor(value.primaryColor, value.textColor);
+
   async function handleLogo(file: File) {
     setLogoError(null);
     if (!file.type.startsWith("image/")) {
@@ -216,20 +221,26 @@ export function CardDesigner({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Farvetema
-          </span>
-          <div className="flex flex-wrap gap-2.5">
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-baseline justify-between">
+            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              Tema
+            </span>
+            <span className="text-[0.72rem] font-[300] text-slate">
+              {activeThemeName ?? "Egen farve"}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2.5">
             {CARD_THEMES.map((t) => {
               const active =
-                value.primaryColor === t.primary && value.textColor === t.text;
+                value.primaryColor.toUpperCase() === t.primary.toUpperCase() &&
+                value.textColor.toUpperCase() === t.text.toUpperCase();
               return (
                 <button
                   key={t.name}
                   type="button"
-                  title={t.name}
                   aria-label={t.name}
+                  aria-pressed={active}
                   onClick={() =>
                     onChange({
                       ...value,
@@ -238,17 +249,33 @@ export function CardDesigner({
                     })
                   }
                   className={cn(
-                    "flex h-11 w-11 items-center justify-center rounded-full transition",
+                    "group flex flex-col items-center gap-1.5 rounded-[14px] border p-2.5 transition",
                     active
-                      ? "ring-2 ring-terracotta ring-offset-2 ring-offset-parchment"
-                      : "ring-1 ring-clay hover:ring-terracotta",
+                      ? "border-terracotta bg-terracotta/[0.06]"
+                      : "border-clay hover:border-terracotta/60",
                   )}
-                  style={{ background: t.primary }}
                 >
                   <span
-                    className="h-2 w-2 rounded-full"
-                    style={{ background: t.text }}
-                  />
+                    className="flex h-11 w-full items-center justify-center rounded-[9px] ring-1 ring-black/5"
+                    style={{ background: t.primary }}
+                  >
+                    <span
+                      className="text-[0.9rem] font-[500] leading-none"
+                      style={{ color: t.text }}
+                    >
+                      Aa
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[0.72rem] leading-none transition-colors",
+                      active
+                        ? "font-[500] text-ink"
+                        : "font-[300] text-stone group-hover:text-ink",
+                    )}
+                  >
+                    {t.name}
+                  </span>
                 </button>
               );
             })}
