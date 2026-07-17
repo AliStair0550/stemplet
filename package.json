@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "test": "node --conditions=react-server --import tsx --test tests/security.test.ts && node --import tsx --test tests/guide.test.tsx",
+    "test": "node --conditions=react-server --import tsx --test tests/security.test.ts && node --import tsx --test tests/guide.test.tsx && node --import tsx --test tests/apns.test.ts",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",

@@ -4,6 +4,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import { prisma } from "../prisma";
 import { apnsConfig } from "./config";
 import { captureWalletError } from "../sentry";
+import { classifyApnsStatus } from "./apns-status";
 
 // Token-baseret APNs (p8-nøgle). Push til Wallet er en tom payload {} -
 // den beder blot enheden hente det opdaterede pass fra web-servicen.
@@ -100,16 +101,28 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
       Promise.all(
         regs.map(async (r) => {
           const status = await sendOne(client, r.pushToken, jwt, topic);
-          // 410/400 = doedt token (afregistreret enhed): forventet, ryd op.
-          if (status === 410 || status === 400) dead.push(r.id);
-          // Andre ikke-2xx (fx 403 forkert cert/topic, 429, 5xx) er ikke normale
-          // og peger paa et konfig-/APNs-problem: rapportér med statuskoden.
-          else if (status !== null && status !== 200) {
-            captureWalletError(new Error(`APNs svarede ${status}`), {
-              operation: "apns:push",
-              customerCardId,
-              extra: { status },
-            });
+          switch (classifyApnsStatus(status)) {
+            case "dead":
+              // Doedt token (afregistreret enhed): forventet, ryd op.
+              dead.push(r.id);
+              break;
+            case "transient":
+              // APNs overbelastet/nede: passet selv-healer ved naeste hentning.
+              // Log lokalt (synligt i Vercel-logs) uden at fylde Sentry-kvoten.
+              console.warn(
+                `[apns] forbigaaende status ${status} for kort ${customerCardId}`,
+              );
+              break;
+            case "config":
+              // Konfig-fejl (fx 403 forkert cert/token): rammer ALLE pushes.
+              captureWalletError(new Error(`APNs svarede ${status}`), {
+                operation: "apns:push",
+                customerCardId,
+                extra: { status },
+              });
+              break;
+            case "ok":
+              break;
           }
         }),
       ).then(done, done);
