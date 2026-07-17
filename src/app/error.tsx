@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { btnClass } from "@/components/ui";
 
@@ -11,7 +12,10 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
+    // Log lokalt (Sentry er slaaet fra i udvikling) og rapportér i produktion,
+    // saa vi opdager fejl kunderne rammer, foer de skriver til os.
     console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (
