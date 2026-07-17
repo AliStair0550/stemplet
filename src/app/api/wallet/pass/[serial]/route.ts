@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { WALLET_ENABLED } from "@/lib/env";
 import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
 import { getCardToken } from "@/lib/cookies";
+import { captureWalletError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,11 @@ export async function GET(
   try {
     buffer = await buildPkpass(cc);
   } catch (e) {
+    captureWalletError(e, {
+      operation: "buildPkpass:download",
+      businessId: cc.card.businessId,
+      serial,
+    });
     console.error("pkpass-bygning fejlede", e);
     return new Response("Kunne ikke bygge passet.", { status: 500 });
   }

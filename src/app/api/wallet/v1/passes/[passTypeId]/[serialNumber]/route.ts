@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { WALLET_ENABLED } from "@/lib/env";
 import { loadCCForWallet, buildPkpass, checkPassAuth } from "@/lib/wallet/build";
+import { captureWalletError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +19,18 @@ export async function GET(
     return new Response(null, { status: 401 });
   }
 
-  const buffer = await buildPkpass(cc);
+  let buffer: Buffer;
+  try {
+    buffer = await buildPkpass(cc);
+  } catch (e) {
+    captureWalletError(e, {
+      operation: "buildPkpass:update",
+      businessId: cc.card.businessId,
+      serial: serialNumber,
+    });
+    console.error("pkpass-opdatering fejlede", e);
+    return new Response(null, { status: 500 });
+  }
   return new Response(new Uint8Array(buffer), {
     headers: {
       "content-type": "application/vnd.apple.pkpass",

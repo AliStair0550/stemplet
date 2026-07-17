@@ -1,13 +1,22 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
 // Sidste-udvej, hvis selve rod-layoutet fejler. Kan ikke laene sig op ad app'ens
-// CSS, saa den bruger inline styles i brandets toner.
+// CSS, saa den bruger inline styles i brandets toner. Rapporterer fejlen til
+// Sentry (kun i produktion, jf. init).
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <html lang="da">
       <body

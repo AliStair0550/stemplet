@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // Pakker der bruger Node-native ting (fs, node-forge, streams) og ikke skal
@@ -21,4 +22,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry: uploader source maps ved deploy (paa Vercel, naar SENTRY_AUTH_TOKEN er
+// sat), saa stack traces er laesbare. Uden token springes upload bare over, saa
+// builds lokalt/uden token fejler ikke. Kilde-maps skjules fra klienten efter
+// upload, saa de ikke laekker.
+export default withSentryConfig(nextConfig, {
+  org: "alius-15",
+  project: "stemplet",
+  // authToken laeses automatisk fra SENTRY_AUTH_TOKEN i miljoeet (Vercel).
+  silent: !process.env.CI,
+  sourcemaps: { deleteSourcemapsAfterUpload: true },
+  telemetry: false,
+});

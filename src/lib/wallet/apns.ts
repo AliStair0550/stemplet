@@ -3,6 +3,7 @@ import http2 from "node:http2";
 import { SignJWT, importPKCS8 } from "jose";
 import { prisma } from "../prisma";
 import { apnsConfig } from "./config";
+import { captureWalletError } from "../sentry";
 
 // Token-baseret APNs (p8-nøgle). Push til Wallet er en tom payload {} -
 // den beder blot enheden hente det opdaterede pass fra web-servicen.
@@ -74,7 +75,10 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
   let jwt: string;
   try {
     jwt = await providerToken();
-  } catch {
+  } catch (err) {
+    // Kritisk: uden provider-token kan INTET pass opdateres. Fejl i signering
+    // (fx forkert/udloebet APNS_KEY) skal ses med det samme.
+    captureWalletError(err, { operation: "apns:provider-token", customerCardId });
     return;
   }
 
@@ -89,11 +93,24 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
           resolve();
         }
       };
-      client.on("error", done);
+      client.on("error", (err) => {
+        captureWalletError(err, { operation: "apns:connection", customerCardId });
+        done();
+      });
       Promise.all(
         regs.map(async (r) => {
           const status = await sendOne(client, r.pushToken, jwt, topic);
+          // 410/400 = doedt token (afregistreret enhed): forventet, ryd op.
           if (status === 410 || status === 400) dead.push(r.id);
+          // Andre ikke-2xx (fx 403 forkert cert/topic, 429, 5xx) er ikke normale
+          // og peger paa et konfig-/APNs-problem: rapportér med statuskoden.
+          else if (status !== null && status !== 200) {
+            captureWalletError(new Error(`APNs svarede ${status}`), {
+              operation: "apns:push",
+              customerCardId,
+              extra: { status },
+            });
+          }
         }),
       ).then(done, done);
     });
