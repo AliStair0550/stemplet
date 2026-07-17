@@ -1,24 +1,26 @@
 // Hero-stempelkort: en ren, Wallet-agtig mockup i brandets rust. Server-komponent
-// (ingen JS, let foerste load). Checkmark-cirkler som fyld: et roligt, tydeligt
-// udtryk der ogsaa kan laves i et rigtigt Apple Wallet-pass (strip med
-// stempel-positioner) uden ikoner pr. felt.
+// (ingen JS, let foerste load). Kaffekopper som stempler, og den sidste plads er
+// selve beloenningen (den gratis kop). Udtrykket kan ogsaa laves i et rigtigt
+// Apple Wallet-pass (strip med kaffe-stempler + gratis-kop til sidst).
 
 const FILLED = 7;
 const REQUIRED = 10;
 
-function Check() {
+function Coffee({ stroke }: { stroke: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#A6502E"
-      strokeWidth={3}
+      stroke={stroke}
+      strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-[46%] w-[46%]"
+      className="h-[52%] w-[52%]"
       aria-hidden
     >
-      <path d="M20 6 9 17l-5-5" />
+      <path d="M5 8h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V8Z" />
+      <path d="M16 9h2.5a2 2 0 0 1 0 4H16" />
+      <path d="M8 3.5c-.4.7-.4 1.3 0 2M11.5 3.5c-.4.7-.4 1.3 0 2" />
     </svg>
   );
 }
@@ -52,23 +54,37 @@ export default function HeroStampCard() {
           </div>
         </div>
 
-        {/* Cirkler: 7 stemplet (hvid + rust flueben), 3 tilbage (stiplet) */}
+        {/* Kopper: 7 stemplet (hvid cirkel + rust kaffe), 2 tilbage (stiplet),
+            og den sidste er den gratis kop (fremhaevet). */}
         <div className="mt-6 grid grid-cols-5 gap-3 md:mt-7">
-          {Array.from({ length: REQUIRED }).map((_, i) =>
-            i < FILLED ? (
-              <span
-                key={i}
-                className="flex aspect-square items-center justify-center rounded-full bg-[#F7EFE6]"
-              >
-                <Check />
-              </span>
-            ) : (
+          {Array.from({ length: REQUIRED }).map((_, i) => {
+            if (i < FILLED) {
+              return (
+                <span
+                  key={i}
+                  className="flex aspect-square items-center justify-center rounded-full bg-[#F7EFE6]"
+                >
+                  <Coffee stroke="#A6502E" />
+                </span>
+              );
+            }
+            if (i === REQUIRED - 1) {
+              return (
+                <span
+                  key={i}
+                  className="flex aspect-square items-center justify-center rounded-full border-2 border-[#F7EFE6]/70"
+                >
+                  <Coffee stroke="#F7EFE6" />
+                </span>
+              );
+            }
+            return (
               <span
                 key={i}
                 className="aspect-square rounded-full border-2 border-dashed border-[#F7EFE6]/40"
               />
-            ),
-          )}
+            );
+          })}
         </div>
 
         {/* Fod */}

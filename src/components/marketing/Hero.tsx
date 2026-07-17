@@ -1,4 +1,4 @@
-import { ButtonLink, Container, Eyebrow } from "@/components/ui";
+import { ButtonLink, Container, Eyebrow, CtaGlow } from "@/components/ui";
 import HeroStampCard from "@/components/marketing/HeroStampCard";
 
 export default function Hero() {
@@ -39,15 +39,34 @@ export default function Hero() {
               statistik og købsmønstre.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <ButtonLink href="/start" variant="primary" size="lg">
-                Kom gratis i gang
-              </ButtonLink>
+              <CtaGlow className="w-full sm:w-auto">
+                <ButtonLink
+                  href="/start"
+                  variant="primary"
+                  size="lg"
+                  className="group w-full sm:w-auto"
+                >
+                  Kom gratis i gang
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-[1.05rem] w-[1.05rem] transition-transform duration-200 group-hover:translate-x-1"
+                    aria-hidden
+                  >
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </ButtonLink>
+              </CtaGlow>
               <ButtonLink href="#sådan" variant="outline" size="lg">
                 Se hvordan det virker
               </ButtonLink>
             </div>
             <p className="mt-4 text-[0.85rem] text-taupe-light">
-              Dine første 100 kunder er gratis.
+              Dine første 100 kunder er gratis. Intet kreditkort.
             </p>
           </div>
         </div>
