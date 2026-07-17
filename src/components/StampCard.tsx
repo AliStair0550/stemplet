@@ -122,8 +122,8 @@ export function StampCard({
         {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            {/* Enten logo eller navn, aldrig begge: har butikken et logo, staar
-                det alene; ellers vises navnet (med et lille bogstav-maerke). */}
+            {/* Enten logo eller navn, aldrig begge og intet auto-monogram: har
+                butikken et logo, staar det alene; ellers vises navnet som tekst. */}
             {logoUrl ? (
               <Image
                 src={logoUrl}
@@ -136,16 +136,8 @@ export function StampCard({
                 )}
                 unoptimized
               />
-            ) : businessName ? (
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-md text-[0.7rem] font-[500]"
-                style={{ background: rgba(textColor, 0.14) }}
-              >
-                {businessName.slice(0, 2).toUpperCase()}
-              </div>
-            ) : null}
-            {!hideName && !logoUrl && businessName ? (
-              <span className="text-[0.82rem] font-[400] tracking-[0.02em]">
+            ) : !hideName && businessName ? (
+              <span className="text-[0.9rem] font-[500] tracking-[0.01em]">
                 {businessName}
               </span>
             ) : null}
