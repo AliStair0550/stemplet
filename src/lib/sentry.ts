@@ -36,3 +36,36 @@ export function captureWalletError(
     // Rapportering maa aldrig faelde selve flowet.
   }
 }
+
+// Fang en UVENTET server-fejl i et API-route (fx DB nede), som ellers bare bliver
+// til et 500-svar og et console.error. Route-handlerne fanger disse selv (for at
+// give en pæn fejlbesked), saa Next's onRequestError ser dem ikke - derfor sender
+// vi dem eksplicit, saa vi opdager dem foer kunderne skriver. Kun id'er/kontekst,
+// aldrig persondata. Kaster aldrig selv.
+export function captureServerError(
+  err: unknown,
+  ctx: {
+    route: string;
+    businessId?: string | null;
+    extra?: Record<string, string | number | boolean | null | undefined>;
+  },
+): void {
+  try {
+    Sentry.captureException(err, {
+      tags: {
+        area: "api",
+        route: ctx.route,
+        ...(ctx.businessId ? { businessId: ctx.businessId } : {}),
+      },
+      contexts: {
+        route: {
+          route: ctx.route,
+          businessId: ctx.businessId ?? undefined,
+          ...ctx.extra,
+        },
+      },
+    });
+  } catch {
+    // Rapportering maa aldrig faelde selve flowet.
+  }
+}

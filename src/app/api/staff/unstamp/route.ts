@@ -3,6 +3,7 @@ import { requireKasseBusinessId } from "@/lib/kasse";
 import { loadCardBySerial, undoLastStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
+import { captureServerError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
+    captureServerError(e, { route: "staff/unstamp", businessId });
     console.error(e);
     return apiError("SERVER", "Noget gik galt.", 500);
   }

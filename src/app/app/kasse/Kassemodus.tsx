@@ -488,6 +488,11 @@ function StaffCard({
 }) {
   const [card, setCard] = useState<CardState | null>(null);
   const [loading, setLoading] = useState(true);
+  // Hvorfor kort-opslaget fejlede: "offline" (kan proeves igen) vs "notfound"
+  // (forkert kort, ny scanning kraeves). Styrer den tomme tilstand nedenfor.
+  const [loadError, setLoadError] = useState<"offline" | "notfound" | null>(
+    null,
+  );
   const [pin, setPin] = useState("");
   // Antal stempler personalet giver paa denne scanning (fx tre kaffe = 3).
   const [qty, setQty] = useState(1);
@@ -514,20 +519,24 @@ function StaffCard({
   const loadCard = useCallback(async (s: string) => {
     setLoading(true);
     setNote(null);
+    setLoadError(null);
     try {
       const res = await fetch(
         `/api/staff/card?serial=${encodeURIComponent(s)}`,
         { cache: "no-store" },
       );
       const data = await res.json();
-      if (res.ok) setCard(data as CardState);
-      else {
+      if (res.ok) {
+        setCard(data as CardState);
+      } else {
         setCard(null);
+        setLoadError("notfound");
         setNote({ ok: false, text: data.message ?? "Kortet blev ikke fundet." });
       }
     } catch {
       setCard(null);
-      setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
+      setLoadError("offline");
+      setNote({ ok: false, text: "Tjek forbindelsen og prøv igen." });
     } finally {
       setLoading(false);
     }
@@ -893,10 +902,21 @@ function StaffCard({
       ) : (
         <div className="flex flex-col items-center gap-4 py-8 text-center">
           <p className="font-[400] text-[1rem] text-ink">
-            Kortet blev ikke fundet
+            {loadError === "offline"
+              ? "Ingen forbindelse"
+              : "Kortet blev ikke fundet"}
           </p>
           {note ? (
             <p className="font-[300] text-[0.88rem] text-rust">{note.text}</p>
+          ) : null}
+          {loadError === "offline" ? (
+            <button
+              type="button"
+              onClick={() => loadCard(serial)}
+              className={btnClass("primary")}
+            >
+              Prøv igen
+            </button>
           ) : null}
         </div>
       )}
