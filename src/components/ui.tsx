@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 // ── Knapper (helt runde pills, normal case, een accent: terracotta) ────
 
-type Variant = "primary" | "ink" | "outline" | "moss" | "ghost" | "light";
+type Variant = "primary" | "ink" | "outline" | "terracotta" | "ghost" | "light";
 type Size = "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
@@ -14,7 +14,7 @@ const VARIANTS: Record<Variant, string> = {
   // Sekundaer: haarfin border, ingen skygge.
   outline: "border border-ink/15 text-ink hover:border-ink/30 hover:bg-ink/[0.03]",
   // Bevaret til dashboard/admin (fase 2).
-  moss: "bg-moss text-parchment hover:bg-moss-light",
+  terracotta: "bg-terracotta text-parchment hover:bg-terracotta-dark",
   ghost: "text-taupe hover:text-ink",
   // Lys knap til moerke sektioner (#1C1917-baggrund).
   light: "bg-parchment text-ink hover:bg-sand",

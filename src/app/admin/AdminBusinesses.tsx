@@ -135,10 +135,10 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
               className={[
                 "rounded-lg border px-3 py-2 text-left transition-colors",
                 active
-                  ? "border-moss bg-moss/10"
+                  ? "border-terracotta bg-terracotta/10"
                   : muted
                     ? "border-fog bg-white text-slate"
-                    : "border-clay bg-white hover:border-moss",
+                    : "border-clay bg-white hover:border-terracotta",
               ].join(" ")}
             >
               <span className="block text-[1.1rem] font-[300] tabular-nums text-ink">
@@ -158,7 +158,7 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Søg butik, slug eller ejer-email"
-          className="min-w-[16rem] flex-1 rounded-md border border-fog bg-white px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-moss"
+          className="min-w-[16rem] flex-1 rounded-md border border-fog bg-white px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
         />
         <div className="flex items-center gap-1 rounded-md border border-fog bg-white p-1">
           {(
@@ -189,7 +189,7 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
           <button
             type="button"
             onClick={() => setFilter("all")}
-            className="ml-2 text-moss underline underline-offset-2 hover:text-moss-light"
+            className="ml-2 text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
           >
             Ryd filter
           </button>
@@ -232,13 +232,13 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StateBadge({ text, tone }: { text: string; tone: "rust" | "amber" | "moss" }) {
+function StateBadge({ text, tone }: { text: string; tone: "rust" | "amber" | "terracotta" }) {
   const cls =
     tone === "rust"
       ? "border-rust/40 bg-rust/5 text-rust"
       : tone === "amber"
         ? "border-clay bg-sand text-ink"
-        : "border-moss/40 bg-moss/5 text-moss";
+        : "border-terracotta/40 bg-terracotta/5 text-terracotta";
   return (
     <span
       className={`rounded-full border px-2 py-0.5 text-[0.6rem] font-[500] uppercase tracking-[0.08em] ${cls}`}
@@ -268,7 +268,7 @@ function BusinessCard({ r }: { r: Row }) {
             ) : null}
             {isOver(r) ? <StateBadge text="Over 100" tone="amber" /> : null}
             {r.proApprovedAt ? (
-              <StateBadge text="Pro godkendt" tone="moss" />
+              <StateBadge text="Pro godkendt" tone="terracotta" />
             ) : null}
           </div>
           <p className="mt-1 font-[300] text-[0.76rem] text-slate">
@@ -301,7 +301,7 @@ function BusinessCard({ r }: { r: Row }) {
                   ) : null}
                   <span
                     className={`text-[0.66rem] font-[400] uppercase tracking-[0.08em] ${
-                      o.verified ? "text-moss" : "text-rust/80"
+                      o.verified ? "text-terracotta" : "text-rust/80"
                     }`}
                   >
                     {o.verified ? "✓ verificeret" : "ikke verificeret"}

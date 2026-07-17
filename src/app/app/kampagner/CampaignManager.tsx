@@ -44,7 +44,7 @@ const STATUS: Record<
   "active" | "upcoming" | "ended",
   { label: string; cls: string }
 > = {
-  active: { label: "Aktiv", cls: "bg-moss/10 text-moss" },
+  active: { label: "Aktiv", cls: "bg-terracotta/10 text-terracotta" },
   upcoming: { label: "Kommende", cls: "bg-clay/40 text-stone" },
   ended: { label: "Afsluttet", cls: "bg-fog text-slate" },
 };
@@ -105,13 +105,13 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
                 onClick={() => setType(key)}
                 className={`flex flex-col gap-2 rounded-lg border p-4 text-left transition-colors ${
                   selected
-                    ? "border-moss bg-moss/[0.04]"
+                    ? "border-terracotta bg-terracotta/[0.04]"
                     : "border-fog hover:border-clay"
                 }`}
               >
                 <span
                   className={`flex items-center gap-2 font-[400] text-[0.95rem] ${
-                    selected ? "text-moss" : "text-ink"
+                    selected ? "text-terracotta" : "text-ink"
                   }`}
                 >
                   {t.icon}
@@ -135,7 +135,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
               type="datetime-local"
               name="startsAt"
               required
-              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -146,7 +146,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
               type="datetime-local"
               name="endsAt"
               required
-              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
         </div>
@@ -157,7 +157,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
         <button
           type="submit"
           disabled={pending}
-          className={btnClass("moss") + " self-start"}
+          className={btnClass("terracotta") + " self-start"}
         >
           {pending ? "Opretter..." : "Opret kampagne"}
         </button>
@@ -170,7 +170,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
             Dine kampagner
           </h2>
           {active.length > 0 ? (
-            <span className="text-[0.72rem] font-[200] text-moss">
+            <span className="text-[0.72rem] font-[200] text-terracotta">
               {active.length} aktiv{active.length === 1 ? "" : "e"} lige nu
             </span>
           ) : null}
@@ -201,7 +201,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
                     <span
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                         status === "active"
-                          ? "bg-moss/10 text-moss"
+                          ? "bg-terracotta/10 text-terracotta"
                           : "bg-fog text-slate"
                       }`}
                     >

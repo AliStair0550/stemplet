@@ -13,7 +13,7 @@ export function SubmitButton({
 }: {
   children: React.ReactNode;
   pendingText?: string;
-  variant?: "primary" | "outline" | "moss" | "ghost";
+  variant?: "primary" | "outline" | "terracotta" | "ghost";
   size?: "md" | "lg";
   className?: string;
 }) {

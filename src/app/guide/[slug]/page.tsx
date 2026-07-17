@@ -36,7 +36,7 @@ export default async function PublicGuidePage({
     <main className="mx-auto w-full max-w-3xl px-6 py-12 md:py-16">
       <header className="mb-12 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-moss">
+          <p className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-terracotta">
             Personale-guide
           </p>
           <h1 className="mt-2 text-[1.9rem] font-[300] leading-tight text-ink">

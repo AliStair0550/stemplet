@@ -18,7 +18,7 @@ function page(inner: string, status = 200) {
     `<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Afmeld</title></head>
      <body style="margin:0;background:#FAF8F4;font-family:Arial,Helvetica,sans-serif;">
        <div style="max-width:440px;margin:80px auto;padding:0 24px;text-align:center;">
-         <div style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#1A1A1A;">Stemplet<span style="color:#2D5F4A;">.</span></div>
+         <div style="font-family:Georgia,serif;font-size:20px;font-weight:600;color:#1A1A1A;">Stemplet<span style="color:#A6502E;">.</span></div>
          <div style="margin-top:28px;line-height:1.6;">${inner}</div>
        </div>
      </body></html>`,
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
      <p style="color:#4A4A4A;">Du får ikke flere ugentlige statistik-mails. Du kan altid slå dem til igen under Indstillinger i dit dashboard.</p>
      <form method="post" action="/api/email/unsubscribe" style="margin-top:24px;">
        <input type="hidden" name="token" value="${escapeAttr(token)}">
-       <button type="submit" style="display:inline-block;padding:12px 28px;background:#2D5F4A;color:#FAF8F4;border:none;border-radius:9999px;font-size:14px;letter-spacing:0.04em;cursor:pointer;">Bekræft afmelding</button>
+       <button type="submit" style="display:inline-block;padding:12px 28px;background:#A6502E;color:#FAF8F4;border:none;border-radius:9999px;font-size:14px;letter-spacing:0.04em;cursor:pointer;">Bekræft afmelding</button>
      </form>`,
   );
 }

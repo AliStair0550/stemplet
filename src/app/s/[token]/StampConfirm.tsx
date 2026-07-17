@@ -174,10 +174,10 @@ export function StampConfirm({
         <div className="flex flex-col items-center gap-5">
           <div className="relative flex h-24 w-24 items-center justify-center">
             <span
-              className="absolute inset-0 rounded-full bg-moss/15"
+              className="absolute inset-0 rounded-full bg-terracotta/15"
               style={{ animation: "stampRing 1.3s ease-out infinite" }}
             />
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-moss/10 text-moss">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
               <StampIcon icon={icon} className="h-9 w-9" />
             </div>
           </div>
@@ -219,21 +219,21 @@ export function StampConfirm({
           <div className="relative">
             <span
               aria-hidden
-              className="pointer-events-none absolute -inset-8 rounded-[2.2rem] bg-moss/30 blur-3xl"
+              className="pointer-events-none absolute -inset-8 rounded-[2.2rem] bg-terracotta/30 blur-3xl"
               style={{ animation: "stampBloom 1.25s ease-out forwards" }}
             />
             {/* To ringe der breder sig ud (den anden lidt forskudt) for et
                 rigere, tydeligere "impact". */}
             <span
               aria-hidden
-              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border-2 border-moss/50"
+              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border-2 border-terracotta/50"
               style={{
                 animation: "stampRipple 0.95s cubic-bezier(0.16,1,0.3,1) forwards",
               }}
             />
             <span
               aria-hidden
-              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border border-moss/30"
+              className="pointer-events-none absolute -inset-2 rounded-[1.7rem] border border-terracotta/30"
               style={{
                 animation:
                   "stampRipple 1.15s cubic-bezier(0.16,1,0.3,1) 0.18s forwards",
@@ -262,7 +262,7 @@ export function StampConfirm({
             {!state.rewardReady && state.increment > 0 ? (
               <span
                 aria-hidden
-                className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3.5 py-1 text-[0.82rem] font-[400] text-white shadow-lift"
+                className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 select-none rounded-full bg-terracotta px-3.5 py-1 text-[0.82rem] font-[400] text-white shadow-lift"
                 style={{ animation: "plusOne 1.25s ease-out 0.15s both" }}
               >
                 +{state.increment}{" "}
@@ -321,7 +321,7 @@ export function StampConfirm({
 
       {state.phase === "needCard" ? (
         <div className="flex flex-col items-center gap-5">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
             <StampIcon icon={icon} className="h-8 w-8" />
           </span>
           <h1 className="font-[300] text-[1.4rem] text-ink">
@@ -345,7 +345,7 @@ export function StampConfirm({
             if (s.code === "SELF_SCAN_OFF") {
               return (
                 <div className="flex w-full max-w-sm flex-col items-center gap-5">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
                     <StampIcon icon={icon} className="h-8 w-8" />
                   </span>
                   <div className="flex flex-col items-center gap-1">
@@ -415,7 +415,7 @@ export function StampConfirm({
                         };
               return (
                 <div className="flex w-full max-w-sm flex-col items-center gap-5">
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
                     <StampIcon icon={icon} className="h-8 w-8" />
                   </span>
                   <div className="flex flex-col items-center gap-1">

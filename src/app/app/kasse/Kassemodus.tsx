@@ -345,7 +345,7 @@ function StampQrPanel({ card }: { card: KioskCard }) {
     <div className="flex flex-col items-center gap-6">
       <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-8 text-center">
         <div className="flex flex-col items-center gap-1">
-          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
             Scan og saml stempler
           </span>
           <span className="font-[300] text-[1.05rem] text-ink">
@@ -444,7 +444,7 @@ function ScanPanel() {
   return (
     <div className="flex flex-col items-center">
       <div className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-10 text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10 text-moss">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
           <ScanFrameIcon className="h-8 w-8" />
         </span>
         <div>
@@ -717,11 +717,11 @@ function StaffCard({
             <span className="relative flex h-20 w-20 items-center justify-center">
               <span
                 aria-hidden
-                className="absolute inset-0 rounded-full bg-moss/20"
+                className="absolute inset-0 rounded-full bg-terracotta/20"
                 style={{ animation: "burstRing 0.9s ease-out forwards" }}
               />
               <span
-                className="relative flex h-20 w-20 items-center justify-center rounded-full bg-moss text-white"
+                className="relative flex h-20 w-20 items-center justify-center rounded-full bg-terracotta text-white"
                 style={{
                   animation:
                     "giftOpen 0.72s cubic-bezier(0.34,1.56,0.64,1) both",
@@ -731,7 +731,7 @@ function StaffCard({
               </span>
             </span>
             <div className="flex flex-col items-center gap-1">
-              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
                 Belønning indløst
               </span>
               <h2
@@ -761,7 +761,7 @@ function StaffCard({
         </>
       ) : loading ? (
         <div className="flex flex-col items-center gap-3 py-10">
-          <div className="h-10 w-10 animate-pulse rounded-full bg-moss/15" />
+          <div className="h-10 w-10 animate-pulse rounded-full bg-terracotta/15" />
           <p className="font-[300] text-[0.9rem] text-stone">Henter kort...</p>
         </div>
       ) : card ? (
@@ -793,7 +793,7 @@ function StaffCard({
               <span
                 key={`plus-${pulse}`}
                 aria-hidden
-                className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-moss px-3 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
+                className="pointer-events-none absolute left-1/2 top-2 z-10 -translate-x-1/2 select-none rounded-full bg-terracotta px-3 py-1 text-[0.8rem] font-[400] text-white shadow-lift"
                 style={{ animation: "plusOne 1.15s ease-out forwards" }}
               >
                 +{lastInc} {lastInc === 1 ? "stempel" : "stempler"}
@@ -816,7 +816,7 @@ function StaffCard({
             <p
               className={cn(
                 "text-center font-[300] text-[0.9rem]",
-                note.ok ? "text-moss" : "text-rust",
+                note.ok ? "text-terracotta" : "text-rust",
               )}
             >
               {note.text}
@@ -824,7 +824,7 @@ function StaffCard({
           ) : null}
 
           {card.rewardReady ? (
-            <div className="flex flex-col gap-3 rounded-lg border border-moss bg-moss/5 p-5">
+            <div className="flex flex-col gap-3 rounded-lg border border-terracotta bg-terracotta/5 p-5">
               <div>
                 <p className="font-[400] text-[1rem] text-ink">Belønning klar</p>
                 <p className="font-[300] text-[0.85rem] text-stone">
@@ -844,7 +844,7 @@ function StaffCard({
                   placeholder="****"
                   autoFocus
                   aria-describedby="staff-pin-hint"
-                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-moss"
+                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
                 />
                 <span
                   id="staff-pin-hint"
@@ -883,7 +883,7 @@ function StaffCard({
                         "flex h-11 w-11 items-center justify-center rounded-full text-[1rem] font-[400] tabular-nums transition-colors disabled:opacity-50",
                         qty === n
                           ? "bg-ink text-parchment"
-                          : "border border-clay bg-white text-ink hover:border-moss",
+                          : "border border-clay bg-white text-ink hover:border-terracotta",
                       )}
                     >
                       {n}
@@ -957,7 +957,7 @@ function StaffCard({
       <div className="flex items-center justify-between gap-4 border-t border-fog pt-4">
         <button
           onClick={onRescan}
-          className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
+          className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
         >
           Scan nyt kort
         </button>

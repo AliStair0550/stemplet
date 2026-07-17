@@ -25,7 +25,7 @@ export function WelcomeStampToggle({ initial }: { initial: boolean }) {
       onClick={toggle}
       disabled={pending}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-        on ? "bg-moss" : "bg-clay"
+        on ? "bg-terracotta" : "bg-clay"
       } disabled:opacity-60`}
     >
       <span

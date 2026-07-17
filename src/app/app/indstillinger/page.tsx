@@ -57,7 +57,7 @@ export default async function IndstillingerPage({
       />
 
       {betaling === "ok" ? (
-        <div className="mb-6 rounded-lg border border-moss bg-moss/5 px-5 py-3 text-[0.85rem] font-[200] text-moss">
+        <div className="mb-6 rounded-lg border border-terracotta bg-terracotta/5 px-5 py-3 text-[0.85rem] font-[200] text-terracotta">
           Tak. Din betaling er registreret.
         </div>
       ) : null}
@@ -184,7 +184,7 @@ export default async function IndstillingerPage({
               </form>
             ) : stripeOn ? (
               <form action={startCheckout}>
-                <SubmitButton variant="moss" pendingText="Åbner Stripe...">
+                <SubmitButton variant="terracotta" pendingText="Åbner Stripe...">
                   Opgrader til Pro
                 </SubmitButton>
               </form>

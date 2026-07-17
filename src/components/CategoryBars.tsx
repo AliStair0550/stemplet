@@ -6,7 +6,7 @@
 type Cat = { label: string; value: number };
 
 const STYLES = [
-  { color: "#2D5F4A", tex: "repeating-linear-gradient(45deg,#2D5F4A 0 6px,#1f4433 6px 7px)" },
+  { color: "#A6502E", tex: "repeating-linear-gradient(45deg,#A6502E 0 6px,#7A3A22 6px 7px)" },
   { color: "#B8923A", tex: "repeating-linear-gradient(135deg,#B8923A 0 6px,#9a7a2e 6px 7px)" },
   { color: "#6B7B75", tex: "repeating-linear-gradient(45deg,#6B7B75 0 6px,#54615c 6px 7px)" },
 ];

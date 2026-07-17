@@ -28,7 +28,7 @@ export default function OpengraphImage() {
         <div style={{ display: "flex", flexDirection: "column", width: 600 }}>
           <div style={{ display: "flex", fontSize: 34, fontWeight: 700, color: "#1A1A1A" }}>
             Stemplet
-            <span style={{ display: "flex", color: "#2D5F4A" }}>.</span>
+            <span style={{ display: "flex", color: "#A6502E" }}>.</span>
           </div>
           <div
             style={{

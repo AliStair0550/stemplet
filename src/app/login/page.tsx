@@ -20,7 +20,7 @@ export default function LoginPage() {
         <LoginForm />
         <p className="text-center text-[0.8rem] font-[200] text-slate">
           Har du ikke en konto endnu?{" "}
-          <Link href="/start" className="text-moss hover:opacity-70">
+          <Link href="/start" className="text-terracotta hover:opacity-70">
             Kom gratis i gang
           </Link>
         </p>

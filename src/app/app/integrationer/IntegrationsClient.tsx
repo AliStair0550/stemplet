@@ -25,7 +25,7 @@ function CopyButton({ value, label = "Kopiér" }: { value: string; label?: strin
           /* clipboard blokeret - ignorér */
         }
       }}
-      className="shrink-0 border border-clay px-3 py-1.5 text-[0.68rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:border-moss hover:text-moss"
+      className="shrink-0 border border-clay px-3 py-1.5 text-[0.68rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:border-terracotta hover:text-terracotta"
     >
       {done ? "Kopieret ✓" : label}
     </button>
@@ -51,7 +51,7 @@ function EndpointRow({
 }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-fog py-2.5 first:border-t-0">
-      <span className="w-14 shrink-0 text-[0.66rem] font-[500] uppercase tracking-[0.08em] text-moss">
+      <span className="w-14 shrink-0 text-[0.66rem] font-[500] uppercase tracking-[0.08em] text-terracotta">
         {method}
       </span>
       <code className="text-[0.8rem] text-ink">{path}</code>
@@ -111,7 +111,7 @@ export function IntegrationsClient({
   return (
     <div className="flex flex-col gap-6">
       {/* Venlig intro, saa ikke-tekniske brugere ikke bliver bange */}
-      <div className="rounded-lg border border-moss/30 bg-moss/[0.05] p-6">
+      <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6">
         <h2 className="text-[1rem] font-[400] text-ink">Skal du bruge det her?</h2>
         <p className="mt-2 max-w-2xl text-[0.88rem] font-[200] leading-relaxed text-stone">
           Kun hvis du vil koble Stemplet sammen med et andet system, fx dit
@@ -153,7 +153,7 @@ export function IntegrationsClient({
                   <button
                     onClick={onGenerate}
                     disabled={keyPending}
-                    className={btnClass("moss")}
+                    className={btnClass("terracotta")}
                   >
                     {keyPending ? "Fornyer..." : "Ja, forny"}
                   </button>
@@ -189,7 +189,7 @@ export function IntegrationsClient({
             <button
               onClick={onGenerate}
               disabled={keyPending}
-              className={btnClass("moss")}
+              className={btnClass("terracotta")}
             >
               {keyPending ? "Danner..." : "Dan API-nøgle"}
             </button>
@@ -216,7 +216,7 @@ export function IntegrationsClient({
               type="url"
               defaultValue={webhookUrl ?? ""}
               placeholder="https://minbutik.dk/stemplet-webhook"
-              className="min-w-0 flex-1 border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.88rem] text-ink outline-none focus:border-moss"
+              className="min-w-0 flex-1 border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.88rem] text-ink outline-none focus:border-terracotta"
             />
             <button
               type="submit"
@@ -229,7 +229,7 @@ export function IntegrationsClient({
           {hookMsg ? (
             <span
               className={`text-[0.8rem] font-[300] ${
-                hookMsg.ok ? "text-moss" : "text-rust"
+                hookMsg.ok ? "text-terracotta" : "text-rust"
               }`}
             >
               {hookMsg.text}

@@ -7,7 +7,7 @@
 const C = {
   parchment: "#FAF8F4",
   card: "#FFFFFF",
-  moss: "#2D5F4A",
+  terracotta: "#A6502E",
   ink: "#1A1A1A",
   stone: "#4A4A4A",
   slate: "#6B7B75",
@@ -25,7 +25,7 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
   <tr><td align="center" style="padding:40px 20px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
       <tr><td style="padding:0 4px 20px;">
-        <span style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:600;color:${C.ink};letter-spacing:.02em;">Stemplet<span style="color:${C.moss};">.</span></span>
+        <span style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:600;color:${C.ink};letter-spacing:.02em;">Stemplet<span style="color:${C.terracotta};">.</span></span>
       </td></tr>
       <tr><td style="background:${C.card};border:1px solid ${C.fog};border-radius:12px;padding:36px 32px;">
         ${inner}
@@ -62,7 +62,7 @@ export function loginEmail(url: string): Email {
     </p>
     <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
       Virker knappen ikke, så kopiér linket:<br>
-      <a href="${url}" style="color:${C.moss};">${url}</a>
+      <a href="${url}" style="color:${C.terracotta};">${url}</a>
     </p>
     <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
       Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.
@@ -116,7 +116,7 @@ function statRow(label: string, value: number, note: string): string {
 export function weeklyStatsEmail(d: WeeklyEmailData): Email {
   const delta =
     d.stampsDelta > 0
-      ? `<span style="color:${C.moss};">&#9650; ${d.stampsDelta} flere end ugen før</span>`
+      ? `<span style="color:${C.terracotta};">&#9650; ${d.stampsDelta} flere end ugen før</span>`
       : d.stampsDelta < 0
         ? `<span style="color:${C.slate};">&#9660; ${Math.abs(d.stampsDelta)} færre end ugen før</span>`
         : `<span style="color:${C.slate};">samme som ugen før</span>`;

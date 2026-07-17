@@ -88,9 +88,9 @@ function GettingStarted({ slug }: { slug: string }) {
     },
   ];
   return (
-    <div className="mb-6 overflow-hidden rounded-lg border border-moss/30 bg-white">
-      <div className="border-b border-fog bg-moss/[0.05] px-6 py-5 md:px-8">
-        <span className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
+    <div className="mb-6 overflow-hidden rounded-lg border border-terracotta/30 bg-white">
+      <div className="border-b border-fog bg-terracotta/[0.05] px-6 py-5 md:px-8">
+        <span className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
           Kom godt i gang
         </span>
       </div>
@@ -98,10 +98,10 @@ function GettingStarted({ slug }: { slug: string }) {
         {steps.map((s, i) => (
           <li key={s.title} className="flex flex-col gap-3 bg-white p-6">
             <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-moss/10 text-moss">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
                 {s.icon}
               </span>
-              <span className="font-fraunces text-[1.15rem] font-light italic text-moss/70">
+              <span className="font-fraunces text-[1.15rem] font-light italic text-terracotta/70">
                 0{i + 1}
               </span>
             </div>
@@ -111,7 +111,7 @@ function GettingStarted({ slug }: { slug: string }) {
             </span>
             <Link
               href={s.href}
-              className="mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-moss transition-opacity hover:opacity-70"
+              className="mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
             >
               {s.link}
               <svg
@@ -172,7 +172,7 @@ export default async function OverviewPage() {
         />
         <div className="relative flex flex-wrap items-end justify-between gap-5 p-6 md:p-8">
           <div className="min-w-0">
-            <p className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
+            <p className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
               {dateLabel}
             </p>
             <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">

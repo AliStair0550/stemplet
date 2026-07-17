@@ -27,11 +27,11 @@ export default function Footer() {
               statistik og købsmønstre.
             </p>
             <Image
-              src="/stemplet-appikon.png"
+              src="/stemplet-prik.svg"
               alt="Stemplet"
-              width={44}
-              height={44}
-              className="mt-1 h-11 w-11 rounded-[10px]"
+              width={40}
+              height={40}
+              className="mt-1 h-10 w-10"
             />
           </div>
 

@@ -9,7 +9,7 @@ import { BUSINESS_CATEGORIES } from "@/lib/categories";
 function Msg({ text, ok = true }: { text: string | null; ok?: boolean }) {
   if (!text) return null;
   return (
-    <span className={`text-[0.8rem] font-[200] ${ok ? "text-moss" : "text-rust"}`}>
+    <span className={`text-[0.8rem] font-[200] ${ok ? "text-terracotta" : "text-rust"}`}>
       {text}
     </span>
   );
@@ -77,7 +77,7 @@ export function SettingsForms({
             <input
               name="name"
               defaultValue={name}
-              className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -87,7 +87,7 @@ export function SettingsForms({
             <select
               name="category"
               defaultValue={category ?? ""}
-              className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-terracotta"
             >
               <option value="">Vælg branche</option>
               {BUSINESS_CATEGORIES.map((c) => (
@@ -114,7 +114,7 @@ export function SettingsForms({
                 min={0}
                 max={1440}
                 defaultValue={cooldown}
-                className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-moss"
+                className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-terracotta"
               />
               <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
                 Hvor længe før den samme kunde selv kan scanne igen. Personalet
@@ -150,7 +150,7 @@ export function SettingsForms({
               name="pin"
               inputMode="numeric"
               placeholder="****"
-              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-moss"
+              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
             />
             <span className="text-[0.72rem] font-[200] text-slate">
               Kræves ved indløsning af belønninger.

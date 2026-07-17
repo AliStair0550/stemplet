@@ -3,7 +3,7 @@ import { STAMPS_MIN, STAMPS_MAX } from "./system-config";
 
 const hex = z
   .string()
-  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #2D5F4A");
+  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #A6502E");
 
 export const stampIconEnum = z.enum([
   "coffee",

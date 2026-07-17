@@ -14,7 +14,7 @@ const CONTACT = "hej@alius.dk";
 function Li({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-moss" />
+      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-terracotta" />
       <span>{children}</span>
     </li>
   );
@@ -31,7 +31,7 @@ export default function PrivatlivPage() {
         <p>
           Stemplet drives af Alius. Har du spørgsmål om dine oplysninger, eller
           vil du gøre brug af dine rettigheder, kan du skrive til os på{" "}
-          <a href={`mailto:${CONTACT}`} className="text-moss underline underline-offset-2">
+          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
           </a>
           .
@@ -41,7 +41,7 @@ export default function PrivatlivPage() {
           dataansvarlig for kundeoplysningerne. Stemplet er butikkens
           databehandler og behandler kun oplysningerne efter butikkens
           instruks. Se vores{" "}
-          <Link href="/databehandleraftale" className="text-moss underline underline-offset-2">
+          <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
             databehandleraftale
           </Link>
           .
@@ -138,7 +138,7 @@ export default function PrivatlivPage() {
         </ul>
         <p>
           Skriv til{" "}
-          <a href={`mailto:${CONTACT}`} className="text-moss underline underline-offset-2">
+          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
           </a>
           . Er du utilfreds med vores behandling, kan du klage til Datatilsynet

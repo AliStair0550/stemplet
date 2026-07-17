@@ -57,7 +57,7 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
   return (
     <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
       <div className="flex flex-col gap-1">
-        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
           Kasse-enheder
         </span>
         <h2 className="font-[300] text-[1.3rem] text-ink">
@@ -82,7 +82,7 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
               className="flex items-center justify-between gap-4 rounded-lg border border-fog px-4 py-3"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"

@@ -68,7 +68,7 @@ export function StatTile({
           {label}
         </div>
         {icon ? (
-          <span className="text-moss/60 transition-colors group-hover:text-moss">
+          <span className="text-terracotta/60 transition-colors group-hover:text-terracotta">
             {icon}
           </span>
         ) : null}

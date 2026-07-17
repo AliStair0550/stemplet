@@ -13,7 +13,7 @@ const CONTACT = "hej@alius.dk";
 function Li({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-moss" />
+      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-terracotta" />
       <span>{children}</span>
     </li>
   );
@@ -126,11 +126,11 @@ export default function DpaPage() {
       <LegalSection title="11. Kontakt">
         <p>
           Spørgsmål til aftalen eller behandlingen kan rettes til{" "}
-          <a href={`mailto:${CONTACT}`} className="text-moss underline underline-offset-2">
+          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
           </a>
           . Se også vores{" "}
-          <Link href="/privatliv" className="text-moss underline underline-offset-2">
+          <Link href="/privatliv" className="text-terracotta underline underline-offset-2">
             privatlivspolitik
           </Link>
           .

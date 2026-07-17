@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 // Konfetti-burst i Alius-farver. Fejrer et fuldt kort. Respekterer
 // reduceret bevægelse (renderer intet). Ingen afhængigheder.
-const COLORS = ["#2D5F4A", "#4A7D68", "#B8923A", "#D4D0C8", "#1A1A1A"];
+const COLORS = ["#A6502E", "#C77A52", "#B8923A", "#D4D0C8", "#1A1A1A"];
 
 type Piece = {
   id: number;

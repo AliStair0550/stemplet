@@ -49,14 +49,14 @@ function IconLayers() {
 function BigCard({ icon, title, steps }: { icon: React.ReactNode; title: string; steps: string[] }) {
   return (
     <div className="flex flex-col gap-5 rounded-lg border border-fog bg-white shadow-card p-7">
-      <div className="flex items-center gap-3 text-moss">
+      <div className="flex items-center gap-3 text-terracotta">
         {icon}
         <h3 className="text-[1.25rem] font-[400] leading-tight text-ink">{title}</h3>
       </div>
       <ol className="flex flex-col gap-3.5">
         {steps.map((s, i) => (
           <li key={i} className="flex gap-3.5">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-moss/10 text-[0.95rem] font-[500] text-moss">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-[0.95rem] font-[500] text-terracotta">
               {i + 1}
             </span>
             <span className="pt-0.5 text-[1.05rem] leading-[1.5] text-ink">{s}</span>
@@ -79,7 +79,7 @@ function Section({
   return (
     <section id={id} className="flex scroll-mt-24 flex-col gap-5">
       <h2 className="flex items-center gap-3 text-[1.4rem] font-[400] tracking-[0.01em] text-ink">
-        <span aria-hidden className="h-5 w-1 rounded-full bg-moss" />
+        <span aria-hidden className="h-5 w-1 rounded-full bg-terracotta" />
         {title}
       </h2>
       {children}
@@ -90,7 +90,7 @@ function Section({
 function Way({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-fog bg-white shadow-card p-6">
-      <div className="flex items-center gap-2.5 text-moss">
+      <div className="flex items-center gap-2.5 text-terracotta">
         {icon}
         <h3 className="text-[1.1rem] font-[500] text-ink">{title}</h3>
       </div>
@@ -138,7 +138,7 @@ export function GuideContent({ data }: { data: GuideData }) {
           <a
             key={href}
             href={href}
-            className="rounded-full border border-fog bg-white px-4 py-2 text-[0.8rem] font-[300] text-stone transition-colors hover:border-moss hover:text-moss"
+            className="rounded-full border border-fog bg-white px-4 py-2 text-[0.8rem] font-[300] text-stone transition-colors hover:border-terracotta hover:text-terracotta"
           >
             {label}
           </a>
@@ -194,7 +194,7 @@ export function GuideContent({ data }: { data: GuideData }) {
             deres aktuelle status.
           </p>
         </Way>
-        <div className="mt-5 rounded-lg border border-moss/30 bg-moss/5 p-5 text-[1.05rem] leading-[1.6] text-ink">
+        <div className="mt-5 rounded-lg border border-terracotta/30 bg-terracotta/5 p-5 text-[1.05rem] leading-[1.6] text-ink">
           <span className="font-[500]">
             Køber kunden flere varer på én gang?
           </span>{" "}
@@ -215,7 +215,7 @@ export function GuideContent({ data }: { data: GuideData }) {
               "Kunden får sin belønning, og kortet starter forfra af sig selv.",
             ].map((s, i) => (
               <li key={i} className="flex gap-3.5">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-moss/10 text-[0.95rem] font-[500] text-moss">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-[0.95rem] font-[500] text-terracotta">
                   {i + 1}
                 </span>
                 <span className="pt-0.5 text-[1.05rem] leading-[1.5] text-ink">{s}</span>
@@ -260,7 +260,7 @@ export function GuideContent({ data }: { data: GuideData }) {
             {data.campaigns.map((c, i) => (
               <div
                 key={i}
-                className="rounded-lg border border-moss/40 bg-moss/5 p-5 text-[1.05rem] leading-[1.6] text-ink"
+                className="rounded-lg border border-terracotta/40 bg-terracotta/5 p-5 text-[1.05rem] leading-[1.6] text-ink"
               >
                 {c.type === "DOUBLE_STAMP" ? (
                   <>
@@ -283,7 +283,7 @@ export function GuideContent({ data }: { data: GuideData }) {
       {/* 6. Kort om sikkerheden */}
       <Section id="sikkerhed" title="Kort om sikkerheden">
         <div className="rounded-lg border border-fog bg-white shadow-card p-6">
-          <div className="flex items-start gap-3 text-moss">
+          <div className="flex items-start gap-3 text-terracotta">
             <IconShield />
             <ul className="flex flex-col gap-2 text-[1.05rem] leading-[1.6] text-ink">
               <li>Kun personalet kan give stempler.</li>

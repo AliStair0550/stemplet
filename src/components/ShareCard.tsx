@@ -17,7 +17,7 @@ export function ShareCard({
   return (
     <div className="flex w-[560px] flex-col items-center gap-9 bg-parchment px-12 py-14">
       <div className="text-center">
-        <p className="text-[0.7rem] font-[400] uppercase tracking-[0.18em] text-moss">
+        <p className="text-[0.7rem] font-[400] uppercase tracking-[0.18em] text-terracotta">
           Nyt stempelkort
         </p>
         <h3 className="mt-2 font-fraunces text-[1.9rem] font-light italic leading-tight text-ink">

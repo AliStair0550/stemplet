@@ -123,7 +123,7 @@ export function LocationCard({
 
       {coords ? (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <span className="inline-flex items-center gap-2 rounded-full bg-moss/10 px-3.5 py-1.5 text-[0.8rem] font-[300] text-moss">
+          <span className="inline-flex items-center gap-2 rounded-full bg-terracotta/10 px-3.5 py-1.5 text-[0.8rem] font-[300] text-terracotta">
             <PinIcon /> Placering sat
           </span>
           {savedAddress ? (
@@ -157,7 +157,7 @@ export function LocationCard({
           placeholder="Fx Nørregade 12, 8000 Aarhus"
           autoComplete="street-address"
           disabled={busy}
-          className="w-full max-w-sm rounded-lg border border-fog bg-white px-4 py-2.5 font-[300] text-[0.9rem] text-ink outline-none transition-colors focus:border-moss disabled:opacity-60"
+          className="w-full max-w-sm rounded-lg border border-fog bg-white px-4 py-2.5 font-[300] text-[0.9rem] text-ink outline-none transition-colors focus:border-terracotta disabled:opacity-60"
         />
         <button
           type="button"

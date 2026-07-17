@@ -21,7 +21,7 @@ export default async function ProevPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-8 text-center">
       <div className="flex max-w-md flex-col items-center gap-2">
-        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.18em] text-moss">
+        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.18em] text-terracotta">
           Prøv det selv
         </span>
         <h1 className="font-fraunces text-[1.9rem] font-light italic leading-tight text-ink">

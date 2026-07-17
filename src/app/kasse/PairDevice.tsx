@@ -66,7 +66,7 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
             placeholder="ABC123"
             autoCapitalize="characters"
             autoComplete="off"
-            className="border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-moss"
+            className="border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-terracotta"
           />
         </label>
 
@@ -78,7 +78,7 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 40))}
             placeholder="iPad ved disken"
-            className="border border-clay bg-white px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-moss"
+            className="border border-clay bg-white px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
           />
         </label>
 

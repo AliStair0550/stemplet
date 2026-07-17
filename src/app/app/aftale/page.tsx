@@ -18,7 +18,7 @@ function Term({ children }: { children: React.ReactNode }) {
         strokeWidth={1.7}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="mt-[3px] h-4 w-4 shrink-0 text-moss"
+        className="mt-[3px] h-4 w-4 shrink-0 text-terracotta"
       >
         <path d="M20 6 9 17l-5-5" />
       </svg>
@@ -53,7 +53,7 @@ export default async function AftalePage() {
         <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-moss">
+              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
                 Kortholdere
               </span>
               <p className="mt-1 font-[300] text-[1.6rem] leading-none text-ink">
@@ -66,7 +66,7 @@ export default async function AftalePage() {
           </div>
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-fog">
             <div
-              className="h-full rounded-full bg-moss transition-all"
+              className="h-full rounded-full bg-terracotta transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -100,7 +100,7 @@ export default async function AftalePage() {
 
           <div className="mt-7 border-t border-fog pt-6">
             {v.approved ? (
-              <div className="rounded-lg border border-moss bg-moss/5 px-5 py-4">
+              <div className="rounded-lg border border-terracotta bg-terracotta/5 px-5 py-4">
                 <p className="font-[400] text-[0.95rem] text-ink">
                   Aftale godkendt
                 </p>

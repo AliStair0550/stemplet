@@ -105,7 +105,7 @@ export default async function MaterialerPage() {
               key={m.title}
               className="flex items-center gap-5 rounded-lg border border-fog bg-white shadow-card p-6"
             >
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-moss/10 text-moss">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
                 <IconDoc />
               </span>
               <div className="min-w-0 flex-1">

@@ -157,7 +157,7 @@ export default async function AdminPage() {
           <div className="flex items-center gap-5">
             <a
               href="/admin/export"
-              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-moss transition-colors hover:text-moss-light"
+              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
             >
               Eksportér kontakter (CSV)
             </a>

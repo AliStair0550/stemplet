@@ -18,7 +18,7 @@ function PinIcon() {
       strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-4 w-4 text-moss"
+      className="h-4 w-4 text-terracotta"
       aria-hidden
     >
       <path d="M12 21s-6-5.686-6-10a6 6 0 1 1 12 0c0 4.314-6 10-6 10z" />
@@ -109,7 +109,7 @@ export function StartWizard() {
           <li key={label} className="flex flex-1 items-center gap-3">
             <span
               className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.72rem] ${
-                i <= step ? "bg-moss text-parchment" : "bg-fog text-slate"
+                i <= step ? "bg-terracotta text-parchment" : "bg-fog text-slate"
               }`}
             >
               {i + 1}
@@ -136,7 +136,7 @@ export function StartWizard() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Coffee Lab"
-              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -149,7 +149,7 @@ export function StartWizard() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               inputMode="email"
-              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
           <label className="flex flex-col gap-1.5">
@@ -161,7 +161,7 @@ export function StartWizard() {
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="4 til 6 cifre"
-              className="w-40 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-moss"
+              className="w-40 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
             />
             <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
               Bruges når personalet indløser en fyldt belønning ved kassen. Du
@@ -175,7 +175,7 @@ export function StartWizard() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-moss"
+              className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             >
               <option value="">Vælg branche</option>
               {BUSINESS_CATEGORIES.map((c) => (
@@ -204,7 +204,7 @@ export function StartWizard() {
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Fx Nørregade 12, 8000 Aarhus"
               autoComplete="street-address"
-              className="mt-1 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+              className="mt-1 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </div>
         </div>
@@ -228,7 +228,7 @@ export function StartWizard() {
               type="checkbox"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-moss"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-terracotta"
             />
             <span className="text-[0.78rem] font-[200] leading-relaxed text-stone">
               Jeg accepterer{" "}
@@ -236,7 +236,7 @@ export function StartWizard() {
                 href="/handelsbetingelser"
                 target="_blank"
                 rel="noreferrer"
-                className="text-moss underline underline-offset-2 hover:opacity-70"
+                className="text-terracotta underline underline-offset-2 hover:opacity-70"
               >
                 handelsbetingelserne
               </a>
@@ -245,7 +245,7 @@ export function StartWizard() {
                 href="/privatliv"
                 target="_blank"
                 rel="noreferrer"
-                className="text-moss underline underline-offset-2 hover:opacity-70"
+                className="text-terracotta underline underline-offset-2 hover:opacity-70"
               >
                 privatlivspolitikken
               </a>{" "}
@@ -254,7 +254,7 @@ export function StartWizard() {
                 href="/databehandleraftale"
                 target="_blank"
                 rel="noreferrer"
-                className="text-moss underline underline-offset-2 hover:opacity-70"
+                className="text-terracotta underline underline-offset-2 hover:opacity-70"
               >
                 databehandleraftalen
               </a>
@@ -281,7 +281,7 @@ export function StartWizard() {
             {/* 1: Se og del kortet online */}
             <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta/10 text-[0.8rem] font-[500] text-terracotta">
                   1
                 </span>
                 <h3 className="font-[400] text-[1rem] text-ink">
@@ -300,7 +300,7 @@ export function StartWizard() {
                   href={created.cardUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className={btnClass("moss")}
+                  className={btnClass("terracotta")}
                 >
                   Se mit kort
                 </a>
@@ -326,7 +326,7 @@ export function StartWizard() {
             {/* 2: Faerdigt skilt til print */}
             <div className="flex flex-col gap-4 rounded-lg border border-fog bg-white shadow-card p-6">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-moss/10 text-[0.8rem] font-[500] text-moss">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta/10 text-[0.8rem] font-[500] text-terracotta">
                   2
                 </span>
                 <h3 className="font-[400] text-[1rem] text-ink">
@@ -360,7 +360,7 @@ export function StartWizard() {
           </div>
 
           {/* Tydelig login-CTA i midten */}
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-moss/30 bg-moss/[0.05] p-8 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-8 text-center">
             <form action={sendOnboardingLogin}>
               <input type="hidden" name="email" value={email} />
               <SubmitButton
@@ -403,7 +403,7 @@ export function StartWizard() {
             <button
               onClick={submit}
               disabled={pending || !acceptedTerms}
-              className={`${btnClass("moss")} disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`${btnClass("terracotta")} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {pending ? "Opretter..." : "Opret min butik"}
             </button>

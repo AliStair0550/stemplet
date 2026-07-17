@@ -10,7 +10,7 @@ export function UpgradePanel({
   enabled?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-moss bg-moss/5 p-8 text-center">
+    <div className="rounded-lg border border-terracotta bg-terracotta/5 p-8 text-center">
       <h3 className="font-[300] text-[1.2rem] text-ink">
         {feature} er en del af Pro
       </h3>
@@ -20,7 +20,7 @@ export function UpgradePanel({
       </p>
       {enabled ? (
         <form action={startCheckout} className="mt-5 flex justify-center">
-          <SubmitButton variant="moss" size="lg" pendingText="Åbner Stripe...">
+          <SubmitButton variant="terracotta" size="lg" pendingText="Åbner Stripe...">
             Opgrader til Pro
           </SubmitButton>
         </form>

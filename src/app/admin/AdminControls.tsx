@@ -21,7 +21,7 @@ export function CopyEmail({ email }: { email: string }) {
     <span className="inline-flex items-center gap-2">
       <a
         href={`mailto:${email}`}
-        className="font-[400] text-moss underline underline-offset-2 transition-colors hover:text-moss-light"
+        className="font-[400] text-terracotta underline underline-offset-2 transition-colors hover:text-terracotta-dark"
       >
         {email}
       </a>
@@ -60,7 +60,7 @@ export function PlanSelect({
       onChange={(e) =>
         start(() => setPlan(businessId, e.target.value as Plan))
       }
-      className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-ink transition-colors hover:border-clay focus:border-moss focus:outline-none disabled:opacity-50"
+      className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-ink transition-colors hover:border-clay focus:border-terracotta focus:outline-none disabled:opacity-50"
       aria-label="Skift plan"
     >
       <option value="FREE">FREE</option>
@@ -198,19 +198,19 @@ export function EditOwner({
         name="name"
         defaultValue={name ?? ""}
         placeholder="Navn"
-        className="w-28 rounded-md border border-fog bg-white px-2 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+        className="w-28 rounded-md border border-fog bg-white px-2 py-1 text-[0.8rem] text-ink outline-none focus:border-terracotta"
       />
       <input
         name="email"
         type="email"
         defaultValue={email}
         placeholder="Email"
-        className="w-52 rounded-md border border-fog bg-white px-2 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+        className="w-52 rounded-md border border-fog bg-white px-2 py-1 text-[0.8rem] text-ink outline-none focus:border-terracotta"
       />
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-moss bg-moss px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-moss-light disabled:opacity-50"
+        className="rounded-md border border-terracotta bg-terracotta px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-parchment transition-colors hover:bg-terracotta-dark disabled:opacity-50"
       >
         {pending ? "Gemmer..." : "Gem"}
       </button>
@@ -334,7 +334,7 @@ export function EditBilling({
           step="1"
           min="0"
           defaultValue={proPriceKr}
-          className="w-24 rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+          className="w-24 rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-terracotta"
         />
       </label>
       <label className="flex flex-col gap-0.5">
@@ -345,7 +345,7 @@ export function EditBilling({
           name="proPriceUntil"
           type="date"
           defaultValue={proPriceUntil}
-          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-terracotta"
         />
       </label>
       <label className="flex flex-col gap-0.5">
@@ -356,13 +356,13 @@ export function EditBilling({
           name="lastInvoicedAt"
           type="date"
           defaultValue={lastInvoicedAt}
-          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-moss"
+          className="rounded-md border border-fog bg-white px-2.5 py-1 text-[0.8rem] text-ink outline-none focus:border-terracotta"
         />
       </label>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-moss bg-moss px-3 py-1 text-[0.72rem] font-[400] text-parchment transition-colors hover:bg-moss-light disabled:opacity-50"
+        className="rounded-md border border-terracotta bg-terracotta px-3 py-1 text-[0.72rem] font-[400] text-parchment transition-colors hover:bg-terracotta-dark disabled:opacity-50"
       >
         {pending ? "Gemmer..." : "Gem"}
       </button>
@@ -396,7 +396,7 @@ export function PauseButton({
         type="button"
         disabled={pending}
         onClick={() => start(() => setSignupsPaused(businessId, false))}
-        className="rounded-md border border-moss px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-moss transition-colors hover:bg-moss/5 disabled:opacity-50"
+        className="rounded-md border border-terracotta px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-colors hover:bg-terracotta/5 disabled:opacity-50"
       >
         {pending ? "..." : "Genoptag nye"}
       </button>
@@ -437,7 +437,7 @@ export function StopButton({
             await setStopped(businessId, false);
           })
         }
-        className="rounded-md border border-moss px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-moss transition-colors hover:bg-moss/5 disabled:opacity-50"
+        className="rounded-md border border-terracotta px-2.5 py-1 text-[0.68rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-colors hover:bg-terracotta/5 disabled:opacity-50"
       >
         {pending ? "..." : "Genåbn butik"}
       </button>

@@ -23,7 +23,7 @@ export function LoginForm() {
           required
           autoComplete="email"
           inputMode="email"
-          className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-moss"
+          className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
         />
       </label>
       {state.error ? (
@@ -34,7 +34,7 @@ export function LoginForm() {
               {" "}
               <Link
                 href="/start"
-                className="font-[400] text-moss underline underline-offset-2 hover:text-moss-light"
+                className="font-[400] text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
               >
                 Opret din butik gratis
               </Link>

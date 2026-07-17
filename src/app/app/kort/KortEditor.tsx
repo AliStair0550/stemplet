@@ -111,7 +111,7 @@ export function KortEditor({
           {msg ? (
             <span
               className={`text-[0.82rem] font-[300] ${
-                msg.ok ? "text-moss" : "text-rust"
+                msg.ok ? "text-terracotta" : "text-rust"
               }`}
             >
               {msg.text}

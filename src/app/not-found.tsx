@@ -4,7 +4,7 @@ import { btnClass } from "@/components/ui";
 export default function NotFound() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-7 bg-parchment px-6 text-center">
-      <span className="font-fraunces text-[4rem] font-light italic leading-none text-moss">
+      <span className="font-fraunces text-[4rem] font-light italic leading-none text-terracotta">
         404
       </span>
       <div className="flex flex-col items-center gap-2.5">

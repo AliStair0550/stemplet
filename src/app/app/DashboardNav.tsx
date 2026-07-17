@@ -51,7 +51,7 @@ export function DashboardNav({
               className={cn(
                 "px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
                 isActive(l.href)
-                  ? "bg-moss/10 text-moss"
+                  ? "bg-terracotta/10 text-terracotta"
                   : "text-stone hover:text-ink",
               )}
             >
@@ -85,7 +85,7 @@ export function DashboardNav({
               className={cn(
                 "whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
                 isActive(l.href)
-                  ? "bg-moss/10 text-moss"
+                  ? "bg-terracotta/10 text-terracotta"
                   : "text-stone hover:text-ink",
               )}
             >

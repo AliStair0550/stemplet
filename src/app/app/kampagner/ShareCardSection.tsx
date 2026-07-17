@@ -132,7 +132,7 @@ export function ShareCardSection({
 
         <div className="flex flex-col gap-4">
           <div>
-            <h2 className="text-label font-[400] uppercase tracking-[0.14em] text-moss">
+            <h2 className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
               Del dit kort
             </h2>
             <p className="mt-2 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
@@ -146,7 +146,7 @@ export function ShareCardSection({
             <button
               onClick={share}
               disabled={busy !== null}
-              className={btnClass("moss")}
+              className={btnClass("terracotta")}
             >
               {busy === "share" ? "Klargør..." : "Del"}
             </button>
@@ -168,14 +168,14 @@ export function ShareCardSection({
             <button
               onClick={copyLink}
               disabled={busy !== null}
-              className="text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-moss transition-opacity hover:opacity-70 disabled:opacity-50"
+              className="text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70 disabled:opacity-50"
             >
               Kopier link
             </button>
             {msg ? (
               <span
                 className={`text-[0.82rem] font-[300] ${
-                  msg.ok ? "text-moss" : "text-rust"
+                  msg.ok ? "text-terracotta" : "text-rust"
                 }`}
               >
                 {msg.text}

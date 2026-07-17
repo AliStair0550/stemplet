@@ -1,4 +1,4 @@
-// Enkelt-serie søjlegraf: moss med fin diagonal tekstur (farve + mønster),
+// Enkelt-serie søjlegraf: terracotta med fin diagonal tekstur (farve + mønster),
 // 4px afrundet top ved baseline, hover-tooltip, og en direkte etiket paa
 // den højeste søjle. Kan vise en fast etiket (fx ugedag) under hver søjle.
 // Ren CSS - vokser blidt ved indlæsning (reduceret bevægelse respekteres).
@@ -31,7 +31,7 @@ export function BarChart({
                 style={{
                   height: `${Math.max(1.5, h)}%`,
                   background:
-                    "repeating-linear-gradient(135deg, #2D5F4A 0 5px, #21483795 5px 6px)",
+                    "repeating-linear-gradient(135deg, #A6502E 0 5px, #8F432695 5px 6px)",
                   animation: "growBar 0.7s cubic-bezier(0.16,1,0.3,1) both",
                   animationDelay: `${i * 0.03}s`,
                 }}

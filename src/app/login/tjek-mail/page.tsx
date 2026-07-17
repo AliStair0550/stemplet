@@ -8,11 +8,11 @@ export default function CheckMailPage() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
       <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
         <Wordmark />
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-moss/10">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10">
           <svg
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#2D5F4A"
+            stroke="#A6502E"
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -31,7 +31,7 @@ export default function CheckMailPage() {
           Kan du ikke se den? Tjek din spam-mappe. Ellers{" "}
           <a
             href="/login"
-            className="text-moss underline underline-offset-2 hover:text-moss-light"
+            className="text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
           >
             prøv igen
           </a>

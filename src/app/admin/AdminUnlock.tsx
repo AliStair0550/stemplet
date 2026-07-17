@@ -29,7 +29,7 @@ export function AdminUnlock() {
           autoFocus
           autoComplete="off"
           placeholder="Admin-kode"
-          className="mt-5 w-full rounded-lg border border-fog bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none transition-colors focus:border-moss"
+          className="mt-5 w-full rounded-lg border border-fog bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none transition-colors focus:border-terracotta"
         />
         {state.error ? (
           <p className="mt-2 font-[300] text-[0.8rem] text-rust">{state.error}</p>

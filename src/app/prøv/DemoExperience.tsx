@@ -90,7 +90,7 @@ export function DemoExperience({
   if (status === "unavailable") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-fog bg-white p-8 text-center shadow-card">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-moss/10 text-moss">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
           <StampIcon icon={icon} className="h-7 w-7" />
         </span>
         <p className="font-[300] text-[0.95rem] text-stone">

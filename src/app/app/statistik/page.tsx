@@ -21,7 +21,7 @@ export default async function StatistikPage() {
         action={
           <a
             href="/api/export/csv"
-            className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-moss hover:opacity-70"
+            className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-terracotta hover:opacity-70"
           >
             Eksporter CSV
           </a>
@@ -29,8 +29,8 @@ export default async function StatistikPage() {
       />
 
       {stats.stampsTotal === 0 ? (
-        <div className="mb-6 rounded-lg border border-moss/30 bg-moss/5 px-5 py-4">
-          <p className="text-[0.9rem] font-[300] text-moss">
+        <div className="mb-6 rounded-lg border border-terracotta/30 bg-terracotta/5 px-5 py-4">
+          <p className="text-[0.9rem] font-[300] text-terracotta">
             Her kommer dine tal, så snart der bliver stemplet.
           </p>
           <p className="mt-1 text-[0.82rem] font-[200] leading-relaxed text-stone">

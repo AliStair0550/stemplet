@@ -27,7 +27,7 @@ export function GuideActions({ publicUrl }: { publicUrl: string }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 print:hidden">
-      <button type="button" onClick={share} className={btnClass("moss")}>
+      <button type="button" onClick={share} className={btnClass("terracotta")}>
         {copied ? "Link kopieret" : "Del med personalet"}
       </button>
       <button

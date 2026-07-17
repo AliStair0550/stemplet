@@ -85,7 +85,7 @@ export default async function Image({
               display: "flex",
               fontSize: 30,
               letterSpacing: 3,
-              color: "#2D5F4A",
+              color: "#A6502E",
               fontWeight: 600,
             }}
           >

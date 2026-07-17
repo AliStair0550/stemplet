@@ -14,7 +14,7 @@ const CONTACT = "hej@alius.dk";
 function Li({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5">
-      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-moss" />
+      <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-terracotta" />
       <span>{children}</span>
     </li>
   );
@@ -75,11 +75,11 @@ export default function TermsPage() {
         <p>
           Din butik er dataansvarlig for de kundeoplysninger, der behandles i
           Stemplet. Vi er databehandler og behandler dem efter din instruks. Se{" "}
-          <Link href="/databehandleraftale" className="text-moss underline underline-offset-2">
+          <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
             databehandleraftalen
           </Link>{" "}
           og{" "}
-          <Link href="/privatliv" className="text-moss underline underline-offset-2">
+          <Link href="/privatliv" className="text-terracotta underline underline-offset-2">
             privatlivspolitikken
           </Link>
           .
@@ -128,7 +128,7 @@ export default function TermsPage() {
       <LegalSection title="11. Kontakt">
         <p>
           Spørgsmål til betingelserne kan rettes til{" "}
-          <a href={`mailto:${CONTACT}`} className="text-moss underline underline-offset-2">
+          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
           </a>
           .

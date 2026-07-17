@@ -19,7 +19,7 @@ export function CopyInline({ value, display }: { value: string; display: string 
             /* clipboard blokeret - ignorér */
           }
         }}
-        className="shrink-0 border border-clay px-2 py-1 text-[0.62rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:border-moss hover:text-moss"
+        className="shrink-0 border border-clay px-2 py-1 text-[0.62rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:border-terracotta hover:text-terracotta"
       >
         {done ? "Kopieret ✓" : "Kopiér"}
       </button>
