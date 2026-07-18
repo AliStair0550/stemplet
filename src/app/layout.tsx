@@ -18,6 +18,10 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal", "italic"],
   display: "swap",
+  // Ikke preload: Fraunces bruges kun paa enkelte dashboard-overskrifter, ikke
+  // paa forsiden. Uden preload hentes filen kun naar tekst faktisk bruger den,
+  // saa mobil-forsiden slipper for en unoedig font-download.
+  preload: false,
   variable: "--font-fraunces-face",
 });
 

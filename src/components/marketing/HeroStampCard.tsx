@@ -43,6 +43,8 @@ export default function HeroStampCard() {
             alt="Copenhagen Coffee Lab"
             width={124}
             height={36}
+            priority
+            sizes="124px"
             className="h-8 w-auto opacity-95 [filter:brightness(0)_invert(1)] md:h-9"
           />
           <span className="mt-1 shrink-0 text-[0.6rem] font-medium uppercase tracking-[0.14em] text-[#F7EFE6]/60 md:text-[0.66rem]">
