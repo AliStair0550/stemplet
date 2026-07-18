@@ -208,6 +208,12 @@ model CustomerCard {
   lastStampAt    DateTime?
 
   @@index([cardId])
+  // Statistik scoper alt paa cardId og filtrerer paa tid/livstid. Uden disse
+  // scanner hver count/aggregate alle butikkens kortholder-raekker. Daekker
+  // tilmeldinger over tid, aktive kunder (lastStampAt) og stamkunde-niveauer.
+  @@index([cardId, createdAt])
+  @@index([cardId, lastStampAt])
+  @@index([cardId, lifetimeStamps])
 }
 
 enum StampMethod {
