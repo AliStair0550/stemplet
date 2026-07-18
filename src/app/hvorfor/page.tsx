@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
-import HeroStampCard from "@/components/marketing/HeroStampCard";
 import { StampDemo, SharePage } from "@/components/marketing/WhyInteractive";
 import {
   Section,
@@ -15,11 +14,11 @@ import {
 import { APP_URL } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Derfor Stemplet",
+  title: "Fordele",
   description:
     "Det klassiske stempelkort, bygget til den moderne forretning. Ti grunde til, at din butik får flere gensyn med et digitalt stempelkort i Apple Wallet.",
   openGraph: {
-    title: "Derfor Stemplet - stempelkortet, der skaber flere gensyn",
+    title: "Fordele - stempelkortet, der skaber flere gensyn",
     description:
       "Ti grunde til, at din butik skal vælge det digitale stempelkort i Apple Wallet.",
     type: "website",
@@ -174,43 +173,43 @@ export default function WhyPage() {
     <>
       <Nav />
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden pt-32 pb-16 md:pt-40 md:pb-24">
+        {/* Hero: centreret, uden det svaevende kort, saa den ikke ligner forsiden */}
+        <section className="relative overflow-hidden pt-32 pb-16 md:pt-44 md:pb-24">
           <div
             aria-hidden
-            className="pointer-events-none absolute right-[-8%] top-16 h-[460px] w-[460px] rounded-full bg-terracotta/[0.07] blur-[120px]"
+            className="pointer-events-none absolute left-1/2 top-10 h-[520px] w-[820px] max-w-[110vw] -translate-x-1/2 rounded-full bg-terracotta/[0.07] blur-[130px]"
           />
           <Container className="relative">
-            <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:items-center md:gap-x-12">
-              <div className="animate-fade-up md:col-start-1">
-                <Eyebrow>Derfor Stemplet</Eyebrow>
-                <h1 className="mt-5 text-[2.5rem] font-bold leading-[1.05] tracking-[-0.04em] text-ink md:mt-6 md:text-[3.4rem]">
-                  Det klassiske stempelkort.{" "}
-                  <span className="text-terracotta">
-                    Bygget til den moderne forretning.
-                  </span>
-                </h1>
-                <p className="mt-6 max-w-md text-[1.05rem] leading-[1.6] text-taupe">
-                  Ti grunde til, at din butik får flere gensyn med et digitalt
-                  stempelkort i Apple Wallet.
-                </p>
-                <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <CtaGlow className="w-full sm:w-auto">
-                    <ButtonLink
-                      href="/start"
-                      variant="primary"
-                      size="lg"
-                      className="w-full sm:w-auto"
-                    >
-                      Kom gratis i gang
-                    </ButtonLink>
-                  </CtaGlow>
-                  <SharePage url={pageUrl} />
-                </div>
+            <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-terracotta/25 bg-terracotta/[0.06] px-4 py-1.5 text-label font-medium uppercase tracking-[0.1em] text-terracotta">
+                Fordele
+              </span>
+              <h1 className="mt-6 text-[2.4rem] font-bold leading-[1.06] tracking-[-0.04em] text-ink md:text-[3.6rem]">
+                Det klassiske stempelkort.{" "}
+                <span className="text-terracotta">
+                  Bygget til den moderne forretning.
+                </span>
+              </h1>
+              <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.65] text-taupe">
+                Ti grunde til, at din butik får flere gensyn med et digitalt
+                stempelkort i Apple Wallet.
+              </p>
+              <div className="mt-9 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
+                <CtaGlow className="w-full sm:w-auto">
+                  <ButtonLink
+                    href="/start"
+                    variant="primary"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
+                    Kom gratis i gang
+                  </ButtonLink>
+                </CtaGlow>
+                <SharePage url={pageUrl} />
               </div>
-              <div className="flex justify-center md:col-start-2 md:justify-end">
-                <HeroStampCard />
-              </div>
+              <p className="mt-6 text-[0.85rem] text-taupe-light">
+                Gratis op til 100 kortholdere. Intet kreditkort.
+              </p>
             </div>
           </Container>
         </section>

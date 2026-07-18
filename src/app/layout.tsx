@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Fraunces } from "next/font/google";
+import { ScrollReset } from "@/components/ScrollReset";
 import "./globals.css";
 
 // Selv-hostede fonts (next/font): ingen render-blokerende eksterne
@@ -100,7 +101,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="da" className={`${instrument.variable} ${fraunces.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <ScrollReset />
+        {children}
+      </body>
     </html>
   );
 }
