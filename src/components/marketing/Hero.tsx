@@ -23,7 +23,7 @@ export default function Hero() {
           </div>
 
           {/* Stempelkortet: mobil under overskriften, desktop hoejre kolonne */}
-          <div className="flex animate-fade-up justify-center delay-100 md:col-start-2 md:row-span-2 md:row-start-1 md:justify-end">
+          <div className="mt-2 flex animate-fade-up justify-center delay-100 md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:justify-end">
             <HeroStampCard />
           </div>
 

@@ -12,17 +12,17 @@ function MenuIcon({ open }: { open: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.6}
+      strokeWidth={1.9}
       strokeLinecap="round"
-      className="h-6 w-6"
+      className="h-7 w-7"
     >
       {open ? (
         <path d="M6 6l12 12M18 6L6 18" />
       ) : (
         <>
-          <path d="M4 7h16" />
-          <path d="M4 12h16" />
-          <path d="M4 17h16" />
+          <path d="M3.5 7h17" />
+          <path d="M3.5 12h17" />
+          <path d="M3.5 17h17" />
         </>
       )}
     </svg>
@@ -93,7 +93,7 @@ export default function Nav() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Luk menu" : "Åbn menu"}
           aria-expanded={open}
-          className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 md:hidden"
+          className="-mr-2 -mt-0.5 flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-sand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 md:hidden"
         >
           <MenuIcon open={open} />
         </button>
