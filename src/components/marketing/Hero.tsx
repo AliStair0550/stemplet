@@ -12,7 +12,7 @@ export default function Hero() {
         {/* Mobil (eén kolonne): eyebrow + overskrift, saa selve stempelkortet,
             saa tekst + CTA'er. Desktop: to kolonner, hvor venstre har overskrift
             (raekke 1) og tekst (raekke 2), og kortet staar centreret til hoejre. */}
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:items-center md:gap-x-12 md:gap-y-6">
+        <div className="flex flex-col gap-8 md:grid md:grid-cols-2 md:items-center md:gap-x-12 md:gap-y-6">
           {/* Eyebrow + overskrift */}
           <div className="animate-fade-up md:col-start-1 md:row-start-1">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
