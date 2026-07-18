@@ -2,23 +2,44 @@
 
 import { useState } from "react";
 import { StampCard } from "@/components/StampCard";
+import { Celebration } from "@/components/Celebration";
 import { btnClass } from "@/components/ui";
 
 // Interaktivt "proev et stempel": klik og se stemplet poppe ind, praecis som paa
-// kundens telefon. En bloed gloed bag kortet + sheen giver det et magisk skaer,
-// og naar kortet fyldes, gloder beloenningen. Bordeaux-tema (Vinbaren), saa det
-// er et andet eksempel end resten af sitet.
+// kundens telefon. En bloed gloed bag kortet + sheen giver det et magisk skaer.
+// Naar kortet bliver fuldt, udloeses en dopamin-fejring (konfetti + gloedende
+// gave), hvorefter kortet nulstiller sig selv, saa man kan proeve igen.
+// Bordeaux-tema (Vinbaren), saa det er et andet eksempel end resten af sitet.
 export function StampDemo() {
   const required = 10;
   const [stamps, setStamps] = useState(3);
-  const done = stamps >= required;
+  const [celebrating, setCelebrating] = useState(false);
+
+  function giveStamp() {
+    if (celebrating) return;
+    const next = Math.min(required, stamps + 1);
+    setStamps(next);
+    if (next >= required) {
+      setCelebrating(true);
+      window.setTimeout(() => {
+        setCelebrating(false);
+        setStamps(0);
+      }, 2600);
+    }
+  }
+
+  const full = stamps >= required;
 
   return (
     <div className="flex flex-col items-center gap-7">
+      <Celebration show={celebrating} />
+
       <div className="relative">
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-8 rounded-[48px] bg-[#5E2438]/25 blur-[70px]"
+          className={`pointer-events-none absolute -inset-8 rounded-[48px] blur-[70px] transition-all duration-500 ${
+            celebrating ? "bg-[#C9A24B]/40 scale-110" : "bg-[#5E2438]/25"
+          }`}
         />
         <div className="relative">
           <StampCard
@@ -38,29 +59,22 @@ export function StampDemo() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2.5">
-        <button
-          type="button"
-          onClick={() => setStamps((s) => Math.min(required, s + 1))}
-          disabled={done}
-          className={`${btnClass("primary")} disabled:cursor-not-allowed disabled:opacity-50`}
-        >
-          {done ? "Kortet er fuldt" : "Giv et stempel"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setStamps(0)}
-          className={btnClass("outline")}
-        >
-          Nulstil
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={giveStamp}
+        disabled={full}
+        className={`${btnClass("primary")} disabled:cursor-not-allowed disabled:opacity-70`}
+      >
+        {full ? "Belønning låst op" : "Giv et stempel"}
+      </button>
 
       <p
         className="min-h-[1.25rem] text-center text-[0.9rem] font-[400] text-terracotta transition-opacity"
         aria-live="polite"
       >
-        {done ? "Belønningen er klar. Sådan bliver en gæst til en stamkunde." : ""}
+        {celebrating
+          ? "Belønningen er klar. Sådan bliver en gæst til en stamkunde."
+          : ""}
       </p>
     </div>
   );

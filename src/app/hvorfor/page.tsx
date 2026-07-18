@@ -177,15 +177,14 @@ export default function WhyPage() {
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
-              <h1 className="text-[2.4rem] font-bold leading-[1.06] tracking-[-0.04em] text-ink md:text-[3.6rem]">
+              <h1 className="text-[2.05rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[3rem]">
                 Det klassiske stempelkort.{" "}
                 <span className="text-terracotta">
                   Bygget til den moderne forretning.
                 </span>
               </h1>
               <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.65] text-taupe">
-                Ti grunde til, at din butik får flere gensyn med et digitalt
-                stempelkort i Apple Wallet.
+                10 grunde til, at dit stempelkort fortjener en opgradering.
               </p>
             </div>
           </Container>
@@ -255,11 +254,12 @@ export default function WhyPage() {
                 className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-terracotta/15 blur-[90px]"
               />
               <h2 className="relative text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-parchment md:text-[2.8rem]">
-                Kom i gang uden risiko.
+                Din næste stamkunde venter.
               </h2>
               <p className="relative mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-parchment/70">
-                Gratis op til 100 kortholdere. Derefter kun 99 kr. om måneden.
-                Ingen binding, intet kreditkort for at starte.
+                Sæt dit eget stempelkort op på få minutter og giv kunderne en
+                grund til at komme igen. Gratis op til 100 kortholdere, derefter
+                kun 99 kr. om måneden. Ingen binding.
               </p>
               <div className="relative mt-9 flex justify-center">
                 <CtaGlow className="w-full sm:w-auto">
