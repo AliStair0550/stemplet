@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/weekly-stats",
       "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/cron/threshold-emails",
+      "schedule": "0 7 * * *"
     }
   ]
 }

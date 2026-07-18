@@ -54,8 +54,13 @@ model Business {
   termsAcceptedAt  DateTime? // accepterede vilkaar/privatliv/DPA ved oprettelse
   // ── Prismodel / manuel fakturering (Billy, ingen Stripe endnu) ──────
   // Kortholder = antal CustomerCard-raekker for butikken (se lib/billing).
-  cardholderWarnedAt DateTime? // 80-kortholder-varsel sendt (udloeses kun EEN gang)
+  // Fire-once-flag (KENDSGERNING: butikken har krydset 80) vs sent-flag (mailen er
+  // bekraeftet leveret). Adskilt, saa et Resend-blip ikke taber varslet: en daglig
+  // sweep sender igen for butikker med Warned sat men EmailSent stadig null.
+  cardholderWarnedAt DateTime? // 80-kortholder-taerskel krydset (udloeses kun EEN gang)
+  cardholderWarnEmailSentAt DateTime? // 80-varsel-mails bekraeftet leveret
   reached100At       DateTime? // dagen butikken foerst krydsede 100 (faktura-start-reference)
+  reached100EmailSentAt DateTime? // faktura-trigger-mail til superadmin bekraeftet leveret
   proApprovedAt      DateTime? // ejeren har godkendt Pro-aftalen
   proApprovedById    String? // hvilken bruger (User.id) godkendte
   proPriceKr         Int       @default(99) // individuel maanedspris i kr (founding members mv.)

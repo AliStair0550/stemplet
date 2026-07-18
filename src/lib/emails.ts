@@ -309,3 +309,79 @@ export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
   };
 }
 
+// ── Faktura-trigger ved 100 (til superadmin/Ali) ─────────────────────
+// 100-krydsningen ER faktureringstidspunktet i modellen, saa denne mail er selve
+// triggeren for Billy-fakturaen. Den samler alt, man skal bruge for at fakturere
+// direkte fra indbakken: navn, kortholdertal, individuel pris og hvornaar ejeren
+// godkendte aftalen.
+
+export type SuperadminInvoiceData = {
+  businessName: string;
+  slug: string;
+  cardholders: number;
+  limit: number;
+  priceKr: number; // effektiv maanedspris (specialpris eller standard)
+  standardPriceKr: number;
+  approvedLabel: string; // formateret tidsstempel for godkendelsesklik, ellers besked
+  ownerEmails: string;
+  adminUrl: string;
+};
+
+export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
+  const priceNote =
+    d.priceKr !== d.standardPriceKr
+      ? `specialpris, standard er ${d.standardPriceKr} kr`
+      : "standardpris";
+
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+    </td></tr></table>`;
+
+  const detailRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+    </tr>`;
+
+  const inner = `
+    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      ${d.businessName} har krydset ${d.limit} kortholdere.
+    </p>
+    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Det er faktureringstidspunktet. Her er alt, du skal bruge til Billy-fakturaen.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:14px 18px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${detailRow("Kortholdere", `${d.cardholders} (krydsede ${d.limit})`)}
+          ${detailRow("Pro-pris", `${d.priceKr} kr/md ekskl. moms`)}
+          ${detailRow("Pris-note", priceNote)}
+          ${detailRow("Aftale godkendt", d.approvedLabel)}
+          ${detailRow("Butik", `${d.businessName} (${d.slug})`)}
+          ${detailRow("Ejer", d.ownerEmails)}
+        </table>
+      </td></tr>
+    </table>
+    ${button}`;
+
+  const text = [
+    `${d.businessName} har krydset ${d.limit} kortholdere. Det er faktureringstidspunktet.`,
+    "",
+    "Til Billy-fakturaen:",
+    `Kortholdere: ${d.cardholders} (krydsede ${d.limit})`,
+    `Pro-pris: ${d.priceKr} kr/md ekskl. moms (${priceNote})`,
+    `Aftale godkendt: ${d.approvedLabel}`,
+    `Butik: ${d.businessName} (${d.slug})`,
+    `Ejer: ${d.ownerEmails}`,
+    "",
+    `Åbn admin: ${d.adminUrl}`,
+  ].join("\n");
+
+  return {
+    subject: `[Stemplet] Fakturér: ${d.businessName} har krydset ${d.limit} kortholdere`,
+    html: shell(`${d.businessName} skal faktureres for Pro.`, inner),
+    text,
+  };
+}
+

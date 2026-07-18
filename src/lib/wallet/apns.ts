@@ -64,6 +64,12 @@ function sendOne(
   });
 }
 
+// En konfig-fejl (fx 403 forkert cert/token) rammer ALLE pushes, indtil noeglen
+// rettes. For ikke at braende Sentry-kvoten paa dubletter rapporterer vi hoejst
+// een gang pr. dette interval (pr. varm lambda), ud over at samle pr. push.
+let lastConfigCaptureAt = 0;
+const CONFIG_CAPTURE_INTERVAL_MS = 5 * 60 * 1000;
+
 /** Sender push til alle registrerede enheder for et kundekort og rydder doede
  *  push-tokens (afregistrerede/ugyldige enheder). Fejler aldrig hoejlydt. */
 export async function pushWalletUpdate(customerCardId: string): Promise<void> {
@@ -85,6 +91,13 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
 
   const client = http2.connect("https://api.push.apple.com");
   const dead: string[] = [];
+  // Saml udfaldene og rapportér EEN gang pr. push i stedet for pr. registrering,
+  // saa et kort med mange enheder ikke giver mange ens events.
+  let transientCount = 0;
+  let configCount = 0;
+  let configStatus: number | null = null;
+  let connectionError: unknown = null;
+
   try {
     await new Promise<void>((resolve) => {
       let settled = false;
@@ -95,7 +108,9 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
         }
       };
       client.on("error", (err) => {
-        captureWalletError(err, { operation: "apns:connection", customerCardId });
+        // Forbindelsesfejl (ECONNRESET, DNS, socket hangup): forbigaaende, og
+        // passet selv-healer ved naeste polling. Warn, spam IKKE Sentry.
+        connectionError = err;
         done();
       });
       Promise.all(
@@ -107,19 +122,11 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
               dead.push(r.id);
               break;
             case "transient":
-              // APNs overbelastet/nede: passet selv-healer ved naeste hentning.
-              // Log lokalt (synligt i Vercel-logs) uden at fylde Sentry-kvoten.
-              console.warn(
-                `[apns] forbigaaende status ${status} for kort ${customerCardId}`,
-              );
+              transientCount += 1;
               break;
             case "config":
-              // Konfig-fejl (fx 403 forkert cert/token): rammer ALLE pushes.
-              captureWalletError(new Error(`APNs svarede ${status}`), {
-                operation: "apns:push",
-                customerCardId,
-                extra: { status },
-              });
+              configCount += 1;
+              if (configStatus === null) configStatus = status;
               break;
             case "ok":
               break;
@@ -129,6 +136,39 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
     });
   } finally {
     client.close();
+  }
+
+  if (connectionError) {
+    const msg =
+      connectionError instanceof Error
+        ? connectionError.message
+        : String(connectionError);
+    console.warn(`[apns] forbindelsesfejl for kort ${customerCardId}: ${msg}`);
+  }
+  if (transientCount > 0) {
+    // APNs overbelastet/nede: log lokalt (Vercel-logs) uden at fylde Sentry-kvoten.
+    console.warn(
+      `[apns] ${transientCount} forbigaaende svar (429/5xx) for kort ${customerCardId}`,
+    );
+  }
+  if (configCount > 0) {
+    // Konfig-fejl: IKKE forbigaaende. EEN tydelig event pr. push, og hoejst een
+    // pr. interval paa tvaers af pushes, saa det egentlige signal ikke drukner i
+    // halvtreds ens events.
+    const nowMs = Date.now();
+    if (nowMs - lastConfigCaptureAt > CONFIG_CAPTURE_INTERVAL_MS) {
+      lastConfigCaptureAt = nowMs;
+      captureWalletError(
+        new Error(
+          `APNs-konfiguration er i stykker: ${configCount} enhed(er) afvist med status ${configStatus}`,
+        ),
+        {
+          operation: "apns:config",
+          customerCardId,
+          extra: { status: configStatus, affected: configCount },
+        },
+      );
+    }
   }
 
   if (dead.length > 0) {
