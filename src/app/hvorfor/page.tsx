@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
-import { StampDemo, SharePage } from "@/components/marketing/WhyInteractive";
+import { StampDemo } from "@/components/marketing/WhyInteractive";
 import {
   Section,
   Container,
-  Eyebrow,
   ButtonLink,
   CtaGlow,
   Divider,
   WalletIcon,
 } from "@/components/ui";
-import { APP_URL } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Fordele",
@@ -24,8 +22,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-const pageUrl = `${APP_URL}/hvorfor`;
 
 const ICON_CLS = "h-5 w-5";
 function PointIcon({ name }: { name: string }) {
@@ -181,10 +177,7 @@ export default function WhyPage() {
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
-              <span className="inline-flex items-center gap-2 rounded-full border border-terracotta/25 bg-terracotta/[0.06] px-4 py-1.5 text-label font-medium uppercase tracking-[0.1em] text-terracotta">
-                Fordele
-              </span>
-              <h1 className="mt-6 text-[2.4rem] font-bold leading-[1.06] tracking-[-0.04em] text-ink md:text-[3.6rem]">
+              <h1 className="text-[2.4rem] font-bold leading-[1.06] tracking-[-0.04em] text-ink md:text-[3.6rem]">
                 Det klassiske stempelkort.{" "}
                 <span className="text-terracotta">
                   Bygget til den moderne forretning.
@@ -193,22 +186,6 @@ export default function WhyPage() {
               <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.65] text-taupe">
                 Ti grunde til, at din butik får flere gensyn med et digitalt
                 stempelkort i Apple Wallet.
-              </p>
-              <div className="mt-9 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
-                <CtaGlow className="w-full sm:w-auto">
-                  <ButtonLink
-                    href="/start"
-                    variant="primary"
-                    size="lg"
-                    className="w-full sm:w-auto"
-                  >
-                    Kom gratis i gang
-                  </ButtonLink>
-                </CtaGlow>
-                <SharePage url={pageUrl} />
-              </div>
-              <p className="mt-6 text-[0.85rem] text-taupe-light">
-                Gratis op til 100 kortholdere. Intet kreditkort.
               </p>
             </div>
           </Container>
@@ -220,25 +197,19 @@ export default function WhyPage() {
         <div className="cv-section">
           <Section>
             <div className="max-w-xl">
-              <Eyebrow>Ti gode grunde</Eyebrow>
-              <h2 className="mt-4 text-[2rem] font-bold leading-[1.12] tracking-[-0.035em] text-ink md:text-[2.5rem]">
+              <h2 className="text-[2rem] font-bold leading-[1.12] tracking-[-0.035em] text-ink md:text-[2.5rem]">
                 Alt det, papkortet aldrig kunne.
               </h2>
             </div>
             <div className="mt-12 grid gap-5 sm:grid-cols-2">
-              {POINTS.map((p, i) => (
+              {POINTS.map((p) => (
                 <article
                   key={p.title}
                   className="group flex flex-col gap-4 rounded-[20px] border border-ink/[0.08] bg-parchment p-7 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift md:p-8"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
-                      <PointIcon name={p.icon} />
-                    </span>
-                    <span className="text-[1.4rem] font-bold tabular-nums tracking-[-0.02em] text-terracotta/25">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                  </div>
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
+                    <PointIcon name={p.icon} />
+                  </span>
                   <h3 className="text-[1.15rem] font-semibold leading-snug tracking-[-0.02em] text-ink">
                     {p.title}
                   </h3>
@@ -255,12 +226,15 @@ export default function WhyPage() {
 
         {/* Interaktivt demo */}
         <div className="cv-section">
-          <Section className="bg-sand">
-            <div className="max-w-xl">
-              <Eyebrow>Prøv det selv</Eyebrow>
-              <h2 className="mt-4 text-[2rem] font-bold leading-[1.12] tracking-[-0.035em] text-ink md:text-[2.5rem]">
+          <Section className="relative overflow-hidden bg-sand">
+            <div className="mx-auto max-w-xl text-center">
+              <h2 className="text-[2rem] font-bold leading-[1.12] tracking-[-0.035em] text-ink md:text-[2.5rem]">
                 Et stempel, der føles magisk.
               </h2>
+              <p className="mx-auto mt-5 max-w-md text-[0.98rem] leading-[1.7] text-stone">
+                Klik og se, hvordan et stempel lander på kortet. Det samme sker
+                på kundens telefon, med det samme.
+              </p>
             </div>
             <div className="mt-12">
               <StampDemo />
@@ -268,20 +242,26 @@ export default function WhyPage() {
           </Section>
         </div>
 
-        <Divider />
-
-        {/* Afsluttende CTA */}
+        {/* Afsluttende CTA: flot moerkt kort */}
         <div className="cv-section">
           <Section>
-            <div className="mx-auto max-w-2xl rounded-[28px] border border-terracotta/30 bg-terracotta/[0.05] p-8 text-center md:p-14">
-              <h2 className="text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.6rem]">
+            <div className="relative mx-auto max-w-3xl overflow-hidden rounded-[32px] bg-ink px-8 py-14 text-center shadow-hero md:px-14 md:py-20">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-terracotta/30 blur-[90px]"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-terracotta/15 blur-[90px]"
+              />
+              <h2 className="relative text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-parchment md:text-[2.8rem]">
                 Kom i gang uden risiko.
               </h2>
-              <p className="mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-stone">
+              <p className="relative mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-parchment/70">
                 Gratis op til 100 kortholdere. Derefter kun 99 kr. om måneden.
                 Ingen binding, intet kreditkort for at starte.
               </p>
-              <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="relative mt-9 flex justify-center">
                 <CtaGlow className="w-full sm:w-auto">
                   <ButtonLink
                     href="/start"
@@ -292,7 +272,6 @@ export default function WhyPage() {
                     Kom gratis i gang
                   </ButtonLink>
                 </CtaGlow>
-                <SharePage url={pageUrl} label="Del med en ejer" />
               </div>
             </div>
           </Section>
