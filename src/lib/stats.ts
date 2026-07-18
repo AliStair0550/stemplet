@@ -1,5 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 
 type PerDay = { date: string; label: string; weekday: string; count: number };
@@ -30,7 +31,7 @@ function daysAgo(n: number): Date {
   d.setDate(d.getDate() - n);
   return d;
 }
-export async function getBusinessStats(businessId: string): Promise<BusinessStats> {
+async function computeBusinessStats(businessId: string): Promise<BusinessStats> {
   const cards = await prisma.card.findMany({
     where: { businessId },
     select: { id: true },
@@ -60,6 +61,10 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
 
   const d30 = daysAgo(30);
   const d60 = daysAgo(60);
+  // Stempel-queries filtrerer paa den denormaliserede Stamp.businessId, saa de
+  // rammer @@index([businessId, createdAt]) direkte i stedet for at semi-joine
+  // gennem CustomerCard (som omgik indekset og scannede historikken). Redemption
+  // har ingen businessId-kolonne, saa den bruger stadig relationen (rel).
   const rel = { customerCard: { cardId: { in: cardIds } } };
   const inCards = { cardId: { in: cardIds } };
 
@@ -116,11 +121,11 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     // Et stempel kan taelle for flere (personalet giver flere paa en gang, eller
     // dobbelt-stempel-kampagne), saa raekker !== stempler. Summen matcher kundens
     // lifetimeStamps, saa "i alt" aldrig er mindre end "flest hos een kunde".
-    prisma.stamp.aggregate({ where: rel, _sum: { multiplier: true } }),
+    prisma.stamp.aggregate({ where: { businessId }, _sum: { multiplier: true } }),
     prisma.redemption.count({ where: rel }),
     prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
     prisma.stamp.findMany({
-      where: { ...rel, createdAt: { gte: daysAgo(14) } },
+      where: { businessId, createdAt: { gte: daysAgo(14) } },
       select: { createdAt: true, multiplier: true },
     }),
     // Nye kundekort seneste 14 dage, saa vi kan tegne "nye kunder pr. dag".
@@ -130,7 +135,7 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
     }),
     prisma.stamp.groupBy({
       by: ["method"],
-      where: rel,
+      where: { businessId },
       _sum: { multiplier: true },
     }),
     // avgDaysToFull PR. CYKLUS: maal hver indloesning fra den FORRIGE indloesning
@@ -221,6 +226,17 @@ export async function getBusinessStats(businessId: string): Promise<BusinessStat
   };
 }
 
+// Statistik-tallene caches kort pr. butik. Dashboardet (/app) og statistik-siden
+// kalder begge dette tunge ~17-query-bundt ved hver visning; med cache genberegnes
+// det hoejst hvert minut i stedet for ved hver refresh. businessId indgaar i
+// cache-noeglen, saa butikker ikke deler tal. 60 s er kort nok til, at nye tal
+// naesten altid er med, og langt nok til at aflaste databasen ved gentagne loads.
+export const getBusinessStats = unstable_cache(
+  computeBusinessStats,
+  ["business-stats"],
+  { revalidate: 60, tags: ["business-stats"] },
+);
+
 // Buckets pr. dag. Hver haendelse vejer med multiplier (default 1), saa
 // stempel-grafen viser faktiske stempler, mens nye-kunder-grafen bare taeller.
 function buildPerDay(
@@ -304,8 +320,9 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
   const [stampsWeekAgg, stampsPrevWeekAgg, newCustomers, redemptions, churn, topAgg, regulars] =
     await Promise.all([
       // Faktiske stempler (sum af multiplier), saa ugebrevet er enigt med resten.
-      prisma.stamp.aggregate({ where: { ...rel, createdAt: { gte: d7 } }, _sum: { multiplier: true } }),
-      prisma.stamp.aggregate({ where: { ...rel, createdAt: { gte: d14, lt: d7 } }, _sum: { multiplier: true } }),
+      // Bruger den denormaliserede Stamp.businessId (indekseret), ikke relationen.
+      prisma.stamp.aggregate({ where: { businessId, createdAt: { gte: d7 } }, _sum: { multiplier: true } }),
+      prisma.stamp.aggregate({ where: { businessId, createdAt: { gte: d14, lt: d7 } }, _sum: { multiplier: true } }),
       prisma.customerCard.count({
         where: { ...inCards, createdAt: { gte: d7 } },
       }),

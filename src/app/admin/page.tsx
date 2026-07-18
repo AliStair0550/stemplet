@@ -6,6 +6,7 @@ import {
   isAdminUnlocked,
   adminCodeConfigured,
 } from "@/lib/admin";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
 import { effectiveProPriceKr } from "@/lib/billing";
@@ -20,55 +21,47 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-async function buildRow(b: {
-  id: string;
-  name: string;
-  slug: string;
-  plan: "FREE" | "PRO";
-  category: string | null;
-  createdAt: Date;
-  termsAcceptedAt: Date | null;
-  stripeCustomerId: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  selfScanEnabled: boolean;
-  welcomeStampEnabled: boolean;
-  weeklyEmailEnabled: boolean;
-  proApprovedAt: Date | null;
-  reached100At: Date | null;
-  proPriceKr: number;
-  proPriceUntil: Date | null;
-  lastInvoicedAt: Date | null;
-  newSignupsPaused: boolean;
-  stopped: boolean;
-  users: {
+type RowMetrics = {
+  customers: number;
+  stamps: number;
+  redemptions: number;
+  lastActive: Date | null;
+};
+
+// Ren mapping: tallene er allerede aggregeret pr. butik i AdminPage (se nedenfor),
+// saa denne er synkron og laver ingen queries. Det fjerner N+1'et, hvor hver
+// butik foer koerte 4 queries.
+function buildRow(
+  b: {
     id: string;
-    email: string;
-    name: string | null;
-    emailVerified: Date | null;
-  }[];
-  cards: { id: string }[];
-}): Promise<Row> {
-  const cardIds = b.cards.map((c) => c.id);
-  const where = { customerCard: { cardId: { in: cardIds } } };
-  const [customers, stamps, redemptions, lastStamp] = await Promise.all([
-    prisma.customerCard.count({ where: { cardId: { in: cardIds } } }),
-    // Faktiske stempler (sum af multiplier), ikke antal raekker: konsistent med
-    // resten af statistikken.
-    cardIds.length
-      ? prisma.stamp
-          .aggregate({ where, _sum: { multiplier: true } })
-          .then((a) => a._sum.multiplier ?? 0)
-      : Promise.resolve(0),
-    cardIds.length ? prisma.redemption.count({ where }) : Promise.resolve(0),
-    cardIds.length
-      ? prisma.stamp.findFirst({
-          where,
-          orderBy: { createdAt: "desc" },
-          select: { createdAt: true },
-        })
-      : Promise.resolve(null),
-  ]);
+    name: string;
+    slug: string;
+    plan: "FREE" | "PRO";
+    category: string | null;
+    createdAt: Date;
+    termsAcceptedAt: Date | null;
+    stripeCustomerId: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    selfScanEnabled: boolean;
+    welcomeStampEnabled: boolean;
+    weeklyEmailEnabled: boolean;
+    proApprovedAt: Date | null;
+    reached100At: Date | null;
+    proPriceKr: number;
+    proPriceUntil: Date | null;
+    lastInvoicedAt: Date | null;
+    newSignupsPaused: boolean;
+    stopped: boolean;
+    users: {
+      id: string;
+      email: string;
+      name: string | null;
+      emailVerified: Date | null;
+    }[];
+  },
+  m: RowMetrics,
+): Row {
   return {
     id: b.id,
     name: b.name,
@@ -87,10 +80,10 @@ async function buildRow(b: {
       name: u.name,
       verified: u.emailVerified != null,
     })),
-    customers,
-    stamps,
-    redemptions,
-    lastActive: lastStamp?.createdAt ?? null,
+    customers: m.customers,
+    stamps: m.stamps,
+    redemptions: m.redemptions,
+    lastActive: m.lastActive,
     isDemo: b.slug === DEMO_SLUG,
     proApprovedAt: b.proApprovedAt,
     reached100At: b.reached100At,
@@ -125,7 +118,66 @@ export default async function AdminPage() {
     },
   });
 
-  const rows = await Promise.all(businesses.map(buildRow));
+  // Aggreger pr. butik i faa grupperede queries i stedet for 4 pr. butik (N+1).
+  // Stempler bruger den denormaliserede Stamp.businessId (indekseret) til baade
+  // sum og seneste aktivitet; kortholdere grupperes pr. kort og mappes til butik;
+  // indloesninger taelles pr. butik via join (Redemption har ingen businessId).
+  const businessIds = businesses.map((b) => b.id);
+  const cardToBiz = new Map<string, string>();
+  for (const b of businesses) for (const c of b.cards) cardToBiz.set(c.id, b.id);
+  const cardIds = [...cardToBiz.keys()];
+
+  const [stampAgg, cardCounts, redemptionRows] = await Promise.all([
+    prisma.stamp.groupBy({
+      by: ["businessId"],
+      where: { businessId: { in: businessIds } },
+      _sum: { multiplier: true },
+      _max: { createdAt: true },
+    }),
+    prisma.customerCard.groupBy({
+      by: ["cardId"],
+      where: { cardId: { in: cardIds } },
+      _count: { _all: true },
+    }),
+    businessIds.length
+      ? prisma.$queryRaw<{ businessId: string; count: number }[]>(Prisma.sql`
+          SELECT c."businessId" AS "businessId", COUNT(*)::int AS count
+          FROM "Redemption" r
+          JOIN "CustomerCard" cc ON cc."id" = r."customerCardId"
+          JOIN "Card" c ON c."id" = cc."cardId"
+          WHERE c."businessId" IN (${Prisma.join(businessIds)})
+          GROUP BY c."businessId"
+        `)
+      : Promise.resolve([] as { businessId: string; count: number }[]),
+  ]);
+
+  const stampsByBiz = new Map<string, number>();
+  const lastByBiz = new Map<string, Date | null>();
+  for (const g of stampAgg) {
+    if (!g.businessId) continue;
+    stampsByBiz.set(g.businessId, g._sum.multiplier ?? 0);
+    lastByBiz.set(g.businessId, g._max.createdAt ?? null);
+  }
+  const customersByBiz = new Map<string, number>();
+  for (const g of cardCounts) {
+    const biz = cardToBiz.get(g.cardId);
+    if (biz) {
+      customersByBiz.set(biz, (customersByBiz.get(biz) ?? 0) + g._count._all);
+    }
+  }
+  const redemptionsByBiz = new Map<string, number>();
+  for (const r of redemptionRows) {
+    redemptionsByBiz.set(r.businessId, Number(r.count));
+  }
+
+  const rows = businesses.map((b) =>
+    buildRow(b, {
+      customers: customersByBiz.get(b.id) ?? 0,
+      stamps: stampsByBiz.get(b.id) ?? 0,
+      redemptions: redemptionsByBiz.get(b.id) ?? 0,
+      lastActive: lastByBiz.get(b.id) ?? null,
+    }),
+  );
   const real = rows.filter((r) => !r.isDemo);
   const demo = rows.find((r) => r.isDemo) ?? null;
 
