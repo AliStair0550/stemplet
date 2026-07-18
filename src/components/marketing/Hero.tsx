@@ -9,31 +9,27 @@ export default function Hero() {
         className="pointer-events-none absolute right-[-8%] top-16 h-[460px] w-[460px] rounded-full bg-terracotta/[0.07] blur-[120px]"
       />
       <Container className="relative">
-        {/* Mobil: eyebrow oeverst, saa selve stempelkortet (lidt mindre), saa
-            overskrift + CTA'er. Saa moedes man af kortet med det samme. Desktop:
-            to kolonner (tekst til venstre, kort til hoejre) praecis som foer. */}
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:items-center md:gap-12">
-          {/* Eyebrow, kun mobil (oeverst) */}
-          <div className="animate-fade-up md:hidden">
+        {/* Mobil (eén kolonne): eyebrow + overskrift, saa selve stempelkortet,
+            saa tekst + CTA'er. Desktop: to kolonner, hvor venstre har overskrift
+            (raekke 1) og tekst (raekke 2), og kortet staar centreret til hoejre. */}
+        <div className="flex flex-col gap-6 md:grid md:grid-cols-2 md:items-center md:gap-x-12 md:gap-y-6">
+          {/* Eyebrow + overskrift */}
+          <div className="animate-fade-up md:col-start-1 md:row-start-1">
             <Eyebrow>Det digitale stempelkort</Eyebrow>
-          </div>
-
-          {/* Stempelkortet: mobil nr. 2, desktop hoejre kolonne */}
-          <div className="flex animate-fade-up justify-center delay-100 md:order-2 md:mt-20 md:justify-end">
-            <HeroStampCard />
-          </div>
-
-          {/* Overskrift + tekst + CTA'er: mobil nr. 3, desktop venstre kolonne.
-              Eyebrow gentages her, men vises kun paa desktop. */}
-          <div className="min-w-0 animate-fade-up delay-200 md:order-1">
-            <div className="hidden md:block">
-              <Eyebrow>Det digitale stempelkort</Eyebrow>
-            </div>
-            <h1 className="text-[2.7rem] font-bold leading-[1.04] tracking-[-0.04em] text-ink md:mt-6 md:text-[3.7rem]">
+            <h1 className="mt-5 text-[2.7rem] font-bold leading-[1.04] tracking-[-0.04em] text-ink md:mt-6 md:text-[3.7rem]">
               Stempelkortet, der skaber{" "}
               <span className="text-terracotta">flere gensyn.</span>
             </h1>
-            <p className="mt-6 max-w-md text-[1.05rem] leading-[1.6] text-taupe">
+          </div>
+
+          {/* Stempelkortet: mobil under overskriften, desktop hoejre kolonne */}
+          <div className="flex animate-fade-up justify-center delay-100 md:col-start-2 md:row-span-2 md:row-start-1 md:justify-end">
+            <HeroStampCard />
+          </div>
+
+          {/* Tekst + CTA'er */}
+          <div className="min-w-0 animate-fade-up delay-200 md:col-start-1 md:row-start-2">
+            <p className="max-w-md text-[1.05rem] leading-[1.6] text-taupe">
               Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
               hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
               statistik og købsmønstre.
