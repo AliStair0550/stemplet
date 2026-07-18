@@ -57,8 +57,8 @@ export default function Hero() {
                   </svg>
                 </ButtonLink>
               </CtaGlow>
-              <ButtonLink href="#sådan" variant="outline" size="lg">
-                Sådan virker det
+              <ButtonLink href="/hvorfor" variant="outline" size="lg">
+                Dine fordele
               </ButtonLink>
             </div>
             <p className="mt-7 text-[0.85rem] text-taupe-light">

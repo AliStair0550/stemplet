@@ -179,7 +179,16 @@ export default function WhyPage() {
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
               <h1 className="text-[2.05rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[3rem]">
                 Det klassiske stempelkort.{" "}
-                <span className="text-terracotta">
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(105deg, #A6502E 44%, #E7B48F 50%, #A6502E 56%)",
+                    backgroundSize: "260% 100%",
+                    WebkitBackgroundClip: "text",
+                    animation: "textShine 4.5s ease-in-out 1.2s infinite",
+                  }}
+                >
                   Bygget til den moderne forretning.
                 </span>
               </h1>
@@ -241,35 +250,43 @@ export default function WhyPage() {
           </Section>
         </div>
 
-        {/* Afsluttende CTA: flot moerkt kort */}
+        {/* Afsluttende CTA: aaben og inspirerende, ingen kasse */}
         <div className="cv-section">
-          <Section>
-            <div className="relative mx-auto max-w-3xl overflow-hidden rounded-[32px] bg-ink px-8 py-14 text-center shadow-hero md:px-14 md:py-20">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-terracotta/30 blur-[90px]"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-terracotta/15 blur-[90px]"
-              />
-              <h2 className="relative text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-parchment md:text-[2.8rem]">
+          <Section className="relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
+            />
+            <div className="relative mx-auto max-w-2xl text-center">
+              <h2 className="text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.8rem]">
                 Din næste stamkunde venter.
               </h2>
-              <p className="relative mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-parchment/70">
+              <p className="mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-stone">
                 Sæt dit eget stempelkort op på få minutter og giv kunderne en
                 grund til at komme igen. Gratis op til 100 kortholdere, derefter
                 kun 99 kr. om måneden. Ingen binding.
               </p>
-              <div className="relative mt-9 flex justify-center">
-                <CtaGlow className="w-full sm:w-auto">
+              <div className="mt-9 flex justify-center">
+                <CtaGlow>
                   <ButtonLink
                     href="/start"
                     variant="primary"
                     size="lg"
-                    className="w-full sm:w-auto"
+                    className="group"
                   >
                     Kom gratis i gang
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-[1.05rem] w-[1.05rem] transition-transform duration-200 group-hover:translate-x-1"
+                      aria-hidden
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
                   </ButtonLink>
                 </CtaGlow>
               </div>

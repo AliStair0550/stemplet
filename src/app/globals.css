@@ -310,6 +310,17 @@ textarea:focus-visible {
   }
 }
 
+/* Blødt lys-skær, der stryger hen over en tekst (background-clip: text). */
+@keyframes textShine {
+  0% {
+    background-position: 220% center;
+  }
+  55%,
+  100% {
+    background-position: -70% center;
+  }
+}
+
 @keyframes dashFlow {
   to {
     stroke-dashoffset: -14;

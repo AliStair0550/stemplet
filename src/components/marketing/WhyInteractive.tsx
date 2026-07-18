@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { StampCard } from "@/components/StampCard";
 import { Celebration } from "@/components/Celebration";
-import { btnClass } from "@/components/ui";
 
 // Interaktivt "proev et stempel": klik og se stemplet poppe ind, praecis som paa
 // kundens telefon. En bloed gloed bag kortet + sheen giver det et magisk skaer.
@@ -54,7 +53,7 @@ export function StampDemo() {
             shine
             serial="STEMPLET01"
             serialLabel="Vinbaren"
-            className="max-w-[20rem]"
+            className="max-w-[22rem]"
           />
         </div>
       </div>
@@ -63,7 +62,7 @@ export function StampDemo() {
         type="button"
         onClick={giveStamp}
         disabled={full}
-        className={`${btnClass("primary")} disabled:cursor-not-allowed disabled:opacity-70`}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#5E2438] px-6 py-2.5 text-[0.9rem] font-medium tracking-[-0.01em] text-[#F7E7EE] transition-colors duration-200 hover:bg-[#4d1d2c] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5E2438]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-sand disabled:pointer-events-none disabled:opacity-70"
       >
         {full ? "Belønning låst op" : "Giv et stempel"}
       </button>
