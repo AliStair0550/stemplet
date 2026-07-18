@@ -169,19 +169,19 @@ export async function sendOnboardingLogin(formData: FormData) {
     h.get("x-real-ip")?.trim() ||
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "ukendt";
-  const [emailOk, ipOk] = await Promise.all([
-    durableRateLimit("login-email", email, 3, 3600),
-    durableRateLimit("login-ip", ip, 10, 3600),
-  ]);
-  // Ved onboarding er kontoen lige oprettet - bloker ikke, men undgaa
-  // gentagne mails hvis nogen spammer knappen.
-  if (!emailOk || !ipOk) return;
-
-  // signIn redirecter til /login/tjek-mail ved succes (den redirect SKAL boble
-  // op). Ved en forbigaaende fejl (mail, DB, Vercel-runtime) sender vi brugeren
-  // pænt til login-siden, hvor de kan hente linket igen, i stedet for den
-  // generiske fejlside. Butikken er allerede oprettet paa dette tidspunkt.
+  // Rate-limit og magic-link er samlet i eet try/catch. En forbigaaende fejl
+  // (mail, DB-blip, Vercel-runtime) sender brugeren pænt til login-siden, hvor de
+  // kan hente linket igen, i stedet for den generiske fejlside. Butikken er
+  // allerede oprettet paa dette tidspunkt. Succes-redirect fra signIn SKAL boble op.
   try {
+    const [emailOk, ipOk] = await Promise.all([
+      durableRateLimit("login-email", email, 3, 3600),
+      durableRateLimit("login-ip", ip, 10, 3600),
+    ]);
+    // Ved onboarding er kontoen lige oprettet - bloker ikke, men undgaa
+    // gentagne mails hvis nogen spammer knappen.
+    if (!emailOk || !ipOk) return;
+
     await signIn("resend", { email, redirectTo: "/app" });
   } catch (e) {
     unstable_rethrow(e); // lad succes-redirect passere

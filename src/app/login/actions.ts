@@ -29,43 +29,46 @@ export async function requestMagicLink(
   }
   const email = parsed.data.toLowerCase();
 
-  // Bremser email-bombning og bruteforce-optaelling: 3 mails/time pr. e-mail,
-  // 10/time pr. IP. DB-backet (fail-closed), saa graensen ogsaa gaelder hvis
-  // Redis er nede.
-  const ip = await clientIpFromHeaders();
-  const [emailOk, ipOk] = await Promise.all([
-    durableRateLimit("login-email", email, 3, 3600),
-    durableRateLimit("login-ip", ip, 10, 3600),
-  ]);
-  if (!emailOk || !ipOk) {
-    return {
-      error:
-        "Du har bedt om mange links på kort tid. Vent lidt, og tjek din indbakke, også spam.",
-    };
-  }
-
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    return {
-      notFound: true,
-      error:
-        "Vi kan ikke finde en konto med den e-mail. Har du oprettet din butik endnu?",
-    };
-  }
-
-  // signIn sender magic link og redirecter til /login/tjek-mail (den redirect
-  // kastes som en fejl, som SKAL boble op). Alt ANDET, fx en forbigaaende fejl i
-  // mail-afsendelse, database eller Vercels runtime, fanger vi, saa brugeren ser
-  // en rolig "prøv igen"-besked i stedet for den generiske fejlside.
+  // Alle databaseafhaengige trin (rate-limit, brugeropslag, magic-link) er samlet
+  // i eet try/catch. Et forbigaaende blip, fx Neon-compute der lige er vaagnet fra
+  // dvale, giver saa en rolig "prøv igen"-besked i stedet for den generiske
+  // fejlside. Succes-redirect fra signIn kastes som en fejl og SKAL boble op
+  // (unstable_rethrow foerst i catch).
   try {
+    // Bremser email-bombning og bruteforce-optaelling: 3 mails/time pr. e-mail,
+    // 10/time pr. IP. DB-backet (fail-closed), saa graensen ogsaa gaelder hvis
+    // Redis er nede.
+    const ip = await clientIpFromHeaders();
+    const [emailOk, ipOk] = await Promise.all([
+      durableRateLimit("login-email", email, 3, 3600),
+      durableRateLimit("login-ip", ip, 10, 3600),
+    ]);
+    if (!emailOk || !ipOk) {
+      return {
+        error:
+          "Du har bedt om mange links på kort tid. Vent lidt, og tjek din indbakke, også spam.",
+      };
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return {
+        notFound: true,
+        error:
+          "Vi kan ikke finde en konto med den e-mail. Har du oprettet din butik endnu?",
+      };
+    }
+
+    // signIn sender magic link og redirecter til /app ved succes (den redirect
+    // boble op via unstable_rethrow nedenfor).
     await signIn("resend", { email, redirectTo: "/app" });
     return {};
   } catch (e) {
     unstable_rethrow(e); // lad redirect (succes) passere
-    console.error("Login-link fejlede:", e);
+    console.error("Login fejlede:", e);
     return {
       error:
-        "Vi kunne ikke sende linket lige nu. Det er som regel forbigående, prøv igen om et øjeblik.",
+        "Vi kunne ikke logge dig ind lige nu. Det er som regel forbigående, prøv igen om et øjeblik.",
     };
   }
 }
