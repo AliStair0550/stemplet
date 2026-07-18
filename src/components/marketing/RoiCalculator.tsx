@@ -65,7 +65,7 @@ export default function RoiCalculator() {
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
           En enkelt stamkunde kan betyde overraskende meget for din omsætning på
-          et år. Træk i knapperne og se det selv.
+          et år.
         </p>
       </div>
 

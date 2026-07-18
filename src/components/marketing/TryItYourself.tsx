@@ -70,12 +70,6 @@ export default async function TryItYourself() {
             hjoerner, saa det tydeligt ligner noget man scanner */}
         <div className="mt-10 hidden shrink-0 flex-col items-center gap-4 md:mt-14 md:ml-6 md:flex">
           <div className="rounded-[22px] bg-white p-5 shadow-[0_24px_60px_-28px_rgba(28,25,23,0.32)] ring-1 ring-ink/[0.06]">
-            <div className="mb-3 flex items-center justify-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-terracotta" />
-              <span className="text-[0.6rem] font-medium uppercase tracking-[0.16em] text-slate">
-                Prøvekort
-              </span>
-            </div>
             <div className="relative p-2.5">
               <Image
                 src={qr}
@@ -106,7 +100,7 @@ export default async function TryItYourself() {
           </div>
           <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#22C55E]" />
-            Scan med dit kamera
+            Scan prøvekort
           </p>
         </div>
       </div>
