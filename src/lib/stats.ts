@@ -31,7 +31,18 @@ function daysAgo(n: number): Date {
   d.setDate(d.getDate() - n);
   return d;
 }
-async function computeBusinessStats(businessId: string): Promise<BusinessStats> {
+// De scan-naere taellere (i dag/denne uge, grafer) skilles fra de tunge totaler,
+// saa de foerste altid er friske (ejeren skal se "i dag" rykke straks efter et
+// stempel), mens de sidste caches.
+type LiveStats = Pick<
+  BusinessStats,
+  "stampsToday" | "stampsWeek" | "newCustomers7" | "perDay" | "newPerDay"
+>;
+type HeavyStats = Omit<BusinessStats, keyof LiveStats>;
+
+// Tunge, langsomt-bevaegende aggregeringer. Taeller og summerer over hele
+// historikken, saa disse caches (se cachedHeavyStats nedenfor).
+async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
   const cards = await prisma.card.findMany({
     where: { businessId },
     select: { id: true },
@@ -43,9 +54,6 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
       totalCustomers: 0,
       activeCustomers: 0,
       newCustomers30: 0,
-      newCustomers7: 0,
-      stampsToday: 0,
-      stampsWeek: 0,
       stampsTotal: 0,
       redemptionsTotal: 0,
       redemptions30: 0,
@@ -54,8 +62,6 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
       avgDaysToFull: null,
       byMethod: { kiosk: 0, staff: 0, manual: 0 },
       loyalty: { topStamps: 0, over50: 0, over100: 0, over250: 0 },
-      perDay: buildPerDay([]),
-      newPerDay: buildPerDay([]),
     };
   }
 
@@ -86,8 +92,6 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
     stampsTotalAgg,
     redemptionsTotal,
     redemptions30,
-    recentStamps,
-    recentCustomerCards,
     methodGroups,
     avgRows,
     topStampsAgg,
@@ -124,15 +128,6 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
     prisma.stamp.aggregate({ where: { businessId }, _sum: { multiplier: true } }),
     prisma.redemption.count({ where: rel }),
     prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
-    prisma.stamp.findMany({
-      where: { businessId, createdAt: { gte: daysAgo(14) } },
-      select: { createdAt: true, multiplier: true },
-    }),
-    // Nye kundekort seneste 14 dage, saa vi kan tegne "nye kunder pr. dag".
-    prisma.customerCard.findMany({
-      where: { ...inCards, createdAt: { gte: daysAgo(14) } },
-      select: { createdAt: true },
-    }),
     prisma.stamp.groupBy({
       by: ["method"],
       where: { businessId },
@@ -171,18 +166,6 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
     }),
   ]);
 
-  const stampsTotal = stampsTotalAgg._sum.multiplier ?? 0;
-
-  // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
-  // saa noegletal og graf altid er enige (ingen UTC/CET-forskydning ved midnat).
-  // Grafen vejer med multiplier, saa den ogsaa viser faktiske stempler.
-  const perDay = buildPerDay(recentStamps);
-  const stampsToday = perDay[perDay.length - 1]?.count ?? 0;
-  const stampsWeek = perDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
-
-  const newPerDay = buildPerDay(recentCustomerCards);
-  const newCustomers7 = newPerDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
-
   const methodCount = new Map(
     methodGroups.map((g) => [g.method, g._sum.multiplier ?? 0]),
   );
@@ -205,10 +188,7 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
     totalCustomers,
     activeCustomers,
     newCustomers30,
-    newCustomers7,
-    stampsToday,
-    stampsWeek,
-    stampsTotal,
+    stampsTotal: stampsTotalAgg._sum.multiplier ?? 0,
     redemptionsTotal,
     redemptions30,
     revisitRate,
@@ -221,21 +201,73 @@ async function computeBusinessStats(businessId: string): Promise<BusinessStats> 
       over100,
       over250,
     },
-    perDay,
-    newPerDay,
   };
 }
 
-// Statistik-tallene caches kort pr. butik. Dashboardet (/app) og statistik-siden
-// kalder begge dette tunge ~17-query-bundt ved hver visning; med cache genberegnes
-// det hoejst hvert minut i stedet for ved hver refresh. businessId indgaar i
-// cache-noeglen, saa butikker ikke deler tal. 60 s er kort nok til, at nye tal
-// naesten altid er med, og langt nok til at aflaste databasen ved gentagne loads.
-export const getBusinessStats = unstable_cache(
-  computeBusinessStats,
-  ["business-stats"],
-  { revalidate: 60, tags: ["business-stats"] },
-);
+// Scan-naere taellere: kun 14-dages vinduer (billige, indekserede queries).
+// Regnes ALTID friskt, saa "i dag" og grafen rykker straks efter et stempel.
+async function computeLiveStats(businessId: string): Promise<LiveStats> {
+  const cards = await prisma.card.findMany({
+    where: { businessId },
+    select: { id: true },
+  });
+  const cardIds = cards.map((c) => c.id);
+  if (cardIds.length === 0) {
+    return {
+      stampsToday: 0,
+      stampsWeek: 0,
+      newCustomers7: 0,
+      perDay: buildPerDay([]),
+      newPerDay: buildPerDay([]),
+    };
+  }
+
+  const d14 = daysAgo(14);
+  const [recentStamps, recentCustomerCards] = await Promise.all([
+    prisma.stamp.findMany({
+      where: { businessId, createdAt: { gte: d14 } },
+      select: { createdAt: true, multiplier: true },
+    }),
+    // Nye kundekort seneste 14 dage, saa vi kan tegne "nye kunder pr. dag".
+    prisma.customerCard.findMany({
+      where: { cardId: { in: cardIds }, createdAt: { gte: d14 } },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  // "I dag" og "seneste 7 dage" udledes af de KØBENHAVNS-korrekte dags-buckets,
+  // saa noegletal og graf altid er enige (ingen UTC/CET-forskydning ved midnat).
+  // Grafen vejer med multiplier, saa den ogsaa viser faktiske stempler.
+  const perDay = buildPerDay(recentStamps);
+  const stampsToday = perDay[perDay.length - 1]?.count ?? 0;
+  const stampsWeek = perDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
+  const newPerDay = buildPerDay(recentCustomerCards);
+  const newCustomers7 = newPerDay.slice(-7).reduce((sum, d) => sum + d.count, 0);
+
+  return { stampsToday, stampsWeek, newCustomers7, perDay, newPerDay };
+}
+
+// De tunge aggregeringer caches 60 s pr. butik. businessId er EKSPLICIT i
+// cache-noeglen (som keyPart), saa en butik aldrig kan faa vist en andens tal.
+// Tag'et er pr. butik, saa vi senere kan invalidere praecist ved et stempel.
+function cachedHeavyStats(businessId: string): Promise<HeavyStats> {
+  return unstable_cache(
+    () => computeHeavyStats(businessId),
+    ["business-stats-heavy", businessId],
+    { revalidate: 60, tags: [`business-stats:${businessId}`] },
+  )();
+}
+
+// Slaar de cachede totaler sammen med de altid-friske scan-naere taellere.
+export async function getBusinessStats(
+  businessId: string,
+): Promise<BusinessStats> {
+  const [heavy, live] = await Promise.all([
+    cachedHeavyStats(businessId),
+    computeLiveStats(businessId),
+  ]);
+  return { ...heavy, ...live };
+}
 
 // Buckets pr. dag. Hver haendelse vejer med multiplier (default 1), saa
 // stempel-grafen viser faktiske stempler, mens nye-kunder-grafen bare taeller.
