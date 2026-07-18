@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
+  { href: "/hvorfor", label: "Derfor Stemplet" },
   { href: "/#sådan", label: "Sådan virker det" },
   { href: "/#pris", label: "Pris" },
   { href: "/start", label: "Kom gratis i gang" },
