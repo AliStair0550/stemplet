@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 
-const LINKS = [
-  { href: "/#sådan", label: "Sådan virker det" },
-  { href: "/#pris", label: "Pris" },
-];
+const LINKS = [{ href: "/#pris", label: "Pris" }];
 
 function MenuIcon({ open }: { open: boolean }) {
   return (

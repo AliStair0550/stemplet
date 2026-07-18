@@ -17,15 +17,16 @@ export default function Footer() {
           {/* Brand + mission */}
           <div className="flex flex-col gap-5">
             <Wordmark href="/" tone="light" className="text-[1.25rem]" />
-            <p className="max-w-md text-[0.95rem] leading-[1.7] text-parchment/65">
-              <span className="text-parchment">
+            <div className="flex max-w-md flex-col gap-3">
+              <p className="text-[0.95rem] leading-[1.6] text-parchment">
                 Stempelkortet, der skaber flere gensyn.
-              </span>
-              <br />
-              Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
-              hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
-              statistik og købsmønstre.
-            </p>
+              </p>
+              <p className="text-[0.95rem] leading-[1.7] text-parchment/65">
+                Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
+                hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
+                statistik og købsmønstre.
+              </p>
+            </div>
             <Image
               src="/stemplet-prik.svg"
               alt="Stemplet"

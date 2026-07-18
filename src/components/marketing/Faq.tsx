@@ -31,7 +31,7 @@ const FAQS = [
 ];
 
 export default function Faq() {
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
     <Section className="bg-terracotta/[0.05]">

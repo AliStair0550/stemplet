@@ -64,8 +64,8 @@ export default function RoiCalculator() {
           Hvad er én stamkunde værd?
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
-          Træk i knapperne og se, hvad et par flere faste kunder betyder på et
-          år.
+          En enkelt stamkunde kan betyde overraskende meget for din omsætning på
+          et år. Træk i knapperne og se det selv.
         </p>
       </div>
 

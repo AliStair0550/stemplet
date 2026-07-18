@@ -62,7 +62,7 @@ export default function Hero() {
                 </ButtonLink>
               </CtaGlow>
               <ButtonLink href="#sådan" variant="outline" size="lg">
-                Se hvordan det virker
+                Sådan virker det
               </ButtonLink>
             </div>
             <p className="mt-7 text-[0.85rem] text-taupe-light">

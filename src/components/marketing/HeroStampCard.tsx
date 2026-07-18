@@ -29,7 +29,7 @@ function Coffee({ stroke }: { stroke: string }) {
 
 export default function HeroStampCard() {
   return (
-    <div className="w-full max-w-[17rem] animate-float sm:max-w-[20rem] md:max-w-[25rem]">
+    <div className="w-full max-w-[18rem] animate-float sm:max-w-[22rem] md:max-w-[27rem]">
       <div className="relative overflow-hidden rotate-[2deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-6 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-7 md:p-8">
         {/* Glimt: et bloedt lys-sweep henover kortet */}
         <span

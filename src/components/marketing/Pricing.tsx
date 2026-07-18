@@ -21,15 +21,13 @@ const FREE = [
   `Op til ${FREE_CUSTOMER_LIMIT} kortholdere, helt gratis`,
   "Alle funktioner fra dag ét",
   "Dit eget brand, uden Stemplet-logo",
-  "Ser flot ud i kundens Apple Wallet",
   "Kampagner og statistik",
 ];
 
 const PRO = [
   "Ubegrænset antal kortholdere",
-  "Se dine stamkunder: hvem kommer igen",
-  "Fang dem, der er ved at falde fra",
-  "Alt fra Gratis, uden loft",
+  "Fuld indsigt i dine stamkunder",
+  "Alt fra Gratis-pakken er med",
 ];
 
 function Features({ items }: { items: string[] }) {
@@ -53,11 +51,7 @@ export default function Pricing() {
       <div className="max-w-xl">
         <Eyebrow>Pris</Eyebrow>
         <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
-          Gratis op til{" "}
-          <span className="whitespace-nowrap">
-            {FREE_CUSTOMER_LIMIT} kortholdere.
-          </span>{" "}
-          Alt er med.
+          Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere. Alt er med.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.7] text-stone">
           Gratis op til{" "}
@@ -84,8 +78,7 @@ export default function Pricing() {
             <span className="font-[200] text-[0.85rem] text-slate">/md.</span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Et fuldt brugbart stempelkort med dit eget brand. Det ser godt ud i
-            kundens Wallet og reklamerer for dig. Gratis op til{" "}
+            Et fuldt brugbart stempelkort med dit eget brand. Gratis op til{" "}
             {FREE_CUSTOMER_LIMIT} kortholdere.
           </p>
           <Features items={FREE} />
@@ -115,9 +108,7 @@ export default function Pricing() {
             </span>
           </div>
           <p className="mt-4 font-[200] text-[0.88rem] leading-[1.7] text-stone">
-            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kortholdere. Ubegrænsede
-            kort, plus svaret på, hvem der er dine stamkunder, og hvem der er ved
-            at forsvinde.
+            Når du vokser forbi {FREE_CUSTOMER_LIMIT} kortholdere.
           </p>
           <Features items={PRO} />
           <div className="mt-auto pt-8">
