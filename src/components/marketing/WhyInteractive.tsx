@@ -36,8 +36,8 @@ export function StampDemo() {
       <div className="relative">
         <div
           aria-hidden
-          className={`pointer-events-none absolute -inset-8 rounded-[48px] blur-[70px] transition-all duration-500 ${
-            celebrating ? "bg-[#C9A24B]/40 scale-110" : "bg-[#5E2438]/25"
+          className={`pointer-events-none absolute -inset-12 rounded-full blur-[85px] transition-colors duration-500 ${
+            celebrating ? "bg-[#C9A24B]/35" : "bg-[#5E2438]/20"
           }`}
         />
         <div className="relative">
@@ -53,7 +53,7 @@ export function StampDemo() {
             shine
             serial="STEMPLET01"
             serialLabel="Vinbaren"
-            className="max-w-[22rem]"
+            className="max-w-[24rem]"
           />
         </div>
       </div>

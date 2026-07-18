@@ -177,8 +177,9 @@ export default function WhyPage() {
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
-              <h1 className="text-[2.05rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[3rem]">
-                Det klassiske stempelkort.{" "}
+              <h1 className="text-[2.05rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[3rem]">
+                Det klassiske stempelkort.
+                <br />
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
@@ -263,8 +264,7 @@ export default function WhyPage() {
               </h2>
               <p className="mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-stone">
                 Sæt dit eget stempelkort op på få minutter og giv kunderne en
-                grund til at komme igen. Gratis op til 100 kortholdere, derefter
-                kun 99 kr. om måneden. Ingen binding.
+                grund til at komme igen.
               </p>
               <div className="mt-9 flex justify-center">
                 <CtaGlow>
@@ -272,21 +272,13 @@ export default function WhyPage() {
                     href="/start"
                     variant="primary"
                     size="lg"
-                    className="group"
+                    className="relative overflow-hidden"
                   >
-                    Kom gratis i gang
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-[1.05rem] w-[1.05rem] transition-transform duration-200 group-hover:translate-x-1"
+                    <span
                       aria-hidden
-                    >
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
+                      className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[sheenSweep_4s_ease-in-out_1s_infinite]"
+                    />
+                    <span className="relative">Kom gratis i gang</span>
                   </ButtonLink>
                 </CtaGlow>
               </div>
