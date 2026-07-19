@@ -99,20 +99,22 @@ async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
   return buf;
 }
 
-// Laeg gennemsigtig luft rundt om logoet, saa det ikke klistrer op i toppen og
-// kanten af passet i Wallet. Centreret paa et kvadrat med ~14% margin hele vejen
-// rundt. Fejler den (fx ugyldigt billede), bruger vi logoet som det er.
+// Laeg lidt gennemsigtig luft rundt om logoet, saa det ikke klistrer op i toppen
+// og kanten af passet i Wallet. VIGTIGT: vi BEVARER logoets bredde/hoejde-forhold
+// (firkanter det IKKE). Apple viser logoet i en bred, lav plads (~160x50 pt). Et
+// bredt logo (fx et ordmaerke, som DEMO's 512x159) blev foer tvunget ind i et
+// kvadrat og skrumpede dermed til ~30% af hoejden. Nu fylder det hele den plads
+// Apple giver. Luften er ~8% af hoejden, nok til at det ikke roerer kanten, uden
+// at aede stoerrelsen. Fejler den (fx ugyldigt billede), bruger vi logoet som det er.
 async function padLogo(buf: Buffer): Promise<Buffer> {
   try {
     const meta = await sharp(buf).metadata();
     const w = meta.width ?? 0;
     const h = meta.height ?? 0;
     if (!w || !h) return buf;
-    const size = Math.max(w, h);
-    const pad = Math.round(size * 0.14);
+    const pad = Math.max(1, Math.round(h * 0.08));
     const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
     return await sharp(buf)
-      .resize(size, size, { fit: "contain", background: transparent })
       .extend({ top: pad, bottom: pad, left: pad, right: pad, background: transparent })
       .png()
       .toBuffer();
