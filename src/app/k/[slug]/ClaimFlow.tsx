@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
+import { Spinner } from "@/components/SubmitButton";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
 
 // Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
@@ -14,10 +15,15 @@ const ERRORS: Record<string, string> = {
 
 // "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
 // opretter kortet og returnerer .pkpass'et i samme svar, saa Safari aabner Apple
-// Wallet-arket direkte fra kundens eget tryk (eet tryk paa web, saa "Tilføj" i
-// arket). Ingen skroebelig JavaScript-navigation, saa ingen "Prøv igen"-crash.
-// Paa iPhone bliver siden liggende bag arket, saa vi viser kvitteringen der.
-// Android/desktop sendes af ruten videre til webkortet med QR.
+// Wallet-arket direkte fra kundens eget tryk. Ingen skroebelig JavaScript-
+// navigation, saa ingen "Prøv igen"-crash.
+//
+// Raekkefoelge paa iPhone: tryk -> vi viser "Åbner Apple Wallet... tryk Tilføj"
+// (saa kunden VED, at der skal trykkes Tilføj i arket). FOERST naar kunden vender
+// TILBAGE fra arket (visibility bliver "visible" igen) - eller efter en faldback-
+// forsinkelse - viser vi kvitteringen "Dit stempelkort er nu i din Wallet". Foer
+// kom kvitteringen med det samme, endda foer arket, saa man kunne tro, at man
+// ikke skulle goere noget. Android/desktop sendes af ruten videre til webkortet.
 export function ClaimFlow({
   slug,
   walletEnabled,
@@ -25,7 +31,7 @@ export function ClaimFlow({
   slug: string;
   walletEnabled: boolean;
 }) {
-  const [added, setAdded] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "opening" | "added">("idle");
   const [fejl, setFejl] = useState<string | null>(null);
   const claimUrl = `/api/wallet/claim/${slug}`;
 
@@ -34,6 +40,22 @@ export function ClaimFlow({
     const code = new URLSearchParams(window.location.search).get("fejl");
     if (code && ERRORS[code]) setFejl(code);
   }, []);
+
+  // Naar Wallet-arket er aabnet ("opening"), viser vi kvitteringen naar kunden
+  // vender tilbage (visibility -> visible), ellers efter en faldback paa 4 sek.
+  useEffect(() => {
+    if (phase !== "opening") return;
+    const finish = () => setPhase("added");
+    const onVisible = () => {
+      if (document.visibilityState === "visible") finish();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    const timer = setTimeout(finish, 4000);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      clearTimeout(timer);
+    };
+  }, [phase]);
 
   if (fejl) {
     return (
@@ -46,7 +68,7 @@ export function ClaimFlow({
     );
   }
 
-  if (added) {
+  if (phase === "added") {
     return (
       <div className="flex w-full flex-col items-center gap-3">
         <WalletAddedNotice />
@@ -60,12 +82,27 @@ export function ClaimFlow({
     );
   }
 
+  if (phase === "opening") {
+    return (
+      <div className="flex w-full flex-col items-center gap-2 rounded-xl border border-fog bg-white p-5 text-center">
+        <span className="inline-flex items-center gap-2 text-[0.92rem] font-[400] text-ink">
+          <Spinner />
+          Åbner Apple Wallet
+        </span>
+        <span className="text-[0.84rem] font-[300] leading-relaxed text-stone">
+          Tryk <span className="font-[500] text-ink">Tilføj</span> i Apple Wallet
+          for at gemme dit stempelkort.
+        </span>
+      </div>
+    );
+  }
+
   function onTap() {
-    // iPhone: passet aabnes i Wallet-arket, og siden bliver liggende, saa vi
-    // viser kvitteringen. Android/desktop sendes videre af ruten (ingen kvittering
-    // her), saa der roerer vi ikke tilstanden.
+    // iPhone: passet aabnes i Wallet-arket, og siden bliver liggende. Vi gaar i
+    // "opening" og venter med kvitteringen til kunden kommer tilbage. Android/
+    // desktop sendes videre af ruten (ingen kvittering her).
     const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-    if (ios && walletEnabled) setAdded(true);
+    if (ios && walletEnabled) setPhase("opening");
   }
 
   return (
