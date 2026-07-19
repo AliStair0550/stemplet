@@ -26,6 +26,10 @@ type PassInput = {
   rewardText: string;
   stamps: number;
   required: number;
+  /** Samlet antal stempler NOGENSINDE (nulstilles ikke ved indloesning). */
+  lifetimeStamps: number;
+  /** Antal fyldte kort / beloenninger optjent. */
+  completedCount: number;
   showPoweredBy: boolean;
   latitude: number | null;
   longitude: number | null;
@@ -186,11 +190,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     foregroundColor: fg,
     backgroundColor: bg,
     labelColor: labelCol,
-    // Butiksnavnet staar ALTID i logoText, ogsaa naar butikken har et logo. Det
-    // er det eneste tekstlige navn, der er synligt, naar kort ligger i STAK i
-    // Wallet (alle Stemplet-kort deler passTypeIdentifier og kan ikke skilles ad
-    // paa anden vis). Med logo vises baade logo OG navn i toppen.
-    logoText: input.businessName,
+    // Logo ELLER navn (ikke begge), saa kortet holdes simpelt: har butikken et
+    // logo, staar det alene i toppen; ellers vises butiksnavnet som tekst. I en
+    // STAK adskilles Stemplet-kort saa paa logo/navn + den tydelige forskel i
+    // baggrundsfarve (alle kort deler passTypeIdentifier og stakker ellers).
+    ...(logoBuf ? {} : { logoText: input.businessName }),
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
     sharingProhibited: true,
@@ -216,6 +220,19 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
     changeMessage,
   });
+
+  // Stamkunde-signal: det SAMLEDE antal stempler kunden nogensinde har optjent
+  // (nulstilles ikke ved indloesning). Vokser hele tiden, saa kunden ser sin egen
+  // loyalitet - "jeg har allerede fyldt flere kort her". Ingen changeMessage her,
+  // saa der kun kommer EEN notifikation pr. stempel (fra header-feltet ovenfor).
+  // Vises foerst naar der ER stempler, saa et helt nyt kort holdes rent.
+  if (input.lifetimeStamps > 0) {
+    pass.secondaryFields.push({
+      key: "lifetime",
+      label: "STEMPLER I ALT",
+      value: `${input.lifetimeStamps}`,
+    });
+  }
 
   // Rent og elegant: strip-gitteret staar oeverst, og kun to SMAA felter under.
   // Ingen "BELØNNING"-label (den giver sig selv), og status staar diskret til
@@ -254,6 +271,18 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
       value: input.rewardText,
     },
   );
+
+  // Historik/stamkunde-tekst paa bagsiden: samlet antal stempler + fyldte kort.
+  if (input.lifetimeStamps > 0) {
+    pass.backFields.push({
+      key: "loyalty",
+      label: "Din historik",
+      value:
+        input.completedCount > 0
+          ? `Du har samlet ${input.lifetimeStamps} stempler hos ${input.businessName} og fyldt ${input.completedCount} ${input.completedCount === 1 ? "kort" : "kort"}. Tak fordi du kommer igen.`
+          : `Du har samlet ${input.lifetimeStamps} ${input.lifetimeStamps === 1 ? "stempel" : "stempler"} hos ${input.businessName}.`,
+    });
+  }
 
   if (input.showPoweredBy) {
     pass.backFields.push({

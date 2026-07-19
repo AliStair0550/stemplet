@@ -27,6 +27,8 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     rewardText: cc.card.rewardText,
     stamps: cc.stamps,
     required: cc.card.stampsRequired,
+    lifetimeStamps: cc.lifetimeStamps,
+    completedCount: cc.completedCount,
     showPoweredBy: PLAN_LIMITS[b.plan].showPoweredBy,
     latitude: b.latitude,
     longitude: b.longitude,
