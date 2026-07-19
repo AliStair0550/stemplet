@@ -35,19 +35,12 @@ export default async function MaterialerPage() {
       <PageHeading
         title="Materialer"
         subtitle="Print et færdigt skilt i dit eget design, eller download QR-koden og send den til trykkeriet."
-        action={
-          <Link
-            href="/app/kort"
-            className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-terracotta hover:opacity-70"
-          >
-            Rediger design
-          </Link>
-        }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        {/* Dit design: samme kort-preview som paa Design-siden */}
-        <Panel>
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        {/* Dit design: samme kort-preview som paa Design-siden. flex-col, saa
+            panelet kan strække sig lige saa hoejt som QR-panelet ved siden af. */}
+        <Panel className="flex flex-col">
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
               Dit design
@@ -59,7 +52,7 @@ export default async function MaterialerPage() {
               Rediger
             </Link>
           </div>
-          <div className="mt-5 flex justify-center">
+          <div className="mt-5 flex flex-1 items-center justify-center">
             <StampCard
               businessName={business.name}
               logoUrl={business.logoUrl}

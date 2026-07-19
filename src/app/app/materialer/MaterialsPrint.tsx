@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { MATERIAL_HEADLINES } from "@/lib/materials";
+import {
+  MATERIAL_HEADLINES,
+  MATERIAL_HEADLINE_MAX,
+  DEFAULT_MATERIAL_HEADLINE,
+} from "@/lib/materials";
 
 const MATERIALS = [
   { type: "plakat", title: "A4-plakat", body: "Til opslagstavlen eller vinduet." },
@@ -22,14 +26,17 @@ function IconDoc() {
 }
 
 export function MaterialsPrint() {
-  const [titel, setTitel] = useState(0);
+  const [titel, setTitel] = useState(DEFAULT_MATERIAL_HEADLINE);
   const [light, setLight] = useState(false);
   const [withBrand, setWithBrand] = useState(false);
   const [withStamps, setWithStamps] = useState(true);
 
+  const trimmedTitel = titel.trim();
+
   // Byg query kun med det der afviger fra standard, saa URL'en er ren.
   const qs = new URLSearchParams();
-  if (titel > 0) qs.set("titel", String(titel));
+  if (trimmedTitel && trimmedTitel !== DEFAULT_MATERIAL_HEADLINE)
+    qs.set("titel", trimmedTitel);
   if (light) qs.set("bg", "lys");
   if (withBrand) qs.set("navn", "1");
   if (!withStamps) qs.set("stempler", "0");
@@ -43,22 +50,44 @@ export function MaterialsPrint() {
 
       {/* Valg: tilpas skiltet, saa det passer jer, og print med det samme */}
       <div className="flex flex-col gap-5 rounded-lg border border-fog bg-white p-6 shadow-card">
-        {/* Overskrift */}
+        {/* Overskrift: fri tekst med et loft, saa skiltet altid ser paent ud */}
         <label className="flex flex-col gap-1.5">
           <span className="text-label font-[400] uppercase tracking-[0.12em] text-slate">
             Overskrift
           </span>
-          <select
-            value={titel}
-            onChange={(e) => setTitel(Number(e.target.value))}
-            className="w-full max-w-sm rounded-md border border-clay bg-parchment px-3 py-2.5 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
-          >
-            {MATERIAL_HEADLINES.map((h, i) => (
-              <option key={h} value={i}>
+          <div className="relative w-full max-w-sm">
+            <input
+              type="text"
+              value={titel}
+              maxLength={MATERIAL_HEADLINE_MAX}
+              onChange={(e) => setTitel(e.target.value)}
+              placeholder={DEFAULT_MATERIAL_HEADLINE}
+              className="w-full rounded-md border border-clay bg-parchment px-3 py-2.5 pr-14 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[0.72rem] font-[300] tabular-nums text-slate">
+              {titel.length}/{MATERIAL_HEADLINE_MAX}
+            </span>
+          </div>
+          <span className="text-[0.76rem] font-[300] text-slate">
+            Skriv din egen overskrift, eller vælg et forslag:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {MATERIAL_HEADLINES.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => setTitel(h)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[0.78rem] font-[300] transition-colors",
+                  trimmedTitel === h
+                    ? "border-terracotta bg-terracotta/10 text-terracotta"
+                    : "border-clay text-stone hover:border-terracotta hover:text-ink",
+                )}
+              >
                 {h}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </label>
 
         {/* Baggrund */}

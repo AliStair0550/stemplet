@@ -1,7 +1,15 @@
 // Delte valgmuligheder for print-materialerne. Bruges baade paa klienten
-// (Materialer-siden) og paa serveren (PDF-generering), saa et valgt indeks
-// altid betyder det samme begge steder.
+// (Materialer-siden) og paa serveren (PDF-generering), saa overskriften
+// behandles ens begge steder.
 
+// Standard-overskriften, der forudfyldes i feltet.
+export const DEFAULT_MATERIAL_HEADLINE = "Scan og få dit stempelkort";
+
+// Maks antal tegn i en overskrift. Holder skiltets layout pænt (ca. to linjer),
+// og haandhaeves baade i input-feltet og paa serveren.
+export const MATERIAL_HEADLINE_MAX = 40;
+
+// Forslag, butikken kan vaelge at bruge (vises som hurtige valg under feltet).
 export const MATERIAL_HEADLINES = [
   "Scan og få dit stempelkort",
   "Saml stempler, få en belønning",
@@ -9,10 +17,8 @@ export const MATERIAL_HEADLINES = [
   "Scan og kom i gang",
 ] as const;
 
-/** Sikker opslag af en overskrift ud fra et query-indeks. */
+/** Sikker overskrift ud fra query'en: fri tekst, trimmet og laengde-klampet. */
 export function headlineFromParam(v: string | null): string {
-  const i = Number(v);
-  return Number.isInteger(i) && i >= 0 && i < MATERIAL_HEADLINES.length
-    ? MATERIAL_HEADLINES[i]
-    : MATERIAL_HEADLINES[0];
+  const t = (v ?? "").trim().slice(0, MATERIAL_HEADLINE_MAX);
+  return t || DEFAULT_MATERIAL_HEADLINE;
 }
