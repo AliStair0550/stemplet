@@ -28,6 +28,11 @@ export function WebCardActions({
   const [phoneQr, setPhoneQr] = useState<string | null>(null);
   // null = ikke afgjort endnu (undgaar at blinke forkert knap frem foer hydrering).
   const [isIos, setIsIos] = useState<boolean | null>(null);
+  // Naar kunden har trykket "Laeg i Apple Wallet", aabner iOS Wallet-arket, mens
+  // denne side bliver liggende. Der findes ingen paalidelig browser-haendelse for
+  // "passet blev tilfoejet", saa vi bruger selve trykket som signal og viser et
+  // naeste-skridt: hvad goer kunden nu.
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     const ua = navigator.userAgent || "";
@@ -87,12 +92,30 @@ export function WebCardActions({
         <CtaGlow className="w-full">
           <a
             href={`/api/wallet/pass/${serial}`}
+            onClick={() => setAdded(true)}
             className={`${btnClass("primary", "md")} ${CTA_EMPHASIS}`}
           >
             <WalletIcon />
             Læg i Apple Wallet
           </a>
         </CtaGlow>
+      ) : null}
+
+      {/* Naeste skridt: vises naar kunden har trykket paa Wallet-knappen, saa de
+          ved, hvad de goer herfra. */}
+      {walletEnabled && isIos === true && added ? (
+        <div className="flex w-full items-start gap-3 rounded-xl border border-moss/25 bg-moss/[0.06] p-4 text-left">
+          <CheckBadge />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[0.92rem] font-[500] text-forest">
+              Dit stempelkort er nu i din Wallet
+            </span>
+            <span className="text-[0.82rem] font-[300] leading-relaxed text-stone">
+              Åbn Wallet og begynd at samle på dine stempler. Vis QR-koden til
+              personalet ved hvert besøg.
+            </span>
+          </div>
+        </div>
       ) : null}
 
       {/* Computer (eller Android): Apple Wallet findes kun paa iPhone, saa vi
@@ -122,5 +145,28 @@ export function WebCardActions({
         </div>
       ) : null}
     </div>
+  );
+}
+
+// Lille grOn haak i en blOd cirkel: bekraefter at kortet nu er i Wallet.
+function CheckBadge() {
+  return (
+    <span
+      aria-hidden
+      className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-moss text-parchment"
+    >
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5 12.5 10 17.5 19 7" />
+      </svg>
+    </span>
   );
 }
