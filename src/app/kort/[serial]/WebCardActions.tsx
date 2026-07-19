@@ -9,6 +9,7 @@ import {
   WalletIcon,
   CTA_EMPHASIS,
 } from "@/components/ui";
+import { WalletAddedNotice } from "@/components/WalletAddedNotice";
 
 export function WebCardActions({
   serial,
@@ -103,20 +104,7 @@ export function WebCardActions({
 
       {/* Naeste skridt: vises naar kunden har trykket paa Wallet-knappen, saa de
           ved, hvad de goer herfra. */}
-      {walletEnabled && isIos === true && added ? (
-        <div className="flex w-full items-start gap-3 rounded-xl border border-moss/25 bg-moss/[0.06] p-4 text-left">
-          <CheckBadge />
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[0.92rem] font-[500] text-forest">
-              Dit stempelkort er nu i din Wallet
-            </span>
-            <span className="text-[0.82rem] font-[300] leading-relaxed text-stone">
-              Åbn Wallet og begynd at samle på dine stempler. Vis QR-koden til
-              personalet ved hvert besøg.
-            </span>
-          </div>
-        </div>
-      ) : null}
+      {walletEnabled && isIos === true && added ? <WalletAddedNotice /> : null}
 
       {/* Computer (eller Android): Apple Wallet findes kun paa iPhone, saa vi
           viser en QR, man scanner med telefonen for at faa kortet i Wallet. */}
@@ -145,28 +133,5 @@ export function WebCardActions({
         </div>
       ) : null}
     </div>
-  );
-}
-
-// Lille grOn haak i en blOd cirkel: bekraefter at kortet nu er i Wallet.
-function CheckBadge() {
-  return (
-    <span
-      aria-hidden
-      className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-moss text-parchment"
-    >
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12.5 10 17.5 19 7" />
-      </svg>
-    </span>
   );
 }

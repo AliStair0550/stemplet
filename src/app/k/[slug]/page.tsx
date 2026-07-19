@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
-import { SubmitButton } from "@/components/SubmitButton";
-import { APP_URL } from "@/lib/env";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
-import { claimCard } from "./actions";
-import { ClaimCta } from "./ClaimCta";
+import { ClaimFlow } from "./ClaimFlow";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 
 // ISR: siden er ens for alle (butikkens branding + "Hent mit stempelkort"), saa
@@ -67,20 +64,6 @@ export default async function ClaimPage({
   const card = business.cards[0];
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
 
-  // Selve "Hent"-knappen. Bruges baade som statisk prerenderet indhold (Suspense-
-  // fallback) og som normaltilstand i ClaimCta, saa der kun er een kilde til den.
-  const claimForm = (
-    <form action={claimCard.bind(null, slug)}>
-      <SubmitButton
-        variant="primary"
-        size="lg"
-        pendingText="Opretter dit kort..."
-      >
-        Hent mit stempelkort
-      </SubmitButton>
-    </form>
-  );
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
@@ -115,9 +98,7 @@ export default async function ClaimPage({
         />
 
         <div className="flex flex-col items-center gap-4">
-          <Suspense fallback={claimForm}>
-            <ClaimCta>{claimForm}</ClaimCta>
-          </Suspense>
+          <ClaimFlow slug={slug} walletEnabled={WALLET_ENABLED} />
           <Link
             href="/find-kort"
             className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
