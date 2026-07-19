@@ -14,10 +14,14 @@ const ERRORS: Record<string, string> = {
   stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
 };
 
-// Hele "Hent mit stempelkort"-flowet paa klienten, saa vi kan aabne Apple Wallet
-// DIREKTE paa iPhone (ingen mellemside med QR) og bagefter vise kvitteringen paa
-// samme side. claimCard opretter kortet og returnerer serienummeret; herfra
-// bestemmer vi selv, hvad der sker.
+// "Hent mit stempelkort"-flowet paa klienten. VIGTIGT om iPhone: en webside kan
+// IKKE paalideligt aabne Apple Wallet automatisk EFTER et server-kald (bruger-
+// gesten er tabt, og en tvungen window.location til .pkpass'et faar siden til at
+// crashe -> "Prøv igen", selvom kortet reelt blev oprettet). Derfor: vi opretter
+// kortet ved foerste tryk, og viser saa en RIGTIG "Læg i Apple Wallet"-knap (et
+// <a>-link, som Safari selv aabner Wallet-arket fra, samme velafproevede moenster
+// som paa webkortet). Naar kunden trykker paa den, aabner Wallet, og vi viser
+// kvitteringen. Android/desktop (ingen Wallet) sendes til webkortet med QR.
 export function ClaimFlow({
   slug,
   walletEnabled,
@@ -25,7 +29,9 @@ export function ClaimFlow({
   slug: string;
   walletEnabled: boolean;
 }) {
-  const [state, setState] = useState<"idle" | "pending" | "added">("idle");
+  const [state, setState] = useState<"idle" | "pending" | "ready" | "added">(
+    "idle",
+  );
   const [error, setError] = useState<string | null>(null);
   const [passUrl, setPassUrl] = useState<string | null>(null);
 
@@ -46,13 +52,9 @@ export function ClaimFlow({
 
     const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
     if (ios && walletEnabled) {
-      // iPhone: aabn Apple Wallet direkte med kortet, og vis kvitteringen paa
-      // denne side. En pkpass-hentning skifter ikke side, saa "added"-visningen
-      // bliver staaende under Wallet-arket.
-      const url = `/api/wallet/pass/${res.serial}`;
-      setPassUrl(url);
-      setState("added");
-      window.location.href = url;
+      // iPhone: vis en rigtig Wallet-knap, som kunden selv trykker paa.
+      setPassUrl(`/api/wallet/pass/${res.serial}`);
+      setState("ready");
     } else {
       // Ingen Apple Wallet (Android/desktop): vis webkortet med QR-koden.
       window.location.href = `/kort/${res.serial}`;
@@ -80,13 +82,34 @@ export function ClaimFlow({
             className="inline-flex items-center gap-2 text-[0.8rem] font-[300] text-terracotta underline underline-offset-2 hover:opacity-70"
           >
             <WalletIcon className="h-4 w-4" />
-            Åbnede Wallet ikke? Læg i Apple Wallet
+            Åbn kortet i Apple Wallet igen
           </a>
         ) : null}
       </div>
     );
   }
 
+  if (state === "ready" && passUrl) {
+    return (
+      <div className="flex w-full flex-col items-center gap-3">
+        <CtaGlow className="w-full">
+          <a
+            href={passUrl}
+            onClick={() => setState("added")}
+            className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
+          >
+            <WalletIcon />
+            Læg i Apple Wallet
+          </a>
+        </CtaGlow>
+        <p className="text-center text-[0.82rem] font-[300] leading-relaxed text-stone">
+          Dit kort er klar. Tryk for at lægge det i din Apple Wallet.
+        </p>
+      </div>
+    );
+  }
+
+  // idle / pending
   return (
     <CtaGlow className="w-full">
       <button
