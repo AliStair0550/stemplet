@@ -16,15 +16,25 @@ import { captureServerError } from "./sentry";
 // Prismodel + manuel fakturering (Billy). Ingen automatik lukker noget - kun
 // superadmin. Kortholder-definitionen EER kanonisk her og genbruges overalt.
 
+// Injicerbare afhaengigheder, saa taerskel-logikken kan enhedstestes med en
+// in-memory DB og en fake mailer (samme moenster som redis-injektionen i tokens/
+// security). Produktion bruger altid standardvaerdierne (rigtig prisma + sendEmail),
+// saa kaldere er uaendrede og fuldt type-tjekket.
+type Db = typeof prisma;
+type Mailer = typeof sendEmail;
+
 /** En kortholder = eet CustomerCard for butikken. Samme definition overalt. */
-export async function countCardholders(businessId: string): Promise<number> {
-  const cards = await prisma.card.findMany({
+export async function countCardholders(
+  businessId: string,
+  db: Db = prisma,
+): Promise<number> {
+  const cards = await db.card.findMany({
     where: { businessId },
     select: { id: true },
   });
   const cardIds = cards.map((c) => c.id);
   if (cardIds.length === 0) return 0;
-  return prisma.customerCard.count({ where: { cardId: { in: cardIds } } });
+  return db.customerCard.count({ where: { cardId: { in: cardIds } } });
 }
 
 /** Tærskler: varsel ved 80, Pro fra 100. Genbruger de eksisterende konstanter. */
@@ -77,46 +87,58 @@ function runAfterResponse(task: () => Promise<void>) {
 export async function maybeFireCardholderThresholds(
   businessId: string,
 ): Promise<void> {
-  runAfterResponse(async () => {
-    const biz = await prisma.business.findUnique({
-      where: { id: businessId },
-      select: {
-        slug: true,
-        cardholderWarnedAt: true,
-        reached100At: true,
-        cards: { select: { id: true } },
-      },
-    });
-    if (!biz || biz.slug === DEMO_SLUG) return; // demo taeller ikke med
-    const cardIds = biz.cards.map((c) => c.id);
-    if (cardIds.length === 0) return;
-    const count = await prisma.customerCard.count({
-      where: { cardId: { in: cardIds } },
-    });
+  runAfterResponse(() => processCardholderThresholds(businessId));
+}
 
-    // 100-krydsning: registrér KENDSGERNINGEN atomisk (fire-once). Vinderen af
-    // opdateringen sender faktura-trigger-mailen.
-    if (count >= CARDHOLDER_LIMIT && !biz.reached100At) {
-      const won = await prisma.business
-        .updateMany({
-          where: { id: businessId, reached100At: null },
-          data: { reached100At: new Date() },
-        })
-        .catch(() => ({ count: 0 }));
-      if (won.count === 1) await sendInvoiceTriggerEmail(businessId);
-    }
-
-    // 80-varsel: samme atomiske fire-once. Vinderen sender varsel-mailene.
-    if (count >= CARDHOLDER_WARN && !biz.cardholderWarnedAt) {
-      const won = await prisma.business
-        .updateMany({
-          where: { id: businessId, cardholderWarnedAt: null },
-          data: { cardholderWarnedAt: new Date() },
-        })
-        .catch(() => ({ count: 0 }));
-      if (won.count === 1) await sendCardholderWarnEmails(businessId);
-    }
+/**
+ * Kernen bag taersklerne, udtrukket fra maybeFire, saa den kan AFVENTES i tests.
+ * Registrerer 80/100 hver som en atomisk fire-once (guardet updateMany) og beder
+ * kun VINDEREN om at sende mailen. To samtidige krydsninger giver derfor praecis
+ * eet varsel: begge kan naa if-tjekket, men kun een vinder updateMany.
+ */
+export async function processCardholderThresholds(
+  businessId: string,
+  db: Db = prisma,
+  sendMail: Mailer = sendEmail,
+): Promise<void> {
+  const biz = await db.business.findUnique({
+    where: { id: businessId },
+    select: {
+      slug: true,
+      cardholderWarnedAt: true,
+      reached100At: true,
+      cards: { select: { id: true } },
+    },
   });
+  if (!biz || biz.slug === DEMO_SLUG) return; // demo taeller ikke med
+  const cardIds = biz.cards.map((c) => c.id);
+  if (cardIds.length === 0) return;
+  const count = await db.customerCard.count({
+    where: { cardId: { in: cardIds } },
+  });
+
+  // 100-krydsning: registrér KENDSGERNINGEN atomisk (fire-once). Vinderen af
+  // opdateringen sender faktura-trigger-mailen.
+  if (count >= CARDHOLDER_LIMIT && !biz.reached100At) {
+    const won = await db.business
+      .updateMany({
+        where: { id: businessId, reached100At: null },
+        data: { reached100At: new Date() },
+      })
+      .catch(() => ({ count: 0 }));
+    if (won.count === 1) await sendInvoiceTriggerEmail(businessId, db, sendMail);
+  }
+
+  // 80-varsel: samme atomiske fire-once. Vinderen sender varsel-mailene.
+  if (count >= CARDHOLDER_WARN && !biz.cardholderWarnedAt) {
+    const won = await db.business
+      .updateMany({
+        where: { id: businessId, cardholderWarnedAt: null },
+        data: { cardholderWarnedAt: new Date() },
+      })
+      .catch(() => ({ count: 0 }));
+    if (won.count === 1) await sendCardholderWarnEmails(businessId, db, sendMail);
+  }
 }
 
 // Sender een mail og siger tydeligt, om den kom af sted. sendEmail kaster ved en
@@ -125,9 +147,10 @@ export async function maybeFireCardholderThresholds(
 async function trySend(
   to: string,
   mail: { subject: string; html: string; text: string },
+  sendMail: Mailer,
 ): Promise<boolean> {
   try {
-    return await sendEmail({ to, ...mail });
+    return await sendMail({ to, ...mail });
   } catch (e) {
     console.error("Taerskel-mail fejlede til", to, e);
     return false;
@@ -148,8 +171,10 @@ const dkDateTime = new Intl.DateTimeFormat("da-DK", {
  */
 export async function sendCardholderWarnEmails(
   businessId: string,
+  db: Db = prisma,
+  sendMail: Mailer = sendEmail,
 ): Promise<boolean> {
-  const biz = await prisma.business.findUnique({
+  const biz = await db.business.findUnique({
     where: { id: businessId },
     select: {
       slug: true,
@@ -160,7 +185,7 @@ export async function sendCardholderWarnEmails(
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;
-  const cardholders = await countCardholders(businessId);
+  const cardholders = await countCardholders(businessId, db);
   const priceKr = effectiveProPriceKr(biz);
   const ownerEmails = biz.users
     .map((u) => u.email)
@@ -177,7 +202,7 @@ export async function sendCardholderWarnEmails(
     agreementUrl: `${APP_URL}/app/aftale`,
   });
   for (const to of ownerEmails) {
-    if (!(await trySend(to, ownerMail))) allOk = false;
+    if (!(await trySend(to, ownerMail, sendMail))) allOk = false;
   }
 
   // Til superadmin(erne): hvem er paa vej over.
@@ -192,12 +217,12 @@ export async function sendCardholderWarnEmails(
       adminUrl: `${APP_URL}/admin`,
     });
     for (const to of recipients) {
-      if (!(await trySend(to, adminMail))) allOk = false;
+      if (!(await trySend(to, adminMail, sendMail))) allOk = false;
     }
   }
 
   if (allOk) {
-    await prisma.business
+    await db.business
       .update({
         where: { id: businessId },
         data: { cardholderWarnEmailSentAt: new Date() },
@@ -220,8 +245,10 @@ export async function sendCardholderWarnEmails(
  */
 export async function sendInvoiceTriggerEmail(
   businessId: string,
+  db: Db = prisma,
+  sendMail: Mailer = sendEmail,
 ): Promise<boolean> {
-  const biz = await prisma.business.findUnique({
+  const biz = await db.business.findUnique({
     where: { id: businessId },
     select: {
       slug: true,
@@ -237,7 +264,7 @@ export async function sendInvoiceTriggerEmail(
   const recipients = superadminRecipients();
   let allOk = true;
   if (recipients.length > 0) {
-    const cardholders = await countCardholders(businessId);
+    const cardholders = await countCardholders(businessId, db);
     const mail = superadminInvoiceEmail({
       businessName: biz.name,
       slug: biz.slug,
@@ -256,12 +283,12 @@ export async function sendInvoiceTriggerEmail(
       adminUrl: `${APP_URL}/admin`,
     });
     for (const to of recipients) {
-      if (!(await trySend(to, mail))) allOk = false;
+      if (!(await trySend(to, mail, sendMail))) allOk = false;
     }
   }
 
   if (allOk) {
-    await prisma.business
+    await db.business
       .update({
         where: { id: businessId },
         data: { reached100EmailSentAt: new Date() },
@@ -282,12 +309,15 @@ export async function sendInvoiceTriggerEmail(
  * taersklen er krydset (Warned/reached100At sat), men mailen endnu ikke bekraeftet
  * leveret (EmailSentAt null). Demo ekskluderet.
  */
-export async function sweepPendingThresholdEmails(): Promise<{
+export async function sweepPendingThresholdEmails(
+  db: Db = prisma,
+  sendMail: Mailer = sendEmail,
+): Promise<{
   warns: number;
   invoices: number;
 }> {
   const [pendingWarns, pendingInvoices] = await Promise.all([
-    prisma.business.findMany({
+    db.business.findMany({
       where: {
         cardholderWarnedAt: { not: null },
         cardholderWarnEmailSentAt: null,
@@ -295,7 +325,7 @@ export async function sweepPendingThresholdEmails(): Promise<{
       },
       select: { id: true },
     }),
-    prisma.business.findMany({
+    db.business.findMany({
       where: {
         reached100At: { not: null },
         reached100EmailSentAt: null,
@@ -307,11 +337,11 @@ export async function sweepPendingThresholdEmails(): Promise<{
 
   let warns = 0;
   for (const b of pendingWarns) {
-    if (await sendCardholderWarnEmails(b.id)) warns += 1;
+    if (await sendCardholderWarnEmails(b.id, db, sendMail)) warns += 1;
   }
   let invoices = 0;
   for (const b of pendingInvoices) {
-    if (await sendInvoiceTriggerEmail(b.id)) invoices += 1;
+    if (await sendInvoiceTriggerEmail(b.id, db, sendMail)) invoices += 1;
   }
   return { warns, invoices };
 }
