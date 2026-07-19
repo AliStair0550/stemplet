@@ -1,0 +1,44 @@
+name: CI
+
+# Kvalitetsgate: koerer typecheck, lint og tests paa hver PR og hvert push til
+# main, saa en regression aldrig naar produktion ubemaerket. Tests bruger
+# in-memory fakes (ingen database), saa jobbet er hurtigt og har ingen
+# hemmeligheder. Dummy DATABASE_URL/DIRECT_URL er kun til `prisma generate`
+# (som ikke forbinder til databasen).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Afbryd en tidligere koersel paa samme gren, hvis der pushes igen.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/db?schema=public"
+      DIRECT_URL: "postgresql://user:pass@localhost:5432/db?schema=public"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      # npm ci koerer postinstall (prisma generate), saa klienten findes til tsc.
+      - name: Installer afhaengigheder
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test

@@ -131,6 +131,30 @@ export function loadCardByToken(authToken: string) {
 }
 
 /**
+ * Ren beregning af, hvor mange stempler EEN scanning giver: en aktiv
+ * dobbeltstempel-kampagne fordobler, og personalet kan vaelge et antal (fx tre
+ * kaffe = 3, klampet til 1..20). Uden I/O, saa multiplier-logikken kan
+ * enhedstestes. hasWelcome siger, om en velkomstbonus-kampagne er aktiv (selve
+ * bonussen gives atomisk i applyStamp).
+ */
+export function computeScanIncrement(
+  campaigns: { type: string; startsAt: Date; endsAt: Date }[],
+  now: Date,
+  count?: number,
+): {
+  baseIncrement: number;
+  hasWelcome: boolean;
+  qty: number;
+  scanIncrement: number;
+} {
+  const active = campaigns.filter((c) => c.startsAt <= now && c.endsAt >= now);
+  const baseIncrement = active.some((c) => c.type === "DOUBLE_STAMP") ? 2 : 1;
+  const hasWelcome = active.some((c) => c.type === "WELCOME_BONUS");
+  const qty = Math.max(1, Math.min(20, Math.floor(count ?? 1)));
+  return { baseIncrement, hasWelcome, qty, scanIncrement: baseIncrement * qty };
+}
+
+/**
  * Kernen. Al stempel-logik sker på serveren, aldrig på klienten.
  * Tjekker cooldown, lægger kampagne-multiplier på, håndterer fuldt kort,
  * skriver Stamp + AuditLog og skubber Wallet-opdatering.
@@ -201,15 +225,13 @@ export async function applyStamp(opts: {
       }
     }
 
-    // Kampagner: dobbeltstempel (velkomstbonus haandteres atomisk nedenfor).
-    const active = cc.card.campaigns.filter(
-      (c) => c.startsAt <= now && c.endsAt >= now,
+    // Kampagne-multiplier + antal paa denne scanning (ren beregning, se
+    // computeScanIncrement). Velkomstbonus haandteres atomisk nedenfor.
+    const { hasWelcome, scanIncrement } = computeScanIncrement(
+      cc.card.campaigns,
+      now,
+      opts.count,
     );
-    const baseIncrement = active.some((c) => c.type === "DOUBLE_STAMP") ? 2 : 1;
-    const hasWelcome = active.some((c) => c.type === "WELCOME_BONUS");
-    // Antal stempler paa denne scanning (personalet vaelger, fx tre kaffe = 3).
-    const qty = Math.max(1, Math.min(20, Math.floor(opts.count ?? 1)));
-    const scanIncrement = baseIncrement * qty;
 
     // Atomisk optaelling: opdaterer kun hvis kortet ikke er fuldt OG cooldown
     // er ovre. Forhindrer baade tabte stempler OG at to samtidige kunde-QR-

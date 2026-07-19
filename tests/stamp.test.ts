@@ -1,10 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 process.env.DATABASE_URL =
   process.env.DATABASE_URL ?? "postgresql://u:p@localhost:5432/db";
 
-import { createCardholderAtomically, undoLastStamp } from "../src/lib/stamp";
+import {
+  createCardholderAtomically,
+  undoLastStamp,
+  computeScanIncrement,
+} from "../src/lib/stamp";
 import { PLAN_LIMITS } from "../src/lib/plans";
 
 type CapDb = Parameters<typeof createCardholderAtomically>[3];
@@ -148,4 +155,71 @@ test("undoLastStamp traekker relativt fra (mister ikke et samtidigt stempel)", a
   assert.equal(res.stamps, 5, "stamps trukket RELATIVT fra 6 -> 5 (ikke absolut 4)");
   assert.equal(res.lifetimeStamps, 5, "livstid trukket relativt fra 6 -> 5");
   assert.equal(live.stamps, 5, "den levende raekke er 5, det samtidige stempel bevaret");
+});
+
+// ── KOD-1: kampagne/multiplier-beregning (ren funktion, uden database) ──
+
+const day = (d: number) => new Date(2026, 0, d);
+const jan15 = day(15);
+
+test("computeScanIncrement: uden kampagne giver 1 pr. scanning", () => {
+  const r = computeScanIncrement([], jan15);
+  assert.equal(r.baseIncrement, 1);
+  assert.equal(r.scanIncrement, 1);
+  assert.equal(r.hasWelcome, false);
+});
+
+test("computeScanIncrement: aktiv dobbeltstempel fordobler", () => {
+  const camps = [{ type: "DOUBLE_STAMP", startsAt: day(1), endsAt: day(31) }];
+  const r = computeScanIncrement(camps, jan15);
+  assert.equal(r.baseIncrement, 2);
+  assert.equal(r.scanIncrement, 2);
+});
+
+test("computeScanIncrement: dobbeltstempel gange antal (3 kaffe = 6)", () => {
+  const camps = [{ type: "DOUBLE_STAMP", startsAt: day(1), endsAt: day(31) }];
+  assert.equal(computeScanIncrement(camps, jan15, 3).scanIncrement, 6);
+});
+
+test("computeScanIncrement: udloebet eller fremtidig kampagne taeller ikke", () => {
+  const expired = [{ type: "DOUBLE_STAMP", startsAt: day(1), endsAt: day(10) }];
+  const future = [{ type: "DOUBLE_STAMP", startsAt: day(20), endsAt: day(31) }];
+  assert.equal(computeScanIncrement(expired, jan15).baseIncrement, 1);
+  assert.equal(computeScanIncrement(future, jan15).baseIncrement, 1);
+});
+
+test("computeScanIncrement: velkomstbonus markeres, men fordobler ikke scanningen", () => {
+  const camps = [{ type: "WELCOME_BONUS", startsAt: day(1), endsAt: day(31) }];
+  const r = computeScanIncrement(camps, jan15);
+  assert.equal(r.hasWelcome, true);
+  assert.equal(r.baseIncrement, 1);
+});
+
+test("computeScanIncrement: antal klampes til 1..20 (og gulvet)", () => {
+  assert.equal(computeScanIncrement([], jan15, 0).qty, 1);
+  assert.equal(computeScanIncrement([], jan15, -5).qty, 1);
+  assert.equal(computeScanIncrement([], jan15, 25).qty, 20);
+  assert.equal(computeScanIncrement([], jan15, 2.9).qty, 2);
+});
+
+// ── KOD-1: cross-tenant guard skal vaere til stede i stempel-ruterne ──
+// Regressionsvaern: fjerner nogen businessId-tjekket, kan bruger A stemple paa
+// bruger B's kort. Vi laeser ruternes kildekode og kraever guarden (samme moenster
+// som den eksisterende /s/[token]-sideeffekt-test).
+
+test("stempel-ruter tjekker businessId FOER de stempler (cross-tenant guard)", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const routes = [
+    "../src/app/api/v1/stamp/route.ts",
+    "../src/app/api/staff/stamp/route.ts",
+  ];
+  for (const rel of routes) {
+    const src = readFileSync(join(here, rel), "utf8");
+    assert.match(
+      src,
+      /cc\.card\.businessId\s*!==/,
+      `${rel} mangler cross-tenant guard (cc.card.businessId !== ...)`,
+    );
+    assert.match(src, /applyStamp/, `${rel} skal stemple via applyStamp`);
+  }
 });
