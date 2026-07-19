@@ -1,13 +1,51 @@
 import "server-only";
 import { after } from "next/server";
-import type { StampMethod } from "@prisma/client";
+import type { StampMethod, Plan } from "@prisma/client";
 import { prisma } from "./prisma";
 import { trackStampAnomaly } from "./security";
 import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
 import { generateSerial, generateAuthToken } from "./ids";
-import { canCreateCustomer } from "./plans";
+import { canCreateCustomer, PLAN_LIMITS } from "./plans";
 import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
+
+// Advisory-laas-navnerum for kortholder-loftet (fast tal, saa det ikke kolliderer
+// med andre advisory-laase).
+const CARDHOLDER_CAP_LOCK = 4271;
+
+/**
+ * Opretter EET kundekort race-sikkert. Er loftet aktivt (maxCustomers != null),
+ * serialiseres optaelling + oprettelse PR. BUTIK med en advisory-laas, saa to
+ * samtidige tilmeldinger ved graensen ikke begge slipper forbi loftet. Er loftet
+ * slaaet fra, springes optaellingen helt over (ingen spildt O(N)-count pr.
+ * tilmelding). Returnerer null, hvis loftet er naaet.
+ */
+export async function createCardholderAtomically(
+  plan: Plan,
+  businessId: string,
+  cardId: string,
+  db: typeof prisma = prisma,
+): Promise<{ id: string; serial: string; authToken: string } | null> {
+  const data = {
+    cardId,
+    serial: generateSerial(),
+    authToken: generateAuthToken(),
+  };
+  const select = { id: true, serial: true, authToken: true } as const;
+
+  // Loft slaaet fra: ingen optaelling, ingen laas, bare opret.
+  if (PLAN_LIMITS[plan].maxCustomers === null) {
+    return db.customerCard.create({ data, select });
+  }
+
+  // Loft aktivt: serialisér count + create PR. BUTIK, saa graensen ikke kan races.
+  return db.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(${CARDHOLDER_CAP_LOCK}::int, hashtext(${businessId}))`;
+    const total = await tx.customerCard.count({ where: { card: { businessId } } });
+    if (!canCreateCustomer(plan, total)) return null;
+    return tx.customerCard.create({ data, select });
+  });
+}
 
 /**
  * Opretter et nyt kundekort for butikkens aktive kort. Bruges naar en ny kunde
@@ -40,22 +78,21 @@ export async function createCustomerCard(
   }
   // Superadmin har stoppet butikken eller sat nye kortholdere paa pause.
   if (signupBlockReason(business)) return { ok: false, reason: "paused" };
-  if (business.plan === "FREE") {
-    const total = await prisma.customerCard.count({
-      where: { card: { businessId } },
-    });
-    if (!canCreateCustomer("FREE", total)) return { ok: false, reason: "full" };
-  }
-  const cc = await prisma.customerCard.create({
-    data: {
-      cardId: business.cards[0].id,
-      serial: generateSerial(),
-      authToken: generateAuthToken(),
-    },
-  });
+
+  const created = await createCardholderAtomically(
+    business.plan,
+    businessId,
+    business.cards[0].id,
+  );
+  if (!created) return { ok: false, reason: "full" };
   // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
   await maybeFireCardholderThresholds(businessId);
-  return { ok: true, id: cc.id, serial: cc.serial, authToken: cc.authToken };
+  return {
+    ok: true,
+    id: created.id,
+    serial: created.serial,
+    authToken: created.authToken,
+  };
 }
 
 export class StampError extends Error {
@@ -325,17 +362,24 @@ export async function applyStamp(opts: {
  * Sletter den nyeste Stamp og traekker dens multiplier fra taelleren. Kan kaldes
  * gentagne gange for at rulle flere fejl-tryk tilbage.
  */
-export async function undoLastStamp(opts: {
-  customerCardId: string;
-  ip?: string | null;
-}): Promise<{
+export async function undoLastStamp(
+  opts: {
+    customerCardId: string;
+    ip?: string | null;
+  },
+  db: typeof prisma = prisma,
+): Promise<{
   serial: string;
   stamps: number;
   required: number;
   rewardReady: boolean;
   lifetimeStamps: number;
 }> {
-  const res = await prisma.$transaction(async (tx) => {
+  const res = await db.$transaction(async (tx) => {
+    // Laas kortraekken foerst, saa undo er fuldt serialiseret mod samtidige
+    // stemplinger: applyStamp's guardede update blokerer paa laasen, indtil vi
+    // committer. Dermed kan et samtidigt stempel ikke gaa tabt.
+    await tx.$queryRaw`SELECT id FROM "CustomerCard" WHERE id = ${opts.customerCardId} FOR UPDATE`;
     const cc = await tx.customerCard.findUnique({
       where: { id: opts.customerCardId },
       include: { card: true },
@@ -351,7 +395,10 @@ export async function undoLastStamp(opts: {
     }
 
     await tx.stamp.delete({ where: { id: last.id } });
+    // Klamp mod den LAASTE (levende) vaerdi, saa intet gaar negativt. Fordi
+    // raekken er laast, er snapshottet lig den levende vaerdi.
     const removed = Math.min(last.multiplier, cc.stamps);
+    const lifeRemoved = Math.min(last.multiplier, cc.lifetimeStamps);
 
     // Saet lastStampAt tilbage til det forrige stempel (eller nul), saa
     // cooldown ogsaa ruller tilbage.
@@ -359,13 +406,14 @@ export async function undoLastStamp(opts: {
       where: { customerCardId: cc.id },
       orderBy: { createdAt: "desc" },
     });
+    // RELATIVE decrements (ikke absolut fra snapshot): taelleren traekkes fra den
+    // LEVENDE raekke, saa den forbliver lig sum(Stamp.multiplier). Ingen tabt
+    // opdatering, selv hvis et stempel skulle naa ind (laasen forhindrer det her).
     const updated = await tx.customerCard.update({
       where: { id: cc.id },
       data: {
-        stamps: Math.max(0, cc.stamps - removed),
-        // Livstid reverseres med hele multiplier (uklampet), saa taelleren forbliver
-        // lig sum(Stamp.multiplier). En fejl-stempling skal ikke puste livstiden op.
-        lifetimeStamps: Math.max(0, cc.lifetimeStamps - last.multiplier),
+        stamps: { decrement: removed },
+        lifetimeStamps: { decrement: lifeRemoved },
         lastStampAt: prev?.createdAt ?? null,
       },
       select: { stamps: true, lifetimeStamps: true },

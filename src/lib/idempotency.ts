@@ -22,6 +22,18 @@ export class IdempotencyInFlight extends Error {
 
 type Stored<T> = { done: false } | { done: true; result: T };
 
+// Minimalt Redis-interface, saa runOnce kan testes med en fake (samme moenster
+// som consumeJti). set med NX+TTL claimer atomisk; get/del laeser og frigiver.
+type IdemStore = {
+  set: (
+    key: string,
+    value: unknown,
+    opts: { nx?: boolean; ex: number },
+  ) => Promise<unknown>;
+  get: (key: string) => Promise<unknown>;
+  del: (key: string) => Promise<unknown>;
+};
+
 /**
  * Koer `run` hoejst een gang for en given noegle. Kaldes den igen med samme
  * noegle (retry), returneres FOERSTE resultat i stedet for at koere igen.
@@ -29,9 +41,11 @@ type Stored<T> = { done: false } | { done: true; result: T };
 export async function runOnce<T>(
   key: string | undefined,
   run: () => Promise<T>,
+  store?: IdemStore,
 ): Promise<T> {
-  if (!key || !redisConfigured()) return run();
-  const redis = getRedis();
+  const redis =
+    store ?? (redisConfigured() ? (getRedis() as unknown as IdemStore) : null);
+  if (!key || !redis) return run();
   const rkey = `idem:${key}`;
 
   let claimed: unknown = null;

@@ -4,9 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCardToken, setCardToken } from "@/lib/cookies";
-import { loadCardByToken } from "@/lib/stamp";
-import { generateSerial, generateAuthToken } from "@/lib/ids";
-import { canCreateCustomer } from "@/lib/plans";
+import { loadCardByToken, createCardholderAtomically } from "@/lib/stamp";
 import { maybeFireCardholderThresholds, signupBlockReason } from "@/lib/billing";
 import { WALLET_ENABLED } from "@/lib/env";
 
@@ -47,27 +45,18 @@ export async function claimCard(slug: string) {
   const block = signupBlockReason(business);
   if (block) redirect(`/k/${slug}?fejl=${block}`);
 
-  // Vaekstmur paa Gratis: loftet tæller ALLE oprettede kort. Kun oprettelse af
-  // NYE kort spærres ved loftet - eksisterende kunder stempler og indløser
-  // uhindret (det haandteres helt andre steder end her).
-  if (business.plan === "FREE") {
-    const total = await prisma.customerCard.count({
-      where: { card: { businessId: business.id } },
-    });
-    if (!canCreateCustomer("FREE", total)) {
-      redirect(`/k/${slug}?fejl=fuld`);
-    }
-  }
+  // Vaekstmur paa Gratis: loftet tæller ALLE oprettede kort og haandhaeves atomisk
+  // (race-sikkert) pr. butik. Kun oprettelse af NYE kort spærres - eksisterende
+  // kunder stempler og indløser uhindret. Null = loftet er naaet.
+  const created = await createCardholderAtomically(
+    business.plan,
+    business.id,
+    card.id,
+  );
+  if (!created) redirect(`/k/${slug}?fejl=fuld`);
 
-  const cc = await prisma.customerCard.create({
-    data: {
-      cardId: card.id,
-      serial: generateSerial(),
-      authToken: generateAuthToken(),
-    },
-  });
-  await setCardToken(business.id, cc.authToken);
+  await setCardToken(business.id, created.authToken);
   // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
   await maybeFireCardholderThresholds(business.id);
-  redirect(await claimDestination(cc.serial));
+  redirect(await claimDestination(created.serial));
 }

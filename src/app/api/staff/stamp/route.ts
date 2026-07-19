@@ -25,9 +25,14 @@ export async function POST(req: NextRequest) {
   try {
     // Idempotens: sender klienten samme noegle igen (fx et retry efter et tabt
     // svar paa daarligt wifi), returneres det foerste resultat i stedet for at
-    // give kunden endnu et stempel.
-    const res = await runOnce(parsed.data.idempotencyKey, () =>
-      applyStamp({
+    // give kunden endnu et stempel. Noeglen scopes pr. butik, saa to butikker
+    // ikke kan kollidere paa samme vaerdi.
+    const res = await runOnce(
+      parsed.data.idempotencyKey
+        ? `${access.businessId}:${parsed.data.idempotencyKey}`
+        : undefined,
+      () =>
+        applyStamp({
         customerCardId: cc.id,
         method: "STAFF_SCAN",
         ip: clientIp(req),
