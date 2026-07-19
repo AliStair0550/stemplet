@@ -140,7 +140,7 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   {
     icon: "trophy",
     title: "Beløn dine mest loyale kunder",
-    body: "Beløn dine mest loyale kunder med eksklusive fordele ved opnået milepæle. Lås op for unikke rabatter, gaver eller merchandise når kunden opnår et bestemt antal stempler og bliver stamgæst i din forretning.",
+    body: "Beløn dine mest loyale kunder med eksklusive fordele. Opret milepæle, og lås op for rabatter, gaver eller merchandise, når kunden når et bestemt antal stempler. En enkel måde at gøre stamkunder til en endnu større del af din forretning.",
   },
   {
     icon: "sparkle",
