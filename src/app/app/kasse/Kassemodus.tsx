@@ -910,6 +910,16 @@ function StaffCard({
                   )}
                 </button>
               </CtaGlow>
+              {/* Færdig: tydelig, men sekundaer (outline), saa "Giv stempel"
+                  beholder fokus. Goer det nemt at afslutte kunden lige efter man
+                  har stemplet, uden at lede efter linket nederst. */}
+              <button
+                type="button"
+                onClick={onExit}
+                className={`${btnClass("outline", "lg")} min-h-[3.2rem] text-[0.9rem]`}
+              >
+                Færdig
+              </button>
             </div>
           )}
 
