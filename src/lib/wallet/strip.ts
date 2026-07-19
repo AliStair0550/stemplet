@@ -96,8 +96,8 @@ export async function buildStripImages(opts: {
   // ~40 px, saa de laa taet paa logoet). PB: bund-padding UNDER stemplerne. Mere
   // PB skubber tekst-felterne (BELØNNING / Samlet i alt) laengere ned paa kortet,
   // da felterne staar lige under strip-billedet i Wallet.
-  const topAir = 116;
-  const PB = 110;
+  const topAir = 150;
+  const PB = 150;
   // D beregnes paa en fast gitter-hoejde, saa cirklerne har samme stoerrelse
   // uanset den ekstra top-luft; strip'ens samlede hoejde vokser bare med luften.
   const gridBoxH = 352;
