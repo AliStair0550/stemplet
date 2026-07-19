@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout, LegalSection } from "@/components/site/LegalLayout";
+import { LegalCompanyInfo } from "@/components/site/LegalCompanyInfo";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Handelsbetingelser",
   description: "Vilkårene for at bruge Stemplet.",
 };
 
-// TODO (juridisk): indsæt CVR-nummer og adresse for Alius, bekraeft moms-forhold
-// og faa betingelserne gennemgaaet af en advokat inden endelig brug.
-const CONTACT = "hej@alius.dk";
+// Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
+// TODO (juridisk): bekraeft moms-forhold og faa betingelserne gennemgaaet af en
+// advokat inden endelig brug.
+const CONTACT = COMPANY.contactEmail;
 
 function Li({ children }: { children: React.ReactNode }) {
   return (
@@ -133,6 +136,7 @@ export default function TermsPage() {
           </a>
           .
         </p>
+        <LegalCompanyInfo />
       </LegalSection>
     </LegalLayout>
   );

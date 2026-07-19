@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout, LegalSection } from "@/components/site/LegalLayout";
+import { LegalCompanyInfo } from "@/components/site/LegalCompanyInfo";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Databehandleraftale",
@@ -8,7 +10,8 @@ export const metadata: Metadata = {
     "Databehandleraftale mellem butikken (dataansvarlig) og Stemplet (databehandler).",
 };
 
-const CONTACT = "hej@alius.dk";
+// Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
+const CONTACT = COMPANY.contactEmail;
 
 function Li({ children }: { children: React.ReactNode }) {
   return (
@@ -135,6 +138,7 @@ export default function DpaPage() {
           </Link>
           .
         </p>
+        <LegalCompanyInfo />
       </LegalSection>
     </LegalLayout>
   );

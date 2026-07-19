@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalLayout, LegalSection } from "@/components/site/LegalLayout";
+import { LegalCompanyInfo } from "@/components/site/LegalCompanyInfo";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
   description: "Sådan behandler Stemplet personoplysninger.",
 };
 
-// TODO (juridisk): indsæt CVR-nummer og fysisk adresse for Alius, og faa
-// politikken gennemgaaet af en advokat inden endelig brug.
-const CONTACT = "hej@alius.dk";
+// Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
+// TODO (juridisk): faa politikken gennemgaaet af en advokat inden endelig brug.
+const CONTACT = COMPANY.contactEmail;
 
 function Li({ children }: { children: React.ReactNode }) {
   return (
@@ -36,6 +38,7 @@ export default function PrivatlivPage() {
           </a>
           .
         </p>
+        <LegalCompanyInfo />
         <p>
           For en butiks egne kunder er det <strong>butikken</strong>, der er
           dataansvarlig for kundeoplysningerne. Stemplet er butikkens
