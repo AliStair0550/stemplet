@@ -42,3 +42,44 @@ jobs:
 
       - name: Tests
         run: npm test
+
+  # Integrationstests mod en RIGTIG Postgres: verificerer laasene under aegte
+  # samtidighed (to parallelle connections) - undo lost-update, kunde-loft-race,
+  # velkomstbonus-een-gang, indloesning-een-gang - samt invariant-checket. Koerer
+  # migrationerne fra bunden mod en frisk database (fanger ogsaa migration-drift).
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: stemplet_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: "postgresql://test:test@localhost:5432/stemplet_test?schema=public"
+      DIRECT_URL: "postgresql://test:test@localhost:5432/stemplet_test?schema=public"
+      STAMP_TOKEN_SECRET: "ci-integration-secret-0123456789"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Installer afhaengigheder
+        run: npm ci
+
+      - name: Anvend migrationer paa frisk database
+        run: npx prisma migrate deploy
+
+      - name: Integrationstests (rigtige laase, parallelle connections)
+        run: npm run test:integration

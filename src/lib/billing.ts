@@ -346,6 +346,43 @@ export async function sweepPendingThresholdEmails(
   return { warns, invoices };
 }
 
+/**
+ * Daglig integritets-vagt: finder kort hvor lifetimeStamps IKKE er lig
+ * sum(Stamp.multiplier) - den invariant hele den atomiske stempel-sti beskytter.
+ * En afvigelse betyder reel data-drift (fx en race, der slap igennem) og
+ * rapporteres straks til Sentry. Ligger i SAMME cron som sweepet, fordi Hobby-
+ * planen kun tillader to cron-jobs. Ren laesning; aendrer intet.
+ */
+export async function checkStampInvariant(
+  db: Db = prisma,
+): Promise<{ diverged: number }> {
+  const rows = await db.$queryRaw<
+    { id: string; businessId: string; counter: number; actual: number }[]
+  >`
+    SELECT cc."id" AS "id", c."businessId" AS "businessId",
+           cc."lifetimeStamps" AS "counter",
+           COALESCE(SUM(s."multiplier"), 0)::int AS "actual"
+    FROM "CustomerCard" cc
+    JOIN "Card" c ON c."id" = cc."cardId"
+    LEFT JOIN "Stamp" s ON s."customerCardId" = cc."id"
+    GROUP BY cc."id", c."businessId", cc."lifetimeStamps"
+    HAVING cc."lifetimeStamps" <> COALESCE(SUM(s."multiplier"), 0)
+    LIMIT 50
+  `;
+  if (rows.length > 0) {
+    captureServerError(
+      new Error(
+        `Stempel-invariant brudt: ${rows.length} kort hvor lifetimeStamps != sum(Stamp.multiplier)`,
+      ),
+      {
+        route: "cron/invariant-check",
+        extra: { count: rows.length, sample: JSON.stringify(rows.slice(0, 5)) },
+      },
+    );
+  }
+  return { diverged: rows.length };
+}
+
 // ── Godkendelsesside (ejer-dashboard) ────────────────────────────────
 
 export type AgreementView = {

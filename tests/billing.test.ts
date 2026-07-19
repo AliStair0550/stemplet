@@ -247,3 +247,41 @@ test("to samtidige krydsninger af 80 giver praecis eet varsel (fire-once)", asyn
     "sent-flag sat een gang",
   );
 });
+
+// ── Fuld flow: Resend-fejl PRAECIS ved 80-krydsningen, saa sweep-genopretning ──
+// Adskilt fra "sweep genopsamler" ovenfor: her sker fejlen under selve krydsningen
+// (processCardholderThresholds), ikke fra en for-udfyldt tilstand.
+
+test("Resend-fejl ved 80-krydsning: warnedAt saettes, sentAt null, sweep gensender", async () => {
+  const { client, businesses } = makeFakeDb([
+    baseRow({ id: "bx", slug: "shop", name: "Shop", cardholderCount: 80 }),
+  ]);
+
+  // Krydsningen sker med en FEJLENDE mailer.
+  const failing: MailArg = async () => {
+    throw new Error("resend nede");
+  };
+  await processCardholderThresholds("bx", client, failing);
+
+  const b = businesses.get("bx")!;
+  assert.notEqual(
+    b.cardholderWarnedAt,
+    null,
+    "KENDSGERNING registreret: cardholderWarnedAt sat (fire-once)",
+  );
+  assert.equal(
+    b.cardholderWarnEmailSentAt,
+    null,
+    "mailen fejlede -> warnEmailSentAt forbliver null",
+  );
+
+  // Sweep-cronen gensender bagefter med en virkende mailer.
+  const ok: MailArg = async () => true;
+  const r = await sweepPendingThresholdEmails(client, ok);
+  assert.equal(r.warns, 1, "sweepet gensendte det tabte varsel");
+  assert.notEqual(
+    businesses.get("bx")!.cardholderWarnEmailSentAt,
+    null,
+    "warnEmailSentAt sat efter bekraeftet gensendelse",
+  );
+});
