@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { btnClass, CtaGlow, CTA_EMPHASIS, WalletIcon } from "@/components/ui";
-import { Spinner } from "@/components/SubmitButton";
+import { useEffect, useState } from "react";
+import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
-import { claimCard } from "./actions";
 
-// Fejl-koder fra claimCard oversat til en klar besked til kunden.
+// Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
 const ERRORS: Record<string, string> = {
   lukket: "Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken.",
   fuld: "Butikken kan ikke tage imod flere stempelkort lige nu. Spørg personalet.",
@@ -14,14 +12,12 @@ const ERRORS: Record<string, string> = {
   stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
 };
 
-// "Hent mit stempelkort"-flowet paa klienten. VIGTIGT om iPhone: en webside kan
-// IKKE paalideligt aabne Apple Wallet automatisk EFTER et server-kald (bruger-
-// gesten er tabt, og en tvungen window.location til .pkpass'et faar siden til at
-// crashe -> "Prøv igen", selvom kortet reelt blev oprettet). Derfor: vi opretter
-// kortet ved foerste tryk, og viser saa en RIGTIG "Læg i Apple Wallet"-knap (et
-// <a>-link, som Safari selv aabner Wallet-arket fra, samme velafproevede moenster
-// som paa webkortet). Naar kunden trykker paa den, aabner Wallet, og vi viser
-// kvitteringen. Android/desktop (ingen Wallet) sendes til webkortet med QR.
+// "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
+// opretter kortet og returnerer .pkpass'et i samme svar, saa Safari aabner Apple
+// Wallet-arket direkte fra kundens eget tryk (eet tryk paa web, saa "Tilføj" i
+// arket). Ingen skroebelig JavaScript-navigation, saa ingen "Prøv igen"-crash.
+// Paa iPhone bliver siden liggende bag arket, saa vi viser kvitteringen der.
+// Android/desktop sendes af ruten videre til webkortet med QR.
 export function ClaimFlow({
   slug,
   walletEnabled,
@@ -29,105 +25,58 @@ export function ClaimFlow({
   slug: string;
   walletEnabled: boolean;
 }) {
-  const [state, setState] = useState<"idle" | "pending" | "ready" | "added">(
-    "idle",
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [passUrl, setPassUrl] = useState<string | null>(null);
+  const [added, setAdded] = useState(false);
+  const [fejl, setFejl] = useState<string | null>(null);
+  const claimUrl = `/api/wallet/claim/${slug}`;
 
-  async function onClaim() {
-    setError(null);
-    setState("pending");
-    const res = await claimCard(slug).catch(() => null);
-    if (!res) {
-      setError("Noget gik galt. Prøv igen om et øjeblik.");
-      setState("idle");
-      return;
-    }
-    if (!res.ok) {
-      setError(ERRORS[res.error] ?? "Noget gik galt. Prøv igen.");
-      setState("idle");
-      return;
-    }
+  // Læs en evt. ?fejl=... paa klienten, saa /k-siden kan forblive statisk (ISR).
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("fejl");
+    if (code && ERRORS[code]) setFejl(code);
+  }, []);
 
-    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-    if (ios && walletEnabled) {
-      // iPhone: vis en rigtig Wallet-knap, som kunden selv trykker paa.
-      setPassUrl(`/api/wallet/pass/${res.serial}`);
-      setState("ready");
-    } else {
-      // Ingen Apple Wallet (Android/desktop): vis webkortet med QR-koden.
-      window.location.href = `/kort/${res.serial}`;
-    }
-  }
-
-  if (error) {
+  if (fejl) {
     return (
       <p
         role="status"
         className="w-full rounded-lg border border-rust/30 bg-rust/5 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
       >
-        {error}
+        {ERRORS[fejl]}
       </p>
     );
   }
 
-  if (state === "added") {
+  if (added) {
     return (
       <div className="flex w-full flex-col items-center gap-3">
         <WalletAddedNotice />
-        {passUrl ? (
-          <a
-            href={passUrl}
-            className="inline-flex items-center gap-2 text-[0.8rem] font-[300] text-terracotta underline underline-offset-2 hover:opacity-70"
-          >
-            <WalletIcon className="h-4 w-4" />
-            Åbn kortet i Apple Wallet igen
-          </a>
-        ) : null}
+        <a
+          href={claimUrl}
+          className="text-[0.8rem] font-[300] text-terracotta underline underline-offset-2 hover:opacity-70"
+        >
+          Åbn kortet i Apple Wallet igen
+        </a>
       </div>
     );
   }
 
-  if (state === "ready" && passUrl) {
-    return (
-      <div className="flex w-full flex-col items-center gap-3">
-        <CtaGlow className="w-full">
-          <a
-            href={passUrl}
-            onClick={() => setState("added")}
-            className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
-          >
-            <WalletIcon />
-            Læg i Apple Wallet
-          </a>
-        </CtaGlow>
-        <p className="text-center text-[0.82rem] font-[300] leading-relaxed text-stone">
-          Dit kort er klar. Tryk for at lægge det i din Apple Wallet.
-        </p>
-      </div>
-    );
+  function onTap() {
+    // iPhone: passet aabnes i Wallet-arket, og siden bliver liggende, saa vi
+    // viser kvitteringen. Android/desktop sendes videre af ruten (ingen kvittering
+    // her), saa der roerer vi ikke tilstanden.
+    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+    if (ios && walletEnabled) setAdded(true);
   }
 
-  // idle / pending
   return (
     <CtaGlow className="w-full">
-      <button
-        type="button"
-        onClick={onClaim}
-        disabled={state === "pending"}
-        aria-busy={state === "pending"}
+      <a
+        href={claimUrl}
+        onClick={onTap}
         className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
       >
-        {state === "pending" ? (
-          <>
-            <Spinner />
-            Opretter dit kort...
-          </>
-        ) : (
-          "Hent mit stempelkort"
-        )}
-      </button>
+        Hent mit stempelkort
+      </a>
     </CtaGlow>
   );
 }

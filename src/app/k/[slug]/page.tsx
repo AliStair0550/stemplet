@@ -12,8 +12,9 @@ import { ShareLinkButton } from "@/components/ShareLinkButton";
 
 // ISR: siden er ens for alle (butikkens branding + "Hent mit stempelkort"), saa
 // den caches pr. butik. Foer var den dynamisk pr. request, saa kundens FOERSTE
-// scan kunne ramme en cold start (~2 sek.). Nu serveres den fra cache. Om en
-// kunde allerede har et kort, haandteres i claimCard ved klik (redirect til kortet).
+// scan kunne ramme en cold start (~2 sek.). Nu serveres den fra cache. Selve
+// oprettelsen (og om kunden allerede har et kort) haandteres i claim-ruten
+// /api/wallet/claim/[slug], som "Hent mit stempelkort"-linket peger paa.
 export const revalidate = 3600;
 
 // Pre-renderer de kendte butikker ved build, saa deres tilmeldings-side er ren
