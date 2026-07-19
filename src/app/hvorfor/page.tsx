@@ -120,12 +120,12 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   {
     icon: "wallet",
     title: "Kortet er altid lige ved hånden",
-    body: "Stempelkortet ligger i Apple Wallet, side om side med betalingskortet. Din butik er med i lommen, hver dag.",
+    body: "Stempelkortet ligger i Apple Wallet, side om side med kundens betalingskort. Din butik er med i lommen, hver dag.",
   },
   {
     icon: "qr",
     title: "Ingen app. Hurtig oprettelse.",
-    body: "Kunden scanner en QR-kode og har stempelkortet direkte i Apple Wallet. Ingen download. Klar på få minutter.",
+    body: "Kunden scanner en QR-kode og har stempelkortet direkte i sin Apple Wallet. Ingen download. Klar på få minutter.",
   },
   {
     icon: "chart",
@@ -139,8 +139,8 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   },
   {
     icon: "trophy",
-    title: "Gør loyalitet til en leg",
-    body: "Beløn dine mest loyale kunder ved at sætte milepæle, og overrask topscorerne med en ekstra belønning. Loyalitet må gerne være sjovt.",
+    title: "Beløn dine mest loyale kunder",
+    body: "Beløn dine mest loyale kunder med eksklusive fordele ved opnået milepæle. Lås op for unikke rabatter, gaver eller merchandise når kunden opnår et bestemt antal stempler og bliver stamgæst i din forretning.",
   },
   {
     icon: "sparkle",
@@ -150,7 +150,7 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   {
     icon: "bolt",
     title: "Klar på få minutter",
-    body: "Personalet bruger den telefon, de allerede har. Ingen hardware. Ingen installation.",
+    body: "Personalet bruger de telefoner, de allerede har. Ingen hardware. Ingen installation.",
   },
   {
     icon: "shield",
@@ -160,7 +160,7 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   {
     icon: "gift",
     title: "Kom i gang uden risiko",
-    body: "Gratis op til 100 kortholdere. Derefter kun 99 kr. om måneden. Ingen binding.",
+    body: "Gratis op til 100 kortholdere. Derefter kun 99 kr. om måneden. Uendelige kortholdere. Ingen binding.",
   },
 ];
 
