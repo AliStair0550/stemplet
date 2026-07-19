@@ -1,4 +1,5 @@
 import "server-only";
+import sharp from "sharp";
 import { PKPass } from "passkit-generator";
 import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
@@ -86,7 +87,8 @@ async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
   if (!logoUrl) return null;
   const cached = logoCache.get(logoUrl);
   if (cached) return cached;
-  const buf = await fetchLogo(logoUrl);
+  const raw = await fetchLogo(logoUrl);
+  const buf = raw ? await padLogo(raw) : null;
   if (buf) {
     if (logoCache.size >= LOGO_CACHE_MAX) {
       const oldest = logoCache.keys().next().value;
@@ -95,6 +97,28 @@ async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
     logoCache.set(logoUrl, buf);
   }
   return buf;
+}
+
+// Laeg gennemsigtig luft rundt om logoet, saa det ikke klistrer op i toppen og
+// kanten af passet i Wallet. Centreret paa et kvadrat med ~14% margin hele vejen
+// rundt. Fejler den (fx ugyldigt billede), bruger vi logoet som det er.
+async function padLogo(buf: Buffer): Promise<Buffer> {
+  try {
+    const meta = await sharp(buf).metadata();
+    const w = meta.width ?? 0;
+    const h = meta.height ?? 0;
+    if (!w || !h) return buf;
+    const size = Math.max(w, h);
+    const pad = Math.round(size * 0.14);
+    const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
+    return await sharp(buf)
+      .resize(size, size, { fit: "contain", background: transparent })
+      .extend({ top: pad, bottom: pad, left: pad, right: pad, background: transparent })
+      .png()
+      .toBuffer();
+  } catch {
+    return buf;
+  }
 }
 
 async function fetchLogo(logoUrl: string): Promise<Buffer | null> {
@@ -221,35 +245,27 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     changeMessage,
   });
 
-  // Stamkunde-signal: det SAMLEDE antal stempler kunden nogensinde har optjent
-  // (nulstilles ikke ved indloesning). Vokser hele tiden, saa kunden ser sin egen
-  // loyalitet - "jeg har allerede fyldt flere kort her". Ingen changeMessage her,
-  // saa der kun kommer EEN notifikation pr. stempel (fra header-feltet ovenfor).
-  // Vises foerst naar der ER stempler, saa et helt nyt kort holdes rent.
+  // Forsiden under strippen: EEN ren raekke. Beloenningen til venstre, og kundens
+  // SAMLEDE stempler (loyalitet) til hoejre. Ingen "X tilbage" - det gentager bare
+  // 3/10 i toppen. STEMPLER I ALT vokser hele tiden (nulstilles ikke ved
+  // indloesning), saa en stamkunde ser sin historik. Ingen changeMessage her, saa
+  // der kun kommer EEN notifikation pr. stempel (fra header-feltet ovenfor). "I ALT"
+  // vises foerst naar der ER stempler, saa et helt nyt kort holdes rent.
+  const left = input.required - input.stamps;
+  pass.secondaryFields.push({
+    key: "reward",
+    label: "BELØNNING",
+    value: input.rewardText,
+    textAlignment: "PKTextAlignmentLeft",
+  });
   if (input.lifetimeStamps > 0) {
     pass.secondaryFields.push({
       key: "lifetime",
-      label: "STEMPLER I ALT",
+      label: "I ALT",
       value: `${input.lifetimeStamps}`,
+      textAlignment: "PKTextAlignmentRight",
     });
   }
-
-  // Rent og elegant: strip-gitteret staar oeverst, og kun to SMAA felter under.
-  // Ingen "BELØNNING"-label (den giver sig selv), og status staar diskret til
-  // hoejre.
-  const left = input.required - input.stamps;
-  pass.auxiliaryFields.push(
-    {
-      key: "reward",
-      value: input.rewardText,
-      textAlignment: "PKTextAlignmentLeft",
-    },
-    {
-      key: "status",
-      value: rewardReady ? "Klar" : `${left} tilbage`,
-      textAlignment: "PKTextAlignmentRight",
-    },
-  );
 
   pass.backFields.push(
     {
