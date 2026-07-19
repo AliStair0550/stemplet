@@ -2,6 +2,7 @@
 
 import QRCode from "qrcode";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { unstable_rethrow, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
@@ -13,9 +14,13 @@ import {
 } from "@/lib/validation";
 import { slugify } from "@/lib/utils";
 import { hashPin } from "@/lib/security";
-import { isBusinessCategory } from "@/lib/categories";
+import { isBusinessCategory, categoryLabel } from "@/lib/categories";
 import { geocodeAddress, roundCoord } from "@/lib/geocode";
 import { APP_URL } from "@/lib/env";
+import { sendEmail } from "@/lib/send-email";
+import { superadminRecipients } from "@/lib/superadmin-emails";
+import { superadminNewBusinessEmail } from "@/lib/emails";
+import { captureServerError } from "@/lib/sentry";
 import type { CardDesign } from "@/components/CardDesigner";
 
 export type CreateResult =
@@ -77,6 +82,8 @@ export async function createBusinessAction(input: {
   }
 
   const staffPin = await hashPin(pinParsed.data);
+  const category =
+    input.category && isBusinessCategory(input.category) ? input.category : null;
 
   // Valgfri placering: er der indtastet en adresse, geokoder vi den nu, saa kortet
   // dukker op paa kundernes laaseskaerm fra dag et og bliver ved, indtil butikken
@@ -118,10 +125,7 @@ export async function createBusinessAction(input: {
         address: location?.address ?? null,
         latitude: location?.latitude ?? null,
         longitude: location?.longitude ?? null,
-        category:
-          input.category && isBusinessCategory(input.category)
-            ? input.category
-            : null,
+        category,
         users: { create: { email: base.data.email, name: base.data.name } },
         cards: {
           create: {
@@ -154,6 +158,33 @@ export async function createBusinessAction(input: {
     margin: 1,
     width: 640,
     color: { dark: "#1A1A1A", light: "#FFFFFF" },
+  });
+
+  // Giv superadmin besked om den nye butik, saa vi kan foelge med i opstarten.
+  // Sendes EFTER svaret (after), saa en mail-fejl aldrig forsinker eller braekker
+  // selve oprettelsen. Springes helt over, hvis SUPERADMIN_EMAIL ikke er sat.
+  after(async () => {
+    const recipients = superadminRecipients();
+    if (recipients.length === 0) return;
+    const mail = superadminNewBusinessEmail({
+      businessName: base.data.name,
+      slug,
+      ownerEmail: base.data.email,
+      category: categoryLabel(category) ?? "(ingen)",
+      address: location?.address ?? "(ingen)",
+      cardUrl,
+      adminUrl: `${APP_URL}/admin`,
+    });
+    for (const to of recipients) {
+      try {
+        await sendEmail({ to, ...mail });
+      } catch (e) {
+        captureServerError(e, {
+          route: "start:new-business-notify",
+          extra: { slug },
+        });
+      }
+    }
   });
 
   return { ok: true, slug, cardUrl, qrDataUrl };

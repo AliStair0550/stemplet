@@ -385,3 +385,70 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
   };
 }
 
+// ── Ny butik oprettet (til superadmin/Ali) ───────────────────────────
+// I opstarten vil vi gerne have besked hver gang en butik melder sig, saa vi kan
+// foelge med. Ren informationsmail: hvem, hvad og et hurtigt link til admin.
+
+export type SuperadminNewBusinessData = {
+  businessName: string;
+  slug: string;
+  ownerEmail: string;
+  category: string; // laesbar label eller "(ingen)"
+  address: string; // adresse eller "(ingen)"
+  cardUrl: string;
+  adminUrl: string;
+};
+
+export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+    </td></tr></table>`;
+
+  const detailRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+    </tr>`;
+
+  const inner = `
+    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      Ny butik oprettet: ${d.businessName}.
+    </p>
+    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Endnu en butik er kommet med på Stemplet.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:14px 18px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${detailRow("Butik", `${d.businessName} (${d.slug})`)}
+          ${detailRow("Ejer", d.ownerEmail)}
+          ${detailRow("Kategori", d.category)}
+          ${detailRow("Adresse", d.address)}
+        </table>
+      </td></tr>
+    </table>
+    <p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+      Kortlink: <a href="${d.cardUrl}" style="color:${C.terracotta};">${d.cardUrl}</a>
+    </p>
+    ${button}`;
+
+  const text = [
+    `Ny butik oprettet: ${d.businessName}.`,
+    "",
+    `Butik: ${d.businessName} (${d.slug})`,
+    `Ejer: ${d.ownerEmail}`,
+    `Kategori: ${d.category}`,
+    `Adresse: ${d.address}`,
+    `Kortlink: ${d.cardUrl}`,
+    "",
+    `Åbn admin: ${d.adminUrl}`,
+  ].join("\n");
+
+  return {
+    subject: `[Stemplet] Ny butik: ${d.businessName}`,
+    html: shell(`Ny butik oprettet: ${d.businessName}.`, inner),
+    text,
+  };
+}
+
