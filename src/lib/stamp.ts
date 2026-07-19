@@ -40,7 +40,10 @@ export async function createCardholderAtomically(
 
   // Loft aktivt: serialisér count + create PR. BUTIK, saa graensen ikke kan races.
   return db.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(${CARDHOLDER_CAP_LOCK}::int, hashtext(${businessId}))`;
+    // pg_advisory_xact_lock returnerer void, som Prisma ikke kan deserialisere;
+    // wrap i en subquery, saa den YDRE select giver en int-kolonne. Laasen tages
+    // stadig (subqueryen evalueres) og frigives ved commit/rollback.
+    await tx.$queryRaw`SELECT 1 AS locked FROM (SELECT pg_advisory_xact_lock(${CARDHOLDER_CAP_LOCK}::int, hashtext(${businessId}))) _lock`;
     const total = await tx.customerCard.count({ where: { card: { businessId } } });
     if (!canCreateCustomer(plan, total)) return null;
     return tx.customerCard.create({ data, select });
