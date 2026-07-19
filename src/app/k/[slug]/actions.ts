@@ -1,22 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getCardToken, setCardToken } from "@/lib/cookies";
 import { loadCardByToken, createCardholderAtomically } from "@/lib/stamp";
 import { maybeFireCardholderThresholds, signupBlockReason } from "@/lib/billing";
-import { WALLET_ENABLED } from "@/lib/env";
 
-// Hele pointen er, at kortet ryger i Apple Wallet. Paa iPhone/iPad sender vi
-// derfor kunden DIREKTE til .pkpass'et, saa Wallet aabner med det samme (ikke en
-// mellemside med QR). Paa Android/desktop, hvor Wallet ikke findes, viser vi
-// webkortet med QR + knap i stedet.
-async function claimDestination(serial: string): Promise<string> {
-  const ua = (await headers()).get("user-agent") ?? "";
-  const ios = /iPhone|iPad|iPod/i.test(ua);
-  return ios && WALLET_ENABLED ? `/api/wallet/pass/${serial}` : `/kort/${serial}`;
-}
+// Efter oprettelse sender vi ALTID kunden til webkortet (/kort/[serial]), ogsaa
+// paa iPhone. Foer sendte vi iOS DIREKTE til .pkpass'et, saa Wallet aabnede med
+// det samme, MEN en pkpass-hentning skifter ikke side: "Hent mit stempelkort"-
+// knappen blev haengende i "Opretter dit kort..."-tilstand uden nogen kvittering.
+// Paa /kort/[serial] faar kunden en tydelig "Laeg i Apple Wallet"-knap og en
+// bekraeftelse ("Dit stempelkort er nu i din Wallet"), naar kortet er lagt i.
 
 /** Opretter (eller genfinder) kundens kort og sætter device-cookie. */
 export async function claimCard(slug: string) {
@@ -36,7 +31,7 @@ export async function claimCard(slug: string) {
   if (existingToken) {
     const cc = await loadCardByToken(existingToken);
     if (cc && cc.cardId === card.id) {
-      redirect(await claimDestination(cc.serial));
+      redirect(`/kort/${cc.serial}`);
     }
   }
 
@@ -58,5 +53,5 @@ export async function claimCard(slug: string) {
   await setCardToken(business.id, created.authToken);
   // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
   await maybeFireCardholderThresholds(business.id);
-  redirect(await claimDestination(created.serial));
+  redirect(`/kort/${created.serial}`);
 }
