@@ -261,7 +261,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   if (input.lifetimeStamps > 0) {
     pass.secondaryFields.push({
       key: "lifetime",
-      label: "I ALT",
+      label: "Samlet i alt",
       value: `${input.lifetimeStamps}`,
       textAlignment: "PKTextAlignmentRight",
     });
