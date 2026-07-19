@@ -26,7 +26,7 @@ model Business {
   slug             String     @unique
   category         String? // branche (kode), backfilles i indstillinger
   logoUrl          String?
-  primaryColor     String     @default("#061C3D")
+  primaryColor     String     @default("#2A1A10")
   textColor        String     @default("#FFFFFF")
   plan             Plan       @default(FREE)
   stripeCustomerId String?

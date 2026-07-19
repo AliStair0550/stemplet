@@ -7,7 +7,13 @@ import { walletIds, walletCertificates } from "./config";
 import { buildStripImages } from "./strip";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
-import { hexToRgb, contrastText, isCardReadable } from "../brand";
+import {
+  hexToRgb,
+  contrastText,
+  isCardReadable,
+  normalizeHex,
+  DEFAULT_PRIMARY,
+} from "../brand";
 
 type PassInput = {
   serial: string;
@@ -38,6 +44,30 @@ function blendRgb(hexA: string, hexB: string, t: number): string {
   const b = hexToRgb(hexB);
   const m = (x: number, y: number) => Math.round(x * (1 - t) + y * t);
   return `rgb(${m(a.r, b.r)}, ${m(a.g, b.g)}, ${m(a.b, b.b)})`;
+}
+
+/**
+ * Passets farver som rgb()-strenge. Butikkens egen primaryColor slaar igennem;
+ * er den tom/ugyldig, falder vi tilbage til Stemplets standard (#2A1A10), saa DB
+ * og kode har samme reserve. foregroundColor foelger butikkens tekstfarve, men
+ * falder tilbage til en GARANTERET laesbar kontrastfarve (sort/hvid), hvis den
+ * ikke er laesbar paa baggrunden. labelColor er en daempet variant (tekstfarven
+ * trukket ~1/3 mod baggrunden), saa labels er diskrete og vaerdierne popper.
+ * Ren funktion (ingen certs/I/O), saa farve- og kontrast-logikken kan testes.
+ */
+export function passColors(
+  primaryColor: string,
+  textColor: string,
+): { backgroundColor: string; foregroundColor: string; labelColor: string } {
+  const primary = normalizeHex(primaryColor, DEFAULT_PRIMARY);
+  const fgHex = isCardReadable(primary, textColor)
+    ? textColor
+    : contrastText(primary);
+  return {
+    backgroundColor: rgbString(primary),
+    foregroundColor: rgbString(fgHex),
+    labelColor: blendRgb(fgHex, primary, 0.34),
+  };
 }
 
 // Logo-bufferen cachet pr. URL. utfs-URL'er er indholds-adresserede (et nyt logo
@@ -124,16 +154,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     }),
   ]);
 
-  const bg = rgbString(input.primaryColor);
-  // Passets tekst foelger butikkens valgte tekstfarve (samme som web-kortet og
-  // stemplerne), saa kortet foeles ud i eet. Kun hvis den farve er ulaeselig paa
-  // baggrunden, falder vi tilbage til en garanteret laesbar kontrastfarve.
-  const fgHex = isCardReadable(input.primaryColor, input.textColor)
-    ? input.textColor
-    : contrastText(input.primaryColor);
-  const fg = rgbString(fgHex);
-  // Dæmpet label-farve (tekstfarven trukket ~1/3 mod baggrunden).
-  const labelCol = blendRgb(fgHex, input.primaryColor, 0.34);
+  const {
+    backgroundColor: bg,
+    foregroundColor: fg,
+    labelColor: labelCol,
+  } = passColors(input.primaryColor, input.textColor);
   const rewardReady = input.stamps >= input.required;
 
   const images: Record<string, Buffer> = {
@@ -161,9 +186,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     foregroundColor: fg,
     backgroundColor: bg,
     labelColor: labelCol,
-    // Har butikken et logo, staar det ALENE i toppen (intet navn ved siden af).
-    // Uden logo viser vi butiksnavnet som tekst i stedet.
-    ...(logoBuf ? {} : { logoText: input.businessName }),
+    // Butiksnavnet staar ALTID i logoText, ogsaa naar butikken har et logo. Det
+    // er det eneste tekstlige navn, der er synligt, naar kort ligger i STAK i
+    // Wallet (alle Stemplet-kort deler passTypeIdentifier og kan ikke skilles ad
+    // paa anden vis). Med logo vises baade logo OG navn i toppen.
+    logoText: input.businessName,
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
     sharingProhibited: true,

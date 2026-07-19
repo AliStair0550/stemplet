@@ -33,6 +33,27 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
   });
 }
 
+/**
+ * Ruller en pass-STRUKTUR-aendring ud til kort, der allerede ligger i Wallet:
+ * pusher en tom APNs-notifikation til hvert registreret kort, saa iOS henter det
+ * opdaterede pass (som altid bygges friskt i pass-GET'en). Bruges efter fx en
+ * aendring af header/farver, hvor der ikke er sket en stempling til at trigge push.
+ * Returnerer antal kort, der blev forsoegt pushet.
+ */
+export async function pushAllWalletPasses(): Promise<{ pushed: number }> {
+  const regs = await prisma.walletRegistration.findMany({
+    select: { customerCardId: true },
+    distinct: ["customerCardId"],
+  });
+  const { pushWalletUpdate } = await import("./apns");
+  let pushed = 0;
+  for (const r of regs) {
+    await pushWalletUpdate(r.customerCardId);
+    pushed += 1;
+  }
+  return { pushed };
+}
+
 /** Tjekker Apples "Authorization: ApplePass <token>"-header i konstant tid. */
 export function checkPassAuth(
   authHeader: string | null,
