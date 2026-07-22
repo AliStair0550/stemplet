@@ -8,6 +8,16 @@ export type FaqItem = { q: string; a: string };
 export type BrancheSection = { heading: string; paragraphs: string[] };
 /** Et opsaetnings-eksempel til CTA'en: hvad udloeser hvad. */
 export type BrancheExample = { target: string; reward: string };
+/** Ikoner til hero-animationen (laant fra stempel-gitteret). */
+export type BrancheIcon =
+  | "coffee"
+  | "scissors"
+  | "heart"
+  | "pizza"
+  | "croissant"
+  | "icecream"
+  | "wine"
+  | "beer";
 
 export type BrancheContent = {
   /** Sti med dansk slug (aeoeaa), fx "/stempelkort-til-frisoerer". */
@@ -16,8 +26,9 @@ export type BrancheContent = {
   shortName: string;
   /** Vaerdiloefte i een linje til oversigtskortet. */
   cardTeaser: string;
-  /** Ikon til hero-animationen (branchens eget stempel). */
-  stampIcon: "coffee" | "scissors" | "heart" | "pizza";
+  /** Ikon(er) til hero-animationen. Array = flere ikoner paa skift (fx café:
+   *  kaffe/vin/oel, som fortaeller "hele dagen"). */
+  stampIcon: BrancheIcon | BrancheIcon[];
   /** Levende opsaetnings-eksempler, maalrettet branchen (vises ved CTA'en). */
   examples: BrancheExample[];
   /** Praecis meta-title (inkl. "| Stemplet"). */
@@ -277,12 +288,233 @@ export const PIZZERIAER: BrancheContent = {
   ],
 };
 
+export const BAGERIER: BrancheContent = {
+  slug: "/stempelkort-til-bagerier",
+  shortName: "Bagerier",
+  cardTeaser: "Lørdagsposen tæller nu.",
+  stampIcon: "croissant",
+  examples: [
+    { target: "10. kaffe", reward: "Gratis" },
+    { target: "Kaffe eller kage", reward: "+1 stempel" },
+    { target: "Fyldt kort", reward: "En pose morgenbrød" },
+  ],
+  title: "Stempelkort til bagerier. Lørdagsposen tæller nu | Stemplet",
+  metaDescription:
+    "Morgenbrødskunden kommer hver weekend, året rundt. Giv rutinen et digitalt stempelkort, der aldrig ryger i vasketøjet.",
+  eyebrow: "Stempelkort til bagerier",
+  h1: "Danmarks stærkeste vane går forbi din disk hver lørdag",
+  intro: [
+    "Morgenbrødskunden er den mest trofaste menneske. Samme tid, samme pose, år efter år. Men vanen er tavs, og den dag den flytter til supermarkedets bake-off, siger ingen noget. Stempelkortet gør vanen synlig og giver den en grund til at blive.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "Giv et stempel, når kunden køber kaffe eller kage. Det er de køb, hvor vanen bor: kaffen på vej til arbejde, kagen til eftermiddagen, og det er samtidig varerne med den bedste avance. 10 stempler passer rytmen, og belønningen vælger du selv: 10. kaffe gratis, en kage til kaffen eller en pose morgenbrød på husets regning. Duften af gratis bagværk er den bedste reklame, der findes.",
+      ],
+    },
+    {
+      heading: "Tallene",
+      paragraphs: [
+        "Rapporten hver mandag viser ugens kortholdere og stempler, og hvilke dage der bærer. Mange bagerier opdager, at loyaliteten bor om lørdagen, og at søndagen kan løftes med dobbelt stempel i en måned. Kunden, der runder 100 stempler i alt, har drukket morgenkaffe hos dig i årevis. En pose på husets regning og et tillykke gør trofasthed til en historie.",
+      ],
+    },
+    {
+      heading: "I gang før weekenden",
+      paragraphs: [
+        'QR ved kassen, "scan mens du venter". Morgenkøen er din tilmeldingsmaskine.',
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Hvad med kontantkunder?",
+      a: "Kortet er uafhængigt af betalingsform.",
+    },
+    {
+      q: "Bestemmer jeg selv, hvad der udløser et stempel?",
+      a: "Ja, kaffe, kage eller begge, og belønningen er også dit valg.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
+
+export const BLOMSTERBUTIKKER: BrancheContent = {
+  slug: "/stempelkort-til-blomsterbutikker",
+  shortName: "Blomsterbutikker",
+  cardTeaser: "Fredagsbuketten belønnet.",
+  stampIcon: "heart",
+  examples: [
+    { target: "10 stempler", reward: "Et gratis bundt" },
+    { target: "5 stempler", reward: "En lille gave oveni" },
+    { target: "Højtider", reward: "Dobbelt stempel" },
+  ],
+  title:
+    "Stempelkort til blomsterbutikker. Fredagsbuketten belønnet | Stemplet",
+  metaDescription:
+    "Dine faste kunder går forbi tre andre blomsterbutikker på vejen til din. Giv dem en grund til at blive ved. Digitalt stempelkort i Apple Wallet.",
+  eyebrow: "Stempelkort til blomsterbutikker",
+  h1: "Fredagsbuketten er en kærlighedserklæring. Også til din butik.",
+  intro: [
+    "Blomster ligner impulskøb, men dine bedste kunder er vanekunder: fredagsbuketten, søndagsbordet, den månedlige til svigermor. De går forbi tre andre butikker på vejen til din. Stempelkortet siger tak for det, hver gang.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "To modeller, der begge virker, og valget er dit. Den generøse: 10 stempler, og det tiende er et gratis bundt. Den hurtige: 5 stempler, og det femte udløser en lille ekstra gave, en håndfuld eukalyptus oveni, et flot bånd, en enkelt særlig blomst i buketten. Den hurtige model belønner oftere og koster dig næsten ingenting, den generøse er nemmest at forklare i køen. Begge kan justeres undervejs.",
+      ],
+    },
+    {
+      heading: "Tallene",
+      paragraphs: [
+        "Mandagsrapporten viser dine faste ansigter og dine stille uger. Op til mors dag og valentinsdag kan dobbelt stempel flytte kunder fra supermarkedsbuketten til dig. Og kunden, der runder 100 stempler, har fejret års mærkedage gennem din butik. Det fortjener en buket på husets regning og et billede til jeres Instagram, hvis kunden vil.",
+      ],
+    },
+    {
+      heading: "I gang inden fredag",
+      paragraphs: [
+        "QR ved disken, kunden scanner mens buketten bindes. Det er de bedste 40 sekunder at sælge loyalitet i.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Virker det for højtidskunder, der kommer sjældent?",
+      a: "Ja, stemplerne udløber aldrig. Netop de kunder skal have en grund til at komme mellem højtiderne.",
+    },
+    {
+      q: "Bestemmer jeg selv belønningen?",
+      a: "Ja, gratis bundt, lille gave eller noget tredje, og antal stempler kan ændres.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
+
+export const CAFEER: BrancheContent = {
+  slug: "/stempelkort-til-caféer",
+  shortName: "Caféer",
+  cardTeaser: "Kaffe, vin og øl på samme kort.",
+  stampIcon: ["coffee", "wine", "beer"],
+  examples: [
+    { target: "Kaffe, vin eller øl", reward: "+1 stempel" },
+    { target: "10 stempler", reward: "En gratis drik" },
+    { target: "Stille timer", reward: "Dobbelt stempel" },
+  ],
+  title: "Stempelkort til caféer. Kaffe, vin og øl på samme kort | Stemplet",
+  metaDescription:
+    "Din café lever hele dagen: kaffen om morgenen, vinen om aftenen. Ét digitalt stempelkort, der tæller det hele.",
+  eyebrow: "Stempelkort til caféer",
+  h1: "Morgenkaffen og aftenvinen er samme kunde",
+  intro: [
+    "Din café har ikke én stamgæst, den har tre i samme person: hende med den store latte klokken otte, frokostkunden klokken tolv, og parret med glasset vin klokken sytten. Papkortet talte kun kaffen. Dit kort skal tælle hele dagen.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "Ét stempel per drikkevare, kaffe, glas vin eller fadøl. 10 stempler, og belønningen vælger du selv: en gratis kop, et glas af husets vin eller en øl fra hanen. Pludselig arbejder loyaliteten hele åbningstiden, og morgenkunden får en grund til også at komme om aftenen. Det er dét skifte, der fylder de stille timer.",
+      ],
+    },
+    {
+      heading: "Tallene",
+      paragraphs: [
+        "Mandagsrapporten viser, hvornår dine stamgæster faktisk kommer, og hvor hullerne er. Er eftermiddagen stille, kan dobbelt stempel mellem 14 og 16 flytte besøg derhen. Og gæsten, der runder 100 stempler, har levet en del af sit liv hos jer. Det fortjener en plads med navn på baren for en dag, eller bare første række, når der sker noget. Set loyalitet er delt loyalitet.",
+      ],
+    },
+    {
+      heading: "I gang i dag",
+      paragraphs: [
+        "QR ved kassen og på bordene. Gæsten scanner, mens kaffen laves eller vinen skænkes. Ingen app.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Tæller alle drikkevarer?",
+      a: "Du bestemmer selv reglen: kun kaffe, alle drikke eller alt over et beløb.",
+    },
+    {
+      q: "Bestemmer jeg selv belønningen?",
+      a: "Ja, helt, og den kan ændres undervejs.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
+
+export const ISBUTIKKER: BrancheContent = {
+  slug: "/stempelkort-til-isbutikker",
+  shortName: "Isbutikker",
+  cardTeaser: "Hvert scoop tæller.",
+  stampIcon: "icecream",
+  examples: [
+    { target: "5 scoops", reward: "Femte gratis" },
+    { target: "Hvert scoop", reward: "+1 stempel" },
+    { target: "Regnvejr", reward: "Dobbelt stempel" },
+  ],
+  title: "Stempelkort til isbutikker. Hvert scoop tæller | Stemplet",
+  metaDescription:
+    "Et stempel per scoop, det femte er gratis, og kortet overlever vinteren. Digitalt stempelkort i Apple Wallet til isbutikker.",
+  eyebrow: "Stempelkort til isbutikker",
+  h1: "Fire scoops. Så er det femte på husets regning.",
+  intro: [
+    "Is skal være sjovt, og det skal jeres stempelkort også. Glem besøg og beløb: hos jer tæller hvert scoop. To kugler i vaflen er to stempler, og det femte scoop er gratis. Regnestykket er så enkelt, at børnene regner det ud i køen, og det er præcis meningen.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "Ét stempel per scoop, femte scoop gratis, og kortet gælder per person. Far, mor og to børn har hver deres kort, og familien går hjem med fire regnskaber i gang. Det giver fire grunde til at vælge jer næste gang solen skinner. Belønningen er som altid jeres eget valg, gratis scoop er klassikeren, en topping eller vaffelopgradering virker også.",
+      ],
+    },
+    {
+      heading: "Tallene",
+      paragraphs: [
+        "Rapporten viser jeres rytme, og den er guld i en vejrbranche: hvilke dage bærer, og hvor dybt regnvejrsdagene rammer. Dobbelt stempel når det gråner flytter familier ud ad døren alligevel. Og kunden, der runder 100 scoops på en sæson, er ikke en kunde, det er en legende. Tag billedet, giv en gratis vaffel, og lad væggen bag disken fortælle historien.",
+      ],
+    },
+    {
+      heading: "Vinterens hemmelighed",
+      paragraphs: [
+        "Papkortet fra august ryger ud i november. Jeres kort ligger stadig i kundens Wallet til foråret, med alle stempler intakte. Sidste års børn åbner sæsonen som stamkunder.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Gælder kortet per person eller per familie?",
+      a: "Per person. Det er det, der gør det sjovt, og fire kort fyldes hurtigere end ét.",
+    },
+    {
+      q: "Hvad med lukket vintersæson?",
+      a: "Stemplerne udløber aldrig. Kortet venter på jer.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
+
 // Raekkefoelgen styrer visning paa /brancher og krydslinks.
 export const BRANCHER: BrancheContent[] = [
   FRISOERER,
   KAFFEBARER,
   NEGLESALONER,
   PIZZERIAER,
+  BAGERIER,
+  BLOMSTERBUTIKKER,
+  CAFEER,
+  ISBUTIKKER,
 ];
 
 /** Metadata til en branchesides `export const metadata`. */
