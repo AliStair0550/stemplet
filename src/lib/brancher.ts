@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
+import type { StampIconKey } from "./brand";
 
 // Indhold til branchesiderne (SEO-landingssider pr. kundegruppe). EEN kilde, saa
 // selve siderne, oversigten (/brancher) og sitemap alle bygger paa det samme.
 // Teksten er redaktionel og skal bevares praecist som skrevet.
 
 export type FaqItem = { q: string; a: string };
-export type BrancheSection = { heading: string; paragraphs: string[] };
+export type BrancheSection = {
+  heading: string;
+  paragraphs: string[];
+  /** Valgfri punktliste (fx belOnnings-muligheder), vises efter afsnittene. */
+  list?: string[];
+};
 /** Et opsaetnings-eksempel til CTA'en: hvad udloeser hvad. */
 export type BrancheExample = { target: string; reward: string };
 /** Ikoner til hero-animationen (laant fra stempel-gitteret). */
@@ -46,6 +52,16 @@ export type BrancheContent = {
   sections: BrancheSection[];
   /** FAQ (bliver ogsaa til FAQPage structured data). */
   faq: FaqItem[];
+  /** Valgfrit konkret kort-design-eksempel (rigtigt StampCard) til siden. */
+  cardExample?: {
+    businessName: string;
+    primaryColor: string;
+    textColor: string;
+    stampIcon: StampIconKey;
+    required: number;
+    stamps: number;
+    rewardText: string;
+  };
 };
 
 export const FRISOERER: BrancheContent = {
@@ -65,29 +81,34 @@ export const FRISOERER: BrancheContent = {
   eyebrow: "Stempelkort til frisører",
   h1: "Kunden elsker resultatet. Men køber produkterne et andet sted.",
   intro: [
-    "Du kender situationen. Kunden rejser sig fra stolen, kigger i spejlet og er glad. Håret sidder, som det skal, formet med den voks, du valgte til præcis den hårtype. Og tre dage senere står den samme kunde i Matas og køber noget helt andet, fordi det var det, der stod på hylden.",
-    "Det er reelt to forretninger, du driver: klipningerne og produkterne. Den første har loyale kunder. Den anden lækker til supermarkedet. Stempelkortet er broen imellem.",
+    "Du kender situationen.",
+    "Kunden rejser sig fra stolen, smiler til spejlet og går hjem med et hår, der sidder præcis, som du havde tænkt. Du har brugt den rigtige voks, den rigtige shampoo og de rigtige produkter.",
+    "Tre dage senere står kunden i Matas og køber noget helt andet.",
+    "Du driver i virkeligheden to forretninger. Klipningerne har loyale kunder. Produktsalget ryger ofte til supermarkedet. Stemplet er broen mellem de to.",
   ],
   sections: [
     {
-      heading: "Sådan bygger du vanen",
+      heading: "Gør dine produkter til en vane",
       paragraphs: [
-        "Tanken er enkel: brug belønningen til at få dine produkter ud i kundens badeværelse. Et oplagt setup er 5 stempler, hvor det femte udløser et produkt fra hylden. En voks, en shampoo, en olie, valgt af dig til den kundes hår. Kostprisen er lille. Effekten er stor, for nu står dit produkt derhjemme, og når det er tomt, ved kunden præcis, hvor det købes: hos dig, ved næste klipning.",
-        "Giv også et stempel, når kunden køber et produkt. Så arbejder kortet begge veje: klipningerne fører til produkter, og produktkøb fører hurtigere til næste belønning. Efter et år har din faste kunde prøvet to eller tre af dine produkter, og badeværelseshylden derhjemme er blevet din.",
-        "Og vigtigt: belønningen er helt dit valg. Nogle saloner foretrækker en gratis behandling som skægtrim eller vask og styling, andre en produktgave. Antal stempler og belønning sættes op, som det giver mening for din forretning, og kan justeres undervejs.",
+        "Belønningen skal ikke bare være gratis. Den skal skabe en vane.",
+        "Et oplagt setup er fem stempler, hvor det femte udløser et produkt, du selv har valgt til kunden. Kostprisen er lille, men værdien er stor. Når dit produkt står på kundens badeværelse, bliver det en del af deres rutine. Når det er tomt, ved kunden præcis, hvor det skal købes: hos dig.",
+        "Giv samtidig et stempel, når kunden køber et produkt. Så belønner kortet både klipninger og produktsalg, og hver gang kunden handler hos dig, kommer den næste belønning tættere på.",
+        "Belønningen bestemmer du selv. Det kan være en voks, en shampoo, en skægtrim eller en gratis vask. Kortet tilpasses din salon og kan ændres, når du vil.",
       ],
     },
     {
-      heading: "Tallene, du aldrig har haft",
+      heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Hver mandag morgen lander en mail med ugens tal: nye kortholdere, stempler, indløste belønninger. For en frisør er det mest værdifulde tal dog rytmen. Du kan se, hvem der kommer fast, og du kan se, når rytmen knækker. Kunden, der kom hver sjette uge og nu har været væk i ti, er på vej til en anden saks, og en venlig besked når det, før stolen står tom. Én reddet stamkunde er 3.000 til 5.000 kr. om året. Det betaler kortet mange gange.",
-        "Kortet tæller også kundens samlede stempler hos dig, og det åbner for milepæle: når en kunde runder fx 100 stempler i alt, ved du det, og en lille ekstra opmærksomhed, en gratis behandling eller en flaske af yndlingsproduktet, gør en fast kunde til en ambassadør. Det er den slags gestus, der bliver fortalt videre til vennerne.",
+        "Et papkort fortæller ingenting. Stemplet gør.",
+        "Hver uge modtager du statistik over nye kortholdere, antal stempler og indløste belønninger. Du kan se, hvilke kunder der kommer igen, og opdage, når en fast kunde pludselig bliver væk. Det giver dig mulighed for at reagere, før stolen står tom.",
+        "Kortet tæller også kundens samlede stempler. Det gør det nemt at belønne milepæle som 50 eller 100 besøg og skabe stamkunder, der bliver ambassadører for din salon.",
       ],
     },
     {
       heading: "Kom i gang på ti minutter",
       paragraphs: [
-        "Kunden scanner en QR ved spejlet og har kortet i Apple Wallet på under et minut. Ingen app, ingen oprettelse. Du og dine ansatte stempler fra den telefon, I allerede har. Print-klart materiale følger med.",
+        "Kunden scanner en QR kode én gang og har kortet i Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "Du og dine medarbejdere stempler med den telefon, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
   ],
@@ -109,6 +130,15 @@ export const FRISOERER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  cardExample: {
+    businessName: "Salon Nord",
+    primaryColor: "#26403B",
+    textColor: "#F3EEE4",
+    stampIcon: "scissors",
+    required: 5,
+    stamps: 3,
+    rewardText: "Et produkt fra hylden",
+  },
 };
 
 export const KAFFEBARER: BrancheContent = {
@@ -125,30 +155,46 @@ export const KAFFEBARER: BrancheContent = {
   metaDescription:
     "Klassikeren 10. kop gratis, uden pap. Og et kort, der også sælger dine bønner, så kunderne drikker din kaffe derhjemme.",
   eyebrow: "Stempelkort til kaffebarer",
-  h1: "Din kaffe stopper ved døren. Det behøver den ikke.",
+  h1: "Gør kaffekunder til stamgæster.",
   intro: [
-    "Din stamkunde drikker én kop hos dig om dagen. Og tre derhjemme, brygget på supermarkedsbønner. Det er det stille tab i enhver kaffebar: kunderne elsker din kaffe, men kun den, du selv skænker. Bønnerne på hylden bag disken, dem du har valgt med omhu, går de fleste forbi hver eneste morgen.",
-    "Stempelkortet løser først det klassiske problem, papkortet der bliver væk. Men brugt rigtigt løser det også det store: det får dine bønner med hjem.",
+    "Din kunde elsker kaffen og oplevelsen hos jer. Men uden en stærk forbindelse mellem besøgene er det nemt at blive valgt fra næste gang.",
+    "Men den relation stopper ofte, når kunden går ud ad døren. Resten af ugens kaffekøb, besøg og vaner foregår andre steder.",
+    "Det er den skjulte mulighed i mange kaffebarer: Kunden elsker din kaffe, men du har kun kundens opmærksomhed i de minutter, de står ved disken.",
+    "Stemplet hjælper dig med at gøre kaffekunder til stamgæster og holde relationen levende mellem besøgene.",
   ],
   sections: [
     {
-      heading: "Sådan sætter du kortet op",
+      heading: "Byg en vane omkring din kaffebar",
       paragraphs: [
-        'Klassikeren virker: 10 stempler, 10. kop gratis, forstået på et sekund. Men overvej at lade kortet arbejde for hylden. Giv et stempel, når en kunde køber en pose bønner, eller gør en pose til belønningen i stedet for en kop: "10 stempler giver en pose af månedens bønner". Kunden, der har smagt sine egne morgenkopper på dine bønner, kommer tilbage efter den næste pose. Nu sælger du ikke bare kaffe over disken, du er kundens kaffeleverandør.',
-        "Belønningen er dit valg, og der er ingen facitliste. Nogle barer kører den rene klassiker, andre blander: kop til hverdagskunderne, bønner til entusiasterne. Antal stempler, hvad der udløser dem, og hvad der venter for enden, sættes op efter din bar og kan justeres når som helst.",
+        "Den klassiske løsning virker: 10 stempler, 10. kop gratis. Kunden forstår det med det samme.",
+        "Men kortet kan bruges til mere end en gratis kop. Det kan hjælpe dig med at skabe flere besøg, sælge mere og gøre dine bedste kunder endnu mere loyale.",
+        "Når kunden samler stempler hos jer, bliver jeres kaffebar en del af deres rutine. Og når kunden forbinder kvalitet og kaffeoplevelsen med jer, vælger de jer igen næste gang.",
+        "Belønningen kan være præcis det, der giver mening for din kaffebar:",
+      ],
+      list: [
+        "En gratis kop kaffe",
+        "En pose af jeres egne bønner",
+        "Månedens specialkaffe",
+        "En særlig oplevelse for faste kunder",
       ],
     },
     {
-      heading: "Tallene bag rutinen",
+      heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Mandagsrapporten viser ugens nye kortholdere, stempler og indløsninger, og over tid tegner den din forretnings rytme: hvilke dage dine stamkunder faktisk kommer, og hvornår de bliver væk. Det er planlægningsguld, fra bemanding i morgenrushet til hvilken dag en kampagne gør størst gavn.",
-        "Og fordi kortet tæller kundens samlede stempler, kan du fejre de store tal. Kunden, der runder 100 stempler, er ikke en kunde længere, det er en stamgæst med aktier i stedet. Markér det: en pose bønner med en håndskrevet hilsen, koppen på husets regning, et billede til jeres Instagram hvis kunden er med på den. Loyalitet, der bliver set, bliver fortalt videre.",
+        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Hver uge får du overblik over nye kortholdere, antal stempler og indløste belønninger. Over tid kan du se dine kunders rytme: Hvornår kommer de? Hvor ofte vender de tilbage? Hvornår begynder en stamkunde at falde væk?",
+        "Det giver dig bedre beslutninger om alt fra bemanding i morgenrushet til kampagner, der faktisk rammer dine kunder.",
+        "Kortet tæller også kundens samlede stempler. Når en kunde rammer 100 stempler, har du mulighed for at gøre noget ekstra: en kaffe på huset, en personlig hilsen eller en særlig overraskelse.",
+        "De små handlinger er ofte dem, kunderne husker og fortæller videre.",
       ],
     },
     {
-      heading: "I gang før frokostrushet",
+      heading: "Kom i gang før næste kaffepause",
       paragraphs: [
-        "QR'en står ved kassen, kunden scanner, mens mælken skummes, og kortet ligger i Apple Wallet på under et minut. Ingen app. Baristaen stempler på to sekunder fra sin egen telefon. Print-klart materiale følger med.",
+        "QR koden står ved kassen. Kunden scanner én gang og har kortet direkte i Apple Wallet på under et minut.",
+        "Ingen app. Ingen oprettelse.",
+        "Baristaen stempler fra den telefon, I allerede har.",
+        "Ingen ekstra udstyr. Bare flere grunde til, at kunderne kommer igen.",
       ],
     },
   ],
@@ -170,6 +216,15 @@ export const KAFFEBARER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  cardExample: {
+    businessName: "Kaffebar Syd",
+    primaryColor: "#33241A",
+    textColor: "#F3E9DC",
+    stampIcon: "coffee",
+    required: 10,
+    stamps: 7,
+    rewardText: "10. kop er gratis",
+  },
 };
 
 export const NEGLESALONER: BrancheContent = {

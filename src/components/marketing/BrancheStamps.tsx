@@ -106,10 +106,10 @@ export function BrancheStamps({
               viewBox="0 0 24 24"
               fill="none"
               stroke="#FAF8F4"
-              strokeWidth={1.8}
+              strokeWidth={2.05}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="h-[1.35rem] w-[1.35rem]"
+              className="h-[1.5rem] w-[1.5rem]"
             >
               {isGift ? GIFT : ICONS[iconAt(i)]}
             </svg>

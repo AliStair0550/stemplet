@@ -8,14 +8,16 @@ import {
   CtaGlow,
   Divider,
 } from "@/components/ui";
-import { FREE_CUSTOMER_LIMIT, PRO_PRICE_DKK } from "@/lib/plans";
+import { FREE_CUSTOMER_LIMIT } from "@/lib/plans";
 import { type BrancheContent } from "@/lib/brancher";
+import { StampCard } from "@/components/StampCard";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
 import { BrancheExamples } from "@/components/marketing/BrancheExamples";
 
 // Faelles skabelon for en brancheside. Ren server-komponent i sitets designsystem:
-// hero (eyebrow + H1 + intro + stempel-animation), brodtekst-sektioner, FAQ med
-// FAQPage structured data, prisblok og en CTA med levende, maalrettede eksempler.
+// hero (eyebrow + H1 + intro + stempel-animation), brodtekst-sektioner, et konkret
+// kort-eksempel (hvis defineret), FAQ med FAQPage structured data og en CTA med
+// levende, maalrettede eksempler.
 export function BranchePage({ b }: { b: BrancheContent }) {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -76,10 +78,58 @@ export function BranchePage({ b }: { b: BrancheContent }) {
                     {p}
                   </p>
                 ))}
+                {s.list ? (
+                  <ul className="flex flex-col gap-2.5">
+                    {s.list.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-3 text-[1.02rem] leading-[1.6] text-stone"
+                      >
+                        <span
+                          aria-hidden
+                          className="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta"
+                        />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             ))}
           </div>
         </Section>
+
+        {/* Konkret kort-design-eksempel (kun hvis branchen har defineret et) */}
+        {b.cardExample ? (
+          <>
+            <Divider />
+            <Section>
+              <div className="mx-auto max-w-[680px] text-center">
+                <Eyebrow>Et eksempel</Eyebrow>
+                <h2 className="mt-3 text-[1.6rem] font-bold leading-[1.15] tracking-[-0.025em] text-ink md:text-[2rem]">
+                  Sådan kunne dit kort se ud
+                </h2>
+                <p className="mx-auto mt-4 max-w-md text-[1rem] leading-[1.7] text-stone">
+                  Dit brand, dine farver, din belønning. Kunden har det i Apple
+                  Wallet, altid ved hånden.
+                </p>
+                <div className="mt-10 flex justify-center">
+                  <StampCard
+                    businessName={b.cardExample.businessName}
+                    primaryColor={b.cardExample.primaryColor}
+                    textColor={b.cardExample.textColor}
+                    stampIcon={b.cardExample.stampIcon}
+                    stamps={b.cardExample.stamps}
+                    required={b.cardExample.required}
+                    rewardText={b.cardExample.rewardText}
+                    shine
+                    className="w-full max-w-[21rem]"
+                  />
+                </div>
+              </div>
+            </Section>
+          </>
+        ) : null}
 
         <Divider />
 
@@ -102,19 +152,6 @@ export function BranchePage({ b }: { b: BrancheContent }) {
           </div>
         </Section>
 
-        {/* Prisblok */}
-        <Section>
-          <div className="mx-auto max-w-[680px] rounded-2xl border border-clay bg-parchment p-8 text-center md:p-10">
-            <Eyebrow>Pris</Eyebrow>
-            <p className="mt-3 text-[1.3rem] font-bold tracking-[-0.02em] text-ink md:text-[1.5rem]">
-              Gratis op til {FREE_CUSTOMER_LIMIT} kortholdere.
-            </p>
-            <p className="mt-2 text-[0.98rem] leading-[1.7] text-stone">
-              Derefter {PRO_PRICE_DKK} kr. om måneden ekskl. moms. Ingen binding.
-            </p>
-          </div>
-        </Section>
-
         <Divider />
 
         {/* Afsluttende CTA med levende, maalrettede eksempler */}
@@ -124,16 +161,17 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
           />
           <div className="relative mx-auto max-w-2xl text-center">
-            <h2 className="text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.6rem]">
-              Sæt dit eget stempelkort op på få minutter.
+            <Eyebrow>Kom i gang</Eyebrow>
+            <h2 className="mt-4 text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[2.7rem]">
+              Din næste stamkunde starter med ét stempel.
             </h2>
             <p className="mx-auto mt-4 max-w-md text-[0.95rem] leading-[1.6] text-stone">
               Belønningen er altid dit valg. Et par eksempler:
             </p>
             <BrancheExamples examples={b.examples} />
-            <p className="mx-auto mt-7 max-w-md text-[0.95rem] leading-[1.6] text-stone">
-              Ingen app, ingen binding. Gratis op til {FREE_CUSTOMER_LIMIT}{" "}
-              kortholdere.
+            <p className="mx-auto mt-7 max-w-md text-[1rem] leading-[1.7] text-stone">
+              Sæt dit eget kort op på få minutter. Ingen app, ingen binding, gratis
+              op til {FREE_CUSTOMER_LIMIT} kortholdere.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <CtaGlow>
