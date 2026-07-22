@@ -4,7 +4,7 @@
 // klient-JS. Respekterer prefers-reduced-motion via .branche-stamp i globals.css.
 // "Taler til maalgruppen": frisoeren ser sakse, baristaen kopper, salonen hjerter.
 
-type IconKey = "coffee" | "scissors" | "heart";
+type IconKey = "coffee" | "scissors" | "heart" | "pizza";
 
 // Ikon-stier laant fra stempel-gitteret (strip.ts), saa sproget er det samme.
 const ICONS: Record<IconKey, React.ReactNode> = {
@@ -25,6 +25,14 @@ const ICONS: Record<IconKey, React.ReactNode> = {
   ),
   heart: (
     <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.7 12 20 12 20Z" />
+  ),
+  pizza: (
+    <>
+      <path d="M12 3c4 0 7.5 2.2 9 5.5L12 21 3 8.5C4.5 5.2 8 3 12 3Z" />
+      <path d="M5 9.5c4-1.5 10-1.5 14 0" />
+      <circle cx="10" cy="10.5" r="0.7" fill="#FAF8F4" stroke="none" />
+      <circle cx="13.5" cy="12.5" r="0.7" fill="#FAF8F4" stroke="none" />
+    </>
   ),
 };
 

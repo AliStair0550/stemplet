@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 
 export type FaqItem = { q: string; a: string };
 export type BrancheSection = { heading: string; paragraphs: string[] };
+/** Et opsaetnings-eksempel til CTA'en: hvad udloeser hvad. */
+export type BrancheExample = { target: string; reward: string };
 
 export type BrancheContent = {
   /** Sti med dansk slug (aeoeaa), fx "/stempelkort-til-frisoerer". */
@@ -15,7 +17,9 @@ export type BrancheContent = {
   /** Vaerdiloefte i een linje til oversigtskortet. */
   cardTeaser: string;
   /** Ikon til hero-animationen (branchens eget stempel). */
-  stampIcon: "coffee" | "scissors" | "heart";
+  stampIcon: "coffee" | "scissors" | "heart" | "pizza";
+  /** Levende opsaetnings-eksempler, maalrettet branchen (vises ved CTA'en). */
+  examples: BrancheExample[];
   /** Praecis meta-title (inkl. "| Stemplet"). */
   title: string;
   /** Meta-description. */
@@ -37,6 +41,11 @@ export const FRISOERER: BrancheContent = {
   shortName: "Frisører",
   cardTeaser: "Gør dine produkter til kundens vane.",
   stampIcon: "scissors",
+  examples: [
+    { target: "5 stempler", reward: "En voks fra hylden" },
+    { target: "Produktkøb", reward: "+1 stempel" },
+    { target: "Fyldt kort", reward: "Gratis vask og styling" },
+  ],
   title:
     "Stempelkort til frisører. Gør dine produkter til kundens vane | Stemplet",
   metaDescription:
@@ -95,6 +104,11 @@ export const KAFFEBARER: BrancheContent = {
   shortName: "Kaffebarer",
   cardTeaser: "Fra 10. kop til bønner på hylden.",
   stampIcon: "coffee",
+  examples: [
+    { target: "10. kop", reward: "Gratis" },
+    { target: "Fyldt kort", reward: "En pose bønner" },
+    { target: "Køb af bønner", reward: "+1 stempel" },
+  ],
   title: "Stempelkort til kaffebarer. Fra 10. kop til bønner på hylden | Stemplet",
   metaDescription:
     "Klassikeren 10. kop gratis, uden pap. Og et kort, der også sælger dine bønner, så kunderne drikker din kaffe derhjemme.",
@@ -151,6 +165,11 @@ export const NEGLESALONER: BrancheContent = {
   shortName: "Neglesaloner",
   cardTeaser: "Hold på dine faste kunder.",
   stampIcon: "heart",
+  examples: [
+    { target: "Hver 5. behandling", reward: "25% rabat" },
+    { target: "Fyldt kort", reward: "Nail art oveni" },
+    { target: "Produktkøb", reward: "+1 stempel" },
+  ],
   title:
     "Stempelkort til neglesaloner. Hver 5. behandling til kvart pris | Stemplet",
   metaDescription:
@@ -204,13 +223,67 @@ export const NEGLESALONER: BrancheContent = {
   ],
 };
 
-// Raekkefoelgen styrer visning paa /brancher og krydslinks.
-export const BRANCHER: BrancheContent[] = [FRISOERER, KAFFEBARER, NEGLESALONER];
+export const PIZZERIAER: BrancheContent = {
+  slug: "/stempelkort-til-pizzeriaer",
+  shortName: "Pizzeriaer",
+  cardTeaser: "Fire pizzaer, fire stempler.",
+  stampIcon: "pizza",
+  examples: [
+    { target: "10. pizza", reward: "Gratis" },
+    { target: "4 pizzaer", reward: "4 stempler" },
+    { target: "Fyldt kort", reward: "Gratis dessert" },
+  ],
+  title: "Stempelkort til pizzeriaer. Fire pizzaer, fire stempler | Stemplet",
+  metaDescription:
+    "Klassikeren 10. pizza gratis, uden papkort. Og familien med den store ordre får endelig alle sine stempler.",
+  eyebrow: "Stempelkort til pizzeriaer",
+  h1: "Torsdagsfamilien er din bedste kunde. Behandl den sådan.",
+  intro: [
+    "Familien, der henter fire pizzaer hver torsdag, er guld. Men papkortet gav dem altid kun ét klip, uanset ordren. Det er sluttet nu.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "Behold klassikeren: 10 stempler, 10. pizza gratis. Alle forstår den. Forskellen er antallet: fire pizzaer giver fire stempler i én scanning. Familien når belønningen på få uger, og det kan mærkes, at du tæller ærligt. Belønningen bestemmer du selv, gratis pizza er standarden, men en gratis dessert eller sodavand til børnene virker også.",
+      ],
+    },
+    {
+      heading: "Tallene",
+      paragraphs: [
+        "Mandagsrapporten viser dine faste kunder og dine stille dage. Dobbelt stempel om tirsdagen flytter fredagsordrer til den dag, ovnen står halvtom. Og runder en familie 100 stempler i alt, så skriv deres navn på bakken og giv en gratis. Den historie fortæller de i skolegården.",
+      ],
+    },
+    {
+      heading: "I gang i aften",
+      paragraphs: [
+        "QR på disken og på pizzabakken. Kunden scanner, mens ovnen arbejder. Ingen app.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Giver én stor ordre flere stempler?",
+      a: "Ja, personalet vælger antal. Fire pizzaer, fire stempler.",
+    },
+    {
+      q: "Bestemmer jeg selv belønningen?",
+      a: "Ja, helt, og den kan ændres undervejs.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
 
-/** De oevrige branchesider (til krydslinks nederst paa hver side). */
-export function relatedBrancher(slug: string): BrancheContent[] {
-  return BRANCHER.filter((b) => b.slug !== slug);
-}
+// Raekkefoelgen styrer visning paa /brancher og krydslinks.
+export const BRANCHER: BrancheContent[] = [
+  FRISOERER,
+  KAFFEBARER,
+  NEGLESALONER,
+  PIZZERIAER,
+];
 
 /** Metadata til en branchesides `export const metadata`. */
 export function brancheMetadata(b: BrancheContent): Metadata {

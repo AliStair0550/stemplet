@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
 import {
@@ -10,12 +9,13 @@ import {
   Divider,
 } from "@/components/ui";
 import { FREE_CUSTOMER_LIMIT, PRO_PRICE_DKK } from "@/lib/plans";
-import { relatedBrancher, type BrancheContent } from "@/lib/brancher";
+import { type BrancheContent } from "@/lib/brancher";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
+import { BrancheExamples } from "@/components/marketing/BrancheExamples";
 
 // Faelles skabelon for en brancheside. Ren server-komponent i sitets designsystem:
-// hero (eyebrow + H1 + intro), brodtekst-sektioner, FAQ med FAQPage structured
-// data, prisblok, krydslinks til de andre brancher og en "Prøv det selv"-CTA.
+// hero (eyebrow + H1 + intro + stempel-animation), brodtekst-sektioner, FAQ med
+// FAQPage structured data, prisblok og en CTA med levende, maalrettede eksempler.
 export function BranchePage({ b }: { b: BrancheContent }) {
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -26,7 +26,6 @@ export function BranchePage({ b }: { b: BrancheContent }) {
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
   };
-  const related = relatedBrancher(b.slug);
 
   return (
     <>
@@ -118,30 +117,7 @@ export function BranchePage({ b }: { b: BrancheContent }) {
 
         <Divider />
 
-        {/* Krydslinks til de andre brancher */}
-        <Section>
-          <div className="mx-auto max-w-[680px]">
-            <Eyebrow>Andre brancher</Eyebrow>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              {related.map((r) => (
-                <Link
-                  key={r.slug}
-                  href={r.slug}
-                  className="group flex flex-col gap-1 rounded-xl border border-clay bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-lift"
-                >
-                  <span className="text-[1.05rem] font-[500] text-ink">
-                    {r.shortName}
-                  </span>
-                  <span className="text-[0.88rem] leading-relaxed text-stone">
-                    {r.cardTeaser}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </Section>
-
-        {/* Afsluttende CTA: Prøv det selv */}
+        {/* Afsluttende CTA med levende, maalrettede eksempler */}
         <Section className="relative overflow-hidden">
           <div
             aria-hidden
@@ -151,11 +127,15 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             <h2 className="text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.6rem]">
               Sæt dit eget stempelkort op på få minutter.
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-stone">
+            <p className="mx-auto mt-4 max-w-md text-[0.95rem] leading-[1.6] text-stone">
+              Belønningen er altid dit valg. Et par eksempler:
+            </p>
+            <BrancheExamples examples={b.examples} />
+            <p className="mx-auto mt-7 max-w-md text-[0.95rem] leading-[1.6] text-stone">
               Ingen app, ingen binding. Gratis op til {FREE_CUSTOMER_LIMIT}{" "}
               kortholdere.
             </p>
-            <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <CtaGlow>
                 <ButtonLink href="/start" variant="primary" size="lg">
                   Kom gratis i gang

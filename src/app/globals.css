@@ -387,6 +387,20 @@ textarea:focus-visible {
   animation: stampPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* Levende eksempel-kort ved CTA'en: target-badgen aander blOdt. */
+@keyframes examplePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+.branche-example-badge {
+  animation: examplePulse 2.6s ease-in-out infinite;
+}
+
 /* Blodt, hurtigt trin-skift i onboarding-wizarden (fade + lille loeft). */
 @keyframes stepIn {
   from {
