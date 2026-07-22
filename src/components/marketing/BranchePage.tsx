@@ -11,6 +11,7 @@ import {
 } from "@/components/ui";
 import { FREE_CUSTOMER_LIMIT, PRO_PRICE_DKK } from "@/lib/plans";
 import { relatedBrancher, type BrancheContent } from "@/lib/brancher";
+import { BrancheStamps } from "@/components/marketing/BrancheStamps";
 
 // Faelles skabelon for en brancheside. Ren server-komponent i sitets designsystem:
 // hero (eyebrow + H1 + intro), brodtekst-sektioner, FAQ med FAQPage structured
@@ -53,6 +54,9 @@ export function BranchePage({ b }: { b: BrancheContent }) {
                     {p}
                   </p>
                 ))}
+              </div>
+              <div className="mt-10">
+                <BrancheStamps icon={b.stampIcon} />
               </div>
             </div>
           </Container>
@@ -144,13 +148,12 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
           />
           <div className="relative mx-auto max-w-2xl text-center">
-            <Eyebrow>Prøv det selv</Eyebrow>
-            <h2 className="mt-4 text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.6rem]">
+            <h2 className="text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.6rem]">
               Sæt dit eget stempelkort op på få minutter.
             </h2>
             <p className="mx-auto mt-5 max-w-md text-[1rem] leading-[1.7] text-stone">
-              Ingen app, ingen binding. Læg et rigtigt demokort i din egen Wallet,
-              eller opret din butik og kom i gang.
+              Ingen app, ingen binding. Gratis op til {FREE_CUSTOMER_LIMIT}{" "}
+              kortholdere.
             </p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <CtaGlow>

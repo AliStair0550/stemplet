@@ -380,6 +380,13 @@ textarea:focus-visible {
   animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Branche-hero: stemplerne popper ind eet ad gangen (stagger via inline
+   animation-delay), saa kunden ser kortet blive stemplet. */
+.branche-stamp {
+  opacity: 0;
+  animation: stampPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* Blodt, hurtigt trin-skift i onboarding-wizarden (fade + lille loeft). */
 @keyframes stepIn {
   from {
@@ -576,7 +583,8 @@ textarea:focus-visible {
     transition-duration: 0.001ms !important;
   }
   .animate-fade-up,
-  .animate-fade-in {
+  .animate-fade-in,
+  .branche-stamp {
     opacity: 1;
   }
 }

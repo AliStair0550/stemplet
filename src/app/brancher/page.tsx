@@ -36,9 +36,8 @@ export default function BrancherPage() {
                 Stempelkort til din branche.
               </h1>
               <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.7] text-taupe">
-                Samme kort, men brugt forskelligt fra fag til fag. Vælg din
-                branche og se, hvordan stempelkortet passer til netop din
-                forretning.
+                Vælg din branche og se, hvordan stempelkortet passer til netop
+                din forretning.
               </p>
             </div>
           </Container>

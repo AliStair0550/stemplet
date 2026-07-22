@@ -14,6 +14,8 @@ export type BrancheContent = {
   shortName: string;
   /** Vaerdiloefte i een linje til oversigtskortet. */
   cardTeaser: string;
+  /** Ikon til hero-animationen (branchens eget stempel). */
+  stampIcon: "coffee" | "scissors" | "heart";
   /** Praecis meta-title (inkl. "| Stemplet"). */
   title: string;
   /** Meta-description. */
@@ -34,6 +36,7 @@ export const FRISOERER: BrancheContent = {
   slug: "/stempelkort-til-frisører",
   shortName: "Frisører",
   cardTeaser: "Gør dine produkter til kundens vane.",
+  stampIcon: "scissors",
   title:
     "Stempelkort til frisører. Gør dine produkter til kundens vane | Stemplet",
   metaDescription:
@@ -91,6 +94,7 @@ export const KAFFEBARER: BrancheContent = {
   slug: "/stempelkort-til-kaffebarer",
   shortName: "Kaffebarer",
   cardTeaser: "Fra 10. kop til bønner på hylden.",
+  stampIcon: "coffee",
   title: "Stempelkort til kaffebarer. Fra 10. kop til bønner på hylden | Stemplet",
   metaDescription:
     "Klassikeren 10. kop gratis, uden pap. Og et kort, der også sælger dine bønner, så kunderne drikker din kaffe derhjemme.",
@@ -145,7 +149,8 @@ export const KAFFEBARER: BrancheContent = {
 export const NEGLESALONER: BrancheContent = {
   slug: "/stempelkort-til-neglesaloner",
   shortName: "Neglesaloner",
-  cardTeaser: "Giv den faste cyklus et regnskab.",
+  cardTeaser: "Hold på dine faste kunder.",
+  stampIcon: "heart",
   title:
     "Stempelkort til neglesaloner. Hver 5. behandling til kvart pris | Stemplet",
   metaDescription:
