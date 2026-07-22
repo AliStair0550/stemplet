@@ -17,7 +17,8 @@ export type BrancheIcon =
   | "croissant"
   | "icecream"
   | "wine"
-  | "beer";
+  | "beer"
+  | "flower";
 
 export type BrancheContent = {
   /** Sti med dansk slug (aeoeaa), fx "/stempelkort-til-frisoerer". */
@@ -346,7 +347,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
   slug: "/stempelkort-til-blomsterbutikker",
   shortName: "Blomsterbutikker",
   cardTeaser: "Fredagsbuketten belønnet.",
-  stampIcon: "heart",
+  stampIcon: "flower",
   examples: [
     { target: "10 stempler", reward: "Et gratis bundt" },
     { target: "5 stempler", reward: "En lille gave oveni" },
@@ -505,6 +506,70 @@ export const ISBUTIKKER: BrancheContent = {
   ],
 };
 
+export const OELBARER: BrancheContent = {
+  slug: "/stempelkort-til-ølbarer",
+  shortName: "Ølbarer",
+  cardTeaser: "10. fadøl på husets regning.",
+  stampIcon: "beer",
+  examples: [
+    { target: "10 øl", reward: "Tiende gratis" },
+    { target: "3 fadøl", reward: "3 stempler" },
+    { target: "Nye haner", reward: "Dobbelt stempel" },
+  ],
+  title: "Stempelkort til ølbarer. 10. fadøl på husets regning | Stemplet",
+  metaDescription:
+    "Klippekortet kender dine gæster allerede. Nu ligger det i Apple Wallet og bliver aldrig glemt hjemme. Ét stempel per øl, den tiende er gratis.",
+  eyebrow: "Stempelkort til ølbarer",
+  h1: "Dine stamgæster samler allerede. På historier, haner og hinanden.",
+  intro: [
+    "En god ølbar har noget, ingen anden butik har: gæster, der kommer for stedet lige så meget som for øllet. De faste ansigter ved baren, vennerne ved det samme bord, nørderne der smager alt nyt på hanerne. Giv dem noget at samle på.",
+  ],
+  sections: [
+    {
+      heading: "Sådan gør du",
+      paragraphs: [
+        "Klippekortet er en gammel ven i danske barer, nu digitalt: ét stempel per øl, tiende fadøl på husets regning. Gæsten scanner jeres QR, kortet ligger i Apple Wallet, og bartenderen stempler på to sekunder, tre fadøl til bordet er tre stempler i én scanning. Intet pap bag baren, intet kort glemt hjemme.",
+      ],
+    },
+    {
+      heading: "Gør kortet til en del af stedet",
+      paragraphs: [
+        "Her kan jeres bar noget, en kaffebar ikke kan. Lad nye haner give dobbelt stempel i udgivelsesugen, så bliver premieren et tilløbsstykke, og lad quizaftenen tælle ekstra. Gæsten, der runder 100 stempler, har fortjent mere end en øl: navnet på messingskiltet, æren af at vælge næste gæstehane, sit eget krus på hylden. Den slags bliver der pralet med, og pral er gratis markedsføring.",
+      ],
+    },
+    {
+      heading: "Tallene bag aftenen",
+      paragraphs: [
+        "Hver mandag en rapport med kortholdere, stempler og indløsninger. Over tid ser I, hvilke aftener jeres faste gæster faktisk kommer, og hvilke der kan løftes. Bedre bemanding, bedre events og bedre indkøb, fra jeres egen bar frem for mavefornemmelsen.",
+      ],
+    },
+    {
+      heading: "I gang før fredag",
+      paragraphs: [
+        "QR på baren og bordkortene. Gæsten scanner, mens der skænkes. Ingen app, ingen oprettelse.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Tæller flere øl i samme runde?",
+      a: "Ja, bartenderen vælger antal. Tre fadøl, tre stempler.",
+    },
+    {
+      q: "Bestemmer jeg selv antal stempler og belønning?",
+      a: "Ja, begge dele, og de kan ændres undervejs.",
+    },
+    {
+      q: "Kan flere bartendere stemple?",
+      a: "Ja, stempelsiden er login-beskyttet og virker på alle telefoner.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+    },
+  ],
+};
+
 // Raekkefoelgen styrer visning paa /brancher og krydslinks.
 export const BRANCHER: BrancheContent[] = [
   FRISOERER,
@@ -515,6 +580,7 @@ export const BRANCHER: BrancheContent[] = [
   BLOMSTERBUTIKKER,
   CAFEER,
   ISBUTIKKER,
+  OELBARER,
 ];
 
 /** Metadata til en branchesides `export const metadata`. */
