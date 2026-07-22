@@ -8,8 +8,29 @@ import type { ErrorEvent } from "@sentry/nextjs";
 
 const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 
-export function scrubPii(event: ErrorEvent): ErrorEvent {
+// Er fejlen ren EKSTERN stoej? Dvs. en exception hvor INGEN stak-frame stammer
+// fra vores egen app (browser-udvidelser, in-app-browsere, injiceret/cross-origin
+// kode). Saadanne fejl (fx "Aa" eller "Maximum call stack" fra en kundes browser)
+// er ikke fejl i Stemplet, men fangede af Sentrys globale handler og fylder bare
+// loggen. En AEGTE app-fejl har altid mindst een frame fra vores kode
+// (/_next/-chunks eller in_app), saa den beholdes.
+function isExternalNoise(event: ErrorEvent): boolean {
+  const values = event.exception?.values;
+  if (!values || values.length === 0) return false; // ikke en exception -> behold
+  const frames = values.flatMap((v) => v.stacktrace?.frames ?? []);
+  if (frames.length === 0) return false; // ingen stak -> behold (kan vaere aegte)
+  const touchesApp = frames.some((f) => {
+    const fn = f.filename ?? "";
+    return f.in_app === true || fn.includes("/_next/") || fn.includes("stemplet.");
+  });
+  return !touchesApp;
+}
+
+export function scrubPii(event: ErrorEvent): ErrorEvent | null {
   try {
+    // Drop ren ekstern browser-stoej, foer noget andet.
+    if (isExternalNoise(event)) return null;
+
     // Ingen bruger-PII (navn, mail, IP).
     delete event.user;
 

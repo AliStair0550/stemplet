@@ -13,6 +13,21 @@ Sentry.init({
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
   sendDefaultPii: false,
+  // Velkendt, ufarlig browser-stoej der aldrig er en fejl i Stemplet: den
+  // sanerede cross-origin-fejl og ResizeObserver-loops. (Frame-baseret ekstern
+  // stoej fjernes desuden i scrubPii.)
+  ignoreErrors: [
+    "Script error.",
+    "ResizeObserver loop limit exceeded",
+    "ResizeObserver loop completed with undelivered notifications.",
+  ],
+  // Fejl der stammer fra browser-udvidelser (ikke vores kode).
+  denyUrls: [
+    /^chrome-extension:\/\//i,
+    /^moz-extension:\/\//i,
+    /^safari-(web-)?extension:\/\//i,
+    /^chrome:\/\//i,
+  ],
   beforeSend: scrubPii,
 });
 
