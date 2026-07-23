@@ -4,6 +4,7 @@ import { Divider } from "@/components/ui";
 import Hero from "@/components/marketing/Hero";
 import Problem from "@/components/marketing/Problem";
 import TryItYourself from "@/components/marketing/TryItYourself";
+import LoyaltySteps from "@/components/marketing/LoyaltySteps";
 import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
 import Pricing from "@/components/marketing/Pricing";
@@ -40,11 +41,15 @@ export default function Page() {
         {/* Under-fold: de tunge klient-komponenter (HowItWorks, RoiCalculator,
             Faq, statistik-grafen) lazy-loades foerst naar man scroller naer dem,
             saa forsidens foerste load kun omfatter hero'en. Server-sektionerne
-            SSR'es stadig, men med content-visibility saa deres paint udskydes. */}
-        <HowItWorksLazy />
-        <Divider />
+            SSR'es stadig, men med content-visibility saa deres paint udskydes.
+            Raekkefoelge: Proev det selv, Faa flere stamkunder, Loyalitet gjort
+            enkelt. Skiftende baggrunde (tint -> sand -> lys) giver kontrast. */}
         <div className="cv-section">
           <TryItYourself />
+        </div>
+        <HowItWorksLazy />
+        <div className="cv-section">
+          <LoyaltySteps />
         </div>
         <Divider />
         <div className="cv-section">

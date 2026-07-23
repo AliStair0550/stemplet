@@ -10,7 +10,6 @@ import {
 } from "@/components/ui";
 import { loadDemoBusiness } from "@/lib/demo";
 import { APP_URL } from "@/lib/env";
-import { StepTabs } from "./StepTabs";
 
 // "Prøv det selv": laeg et RIGTIGT demo-kort i din egen Wallet (QR paa desktop,
 // knap paa mobil), og se de fire trin for hver rolle (kunde, medarbejder, ejer).
@@ -41,8 +40,8 @@ export default async function TryItYourself() {
             Få det digitale stempelkort i din egen Wallet. Lige nu.
           </h2>
           <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
-            Scan koden. Få kortet direkte i Apple Wallet. Ingen app. Ingen
-            tilmelding. En enkel oplevelse, dine kunder vil elske.
+            Scan koden. Få kortet direkte i Apple Wallet. En enkel oplevelse,
+            dine kunder vil elske.
           </p>
           {/* Android-link lige under teksten */}
           <a
@@ -104,14 +103,6 @@ export default async function TryItYourself() {
           </p>
         </div>
       </div>
-
-      {/* Loyalitet gjort enkelt: fire trin pr. rolle */}
-      <div className="mx-auto mt-20 max-w-xl text-center">
-        <h2 className="text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.7rem]">
-          Loyalitet gjort enkelt.
-        </h2>
-      </div>
-      <StepTabs />
     </Section>
   );
 }
