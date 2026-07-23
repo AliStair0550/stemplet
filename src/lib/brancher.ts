@@ -228,40 +228,44 @@ export const NEGLESALONER: BrancheContent = {
   cardTeaser: "Hold på dine faste kunder.",
   stampIcon: "heart",
   examples: [
-    { target: "Hver 5. behandling", reward: "25% rabat" },
-    { target: "Fyldt kort", reward: "Nail art oveni" },
+    { target: "5. besøg", reward: "25 % rabat" },
     { target: "Produktkøb", reward: "+1 stempel" },
+    { target: "50 besøg", reward: "Noget særligt" },
   ],
   title:
     "Stempelkort til neglesaloner. Hver 5. behandling til kvart pris | Stemplet",
   metaDescription:
-    "Dine kunder kører i faste cyklusser. Giv cyklussen et regnskab med et digitalt stempelkort i Apple Wallet, fx 25 procent på hver 5. behandling.",
+    "Gør faste kunder til endnu mere loyale kunder. Beløn dem med rabatter via et digitalt stempelkort i Apple Wallet.",
   eyebrow: "Stempelkort til neglesaloner",
-  h1: "Skiftet sker i stilhed. Kortet holder på dem.",
+  h1: "Gør loyale kunder endnu mere loyale.",
   intro: [
-    "Neglekunder er vanekunder. Tre til fire uger mellem behandlinger, samme salon, samme behandler. Men skiftet til salonen på den anden side af gaden sker uden varsel. Ingen klager, ingen besked. De udebliver bare, og du opdager det først, når kalenderen har huller.",
-    "Stempelkortet lægger et lille regnskab ind i cyklussen. Hvert besøg tæller mod noget konkret, og det gør det en anelse sværere at prøve et nyt sted, for regnskabet står hos dig.",
+    "De fleste kunder vender tilbage hver tredje eller fjerde uge. Når de har fundet en salon, de er glade for, bliver besøget hurtigt en fast del af hverdagen.",
+    "Et stempelkort giver dem en ekstra grund til at blive ved med at vælge dig.",
   ],
   sections: [
     {
-      heading: "Sådan sætter du kortet op",
+      heading: "Beløn de kunder, der kommer igen",
       paragraphs: [
-        "En model, der rammer rytmen: 5 stempler, og det femte udløser 25 procent rabat på behandlingen. For en fast kunde ligger belønningen tre til fire måneder ude, tæt nok til at trække, og rabatten mærkes som en rigtig gestus på en behandling til fuld værdi.",
-        "Og som altid: belønningen er dit valg. Nogle saloner foretrækker en opgradering i stedet, en nail art-detalje eller en paraffinbehandling oveni, andre en produktgave til hjemmeplejen. Antal stempler og belønning sættes op efter din salon og kan ændres, når du bliver klogere på, hvad kunderne reagerer på.",
-        "Et ekstra greb: stempl også ved produktkøb, olier og cremer til hjemmeplejen. Så tæller hele forretningen med, og kunderne vænner sig til, at hjemmepleje-produkterne også købes hos dig.",
+        "En enkel model er 5 stempler, hvor det femte besøg udløser 25 % rabat på næste behandling.",
+        "Belønningen ligger tæt nok på til at motivere, men langt nok ude til at skabe en vane. Kunden ved, at hvert besøg bringer dem tættere på den næste belønning, og det gør det mere naturligt at booke den næste tid hos dig.",
+        "Belønningen er selvfølgelig helt op til dig. Nogle saloner vælger rabat, andre tilbyder gratis nail art, en paraffinbehandling eller et plejeprodukt til hjemmebrug.",
+        "Du kan også give et stempel ved køb af negleolie, håndcreme eller andre produkter. Så belønner kortet både behandlinger og produktsalg, og kunderne vænner sig til at købe hjemmeplejen hos dig.",
       ],
     },
     {
-      heading: "Tallene mellem behandlingerne",
+      heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        'Mandagsrapporten giver ugens nye kortholdere, stempler og indløsninger. Men det vigtigste tal for en salon er intervallet. Du kan se, når fire uger bliver til otte, og det er præcis der, en venlig sms stadig kan nå det: "Vi har en tid på torsdag, hvis det passer". Ingen kampagne slår den besked på det tidspunkt.',
-        "Livstidstallet, kundens samlede stempler hos dig, gør de bedste kunder synlige. Runder en kunde 100 stempler, er det årevis af trofasthed, og et lille ritual omkring det, en gratis opgradering og et stort tillykke, skaber den slags historie, veninderne får fortalt. Dine mest loyale kunder er din bedste markedsføring, hvis de bliver set.",
+        "Et papkort fortæller ingenting. Stemplet gør.",
+        "Hver uge får du et overblik over nye kortholdere, antal stempler og indløste belønninger. Du kan se, hvor ofte dine kunder kommer tilbage, og opdage, hvis en fast kunde pludselig springer en behandling over.",
+        "Kortet tæller også kundens samlede stempler. Når en kunde når 50 eller 100 besøg, har du en oplagt mulighed for at gøre noget særligt. En lille ekstra gestus kan være forskellen på en loyal kunde og en kunde, der anbefaler din salon til sine veninder.",
       ],
     },
     {
-      heading: "I gang mellem to kunder",
+      heading: "Kom i gang på få minutter",
       paragraphs: [
-        "QR'en står ved bordet, kunden scanner, mens neglene tørrer, og kortet ligger i Apple Wallet på under et minut. Ingen app, intet bookingsystem der skal skiftes. Du stempler fra din egen telefon. Print-klart materiale følger med.",
+        "Kunden scanner en QR kode én gang og har sit stempelkort direkte i Apple Wallet.",
+        "Ingen app. Ingen oprettelse.",
+        "Du stempler fra den telefon, du allerede har. Ingen ekstra udstyr. Ingen ændringer i dit bookingsystem. Bare en nem måde at skabe flere stamkunder på.",
       ],
     },
   ],
@@ -283,6 +287,15 @@ export const NEGLESALONER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  cardExample: {
+    businessName: "Neglestudiet",
+    primaryColor: "#6D4550",
+    textColor: "#F4E8EC",
+    stampIcon: "heart",
+    required: 5,
+    stamps: 3,
+    rewardText: "25 % rabat",
+  },
 };
 
 export const PIZZERIAER: BrancheContent = {
