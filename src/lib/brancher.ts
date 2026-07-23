@@ -705,41 +705,76 @@ export const OELBARER: BrancheContent = {
   cardTeaser: "10. fadøl på husets regning.",
   stampIcon: "beer",
   examples: [
-    { target: "10 øl", reward: "Tiende gratis" },
-    { target: "3 fadøl", reward: "3 stempler" },
-    { target: "Nye haner", reward: "Dobbelt stempel" },
+    { target: "Hver øl", reward: "Et stempel. Den 10. fadøl er gratis" },
+    { target: "Ny hane", reward: "Dobbelt stempel ved lancering" },
+    { target: "100 stempler", reward: "Vælg næste gæstehane" },
   ],
   title: "Stempelkort til ølbarer. 10. fadøl på husets regning | Stemplet",
   metaDescription:
     "Klippekortet kender dine gæster allerede. Nu ligger det i Apple Wallet og bliver aldrig glemt hjemme. Ét stempel per øl, den tiende er gratis.",
   eyebrow: "Stempelkort til ølbarer",
-  h1: "Dine stamgæster samler allerede. På historier, haner og hinanden.",
+  h1: "Gør stamgæster til en del af stedet.",
   intro: [
-    "En god ølbar har noget, ingen anden butik har: gæster, der kommer for stedet lige så meget som for øllet. De faste ansigter ved baren, vennerne ved det samme bord, nørderne der smager alt nyt på hanerne. Giv dem noget at samle på.",
+    "En god ølbar sælger ikke kun øl. Den skaber et sted, folk vender tilbage til.",
+    "Det er de faste pladser ved baren. Vennerne, der mødes hver fredag. Gæsten, der altid prøver den nye hane. De mennesker, der vælger jer for stemningen lige så meget som for øllet.",
+    "Stemplet gør den relation synlig og giver stamgæsterne noget at samle på.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Gør hvert besøg til en del af historien",
       paragraphs: [
-        "Klippekortet er en gammel ven i danske barer, nu digitalt: ét stempel per øl, tiende fadøl på husets regning. Gæsten scanner jeres QR, kortet ligger i Apple Wallet, og bartenderen stempler på to sekunder, tre fadøl til bordet er tre stempler i én scanning. Intet pap bag baren, intet kort glemt hjemme.",
+        "Klippekortet har altid passet godt til barer. Stemplet gør det bare digitalt.",
+        "Giv eksempelvis ét stempel pr. øl, og lad den 10. fadøl være på husets regning.",
+        "Kunden scanner én QR kode, kortet ligger direkte i Apple Wallet, og bartenderen stempler på få sekunder.",
+        "Ingen papkort bag baren. Ingen kort, der bliver glemt derhjemme.",
+        "Belønningen kan være meget mere end en gratis øl:",
+      ],
+      list: [
+        "En øl på huset",
+        "En særlig smagning",
+        "Adgang til et eksklusivt event",
+        "Første smagsprøve på en ny hane",
+      ],
+      outro: [
+        "Det handler om at få gæsten til at føle sig som en del af stedet.",
       ],
     },
     {
-      heading: "Gør kortet til en del af stedet",
+      heading: "Byg et fællesskab omkring loyalitet",
       paragraphs: [
-        "Her kan jeres bar noget, en kaffebar ikke kan. Lad nye haner give dobbelt stempel i udgivelsesugen, så bliver premieren et tilløbsstykke, og lad quizaftenen tælle ekstra. Gæsten, der runder 100 stempler, har fortjent mere end en øl: navnet på messingskiltet, æren af at vælge næste gæstehane, sit eget krus på hylden. Den slags bliver der pralet med, og pral er gratis markedsføring.",
+        "En ølbar kan noget, andre steder ikke kan. I kan gøre loyalitet til en del af oplevelsen.",
+        "Giv dobbelt stempel ved lanceringen af en ny hane. Lad quizaftener eller særlige events tælle ekstra. Lav små overraskelser til de gæster, der kommer igen og igen.",
+        "Når en gæst rammer 100 stempler, er det ikke bare et tal. Det er en person, der har valgt jer mange gange.",
+        "Giv dem en særlig anerkendelse:",
       ],
+      list: [
+        "Et navn på en tavle",
+        "En særlig invitation",
+        "Muligheden for at vælge næste gæstehane",
+      ],
+      outro: ["Det er historier, gæster fortæller videre."],
     },
     {
-      heading: "Tallene bag aftenen",
+      heading: "Brug data fra jeres egen bar",
       paragraphs: [
-        "Hver mandag en rapport med kortholdere, stempler og indløsninger. Over tid ser I, hvilke aftener jeres faste gæster faktisk kommer, og hvilke der kan løftes. Bedre bemanding, bedre events og bedre indkøb, fra jeres egen bar frem for mavefornemmelsen.",
+        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Stemplet viser, hvordan jeres gæster faktisk bruger stedet.",
+        "Hver uge får I overblik over nye kortholdere, stempler og indløste belønninger.",
+        "Over tid kan I se:",
       ],
+      list: [
+        "Hvilke aftener jeres stamgæster kommer",
+        "Hvilke events der skaber aktivitet",
+        "Hvornår der er mulighed for at fylde mere i baren",
+      ],
+      outro: ["Mindre mavefornemmelse. Mere viden fra jeres egne gæster."],
     },
     {
-      heading: "I gang før fredag",
+      heading: "Kom i gang før fredagsbaren",
       paragraphs: [
-        "QR på baren og bordkortene. Gæsten scanner, mens der skænkes. Ingen app, ingen oprettelse.",
+        "QR koden står på baren og bordene. Kunden scanner, mens øllen bliver skænket.",
+        "Ingen app. Ingen oprettelse.",
+        "I stempler fra den telefon, I allerede har.",
+        "En enkel måde at gøre gæster til stamgæster.",
       ],
     },
   ],
@@ -761,6 +796,15 @@ export const OELBARER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Fadbaren",
+    primaryColor: "#3B2A16",
+    textColor: "#F5E6C8",
+    stampIcon: "beer",
+    required: 10,
+    stamps: 8,
+    rewardText: "Den 10. fadøl er gratis",
+  },
 };
 
 // Raekkefoelgen styrer visning paa /brancher og krydslinks.
