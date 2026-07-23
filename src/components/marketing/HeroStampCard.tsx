@@ -1,9 +1,11 @@
+import Image from "next/image";
+
 // Hero-stempelkort: en ren, Wallet-agtig mockup i brandets rust. Server-komponent
 // (ingen JS, let foerste load). Kaffekopper som stempler, og den sidste plads er
 // selve beloenningen (den gratis kop). Layoutet spejler et rigtigt Apple Wallet-
 // pass: logo + "Stempler 7/10" i toppen, stempel-gitter, og "Beloenning" +
-// "Samlet i alt" nederst. Navnet er en neutral kaffe-ordmaerke (ikke en rigtig
-// kunde).
+// "Samlet i alt" nederst. Ordmaerket er "Copenhagen Coffee" (samme skrift som det
+// oprindelige logo, men uden "Lab", da de ikke er en rigtig kunde).
 
 const FILLED = 7;
 const REQUIRED = 10;
@@ -30,8 +32,8 @@ function Coffee({ stroke }: { stroke: string }) {
 
 export default function HeroStampCard() {
   return (
-    <div className="w-full max-w-[17rem] animate-float sm:max-w-[22rem] md:max-w-[27rem]">
-      <div className="relative overflow-hidden rotate-[2deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-6 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-7 md:p-8">
+    <div className="w-full max-w-[17rem] animate-float sm:max-w-[23rem] md:max-w-[28rem]">
+      <div className="relative overflow-hidden rotate-[2deg] rounded-[24px] bg-gradient-to-b from-[#A9572F] to-[#974829] p-7 text-[#F7EFE6] shadow-hero transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0 sm:p-8 md:p-9">
         {/* Glimt: et bloedt lys-sweep henover kortet */}
         <span
           aria-hidden
@@ -39,14 +41,15 @@ export default function HeroStampCard() {
         />
         {/* Top: butikkens ordmaerke + stempel-tal (som pass-headeren) */}
         <div className="flex items-start justify-between gap-4">
-          <div className="leading-[1.02]">
-            <span className="block text-[1rem] font-semibold uppercase tracking-[0.2em] text-[#F7EFE6] md:text-[1.15rem]">
-              Copenhagen
-            </span>
-            <span className="mt-0.5 block text-[0.64rem] font-medium uppercase tracking-[0.34em] text-[#F7EFE6]/75 md:text-[0.72rem]">
-              Coffee
-            </span>
-          </div>
+          <Image
+            src="/copenhagencoffee.png"
+            alt="Copenhagen Coffee"
+            width={124}
+            height={36}
+            priority
+            sizes="124px"
+            className="h-9 w-auto opacity-95 [filter:brightness(0)_invert(1)] md:h-10"
+          />
           <div className="shrink-0 text-right">
             <div className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/60 md:text-[0.62rem]">
               Stempler
@@ -60,7 +63,7 @@ export default function HeroStampCard() {
 
         {/* Kopper: 7 stemplet (hvid cirkel + rust kaffe), 2 tilbage (stiplet),
             og den sidste er den gratis kop (fremhaevet). */}
-        <div className="mt-7 grid grid-cols-5 gap-3 md:mt-8">
+        <div className="mt-10 grid grid-cols-5 gap-3 md:mt-12">
           {Array.from({ length: REQUIRED }).map((_, i) => {
             if (i < FILLED) {
               return (
@@ -92,8 +95,8 @@ export default function HeroStampCard() {
         </div>
 
         {/* Fod: beloenning (venstre) + samlet i alt (hoejre), som pass-felterne */}
-        <div className="mt-7 h-px w-full bg-[#F7EFE6]/20 md:mt-8" />
-        <div className="mt-4 flex items-end justify-between gap-4">
+        <div className="mt-10 h-px w-full bg-[#F7EFE6]/20 md:mt-12" />
+        <div className="mt-6 flex items-end justify-between gap-4">
           <div>
             <div className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/55 md:text-[0.6rem]">
               Belønning
