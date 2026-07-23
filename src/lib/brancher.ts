@@ -614,35 +614,63 @@ export const ISBUTIKKER: BrancheContent = {
   cardTeaser: "Hvert scoop tæller.",
   stampIcon: "icecream",
   examples: [
-    { target: "5 scoops", reward: "Femte gratis" },
-    { target: "Hvert scoop", reward: "+1 stempel" },
-    { target: "Regnvejr", reward: "Dobbelt stempel" },
+    { target: "Hver kugle", reward: "Et stempel. To kugler giver to" },
+    { target: "5 stempler", reward: "Et gratis scoop eller topping" },
+    { target: "Hele sæsonen", reward: "Ekstra ved 50 og 100 stempler" },
   ],
   title: "Stempelkort til isbutikker. Hvert scoop tæller | Stemplet",
   metaDescription:
     "Et stempel per scoop, det femte er gratis, og kortet overlever vinteren. Digitalt stempelkort i Apple Wallet til isbutikker.",
   eyebrow: "Stempelkort til isbutikker",
-  h1: "Fire scoops. Så er det femte på husets regning.",
+  h1: "Gør en is til en sommertradition.",
   intro: [
-    "Is skal være sjovt, og det skal jeres stempelkort også. Glem besøg og beløb: hos jer tæller hvert scoop. To kugler i vaflen er to stempler, og det femte scoop er gratis. Regnestykket er så enkelt, at børnene regner det ud i køen, og det er præcis meningen.",
+    "En god isbutik sælger ikke bare is. Den bliver en del af sommerens små øjeblikke.",
+    "Turen efter aftensmaden. Søndagen ved stranden. Den spontane tur efter skole. De bedste kunder kommer ikke kun én gang, de skaber traditioner omkring jer.",
+    "Stemplet hjælper jer med at gøre de små besøg til en vane.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Gør loyalitet til en leg",
       paragraphs: [
-        "Ét stempel per scoop, femte scoop gratis, og kortet gælder per person. Far, mor og to børn har hver deres kort, og familien går hjem med fire regnskaber i gang. Det giver fire grunde til at vælge jer næste gang solen skinner. Belønningen er som altid jeres eget valg, gratis scoop er klassikeren, en topping eller vaffelopgradering virker også.",
+        "Hos en isbutik behøver loyalitet ikke være kompliceret.",
+        "Giv eksempelvis ét stempel pr. kugle. To kugler i vaflen giver to stempler, og efter fem scoops udløses en belønning.",
+        "Det er så enkelt, at børnene selv kan følge med i køen.",
+        "Belønningen vælger I selv:",
+      ],
+      list: [
+        "Et gratis scoop",
+        "Ekstra topping",
+        "En større vaffel",
+        "En særlig sommerbelønning",
+      ],
+      outro: [
+        "Det handler ikke kun om rabatten. Det handler om glæden ved at være tættere på næste belønning.",
       ],
     },
     {
-      heading: "Tallene",
+      heading: "Gør familier til faste gæster",
       paragraphs: [
-        "Rapporten viser jeres rytme, og den er guld i en vejrbranche: hvilke dage bærer, og hvor dybt regnvejrsdagene rammer. Dobbelt stempel når det gråner flytter familier ud ad døren alligevel. Og kunden, der runder 100 scoops på en sæson, er ikke en kunde, det er en legende. Tag billedet, giv en gratis vaffel, og lad væggen bag disken fortælle historien.",
+        "Is bliver ofte købt sammen med andre. Derfor kan et stempelkort skabe flere vaner på én gang.",
+        "Mor, far og børn kan hver have deres eget kort. Pludselig bliver én familie til flere loyale kunder, der hver har en grund til at komme tilbage.",
+        "Når en kunde rammer 50 eller 100 stempler, ved I, at de ikke bare har købt en is. De har valgt jer igen og igen gennem hele sæsonen.",
+        "En lille overraskelse eller en særlig hilsen kan gøre en fast kunde til én, der fortæller andre om jer.",
       ],
     },
     {
-      heading: "Vinterens hemmelighed",
+      heading: "Hold forbindelsen hele året",
       paragraphs: [
-        "Papkortet fra august ryger ud i november. Jeres kort ligger stadig i kundens Wallet til foråret, med alle stempler intakte. Sidste års børn åbner sæsonen som stamkunder.",
+        "Det klassiske papkort forsvinder ofte sammen med sommeren.",
+        "Et digitalt stempelkort ligger direkte i kundens Apple Wallet. Når solen kommer tilbage næste år, ligger jeres butik stadig hos kunden med alle stempler bevaret.",
+        "Ingen app. Ingen oprettelse.",
+        "Bare en enkel måde at gøre sommergæster til stamkunder.",
+      ],
+    },
+    {
+      heading: "Kom i gang på få minutter",
+      paragraphs: [
+        "QR koden står ved disken. Kunden scanner én gang, og kortet er klar.",
+        "I stempler fra den telefon, I allerede har.",
+        "Ingen ekstra udstyr. Ingen ændringer i hverdagen.",
       ],
     },
   ],
@@ -660,6 +688,15 @@ export const ISBUTIKKER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Isboden",
+    primaryColor: "#245E63",
+    textColor: "#EAF7F5",
+    stampIcon: "icecream",
+    required: 5,
+    stamps: 3,
+    rewardText: "Det 5. scoop er gratis",
+  },
 };
 
 export const OELBARER: BrancheContent = {
