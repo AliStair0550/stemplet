@@ -9,7 +9,6 @@ import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
 import Pricing from "@/components/marketing/Pricing";
 import {
-  HowItWorksLazy,
   RoiCalculatorLazy,
   FaqLazy,
 } from "@/components/marketing/lazy";
@@ -38,16 +37,15 @@ export default function Page() {
       <Nav />
       <main>
         <Hero />
-        {/* Under-fold: de tunge klient-komponenter (HowItWorks, RoiCalculator,
-            Faq, statistik-grafen) lazy-loades foerst naar man scroller naer dem,
-            saa forsidens foerste load kun omfatter hero'en. Server-sektionerne
-            SSR'es stadig, men med content-visibility saa deres paint udskydes.
-            Raekkefoelge: Proev det selv, Faa flere stamkunder, Loyalitet gjort
-            enkelt. Skiftende baggrunde (tint -> sand -> lys) giver kontrast. */}
+        {/* Under-fold: de tunge klient-komponenter (RoiCalculator, Faq,
+            statistik-grafen) lazy-loades foerst naar man scroller naer dem, saa
+            forsidens foerste load kun omfatter hero'en. Server-sektionerne SSR'es
+            stadig, men med content-visibility saa deres paint udskydes.
+            Raekkefoelge: Proev det selv, saa Loyalitet gjort enkelt (som samler
+            fanerne + den animerede scan-til-fast-gaest-demo). */}
         <div className="cv-section">
           <TryItYourself />
         </div>
-        <HowItWorksLazy />
         <div className="cv-section">
           <LoyaltySteps />
         </div>

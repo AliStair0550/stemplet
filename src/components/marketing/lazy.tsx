@@ -7,17 +7,6 @@ import { LazyOnView } from "./LazyOnView";
 // omfatter hero'en. Server-sektioner (Problem-skal, Sikkerhed, Pris osv.) SSR'es
 // stadig for SEO og hurtig visning.
 
-export function HowItWorksLazy() {
-  return (
-    <LazyOnView
-      id="sådan"
-      className="scroll-mt-24"
-      load={() => import("./HowItWorks")}
-      minHeight={760}
-    />
-  );
-}
-
 export function RoiCalculatorLazy() {
   return <LazyOnView load={() => import("./RoiCalculator")} minHeight={560} />;
 }
