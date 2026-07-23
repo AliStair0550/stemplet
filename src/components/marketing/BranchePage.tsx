@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
 import {
@@ -65,6 +66,32 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             </div>
           </Container>
         </section>
+
+        {/* Stemnings-billede (kun hvis branchen har defineret et): en tegning fra
+            branchen, saa siden faar mere "branchefoelelse". */}
+        {b.sceneImage ? (
+          <div className="overflow-x-clip pb-20 md:pb-24">
+            <Container>
+              <figure className="mx-auto max-w-3xl">
+                <div className="overflow-hidden rounded-[1.5rem] shadow-card ring-1 ring-ink/[0.06]">
+                  <Image
+                    src={b.sceneImage.src}
+                    alt={b.sceneImage.alt}
+                    width={1440}
+                    height={960}
+                    sizes="(max-width: 768px) 100vw, 768px"
+                    className="h-auto w-full"
+                  />
+                </div>
+                {b.sceneImage.caption ? (
+                  <figcaption className="mt-4 text-center text-[0.92rem] font-[300] italic text-stone">
+                    {b.sceneImage.caption}
+                  </figcaption>
+                ) : null}
+              </figure>
+            </Container>
+          </div>
+        ) : null}
 
         {/* Brodtekst-sektioner */}
         <Section className="bg-sand">

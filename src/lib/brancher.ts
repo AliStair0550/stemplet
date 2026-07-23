@@ -70,6 +70,12 @@ export type BrancheContent = {
     stamps: number;
     rewardText: string;
   };
+  /** Valgfrit stemnings-billede (tegning fra branchen), vist under hero'en. */
+  sceneImage?: {
+    src: string;
+    alt: string;
+    caption?: string;
+  };
 };
 
 export const FRISOERER: BrancheContent = {
@@ -227,6 +233,11 @@ export const KAFFEBARER: BrancheContent = {
     required: 10,
     stamps: 7,
     rewardText: "10. kop er gratis",
+  },
+  sceneImage: {
+    src: "/brancher/kaffebar-scene.png",
+    alt: "Kunde scanner Stemplet-koden på kaffebaren og har sit stempelkort med kaffe-stempler klar i Apple Wallet på telefonen.",
+    caption: "Kunden scanner ved disken og har stempelkortet i Wallet med det samme.",
   },
 };
 
