@@ -1,12 +1,13 @@
-import Image from "next/image";
-
 // Hero-stempelkort: en ren, Wallet-agtig mockup i brandets rust. Server-komponent
 // (ingen JS, let foerste load). Kaffekopper som stempler, og den sidste plads er
-// selve beloenningen (den gratis kop). Udtrykket kan ogsaa laves i et rigtigt
-// Apple Wallet-pass (strip med kaffe-stempler + gratis-kop til sidst).
+// selve beloenningen (den gratis kop). Layoutet spejler et rigtigt Apple Wallet-
+// pass: logo + "Stempler 7/10" i toppen, stempel-gitter, og "Beloenning" +
+// "Samlet i alt" nederst. Navnet er en neutral kaffe-ordmaerke (ikke en rigtig
+// kunde).
 
 const FILLED = 7;
 const REQUIRED = 10;
+const LIFETIME = 21;
 
 function Coffee({ stroke }: { stroke: string }) {
   return (
@@ -36,40 +37,30 @@ export default function HeroStampCard() {
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[sheenSweep_4.5s_ease-in-out_infinite]"
         />
-        {/* Top: butikkens logo + korttype */}
+        {/* Top: butikkens ordmaerke + stempel-tal (som pass-headeren) */}
         <div className="flex items-start justify-between gap-4">
-          <Image
-            src="/coffeelab.png"
-            alt="Copenhagen Coffee Lab"
-            width={124}
-            height={36}
-            priority
-            sizes="124px"
-            className="h-8 w-auto opacity-95 [filter:brightness(0)_invert(1)] md:h-9"
-          />
-          <span className="mt-1 shrink-0 text-[0.6rem] font-medium uppercase tracking-[0.14em] text-[#F7EFE6]/60 md:text-[0.66rem]">
-            Stempelkort
-          </span>
-        </div>
-
-        {/* Stempel-tal */}
-        <div className="mt-6">
-          <span className="text-[0.6rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/60">
-            Stempler
-          </span>
-          <div className="mt-1 flex items-baseline gap-0.5">
-            <span className="text-[2.6rem] font-bold leading-none tracking-[-0.03em] md:text-[3rem]">
+          <div className="leading-[1.02]">
+            <span className="block text-[1rem] font-semibold uppercase tracking-[0.2em] text-[#F7EFE6] md:text-[1.15rem]">
+              Copenhagen
+            </span>
+            <span className="mt-0.5 block text-[0.64rem] font-medium uppercase tracking-[0.34em] text-[#F7EFE6]/75 md:text-[0.72rem]">
+              Coffee
+            </span>
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/60 md:text-[0.62rem]">
+              Stempler
+            </div>
+            <div className="mt-0.5 text-[1.15rem] font-bold leading-none tracking-[-0.01em] tabular-nums md:text-[1.3rem]">
               {FILLED}
-            </span>
-            <span className="text-[1.4rem] font-semibold leading-none tracking-[-0.02em] text-[#F7EFE6]/45 md:text-[1.6rem]">
-              /{REQUIRED}
-            </span>
+              <span className="text-[#F7EFE6]/45">/{REQUIRED}</span>
+            </div>
           </div>
         </div>
 
         {/* Kopper: 7 stemplet (hvid cirkel + rust kaffe), 2 tilbage (stiplet),
             og den sidste er den gratis kop (fremhaevet). */}
-        <div className="mt-6 grid grid-cols-5 gap-3 md:mt-7">
+        <div className="mt-7 grid grid-cols-5 gap-3 md:mt-8">
           {Array.from({ length: REQUIRED }).map((_, i) => {
             if (i < FILLED) {
               return (
@@ -100,15 +91,25 @@ export default function HeroStampCard() {
           })}
         </div>
 
-        {/* Fod */}
-        <div className="mt-6 h-px w-full bg-[#F7EFE6]/20 md:mt-7" />
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-[0.9rem] font-[300] text-[#F7EFE6]/75">
-            10. kop er gratis
-          </span>
-          <span className="text-[0.9rem] font-bold text-[#F7EFE6]">
-            3 stempler tilbage
-          </span>
+        {/* Fod: beloenning (venstre) + samlet i alt (hoejre), som pass-felterne */}
+        <div className="mt-7 h-px w-full bg-[#F7EFE6]/20 md:mt-8" />
+        <div className="mt-4 flex items-end justify-between gap-4">
+          <div>
+            <div className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/55 md:text-[0.6rem]">
+              Belønning
+            </div>
+            <div className="mt-0.5 text-[0.92rem] font-[300] text-[#F7EFE6]/90">
+              10. kop er gratis
+            </div>
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[#F7EFE6]/55 md:text-[0.6rem]">
+              Samlet i alt
+            </div>
+            <div className="mt-0.5 text-[0.98rem] font-bold tabular-nums text-[#F7EFE6]">
+              {LIFETIME}
+            </div>
+          </div>
         </div>
       </div>
     </div>

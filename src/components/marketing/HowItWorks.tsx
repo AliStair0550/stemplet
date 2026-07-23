@@ -196,7 +196,7 @@ export default function HowItWorks() {
               />
             ) : null}
             <StampCard
-              businessName="Odense Craft Beer"
+              businessName="Odense Beer"
               primaryColor="#2A211A"
               textColor="#F1E7D8"
               stampIcon="beer"
