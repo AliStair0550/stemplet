@@ -233,7 +233,7 @@ export const NEGLESALONER: BrancheContent = {
     { target: "50 besøg", reward: "Noget særligt" },
   ],
   title:
-    "Stempelkort til neglesaloner. Hver 5. behandling til kvart pris | Stemplet",
+    "Stempelkort til neglesaloner. 25 % på hver 5. behandling | Stemplet",
   metaDescription:
     "Gør faste kunder til endnu mere loyale kunder. Beløn dem med rabatter via et digitalt stempelkort i Apple Wallet.",
   eyebrow: "Stempelkort til neglesaloner",
@@ -306,33 +306,40 @@ export const PIZZERIAER: BrancheContent = {
   examples: [
     { target: "10. pizza", reward: "Gratis" },
     { target: "4 pizzaer", reward: "4 stempler" },
-    { target: "Fyldt kort", reward: "Gratis dessert" },
+    { target: "Tirsdag", reward: "Dobbelt stempel" },
   ],
   title: "Stempelkort til pizzeriaer. Fire pizzaer, fire stempler | Stemplet",
   metaDescription:
     "Klassikeren 10. pizza gratis, uden papkort. Og familien med den store ordre får endelig alle sine stempler.",
   eyebrow: "Stempelkort til pizzeriaer",
-  h1: "Torsdagsfamilien er din bedste kunde. Behandl den sådan.",
+  h1: "Gør pizzaaften til en tradition hos jer.",
   intro: [
-    "Familien, der henter fire pizzaer hver torsdag, er guld. Men papkortet gav dem altid kun ét klip, uanset ordren. Det er sluttet nu.",
+    "Alle pizzeriaer har de kunder, man håber at se igen næste uge. Familien, der bestiller hver torsdag. Vennegruppen, der henter pizza hver fredag. De er rygraden i forretningen.",
+    "Et digitalt stempelkort giver dem en ekstra grund til at vælge jer, hver gang lysten til pizza melder sig.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Beløn de kunder, der kommer igen",
       paragraphs: [
-        "Behold klassikeren: 10 stempler, 10. pizza gratis. Alle forstår den. Forskellen er antallet: fire pizzaer giver fire stempler i én scanning. Familien når belønningen på få uger, og det kan mærkes, at du tæller ærligt. Belønningen bestemmer du selv, gratis pizza er standarden, men en gratis dessert eller sodavand til børnene virker også.",
+        "Den klassiske model virker stadig: 10 stempler, 10. pizza gratis. Alle forstår den.",
+        "Men i modsætning til det gamle papkort kan hele ordren tælle. Bestiller en familie fire pizzaer, får de fire stempler. Det føles fair og gør belønningen mere motiverende.",
+        "Belønningen er helt op til jer. Det kan være en gratis pizza, en dessert, sodavand til børnene eller en særlig familiepakke. Kortet tilpasses jeres forretning og kan ændres, når I vil.",
       ],
     },
     {
-      heading: "Tallene",
+      heading: "Skab flere stamkunder og fyld de stille dage",
       paragraphs: [
-        "Mandagsrapporten viser dine faste kunder og dine stille dage. Dobbelt stempel om tirsdagen flytter fredagsordrer til den dag, ovnen står halvtom. Og runder en familie 100 stempler i alt, så skriv deres navn på bakken og giv en gratis. Den historie fortæller de i skolegården.",
+        "Et papkort fortæller ingenting. Stemplet gør.",
+        "Hver uge får I indsigt i nye kortholdere, antal stempler og indløste belønninger. I kan se, hvilke kunder der kommer igen, og hvilke dage der har brug for lidt ekstra trafik.",
+        "Har tirsdagene brug for et løft? Giv dobbelt stempel den dag. Vil I belønne de mest loyale familier? Overrask dem med en ekstra gave, når de når 50 eller 100 stempler. De små gestus er ofte dem, kunderne husker og fortæller videre.",
       ],
     },
     {
-      heading: "I gang i aften",
+      heading: "Kom i gang på få minutter",
       paragraphs: [
-        "QR på disken og på pizzabakken. Kunden scanner, mens ovnen arbejder. Ingen app.",
+        "Kunden scanner én QR kode og har stempelkortet direkte i Apple Wallet.",
+        "Ingen app. Ingen oprettelse.",
+        "I stempler med den telefon, I allerede har. Ingen ekstra udstyr. Bare flere grunde til, at kunderne vælger jer, næste gang de får lyst til pizza.",
       ],
     },
   ],
@@ -350,6 +357,15 @@ export const PIZZERIAER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Pizzeria Napoli",
+    primaryColor: "#7E322A",
+    textColor: "#F6EAE4",
+    stampIcon: "pizza",
+    required: 10,
+    stamps: 7,
+    rewardText: "10. pizza er gratis",
+  },
 };
 
 export const BAGERIER: BrancheContent = {
