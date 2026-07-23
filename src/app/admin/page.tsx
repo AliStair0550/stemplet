@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
 import { effectiveProPriceKr } from "@/lib/billing";
 import { formatDkNumber, formatDkDateTime } from "@/lib/utils";
+import { BarChart } from "@/components/BarChart";
 import { AdminUnlock } from "./AdminUnlock";
 import { ClearDemoButton, LockButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
@@ -94,6 +95,78 @@ function buildRow(
     newSignupsPaused: b.newSignupsPaused,
     stopped: b.stopped,
   };
+}
+
+// Bygger et 7-dages soejle-datasaet af demo-hentninger. Bucket OG etiket i dansk
+// tidszone, saa en hentning ved midnat lander paa den rigtige dag (ikke UTC-dagen).
+// Anker ved kl. 12 UTC og skridt hele doegn, saa sommertidsskift aldrig taber
+// eller dublerer en dag.
+function buildDemoSeries(
+  events: Date[],
+): { label: string; count: number; sublabel: string }[] {
+  const keyFmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Copenhagen",
+  });
+  const labelFmt = new Intl.DateTimeFormat("da-DK", {
+    timeZone: "Europe/Copenhagen",
+    day: "numeric",
+    month: "short",
+  });
+  const wdFmt = new Intl.DateTimeFormat("da-DK", {
+    timeZone: "Europe/Copenhagen",
+    weekday: "short",
+  });
+  const buckets = new Map<string, number>();
+  const days: { key: string; label: string; sublabel: string }[] = [];
+  const noon = new Date();
+  noon.setUTCHours(12, 0, 0, 0);
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(noon.getTime() - i * 86_400_000);
+    const key = keyFmt.format(d);
+    buckets.set(key, 0);
+    days.push({
+      key,
+      label: labelFmt.format(d),
+      sublabel: wdFmt.format(d).replace(".", ""),
+    });
+  }
+  for (const e of events) {
+    const key = keyFmt.format(e);
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  }
+  return days.map((d) => ({
+    label: d.label,
+    count: buckets.get(d.key) ?? 0,
+    sublabel: d.sublabel,
+  }));
+}
+
+// Sektions-overskrift med een forklarende linje, saa hver del af admin er til at
+// forstaa uden forhaandsviden.
+function SectionHead({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div>
+      <h2 className="font-[400] text-[0.95rem] tracking-[0.01em] text-ink">
+        {title}
+      </h2>
+      <p className="mt-1 font-[300] text-[0.82rem] leading-relaxed text-slate">
+        {desc}
+      </p>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[0.6rem] font-[400] uppercase tracking-[0.12em] text-slate">
+        {label}
+      </p>
+      <p className="mt-1 font-[300] text-[1.1rem] tabular-nums text-ink">
+        {value}
+      </p>
+    </div>
+  );
 }
 
 export default async function AdminPage() {
@@ -181,6 +254,27 @@ export default async function AdminPage() {
   const real = rows.filter((r) => !r.isDemo);
   const demo = rows.find((r) => r.isDemo) ?? null;
 
+  // Demo-hentninger pr. dag, seneste 7 dage. Kun demo-butikkens kort, kun de
+  // sidste 7 dage (indeks paa [cardId, createdAt]), saa det er en let query.
+  const demoBiz = businesses.find((b) => b.slug === DEMO_SLUG);
+  let demoSeries: { label: string; count: number; sublabel: string }[] | null =
+    null;
+  let demo7Total = 0;
+  if (demoBiz && demoBiz.cards.length) {
+    const since = new Date();
+    since.setUTCHours(12, 0, 0, 0);
+    since.setTime(since.getTime() - 7 * 86_400_000);
+    const events = await prisma.customerCard.findMany({
+      where: {
+        cardId: { in: demoBiz.cards.map((c) => c.id) },
+        createdAt: { gte: since },
+      },
+      select: { createdAt: true },
+    });
+    demoSeries = buildDemoSeries(events.map((e) => e.createdAt));
+    demo7Total = demoSeries.reduce((a, d) => a + d.count, 0);
+  }
+
   // Noegletal taeller KUN rigtige butikker. Demo-forsoeg holdes helt adskilt, saa
   // "kunder" er rigtige kunder, ikke folk der har prøvet demoen.
   const totals = real.reduce(
@@ -203,6 +297,7 @@ export default async function AdminPage() {
   return (
     <main className="min-h-screen bg-parchment px-6 py-12">
       <div className="mx-auto max-w-5xl">
+        {/* Sidehoved */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="font-[300] text-[1.6rem] tracking-[0.02em] text-ink">
@@ -245,58 +340,92 @@ export default async function AdminPage() {
           </div>
         ) : null}
 
-        {/* Noegletal (kun rigtige butikker, demo ekskluderet) */}
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {stat.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-lg border border-fog bg-white p-5 shadow-card"
-            >
-              <p className="text-[0.66rem] font-[400] uppercase tracking-[0.14em] text-slate">
-                {s.label}
-              </p>
-              <p className="mt-2 font-[300] text-[1.8rem] tabular-nums text-ink">
-                {formatDkNumber(s.value)}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Demo-forsoeg: helt adskilt fra rigtige kunder, saa tallene er skarpe. */}
-        {demo ? (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-fog bg-sand/50 px-5 py-4">
-            <div>
-              <p className="text-[0.66rem] font-[500] uppercase tracking-[0.14em] text-slate">
-                Demo-forsøg ({'"'}Prøv det selv{'"'})
-              </p>
-              <p className="mt-1 font-[300] text-[0.9rem] text-stone">
-                <span className="font-[400] tabular-nums text-ink">
-                  {formatDkNumber(demo.customers)}
-                </span>{" "}
-                personer har hentet demo-kortet.{" "}
-                {demo.lastActive
-                  ? `Sidste aktivitet ${formatDkDateTime(demo.lastActive)}.`
-                  : ""}{" "}
-                Tæller ikke med i {'"'}Kortholdere{'"'} ovenfor.
-              </p>
-            </div>
-            <ClearDemoButton count={demo.customers} />
+        {/* ── Overblik: noegletal (kun rigtige butikker) ─────────────────── */}
+        <section className="mt-9">
+          <SectionHead
+            title="Overblik"
+            desc="Nøgletal på tværs af rigtige butikker. Demo-forsøg tælles for sig, så tallene er skarpe."
+          />
+          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {stat.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-lg border border-fog bg-white p-5 shadow-card"
+              >
+                <p className="text-[0.66rem] font-[400] uppercase tracking-[0.14em] text-slate">
+                  {s.label}
+                </p>
+                <p className="mt-2 font-[300] text-[1.8rem] tabular-nums text-ink">
+                  {formatDkNumber(s.value)}
+                </p>
+              </div>
+            ))}
           </div>
-        ) : null}
+        </section>
 
-        {/* Tilmeldinger: rigtige butikker med kontaktinfo + styring */}
-        <h2 className="mt-10 font-[400] text-[0.72rem] uppercase tracking-[0.14em] text-slate">
-          Tilmeldinger ({real.length})
-        </h2>
+        {/* ── Demo-forsoeg ("Proev det selv") ────────────────────────────── */}
+        <section className="mt-10">
+          <SectionHead
+            title={'Demo-forsøg ("Prøv det selv")'}
+            desc="Folk der har hentet demo-kortet på stemplet.alius.dk. De er ikke rigtige kunder og tæller ikke med i Overblik."
+          />
+          <div className="mt-4 rounded-lg border border-fog bg-white p-5 shadow-card">
+            {demo ? (
+              <>
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex flex-wrap gap-x-10 gap-y-3">
+                    <MiniStat
+                      label="Hentet i alt"
+                      value={formatDkNumber(demo.customers)}
+                    />
+                    <MiniStat
+                      label="Seneste 7 dage"
+                      value={formatDkNumber(demo7Total)}
+                    />
+                    <MiniStat
+                      label="Sidste aktivitet"
+                      value={
+                        demo.lastActive
+                          ? formatDkDateTime(demo.lastActive)
+                          : "Ingen"
+                      }
+                    />
+                  </div>
+                  <ClearDemoButton count={demo.customers} />
+                </div>
 
-        {real.length === 0 ? (
-          <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
-            Ingen rigtige tilmeldinger endnu. De dukker op her, saa snart en butik
-            opretter sig, med ejerens email til at skrive til dem.
-          </p>
-        ) : (
-          <AdminBusinesses rows={real} />
-        )}
+                {demoSeries ? (
+                  <div className="mt-7 border-t border-fog pt-5">
+                    <p className="mb-4 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
+                      Hentninger pr. dag, seneste 7 dage
+                    </p>
+                    <BarChart data={demoSeries} className="max-w-xl" />
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <p className="font-[300] text-[0.9rem] text-slate">
+                Ingen demo-butik fundet.
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* ── Butikker: rigtige tilmeldinger + styring ───────────────────── */}
+        <section className="mt-10">
+          <SectionHead
+            title={`Butikker (${real.length})`}
+            desc="Alle rigtige tilmeldinger. Brug knapperne øverst til at se hvad der kræver handling, søg efter en butik, og styr plan, pris og status pr. butik."
+          />
+          {real.length === 0 ? (
+            <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
+              Ingen rigtige tilmeldinger endnu. De dukker op her, saa snart en
+              butik opretter sig, med ejerens email til at skrive til dem.
+            </p>
+          ) : (
+            <AdminBusinesses rows={real} />
+          )}
+        </section>
       </div>
     </main>
   );
