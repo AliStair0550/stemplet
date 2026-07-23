@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
-  { href: "/login", label: "Log ind" },
   { href: "/hvorfor", label: "Fordele" },
   { href: "/brancher", label: "Brancher" },
   { href: "/#pris", label: "Pris" },
@@ -67,7 +66,7 @@ export default function Nav() {
       <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-6 md:px-8">
         <Wordmark href="/" className="text-[1.35rem]" />
 
-        {/* Desktop: Log ind, Fordele, Brancher, Pris + primaer CTA */}
+        {/* Desktop: Fordele, Brancher, Pris + Log ind ved siden af primaer CTA */}
         <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (
             <Link
@@ -78,6 +77,12 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
+          <Link
+            href="/login"
+            className="rounded-full font-medium text-[0.9rem] text-taupe transition-colors hover:text-ink"
+          >
+            Log ind
+          </Link>
           <Link
             href="/start"
             className="inline-flex min-h-10 items-center rounded-full bg-terracotta px-5 text-[0.9rem] font-medium text-parchment transition-colors hover:bg-terracotta-dark"
@@ -98,7 +103,7 @@ export default function Nav() {
         </button>
       </div>
 
-      {/* Mobil-menu: Log ind, Fordele, Brancher, Pris + primaer knap
+      {/* Mobil-menu: Fordele, Brancher, Pris + Log ind lige over primaer knap
           "Kom gratis i gang" */}
       {open ? (
         <div className="border-t border-ink/[0.08] bg-parchment/98 backdrop-blur-md md:hidden">
@@ -113,6 +118,13 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-2 py-3 font-medium text-[0.95rem] text-ink transition-colors hover:bg-sand"
+            >
+              Log ind
+            </Link>
             <Link
               href="/start"
               onClick={() => setOpen(false)}
