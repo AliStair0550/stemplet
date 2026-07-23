@@ -305,6 +305,10 @@ model WalletRegistration {
 
   @@unique([customerCardId, deviceLibraryId])
   @@index([customerCardId])
+  // Apple poller enheds-endpointet pr. enhed og filtrerer paa deviceLibraryId
+  // alene. Uden dette indeks faldt det opslag tilbage til fuld scan (unique'ens
+  // foerste kolonne er customerCardId), som vokser med antallet af registreringer.
+  @@index([deviceLibraryId])
 }
 
 model AuditLog {

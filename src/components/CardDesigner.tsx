@@ -12,6 +12,7 @@ import {
   normalizeHex,
   type StampIconKey,
 } from "@/lib/brand";
+import { REWARD_TEXT_MAX } from "@/lib/system-config";
 import { cn } from "@/lib/utils";
 
 export type CardDesign = {
@@ -160,16 +161,34 @@ export function CardDesigner({
         </Field>
 
         <div className="flex flex-col gap-2">
-          <Field label="Belønningstekst">
+          <label className="flex flex-col gap-1.5">
+            <span className="flex items-baseline justify-between gap-2">
+              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                Belønningstekst
+              </span>
+              <span
+                className={cn(
+                  "text-[0.68rem] tabular-nums",
+                  value.rewardText.length >= REWARD_TEXT_MAX
+                    ? "text-terracotta"
+                    : "text-slate",
+                )}
+              >
+                {value.rewardText.length} / {REWARD_TEXT_MAX}
+              </span>
+            </span>
             <input
               type="text"
               value={value.rewardText}
-              maxLength={80}
+              maxLength={REWARD_TEXT_MAX}
               onChange={(e) => set("rewardText", e.target.value)}
               placeholder="10. kop er gratis"
               className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
-          </Field>
+          </label>
+          <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+            Kort tekst ser bedst ud i Apple Wallet. Maks {REWARD_TEXT_MAX} tegn.
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {REWARD_SUGGESTIONS.map((s) => (
               <button

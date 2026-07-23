@@ -28,3 +28,11 @@ export const PIN_LOCK_SECONDS = 5 * 60;
 /** Gyldigt antal stempler pr. kort. */
 export const STAMPS_MIN = 4;
 export const STAMPS_MAX = 12;
+
+/**
+ * Maks tegn i beloenningsteksten. BelOnningen vises i Apple Wallet som et
+ * secondary field, der deler raekken med "Samlet i alt". Feltet staar paa EEN
+ * linje: bliver teksten for lang, skrumper Wallet skriften og klipper til sidst
+ * med "...". ~28 tegn holder den fuld stOrrelse og laesbar paa aktive kort.
+ */
+export const REWARD_TEXT_MAX = 28;

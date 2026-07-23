@@ -48,11 +48,23 @@ export async function pushAllWalletPasses(): Promise<{ pushed: number }> {
     distinct: ["customerCardId"],
   });
   const { pushWalletUpdate } = await import("./apns");
+  // Bundet parallelitet i stedet for een-ad-gangen: rollout'en har et 60s-loft,
+  // og sekventielt naaede den kun et praefiks, saa snart der var mange hundrede
+  // kort. Med en arbejder-pool paa 8 flytter vi langt flere pushes inden for
+  // vinduet uden at aabne ubegraenset mange forbindelser paa een gang.
+  const CONCURRENCY = 8;
+  let next = 0;
   let pushed = 0;
-  for (const r of regs) {
-    await pushWalletUpdate(r.customerCardId);
-    pushed += 1;
+  async function worker() {
+    while (next < regs.length) {
+      const r = regs[next++];
+      await pushWalletUpdate(r.customerCardId);
+      pushed += 1;
+    }
   }
+  await Promise.all(
+    Array.from({ length: Math.min(CONCURRENCY, regs.length) }, worker),
+  );
   return { pushed };
 }
 

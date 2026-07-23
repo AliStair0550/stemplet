@@ -1,23 +1,16 @@
 import { z } from "zod";
-import { STAMPS_MIN, STAMPS_MAX } from "./system-config";
+import { STAMPS_MIN, STAMPS_MAX, REWARD_TEXT_MAX } from "./system-config";
+import { STAMP_ICONS, type StampIconKey } from "./brand";
 
 const hex = z
   .string()
   .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #A6502E");
 
-export const stampIconEnum = z.enum([
-  "coffee",
-  "scissors",
-  "croissant",
-  "pizza",
-  "burger",
-  "beer",
-  "icecream",
-  "wine",
-  "heart",
-  "star",
-  "custom",
-]);
+// Afledt af STAMP_ICONS (eneste kilde), saa nye ikoner automatisk er gyldige.
+// FOer var listen haardkodet og kom bagud, saa nye ikoner blev afvist ved gem.
+export const stampIconEnum = z.enum(
+  STAMP_ICONS.map((i) => i.key) as [StampIconKey, ...StampIconKey[]],
+);
 
 export const pinSchema = z
   .string()
@@ -38,7 +31,11 @@ export const onboardingStartSchema = z.object({
 // Kortdesign (bruges i onboarding trin 2 og i kortdesigneren)
 export const cardDesignSchema = z.object({
   stampsRequired: z.coerce.number().int().min(STAMPS_MIN).max(STAMPS_MAX),
-  rewardText: z.string().trim().min(2, "Skriv en belønning").max(80),
+  rewardText: z
+    .string()
+    .trim()
+    .min(2, "Skriv en belønning")
+    .max(REWARD_TEXT_MAX, "Belønningen er for lang til Apple Wallet"),
   stampIcon: stampIconEnum,
   primaryColor: hex,
   textColor: hex,

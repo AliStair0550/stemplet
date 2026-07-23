@@ -352,6 +352,11 @@ export async function sweepPendingThresholdEmails(
  * En afvigelse betyder reel data-drift (fx en race, der slap igennem) og
  * rapporteres straks til Sentry. Ligger i SAMME cron som sweepet, fordi Hobby-
  * planen kun tillader to cron-jobs. Ren laesning; aendrer intet.
+ *
+ * Skalering: vi tjekker kun kort med aktivitet inden for de sidste 14 dage. Et
+ * kort kan kun BRYDE invarianten, naar der stemples paa det, saa et kort uden
+ * nye stempler kan ikke pludselig divergere. Det holder den daglige aggregering
+ * paa de aktive kort i stedet for at summere HELE Stamp-tabellen hver nat.
  */
 export async function checkStampInvariant(
   db: Db = prisma,
@@ -365,6 +370,7 @@ export async function checkStampInvariant(
     FROM "CustomerCard" cc
     JOIN "Card" c ON c."id" = cc."cardId"
     LEFT JOIN "Stamp" s ON s."customerCardId" = cc."id"
+    WHERE cc."lastStampAt" >= NOW() - INTERVAL '14 days'
     GROUP BY cc."id", c."businessId", cc."lifetimeStamps"
     HAVING cc."lifetimeStamps" <> COALESCE(SUM(s."multiplier"), 0)
     LIMIT 50
