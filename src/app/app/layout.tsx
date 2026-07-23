@@ -5,6 +5,9 @@ import { DashboardNav } from "./DashboardNav";
 export const metadata: Metadata = {
   title: { default: "Overblik", template: "%s - Stemplet" },
   robots: { index: false },
+  // Eget manifest for dashboardet: foejer butikken det til hjemmeskaermen, aabner
+  // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest).
+  manifest: "/app-manifest",
 };
 
 export default async function AppLayout({

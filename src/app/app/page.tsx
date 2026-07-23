@@ -7,6 +7,7 @@ import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { LoyaltyPanel } from "@/components/LoyaltyPanel";
 import { ButtonLink } from "@/components/ui";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
+import { AddToHomeHint } from "./AddToHomeHint";
 
 // Smaa line-art ikoner til noegletal-fliserne.
 const ICON = "h-[1.15rem] w-[1.15rem]";
@@ -189,6 +190,7 @@ export default async function OverviewPage() {
         </div>
       </div>
 
+      <AddToHomeHint />
 
       {stats.stampsTotal === 0 ? <GettingStarted slug={business.slug} /> : null}
 

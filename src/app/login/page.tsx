@@ -3,7 +3,12 @@ import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 import { LoginForm } from "./LoginForm";
 
-export const metadata: Metadata = { title: "Log ind" };
+export const metadata: Metadata = {
+  title: "Log ind",
+  // Samme dashboard-manifest: foejer man login til hjemmeskaermen, aabner ikonet
+  // i dashboardet (start_url /app), ikke forsiden.
+  manifest: "/app-manifest",
+};
 
 export default async function LoginPage({
   searchParams,
