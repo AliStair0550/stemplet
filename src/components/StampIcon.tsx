@@ -91,6 +91,14 @@ export function StampIcon({
           <path d="M12 20s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.8C19 15.7 12 20 12 20Z" />
         </svg>
       );
+    case "flower":
+      return (
+        <svg {...common}>
+          <path d="M8.5 7c0 2.5 1.6 4.5 3.5 4.5S15.5 9.5 15.5 7c-1.3 0-2.5.7-3.5 2-1-1.3-2.2-2-3.5-2Z" />
+          <path d="M12 11.5V19" />
+          <path d="M12 15.4c-1.5 0-2.7-.9-3.2-2.3M12 15.4c1.5 0 2.7-.9 3.2-2.3" />
+        </svg>
+      );
     case "star":
       return (
         <svg {...common}>

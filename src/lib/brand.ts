@@ -15,6 +15,7 @@ export type StampIconKey =
   | "beer"
   | "icecream"
   | "wine"
+  | "flower"
   | "heart"
   | "star"
   | "custom";
@@ -28,6 +29,7 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "beer", label: "Øl" },
   { key: "icecream", label: "Is" },
   { key: "wine", label: "Vin" },
+  { key: "flower", label: "Blomst" },
   { key: "heart", label: "Hjerte" },
   { key: "star", label: "Stjerne" },
   { key: "custom", label: "Prik" },

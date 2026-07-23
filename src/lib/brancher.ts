@@ -448,36 +448,47 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
   cardTeaser: "Fredagsbuketten belønnet.",
   stampIcon: "flower",
   examples: [
-    { target: "10 stempler", reward: "Et gratis bundt" },
-    { target: "5 stempler", reward: "En lille gave oveni" },
-    { target: "Højtider", reward: "Dobbelt stempel" },
+    { target: "10. buket", reward: "Gratis" },
+    { target: "5 stempler", reward: "Et smukt bånd" },
+    { target: "Mors dag", reward: "Dobbelt stempel" },
   ],
   title:
     "Stempelkort til blomsterbutikker. Fredagsbuketten belønnet | Stemplet",
   metaDescription:
     "Dine faste kunder går forbi tre andre blomsterbutikker på vejen til din. Giv dem en grund til at blive ved. Digitalt stempelkort i Apple Wallet.",
   eyebrow: "Stempelkort til blomsterbutikker",
-  h1: "Fredagsbuketten er en kærlighedserklæring. Også til din butik.",
+  h1: "Bliv kundens faste sted for de små øjeblikke.",
   intro: [
-    "Blomster ligner impulskøb, men dine bedste kunder er vanekunder: fredagsbuketten, søndagsbordet, den månedlige til svigermor. De går forbi tre andre butikker på vejen til din. Stempelkortet siger tak for det, hver gang.",
+    "Blomster kan ligne et impulskøb. Men de bedste kunder er ofte vanekunder.",
+    "Fredagsbuketten. Fødselsdagen. Søndagsbordet. Den månedlige buket til én, de holder af.",
+    "De vælger ikke bare blomster. De vælger en butik, de stoler på. Stemplet hjælper med at gøre den relation endnu stærkere og giver kunderne en ekstra grund til at komme tilbage.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Beløn de kunder, der vælger jer igen",
       paragraphs: [
-        "To modeller, der begge virker, og valget er dit. Den generøse: 10 stempler, og det tiende er et gratis bundt. Den hurtige: 5 stempler, og det femte udløser en lille ekstra gave, en håndfuld eukalyptus oveni, et flot bånd, en enkelt særlig blomst i buketten. Den hurtige model belønner oftere og koster dig næsten ingenting, den generøse er nemmest at forklare i køen. Begge kan justeres undervejs.",
+        "Blomster handler om oplevelser, så belønningen behøver ikke kun være rabat.",
+        "En enkel model er 10 stempler, hvor den 10. buket er på husets regning.",
+        "En anden mulighed er at belønne oftere med små ekstra detaljer: et smukt bånd, en særlig blomst i buketten, lidt ekstra grønt eller en lille overraskelse.",
+        "Det koster næsten ingenting, men kunden mærker forskellen. Det er følelsen af at blive genkendt, der skaber loyalitet.",
+        "Belønningen bestemmer I selv. Kortet tilpasses jeres butik og kan ændres undervejs.",
       ],
     },
     {
-      heading: "Tallene",
+      heading: "Få indsigt i jeres stamkunder",
       paragraphs: [
-        "Mandagsrapporten viser dine faste ansigter og dine stille uger. Op til mors dag og valentinsdag kan dobbelt stempel flytte kunder fra supermarkedsbuketten til dig. Og kunden, der runder 100 stempler, har fejret års mærkedage gennem din butik. Det fortjener en buket på husets regning og et billede til jeres Instagram, hvis kunden vil.",
+        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Stemplet giver jer indsigt i relationen.",
+        "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvor mange kunder der vender tilbage, og hvornår loyaliteten vokser.",
+        "Op til mors dag, valentinsdag eller andre store anledninger kan I bruge ekstra stempler til at få kunderne til at vælge jer frem for supermarkedets hurtige løsning.",
+        "Når en kunde rammer 100 stempler, er det mere end et tal. Det er mange års tillid og mange små øjeblikke, hvor de har valgt jer. En særlig buket eller en personlig hilsen kan gøre en god kunde til en ambassadør.",
       ],
     },
     {
-      heading: "I gang inden fredag",
+      heading: "Kom i gang inden næste buket",
       paragraphs: [
-        "QR ved disken, kunden scanner mens buketten bindes. Det er de bedste 40 sekunder at sælge loyalitet i.",
+        "QR koden står ved disken. Kunden scanner, mens buketten bliver bundet, og har kortet direkte i Apple Wallet på under et minut.",
+        "Ingen app. Ingen oprettelse. I stempler fra den telefon, I allerede har.",
+        "Bare en enkel måde at gøre flere kunder til faste kunder.",
       ],
     },
   ],
@@ -495,6 +506,15 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Blomsterhjørnet",
+    primaryColor: "#3E5546",
+    textColor: "#EFF3EA",
+    stampIcon: "flower",
+    required: 10,
+    stamps: 6,
+    rewardText: "Den 10. buket er gratis",
+  },
 };
 
 export const CAFEER: BrancheContent = {
