@@ -97,7 +97,6 @@ export const FRISOERER: BrancheContent = {
   intro: [
     "Kunden rejser sig fra stolen, smiler til spejlet og går hjem med et hår, der sidder præcis, som du havde tænkt. Du har brugt den rigtige voks, den rigtige shampoo og de rigtige produkter.",
     "Tre dage senere står kunden i Matas og køber noget helt andet.",
-    "Klipningerne har loyale kunder. Produktsalget ryger ofte til supermarkedet. Stemplet kan være broen mellem de to.",
   ],
   sections: [
     {
