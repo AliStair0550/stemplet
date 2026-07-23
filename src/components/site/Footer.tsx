@@ -6,9 +6,6 @@ const LINKS = [
   { href: "/hvorfor", label: "Fordele" },
   { href: "/brancher", label: "Brancher" },
   { href: "/#sådan", label: "Sådan virker det" },
-  { href: "/#pris", label: "Pris" },
-  { href: "/start", label: "Kom gratis i gang" },
-  { href: "/login", label: "Log ind" },
 ];
 
 export default function Footer() {

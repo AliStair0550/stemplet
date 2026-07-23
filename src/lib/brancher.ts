@@ -81,10 +81,9 @@ export const FRISOERER: BrancheContent = {
   eyebrow: "Stempelkort til frisører",
   h1: "Kunden elsker resultatet. Men køber produkterne et andet sted.",
   intro: [
-    "Du kender situationen.",
     "Kunden rejser sig fra stolen, smiler til spejlet og går hjem med et hår, der sidder præcis, som du havde tænkt. Du har brugt den rigtige voks, den rigtige shampoo og de rigtige produkter.",
     "Tre dage senere står kunden i Matas og køber noget helt andet.",
-    "Du driver i virkeligheden to forretninger. Klipningerne har loyale kunder. Produktsalget ryger ofte til supermarkedet. Stemplet er broen mellem de to.",
+    "Klipningerne har loyale kunder. Produktsalget ryger ofte til supermarkedet. Stemplet kan være broen mellem de to.",
   ],
   sections: [
     {
@@ -148,7 +147,6 @@ export const KAFFEBARER: BrancheContent = {
   stampIcon: "coffee",
   examples: [
     { target: "10. kop", reward: "Gratis" },
-    { target: "Fyldt kort", reward: "En pose bønner" },
     { target: "Køb af bønner", reward: "+1 stempel" },
   ],
   title: "Stempelkort til kaffebarer. Fra 10. kop til bønner på hylden | Stemplet",
@@ -157,10 +155,7 @@ export const KAFFEBARER: BrancheContent = {
   eyebrow: "Stempelkort til kaffebarer",
   h1: "Gør kaffekunder til stamgæster.",
   intro: [
-    "Din kunde elsker kaffen og oplevelsen hos jer. Men uden en stærk forbindelse mellem besøgene er det nemt at blive valgt fra næste gang.",
-    "Men den relation stopper ofte, når kunden går ud ad døren. Resten af ugens kaffekøb, besøg og vaner foregår andre steder.",
-    "Det er den skjulte mulighed i mange kaffebarer: Kunden elsker din kaffe, men du har kun kundens opmærksomhed i de minutter, de står ved disken.",
-    "Stemplet hjælper dig med at gøre kaffekunder til stamgæster og holde relationen levende mellem besøgene.",
+    "Kunden elsker kaffen og oplevelsen hos jer. Udfordringen er at give dem en grund til at vælge jer igen næste gang. Stemplet gør kaffekunder til stamgæster ved at holde relationen levende mellem besøgene.",
   ],
   sections: [
     {
