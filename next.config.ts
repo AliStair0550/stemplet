@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.ufs.sh" },
     ],
   },
+  // Branchesiden "ølbarer" er omdoebt til "barer" (bredere: oel og vin). Send den
+  // gamle URL varigt videre, saa gamle links/indeksering ikke rammer en 404.
+  async redirects() {
+    return [
+      {
+        source: "/stempelkort-til-ølbarer",
+        destination: "/stempelkort-til-barer",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 // Sentry: uploader source maps ved deploy (paa Vercel, naar SENTRY_AUTH_TOKEN er
