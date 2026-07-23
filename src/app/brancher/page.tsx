@@ -63,20 +63,20 @@ export default function BrancherPage() {
                 </span>
               </Link>
             ))}
-            {/* Forberedt til flere brancher: fag som pizzeriaer, bagerier,
-                caféer, blomsterbutikker, ølbarer og isbutikker skrives efter behov. */}
-            <div className="flex items-center justify-center rounded-[20px] border border-dashed border-clay bg-parchment/50 p-7 text-center md:col-span-3 md:p-8">
-              <span className="text-[0.9rem] leading-relaxed text-slate">
-                Flere brancher er på vej. Er din ikke med endnu? Skriv til{" "}
-                <a
-                  href="mailto:hej@alius.dk"
-                  className="text-terracotta underline underline-offset-2"
-                >
-                  hej@alius.dk
-                </a>
-                .
-              </span>
-            </div>
+          </div>
+
+          {/* Flere brancher: centreret note nederst under 3x3-gitteret */}
+          <div className="mx-auto mt-5 flex max-w-md items-center justify-center rounded-[20px] border border-dashed border-clay bg-parchment/50 p-7 text-center md:p-8">
+            <span className="text-[0.9rem] leading-relaxed text-slate">
+              Flere brancher er på vej. Er din ikke med endnu? Skriv til{" "}
+              <a
+                href="mailto:hej@alius.dk"
+                className="text-terracotta underline underline-offset-2"
+              >
+                hej@alius.dk
+              </a>
+              .
+            </span>
           </div>
         </Section>
       </main>
