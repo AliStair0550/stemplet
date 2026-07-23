@@ -18,7 +18,7 @@ const BARS = [42, 55, 38, 64, 72, 58, 80, 68, 90, 76, 84, 96];
 
 export default function StatsPreview() {
   return (
-    <Section className="bg-terracotta/[0.04]">
+    <Section className="bg-white">
       <div className="max-w-xl">
         <Eyebrow>Statistik</Eyebrow>
         <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">

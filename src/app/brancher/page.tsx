@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
-import { Section, Container, Eyebrow, Divider } from "@/components/ui";
+import { Section, Container, Divider } from "@/components/ui";
 import { BRANCHER } from "@/lib/brancher";
 
 export const metadata: Metadata = {
@@ -31,8 +31,7 @@ export default function BrancherPage() {
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
-              <Eyebrow>Brancher</Eyebrow>
-              <h1 className="mt-4 text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.9rem]">
+              <h1 className="text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.9rem]">
                 Stempelkort til din branche.
               </h1>
               <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.7] text-taupe">
