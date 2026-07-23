@@ -11,6 +11,8 @@ export type BrancheSection = {
   paragraphs: string[];
   /** Valgfri punktliste (fx belOnnings-muligheder), vises efter afsnittene. */
   list?: string[];
+  /** Valgfrit afsluttende afsnit, vises efter listen. */
+  outro?: string[];
 };
 /** Et opsaetnings-eksempel til CTA'en: hvad udloeser hvad. */
 export type BrancheExample = { target: string; reward: string };
@@ -523,35 +525,61 @@ export const CAFEER: BrancheContent = {
   cardTeaser: "Kaffe, vin og øl på samme kort.",
   stampIcon: ["coffee", "wine", "beer"],
   examples: [
-    { target: "Kaffe, vin eller øl", reward: "+1 stempel" },
-    { target: "10 stempler", reward: "En gratis drik" },
-    { target: "Stille timer", reward: "Dobbelt stempel" },
+    {
+      target: "Køb over 50 kr.",
+      reward: "Et stempel. Den 10. giver en kaffe eller øl",
+    },
+    {
+      target: "Køb over 250 kr.",
+      reward: "Et stempel. Den 10. giver en flaske vin",
+    },
+    { target: "Frokostmenuen", reward: "Et stempel. Den 10. er gratis" },
   ],
   title: "Stempelkort til caféer. Kaffe, vin og øl på samme kort | Stemplet",
   metaDescription:
     "Din café lever hele dagen: kaffen om morgenen, vinen om aftenen. Ét digitalt stempelkort, der tæller det hele.",
   eyebrow: "Stempelkort til caféer",
-  h1: "Morgenkaffen og aftenvinen er samme kunde",
+  h1: "Gør gæster til stamgæster.",
   intro: [
-    "Din café har ikke én stamgæst, den har tre i samme person: hende med den store latte klokken otte, frokostkunden klokken tolv, og parret med glasset vin klokken sytten. Papkortet talte kun kaffen. Dit kort skal tælle hele dagen.",
+    "En god café bliver en del af kundens hverdag.",
+    "Det er kaffen på vej til arbejde. Den hurtige frokost med en kollega. Eftermiddagen med en ven. Vinen eller øllen, når dagen skal afsluttes.",
+    "De bedste caféer har ikke bare gæster. De har mennesker, der vælger dem igen og igen.",
+    "Stemplet gør den vane synlig og giver kunderne en ekstra grund til at komme tilbage.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Beløn hele caféoplevelsen",
       paragraphs: [
-        "Ét stempel per drikkevare, kaffe, glas vin eller fadøl. 10 stempler, og belønningen vælger du selv: en gratis kop, et glas af husets vin eller en øl fra hanen. Pludselig arbejder loyaliteten hele åbningstiden, og morgenkunden får en grund til også at komme om aftenen. Det er dét skifte, der fylder de stille timer.",
+        "Loyalitet handler ikke kun om én bestemt vare. Det handler om hele oplevelsen hos jer.",
+        "Giv eksempelvis ét stempel for en kaffe, et glas vin, en øl eller et køb over et bestemt beløb.",
+        "Efter 10 stempler vælger I selv belønningen:",
+      ],
+      list: [
+        "En gratis øl",
+        "En gratis kaffe",
+        "En kage til kaffen",
+        "Et glas vin på huset",
+        "En særlig oplevelse for faste gæster",
+      ],
+      outro: [
+        "Det vigtigste er ikke selve belønningen. Det er følelsen af at blive genkendt og have en grund til at vælge jer igen.",
       ],
     },
     {
-      heading: "Tallene",
+      heading: "Brug data til at skabe flere besøg",
       paragraphs: [
-        "Mandagsrapporten viser, hvornår dine stamgæster faktisk kommer, og hvor hullerne er. Er eftermiddagen stille, kan dobbelt stempel mellem 14 og 16 flytte besøg derhen. Og gæsten, der runder 100 stempler, har levet en del af sit liv hos jer. Det fortjener en plads med navn på baren for en dag, eller bare første række, når der sker noget. Set loyalitet er delt loyalitet.",
+        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Stemplet giver jer indsigt i jeres gæsters vaner.",
+        "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvornår jeres gæster kommer, og hvor der er mulighed for at skabe mere aktivitet.",
+        "Er eftermiddagen stille? Lav dobbelt stempel mellem 14 og 16. Vil I belønne jeres mest loyale gæster? Giv noget ekstra, når de rammer 50 eller 100 stempler.",
+        "De bedste kunder skal ikke bare genkendes. De skal mærke, at de betyder noget.",
       ],
     },
     {
-      heading: "I gang i dag",
+      heading: "Kom i gang på få minutter",
       paragraphs: [
-        "QR ved kassen og på bordene. Gæsten scanner, mens kaffen laves eller vinen skænkes. Ingen app.",
+        "QR koden står ved kassen eller på bordet. Kunden scanner én gang og har kortet direkte i Apple Wallet.",
+        "Ingen app. Ingen oprettelse. I stempler fra den telefon, I allerede har.",
+        "En enkel måde at få flere gæster til at vælge jer igen og igen.",
       ],
     },
   ],
@@ -569,6 +597,15 @@ export const CAFEER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Café Lys",
+    primaryColor: "#3A2C24",
+    textColor: "#F4E9DD",
+    stampIcon: "coffee",
+    required: 10,
+    stamps: 7,
+    rewardText: "Den 10. drik er på huset",
+  },
 };
 
 export const ISBUTIKKER: BrancheContent = {

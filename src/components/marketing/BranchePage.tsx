@@ -95,6 +95,11 @@ export function BranchePage({ b }: { b: BrancheContent }) {
                     ))}
                   </ul>
                 ) : null}
+                {s.outro?.map((p, i) => (
+                  <p key={i} className="text-[1.02rem] leading-[1.75] text-stone">
+                    {p}
+                  </p>
+                ))}
               </div>
             ))}
           </div>
