@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 
-const LINKS = [{ href: "/#pris", label: "Pris" }];
+const LINKS = [
+  { href: "/login", label: "Log ind" },
+  { href: "/hvorfor", label: "Fordele" },
+  { href: "/brancher", label: "Brancher" },
+  { href: "/#pris", label: "Pris" },
+];
 
 function MenuIcon({ open }: { open: boolean }) {
   return (
@@ -62,7 +67,7 @@ export default function Nav() {
       <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-6 md:px-8">
         <Wordmark href="/" className="text-[1.35rem]" />
 
-        {/* Desktop: links + Log ind + CTA */}
+        {/* Desktop: Log ind, Fordele, Brancher, Pris + primaer CTA */}
         <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (
             <Link
@@ -73,12 +78,6 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/login"
-            className="rounded-full font-medium text-[0.9rem] text-taupe transition-colors hover:text-ink"
-          >
-            Log ind
-          </Link>
           <Link
             href="/start"
             className="inline-flex min-h-10 items-center rounded-full bg-terracotta px-5 text-[0.9rem] font-medium text-parchment transition-colors hover:bg-terracotta-dark"
@@ -99,8 +98,8 @@ export default function Nav() {
         </button>
       </div>
 
-      {/* Mobil-menu: Saadan virker det + Pris (tydelige CTA-raekker) + Log ind
-          + primaer knap "Kom gratis i gang" */}
+      {/* Mobil-menu: Log ind, Fordele, Brancher, Pris + primaer knap
+          "Kom gratis i gang" */}
       {open ? (
         <div className="border-t border-ink/[0.08] bg-parchment/98 backdrop-blur-md md:hidden">
           <nav className="mx-auto flex w-full max-w-[1120px] flex-col gap-1 px-6 py-4">
@@ -114,13 +113,6 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="rounded-xl px-2 py-3 font-medium text-[0.95rem] text-ink transition-colors hover:bg-sand"
-            >
-              Log ind
-            </Link>
             <Link
               href="/start"
               onClick={() => setOpen(false)}

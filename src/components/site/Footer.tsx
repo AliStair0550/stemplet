@@ -3,9 +3,11 @@ import Image from "next/image";
 import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
+  { href: "/login", label: "Log ind" },
   { href: "/hvorfor", label: "Fordele" },
   { href: "/brancher", label: "Brancher" },
-  { href: "/#sådan", label: "Sådan virker det" },
+  { href: "/#pris", label: "Pris" },
+  { href: "/start", label: "Kom gratis i gang" },
 ];
 
 export default function Footer() {
