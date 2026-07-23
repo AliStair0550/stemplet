@@ -45,7 +45,7 @@ export default function BrancherPage() {
         <Divider />
 
         <Section>
-          <div className="mx-auto grid max-w-[880px] gap-5 sm:grid-cols-2">
+          <div className="mx-auto grid max-w-[1040px] gap-5 sm:grid-cols-2 md:grid-cols-3">
             {BRANCHER.map((b) => (
               <Link
                 key={b.slug}
@@ -65,7 +65,7 @@ export default function BrancherPage() {
             ))}
             {/* Forberedt til flere brancher: fag som pizzeriaer, bagerier,
                 caféer, blomsterbutikker, ølbarer og isbutikker skrives efter behov. */}
-            <div className="flex items-center justify-center rounded-[20px] border border-dashed border-clay bg-parchment/50 p-7 text-center md:p-8">
+            <div className="flex items-center justify-center rounded-[20px] border border-dashed border-clay bg-parchment/50 p-7 text-center md:col-span-3 md:p-8">
               <span className="text-[0.9rem] leading-relaxed text-slate">
                 Flere brancher er på vej. Er din ikke med endnu? Skriv til{" "}
                 <a
