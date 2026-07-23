@@ -75,8 +75,8 @@ export function StepTabs() {
 
   return (
     <>
-      {/* Rolle-faner */}
-      <div className="mt-8 flex flex-wrap justify-center gap-2">
+      {/* Rolle-faner (venstrestillet, som resten af sektionen) */}
+      <div className="mt-16 flex flex-wrap justify-start gap-2">
         {ROLES.map((r) => {
           const active = role === r.key;
           return (
