@@ -108,7 +108,7 @@ export default function AnimatedStampScene() {
       <div
         className={cn(
           // Vipper til siden som hero-kortet; retter sig op paa hover.
-          "relative w-full max-w-[19.5rem] rotate-[2deg] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0",
+          "relative w-full max-w-[17.5rem] rotate-[2deg] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:rotate-0",
           phase === "scan" ? "scale-[0.96] opacity-90" : "scale-100 opacity-100",
           celebrate && "animate-[cardBurst_0.6s_ease-out]",
         )}

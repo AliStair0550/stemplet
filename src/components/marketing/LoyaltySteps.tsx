@@ -18,7 +18,9 @@ export default function LoyaltySteps() {
             gang de vælger dig igen.
           </p>
         </div>
-        <div className="mt-12 md:mt-0">
+        {/* Kortet rykkes ca. 1 cm ned paa desktop (translate paavirker ikke
+            hoejden, saa overskriften bliver staaende). */}
+        <div className="mt-12 md:mt-0 md:translate-y-10">
           <AnimatedStampScene />
         </div>
       </div>

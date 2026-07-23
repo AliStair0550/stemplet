@@ -40,8 +40,9 @@ export default async function TryItYourself() {
             Få det digitale stempelkort i din Apple Wallet. Lige nu.
           </h2>
           <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
-            Scan koden. Få kortet direkte i Apple Wallet. En enkel oplevelse,
-            dine kunder vil elske.
+            Scan koden. Få kortet direkte i Apple Wallet.
+            <br />
+            En enkel oplevelse, dine kunder vil elske.
           </p>
           {/* Android-link lige under teksten */}
           <a

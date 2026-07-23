@@ -16,9 +16,8 @@ export default function Problem() {
           <span className="text-terracotta">Apple Wallet</span>.
         </h2>
         <p className="mt-5 max-w-md font-[200] text-[0.95rem] leading-[1.8] text-stone">
-          Det fysiske kommer hurtigt i en skuffe. Eller smidt ud. Med Stemplet
-          ligger det altid i dine kunders Wallet. Du ser genbesøg, stempler og
-          indløsninger.
+          Det fysiske kommer hurtigt i en skuffe. Med Stemplet ligger det altid
+          i dine kunders Wallet. Du ser genbesøg, stempler og indløsninger.
         </p>
       </div>
 
