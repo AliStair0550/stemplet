@@ -8,30 +8,43 @@ export const DEFAULT_TEXT = "#F6EEE4";
 
 export type StampIconKey =
   | "coffee"
-  | "scissors"
   | "croissant"
+  | "cupcake"
   | "pizza"
   | "burger"
-  | "beer"
   | "icecream"
+  | "beer"
   | "wine"
+  | "cocktail"
+  | "scissors"
+  | "sparkle"
   | "flower"
+  | "leaf"
   | "heart"
   | "star"
+  | "crown"
   | "custom";
 
+// Raekkefoelgen styrer designerens ikon-gitter: foerst mad og drikke, saa
+// skoenhed og butik, til sidst de generelle. Bredt nok til alle vores brancher,
+// saa hver forretning kan finde et ikon der passer.
 export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "coffee", label: "Kaffekop" },
-  { key: "scissors", label: "Saks" },
   { key: "croissant", label: "Croissant" },
+  { key: "cupcake", label: "Cupcake" },
   { key: "pizza", label: "Pizza" },
   { key: "burger", label: "Burger" },
-  { key: "beer", label: "Øl" },
   { key: "icecream", label: "Is" },
+  { key: "beer", label: "Øl" },
   { key: "wine", label: "Vin" },
+  { key: "cocktail", label: "Cocktail" },
+  { key: "scissors", label: "Saks" },
+  { key: "sparkle", label: "Glimt" },
   { key: "flower", label: "Blomst" },
+  { key: "leaf", label: "Blad" },
   { key: "heart", label: "Hjerte" },
   { key: "star", label: "Stjerne" },
+  { key: "crown", label: "Krone" },
   { key: "custom", label: "Prik" },
 ];
 

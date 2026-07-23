@@ -16,17 +16,23 @@ export type BrancheSection = {
 };
 /** Et opsaetnings-eksempel til CTA'en: hvad udloeser hvad. */
 export type BrancheExample = { target: string; reward: string };
-/** Ikoner til hero-animationen (laant fra stempel-gitteret). */
+/** Ikoner til hero-animationen. Delmaengde af StampIconKey (stamp-icon-paths),
+ *  saa hero og kort viser praecis det samme ikon. */
 export type BrancheIcon =
   | "coffee"
   | "scissors"
   | "heart"
   | "pizza"
   | "croissant"
+  | "cupcake"
   | "icecream"
   | "wine"
   | "beer"
-  | "flower";
+  | "cocktail"
+  | "sparkle"
+  | "flower"
+  | "leaf"
+  | "crown";
 
 export type BrancheContent = {
   /** Sti med dansk slug (aeoeaa), fx "/stempelkort-til-frisoerer". */
@@ -228,7 +234,7 @@ export const NEGLESALONER: BrancheContent = {
   slug: "/stempelkort-til-neglesaloner",
   shortName: "Neglesaloner",
   cardTeaser: "Hold på dine faste kunder.",
-  stampIcon: "heart",
+  stampIcon: "sparkle",
   examples: [
     { target: "5. besøg", reward: "25 % rabat" },
     { target: "Produktkøb", reward: "+1 stempel" },
@@ -293,7 +299,7 @@ export const NEGLESALONER: BrancheContent = {
     businessName: "Neglestudiet",
     primaryColor: "#6D4550",
     textColor: "#F4E8EC",
-    stampIcon: "heart",
+    stampIcon: "sparkle",
     required: 5,
     stamps: 3,
     rewardText: "25 % rabat",
@@ -373,16 +379,16 @@ export const PIZZERIAER: BrancheContent = {
 export const BAGERIER: BrancheContent = {
   slug: "/stempelkort-til-bagerier",
   shortName: "Bagerier",
-  cardTeaser: "Lørdagsposen tæller nu.",
+  cardTeaser: "Den daglige rutine tæller nu.",
   stampIcon: "croissant",
   examples: [
     { target: "10. kaffe", reward: "Gratis" },
     { target: "Kaffe eller kage", reward: "+1 stempel" },
-    { target: "Stille søndag", reward: "Dobbelt stempel" },
+    { target: "Stille formiddag", reward: "Dobbelt stempel" },
   ],
-  title: "Stempelkort til bagerier. Lørdagsposen tæller nu | Stemplet",
+  title: "Stempelkort til bagerier. Den daglige rutine tæller | Stemplet",
   metaDescription:
-    "Morgenbrødskunden kommer hver weekend, året rundt. Giv rutinen et digitalt stempelkort, der aldrig ryger i vasketøjet.",
+    "Morgenbrødskunden kommer igen og igen, året rundt. Giv den daglige rutine et digitalt stempelkort, der aldrig ryger i vasketøjet.",
   eyebrow: "Stempelkort til bagerier",
   h1: "Gør den daglige kaffetur til en fast tradition hos jer.",
   intro: [

@@ -33,6 +33,15 @@ export const DEFAULT_DESIGN: CardDesign = {
   logoUrl: null,
 };
 
+// Hurtige forslag til belOnningen, saa man kan komme i gang med eet klik.
+// BelOnningen er fri tekst, saa fx procent-rabat ("25 % rabat") virker ogsaa.
+const REWARD_SUGGESTIONS = [
+  "Den 10. er gratis",
+  "25 % rabat",
+  "Gratis produkt",
+  "En på huset",
+];
+
 /**
  * Læser logoet én gang i browseren: skalerer det ned til en komprimeret
  * data-URL (gemmes direkte, ingen ekstern tjeneste). Farverne vaelger butikken
@@ -150,16 +159,35 @@ export function CardDesigner({
           />
         </Field>
 
-        <Field label="Belønningstekst">
-          <input
-            type="text"
-            value={value.rewardText}
-            maxLength={80}
-            onChange={(e) => set("rewardText", e.target.value)}
-            placeholder="10. kop er gratis"
-            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-          />
-        </Field>
+        <div className="flex flex-col gap-2">
+          <Field label="Belønningstekst">
+            <input
+              type="text"
+              value={value.rewardText}
+              maxLength={80}
+              onChange={(e) => set("rewardText", e.target.value)}
+              placeholder="10. kop er gratis"
+              className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+            />
+          </Field>
+          <div className="flex flex-wrap gap-1.5">
+            {REWARD_SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => set("rewardText", s)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-[0.72rem] font-[300] transition-colors",
+                  value.rewardText === s
+                    ? "border-terracotta bg-terracotta/10 text-terracotta"
+                    : "border-clay text-stone hover:border-terracotta hover:text-terracotta",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
