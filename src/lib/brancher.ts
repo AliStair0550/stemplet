@@ -376,33 +376,44 @@ export const BAGERIER: BrancheContent = {
   examples: [
     { target: "10. kaffe", reward: "Gratis" },
     { target: "Kaffe eller kage", reward: "+1 stempel" },
-    { target: "Fyldt kort", reward: "En pose morgenbrød" },
+    { target: "Stille søndag", reward: "Dobbelt stempel" },
   ],
   title: "Stempelkort til bagerier. Lørdagsposen tæller nu | Stemplet",
   metaDescription:
     "Morgenbrødskunden kommer hver weekend, året rundt. Giv rutinen et digitalt stempelkort, der aldrig ryger i vasketøjet.",
   eyebrow: "Stempelkort til bagerier",
-  h1: "Danmarks stærkeste vane går forbi din disk hver lørdag",
+  h1: "Gør den daglige kaffetur til en fast tradition hos jer.",
   intro: [
-    "Morgenbrødskunden er den mest trofaste menneske. Samme tid, samme pose, år efter år. Men vanen er tavs, og den dag den flytter til supermarkedets bake-off, siger ingen noget. Stempelkortet gør vanen synlig og giver den en grund til at blive.",
+    "Morgenbrødskunden er noget af det mest værdifulde, en bager kan have. Den samme kunde kommer igen og igen. Samme tidspunkt. Samme bestilling. Den samme lille pause i hverdagen.",
+    "Men vaner er usynlige. Kunden siger sjældent farvel, hvis de begynder at købe morgenbrød et andet sted.",
+    "Stemplet gør loyaliteten synlig og giver kunderne endnu en grund til at vælge jer.",
   ],
   sections: [
     {
-      heading: "Sådan gør du",
+      heading: "Beløn de små køb, der bliver til store vaner",
       paragraphs: [
-        "Giv et stempel, når kunden køber kaffe eller kage. Det er de køb, hvor vanen bor: kaffen på vej til arbejde, kagen til eftermiddagen, og det er samtidig varerne med den bedste avance. 10 stempler passer rytmen, og belønningen vælger du selv: 10. kaffe gratis, en kage til kaffen eller en pose morgenbrød på husets regning. Duften af gratis bagværk er den bedste reklame, der findes.",
+        "De bedste stempler følger kundens naturlige rytme.",
+        "Giv eksempelvis et stempel ved køb af kaffe, kage eller morgenbrød. Det er de køb, der sker igen og igen, og hvor en lille belønning kan gøre en stor forskel.",
+        "10 stempler er enkelt at forstå. Den 10. kaffe kan være gratis, en kage til eftermiddagen eller en pose morgenbrød på husets regning.",
+        "Belønningen behøver ikke være stor for jer, men den føles stor for kunden. Det er følelsen af at blive husket og værdsat, der bygger relationen.",
       ],
     },
     {
-      heading: "Tallene",
+      heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Rapporten hver mandag viser ugens kortholdere og stempler, og hvilke dage der bærer. Mange bagerier opdager, at loyaliteten bor om lørdagen, og at søndagen kan løftes med dobbelt stempel i en måned. Kunden, der runder 100 stempler i alt, har drukket morgenkaffe hos dig i årevis. En pose på husets regning og et tillykke gør trofasthed til en historie.",
+        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Stemplet fortæller meget mere.",
+        "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvornår kunderne kommer, hvilke køb der skaber loyalitet, og hvor der er mulighed for at skabe mere trafik.",
+        "Har I en stille søndag? Lav dobbelt stempel i en periode. Vil I belønne jeres bedste kunder? Giv noget ekstra, når de når 50 eller 100 stempler.",
+        "Kunden, der har samlet 100 stempler, er ikke bare en kunde. Det er en stamkunde, der har valgt jer igen og igen. En lille personlig hilsen eller en pose brød på husets regning kan skabe en historie, der bliver fortalt videre.",
       ],
     },
     {
-      heading: "I gang før weekenden",
+      heading: "Kom i gang før morgenkøen",
       paragraphs: [
-        'QR ved kassen, "scan mens du venter". Morgenkøen er din tilmeldingsmaskine.',
+        "QR koden står ved kassen. Kunden scanner, mens kaffen bliver lavet, og har kortet direkte i Apple Wallet på under et minut.",
+        "Ingen app. Ingen oprettelse.",
+        "I stempler fra den telefon, I allerede har. Ingen ekstra udstyr.",
+        "Bare en enkel måde at gøre flere kunder til faste kunder.",
       ],
     },
   ],
@@ -420,6 +431,15 @@ export const BAGERIER: BrancheContent = {
       a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
     },
   ],
+  cardExample: {
+    businessName: "Morgenbageren",
+    primaryColor: "#7C5330",
+    textColor: "#F5ECDC",
+    stampIcon: "croissant",
+    required: 10,
+    stamps: 6,
+    rewardText: "10. kaffe er gratis",
+  },
 };
 
 export const BLOMSTERBUTIKKER: BrancheContent = {
