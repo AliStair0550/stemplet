@@ -37,7 +37,7 @@ export default async function TryItYourself() {
         <div className="max-w-xl">
           <Eyebrow>Prøv det selv</Eyebrow>
           <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
-            Få det digitale stempelkort i din egen Wallet. Lige nu.
+            Få det digitale stempelkort i din Apple Wallet. Lige nu.
           </h2>
           <p className="mt-4 font-[300] text-[0.95rem] leading-[1.8] text-stone">
             Scan koden. Få kortet direkte i Apple Wallet. En enkel oplevelse,

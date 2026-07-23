@@ -23,8 +23,8 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
       body: "Ét tryk. Ingen tilmelding, ingen formularer.",
     },
     {
-      title: "Tilføj til Wallet",
-      body: "Tryk Tilføj, og kortet ligger i din Wallet.",
+      title: "Tilføj til Apple Wallet",
+      body: "Tryk Tilføj, og kortet ligger i din Apple Wallet.",
     },
     {
       title: "Vis kortet, se stemplerne vokse",
@@ -33,8 +33,8 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
   ],
   medarbejder: [
     {
-      title: "Åbn scanneren",
-      body: "På jeres telefon eller tablet ved kassen.",
+      title: "Scan med jeres telefon",
+      body: "Scanneren er indbygget i appen. Intet ekstra udstyr.",
     },
     {
       title: "Scan kundens kort",
@@ -52,7 +52,7 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
   ejer: [
     {
       title: "Opret dit kort",
-      body: "Eget brand, egne farver. Klar på fem minutter.",
+      body: "Tilpas kortet til jeres brand. Klar på fem minutter.",
     },
     {
       title: "Print QR-koden",
@@ -64,7 +64,7 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
     },
     {
       title: "Beløn dine stamkunder",
-      body: "Kampagner til dem, der kommer igen.",
+      body: "Flere fordele til dem, der kommer igen (og igen).",
     },
   ],
 };
