@@ -161,15 +161,16 @@ export const FRISOERER: BrancheContent = {
 export const KAFFEBARER: BrancheContent = {
   slug: "/stempelkort-til-kaffebarer",
   shortName: "Kaffebarer",
-  cardTeaser: "Fra 10. kop til bønner på hylden.",
+  cardTeaser: "Klassikeren 10. kop gratis, uden pap.",
   stampIcon: "coffee",
   examples: [
     { target: "10. kop", reward: "Gratis" },
     { target: "Køb af bønner", reward: "+1 stempel" },
   ],
-  title: "Stempelkort til kaffebarer. Fra 10. kop til bønner på hylden | Stemplet",
+  title:
+    "Stempelkort til kaffebarer. Klassikeren 10. kop gratis, uden pap | Stemplet",
   metaDescription:
-    "Klassikeren 10. kop gratis, uden pap. Og et kort, der også sælger dine bønner, så kunderne drikker din kaffe derhjemme.",
+    "Giv kunderne en ekstra grund til at vælge din kaffebar, hver gang. Med stempelkortet lige ved hånden i Apple Wallet er det oplagt at kigge forbi. Også når kaffetrangen melder sig ved de spontane besøg.",
   eyebrow: "Stempelkort til kaffebarer",
   h1: "Gør kaffekunder til stamgæster.",
   intro: [
@@ -247,8 +248,8 @@ export const NEGLESALONER: BrancheContent = {
   cardTeaser: "Hold på dine faste kunder.",
   stampIcon: "sparkle",
   examples: [
+    { target: "Behandling", reward: "+1 stempel" },
     { target: "5. besøg", reward: "25 % rabat" },
-    { target: "Produktkøb", reward: "+1 stempel" },
     { target: "50 besøg", reward: "Noget særligt" },
   ],
   title:
