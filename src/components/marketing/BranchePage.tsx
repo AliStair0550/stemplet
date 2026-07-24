@@ -132,9 +132,40 @@ export function BranchePage({ b }: { b: BrancheContent }) {
           </div>
         </Section>
 
+        {/* Inspiration til belOnninger: levende, maalrettede eksempler + CTA */}
+        <Section className="relative overflow-hidden">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
+          />
+          <div className="relative mx-auto max-w-2xl text-center">
+            <Eyebrow>Inspiration til belønninger</Eyebrow>
+            <h2 className="mt-4 text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[2.7rem]">
+              Din næste stamkunde starter med ét stempel.
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-[0.95rem] leading-[1.6] text-stone">
+              Belønningen er altid dit valg. Et par eksempler:
+            </p>
+            <BrancheExamples examples={b.examples} />
+            <p className="mx-auto mt-7 max-w-md text-[1rem] leading-[1.7] text-stone">
+              Sæt dit eget kort op på få minutter. Ingen app, ingen binding, gratis
+              op til {FREE_CUSTOMER_LIMIT} kortholdere.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <CtaGlow>
+                <ButtonLink href="/start" variant="primary" size="lg">
+                  Kom gratis i gang
+                </ButtonLink>
+              </CtaGlow>
+              <ButtonLink href="/prøv" variant="outline" size="lg">
+                Prøv det selv
+              </ButtonLink>
+            </div>
+          </div>
+        </Section>
         {/* Konkret kort-design-eksempel (kun hvis branchen har defineret et) */}
         {b.cardExample ? (
-          <Section>
+          <Section className="bg-sand">
               <div className="mx-auto max-w-[680px] text-center">
                 <Eyebrow>Et eksempel</Eyebrow>
                 <h2 className="mt-3 text-[1.6rem] font-bold leading-[1.15] tracking-[-0.025em] text-ink md:text-[2rem]">
@@ -162,7 +193,7 @@ export function BranchePage({ b }: { b: BrancheContent }) {
         ) : null}
 
         {/* FAQ */}
-        <Section className={hasCard ? "bg-sand" : undefined}>
+        <Section className={hasCard ? undefined : "bg-sand"}>
           <div className="mx-auto max-w-[680px]">
             <h2 className="text-[1.6rem] font-bold leading-[1.15] tracking-[-0.025em] text-ink md:text-[2rem]">
               Ofte stillede spørgsmål
@@ -180,39 +211,6 @@ export function BranchePage({ b }: { b: BrancheContent }) {
           </div>
         </Section>
 
-        {/* Afsluttende CTA med levende, maalrettede eksempler */}
-        <Section
-          className={`relative overflow-hidden${hasCard ? "" : " bg-sand"}`}
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
-          />
-          <div className="relative mx-auto max-w-2xl text-center">
-            <Eyebrow>Kom i gang</Eyebrow>
-            <h2 className="mt-4 text-balance text-[2rem] font-bold leading-[1.08] tracking-[-0.035em] text-ink md:text-[2.7rem]">
-              Din næste stamkunde starter med ét stempel.
-            </h2>
-            <p className="mx-auto mt-4 max-w-md text-[0.95rem] leading-[1.6] text-stone">
-              Belønningen er altid dit valg. Et par eksempler:
-            </p>
-            <BrancheExamples examples={b.examples} />
-            <p className="mx-auto mt-7 max-w-md text-[1rem] leading-[1.7] text-stone">
-              Sæt dit eget kort op på få minutter. Ingen app, ingen binding, gratis
-              op til {FREE_CUSTOMER_LIMIT} kortholdere.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <CtaGlow>
-                <ButtonLink href="/start" variant="primary" size="lg">
-                  Kom gratis i gang
-                </ButtonLink>
-              </CtaGlow>
-              <ButtonLink href="/prøv" variant="outline" size="lg">
-                Prøv det selv
-              </ButtonLink>
-            </div>
-          </div>
-        </Section>
       </main>
       <Footer />
     </>

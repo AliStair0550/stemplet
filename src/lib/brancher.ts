@@ -81,7 +81,7 @@ export type BrancheContent = {
 export const FRISOERER: BrancheContent = {
   slug: "/stempelkort-til-frisører",
   shortName: "Frisører",
-  cardTeaser: "Gør dine produkter til kundens vane.",
+  cardTeaser: "Gør dine produkter til vane.",
   stampIcon: "scissors",
   examples: [
     { target: "Behandling", reward: "+1 stempel" },
@@ -89,7 +89,7 @@ export const FRISOERER: BrancheContent = {
     { target: "10 stempler", reward: "Gratis vask og styling" },
   ],
   title:
-    "Stempelkort til frisører. Gør dine produkter til kundens vane | Stemplet",
+    "Stempelkort til frisører. Gør dine produkter til vane | Stemplet",
   metaDescription:
     "Dine kunder elsker resultatet, men køber plejeprodukter i Matas. Et digitalt stempelkort kan få kunder til at købe produkter hos dig.",
   eyebrow: "Stempelkort til frisører",
@@ -161,16 +161,16 @@ export const FRISOERER: BrancheContent = {
 export const KAFFEBARER: BrancheContent = {
   slug: "/stempelkort-til-kaffebarer",
   shortName: "Kaffebarer",
-  cardTeaser: "Klassikeren 10. kop gratis, uden pap.",
+  cardTeaser: "10. kop gratis, uden pap.",
   stampIcon: "coffee",
   examples: [
     { target: "10. kop", reward: "Gratis" },
     { target: "Køb af bønner", reward: "+1 stempel" },
   ],
   title:
-    "Stempelkort til kaffebarer. Klassikeren 10. kop gratis, uden pap | Stemplet",
+    "Stempelkort til kaffebarer. 10. kop gratis, uden pap | Stemplet",
   metaDescription:
-    "Giv kunderne en ekstra grund til at vælge din kaffebar, hver gang. Med stempelkortet lige ved hånden i Apple Wallet er det oplagt at kigge forbi. Også når kaffetrangen melder sig ved de spontane besøg.",
+    "Giv kunderne en ekstra grund til at vælge din kaffebar, hver gang. Også når kaffetrangen melder sig ved de spontane besøg.",
   eyebrow: "Stempelkort til kaffebarer",
   h1: "Gør kaffekunder til stamgæster.",
   intro: [

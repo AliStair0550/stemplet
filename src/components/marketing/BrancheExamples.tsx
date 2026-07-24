@@ -7,11 +7,11 @@ import type { BrancheExample } from "@/lib/brancher";
 // via .branche-example-badge i globals.css.
 export function BrancheExamples({ examples }: { examples: BrancheExample[] }) {
   return (
-    <div className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-3">
+    <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-3.5">
       {examples.map((ex, i) => (
         <div
           key={ex.reward}
-          className="flex w-[9.75rem] flex-col items-center gap-2 rounded-xl border border-clay bg-white/70 px-4 py-4 text-center shadow-card"
+          className="flex w-[12.5rem] flex-col items-center gap-2.5 rounded-xl border border-clay bg-white/70 px-5 py-5 text-center shadow-card"
         >
           <span
             className="branche-example-badge inline-flex rounded-full bg-terracotta/10 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-[0.06em] text-terracotta"
