@@ -173,41 +173,37 @@ export const KAFFEBARER: BrancheContent = {
   eyebrow: "Stempelkort til kaffebarer",
   h1: "Gør kaffekunder til stamgæster.",
   intro: [
-    "Kunden elsker kaffen og oplevelsen hos jer. Udfordringen er at give dem en grund til at vælge jer igen næste gang. Stemplet gør kaffekunder til stamgæster ved at holde relationen levende mellem besøgene.",
+    "Kunderne elsker kaffen og oplevelsen hos jer. Men konkurrencen er kun ét gadehjørne væk. Udfordringen er at give dem en grund til at tilvælge jeres kaffebar - gerne hver gang. Stemplet gør dine kaffeglade kunder til stamgæster ved at holde relationen levende mellem besøgene.",
   ],
   sections: [
     {
       heading: "Byg en vane omkring din kaffebar",
       paragraphs: [
-        "Den klassiske løsning virker: 10 stempler, 10. kop gratis. Kunden forstår det med det samme.",
-        "Men kortet kan bruges til mere end en gratis kop. Det kan hjælpe dig med at skabe flere besøg, sælge mere og gøre dine bedste kunder endnu mere loyale.",
-        "Når kunden samler stempler hos jer, bliver jeres kaffebar en del af deres rutine. Og når kunden forbinder kvalitet og kaffeoplevelsen med jer, vælger de jer igen næste gang.",
+        "Den klassiske løsning virker: 10 stempler, 10. kop gratis. Det er et koncept, som alle kunder kender og forstår. Et stempelkort kan dog bruges til mere end en gratis kop. Det skaber flere besøg, mersalg og gør dine bedste kunder endnu mere loyale. Digitaliseringen af stempelkortet sikrer, at kunden altid har kortet ved hånden. Også når de får lyst til et spontant besøg.",
+        "Når kunden samler stempler hos jer, bliver besøg på jeres kaffebar en del af deres rutine. Og når kunden forbinder kvalitet og den gode kaffeoplevelse med jer, vælger de jer igen næste gang.",
         "Belønningen kan være præcis det, der giver mening for din kaffebar:",
       ],
       list: [
         "En gratis kop kaffe",
-        "En pose af jeres egne bønner",
-        "Månedens specialkaffe",
-        "En særlig oplevelse for faste kunder",
+        "En pose af jeres egne kvalitetsbønner",
+        "En helt særlig smagsoplevelse for faste kunder",
+      ],
+      outro: [
+        "Kortet tæller også kundens antal samlede stempler totalt set. Det gør det nemt at belønne særlige milepæle som 50 eller 100 besøg. De små handlinger er ofte dem, kunderne husker og fortæller videre.",
       ],
     },
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
         "Et papkort fortæller ingenting. Stemplet giver dig data.",
-        "Hver uge får du overblik over nye kortholdere, antal stempler og indløste belønninger. Over tid kan du se dine kunders rytme: Hvornår kommer de? Hvor ofte vender de tilbage? Hvornår begynder en stamkunde at falde væk?",
-        "Det giver dig bedre beslutninger om alt fra bemanding i morgenrushet til kampagner, der faktisk rammer dine kunder.",
-        "Kortet tæller også kundens samlede stempler. Når en kunde rammer 100 stempler, har du mulighed for at gøre noget ekstra: en kaffe på huset, en personlig hilsen eller en særlig overraskelse.",
-        "De små handlinger er ofte dem, kunderne husker og fortæller videre.",
+        "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Over tid kan du se værdifulde købsmønstre i dine kunders rytme: Hvornår kommer de? Hvor ofte vender de tilbage? Hvornår mister du loyale stamkunder? Det giver dig mulighed for at træffe bedre beslutninger om alt fra bemanding i baren under morgentravlheden, til at skabe kampagner der faktisk rammer dine kunder.",
       ],
     },
     {
-      heading: "Kom i gang før næste kaffepause",
+      heading: "Kom i gang inden næste kaffepause",
       paragraphs: [
-        "QR koden står ved kassen. Kunden scanner én gang og har kortet direkte i Apple Wallet på under et minut.",
-        "Ingen app. Ingen oprettelse.",
-        "Baristaen stempler fra den telefon, I allerede har.",
-        "Ingen ekstra udstyr. Bare flere grunde til, at kunderne kommer igen.",
+        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "Baristaen stempler kundens kort med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
   ],
