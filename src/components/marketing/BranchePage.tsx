@@ -141,8 +141,8 @@ export function BranchePage({ b }: { b: BrancheContent }) {
                   Sådan kunne dit kort se ud
                 </h2>
                 <p className="mx-auto mt-4 max-w-md text-[1rem] leading-[1.7] text-stone">
-                  Dit brand, dine farver, din belønning. Kunden har det i Apple
-                  Wallet, altid ved hånden.
+                  Tilpas farver og belønning til dit brand. Kunden har det i
+                  Apple Wallet, altid ved hånden.
                 </p>
                 <div className="mt-10 flex justify-center">
                   <StampCard

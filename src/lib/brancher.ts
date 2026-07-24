@@ -91,11 +91,11 @@ export const FRISOERER: BrancheContent = {
   title:
     "Stempelkort til frisører. Gør dine produkter til kundens vane | Stemplet",
   metaDescription:
-    "Dine kunder elsker resultatet fra stolen, men køber shampooen i Matas. Se hvordan et digitalt stempelkort vænner kunderne til dine produkter.",
+    "Dine kunder elsker resultatet, men køber plejeprodukter i Matas. Et digitalt stempelkort kan få kunder til at købe produkter hos dig.",
   eyebrow: "Stempelkort til frisører",
   h1: "Kunden elsker resultatet. Men køber produkterne et andet sted.",
   intro: [
-    "Kunden rejser sig fra stolen, smiler til spejlet og går hjem med et hår, der sidder præcis, som du havde tænkt. Du har brugt den rigtige voks, den rigtige shampoo og de rigtige produkter.",
+    "Kunden rejser sig fra stolen, smiler til spejlet og går hjem med et hår, der sidder præcis, som de havde ønsket sig. Du har brugt den rigtige shampoo, den rigtige mist eller voks.",
     "Tre dage senere står kunden i Matas og køber noget helt andet.",
   ],
   sections: [
@@ -103,24 +103,24 @@ export const FRISOERER: BrancheContent = {
       heading: "Gør dine produkter til en vane",
       paragraphs: [
         "Belønningen skal ikke bare være gratis. Den skal skabe en vane.",
-        "Et oplagt setup er fem stempler, hvor det femte udløser et produkt, du selv har valgt til kunden. Kostprisen er lille, men værdien er stor. Når dit produkt står på kundens badeværelse, bliver det en del af deres rutine. Når det er tomt, ved kunden præcis, hvor det skal købes: hos dig.",
+        "Et oplagt set-up er, at kunden samler et stempel efter hver behandling, hvor femte behandling udløser et gratis produkt. Kostprisen er lille, men værdien er stor. Når dit produkt står på kundens badeværelse, bliver det en del af deres daglige plejerutine. Når flasken er tom, ved kunden præcis, hvor det skal købes: Hos dig.",
         "Giv samtidig et stempel, når kunden køber et produkt. Så belønner kortet både klipninger og produktsalg, og hver gang kunden handler hos dig, kommer den næste belønning tættere på.",
-        "Belønningen bestemmer du selv. Det kan være en voks, en shampoo, en skægtrim eller en gratis vask. Kortet tilpasses din salon og kan ændres, når du vil.",
+        "Belønningen bestemmer du selvfølgelig selv. Det kan være et produkt: En voks, shampoo eller gratis hårolie. Det kan også være procentvis rabat på hver 5. behandling. Kortet tilpasses din salon og kan ændres, når du vil.",
       ],
     },
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet gør.",
-        "Hver uge modtager du statistik over nye kortholdere, antal stempler og indløste belønninger. Du kan se, hvilke kunder der kommer igen, og opdage, når en fast kunde pludselig bliver væk. Det giver dig mulighed for at reagere, før stolen står tom.",
-        "Kortet tæller også kundens samlede stempler. Det gør det nemt at belønne milepæle som 50 eller 100 besøg og skabe stamkunder, der bliver ambassadører for din salon.",
+        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Du kan se, hvor mange kunder der kommer igen som fast besøgende, og du får indblik i, hvis stamkunder pludselig bliver væk. Det giver dig mulighed for at reagere, før stolen står tom.",
+        "Kortet tæller også kundens antal samlede stempler totalt set. Det gør det nemt at belønne milepæle som 50 eller 100 besøg og skabe stamkunder, der med tiden bliver ambassadører for din salon.",
       ],
     },
     {
-      heading: "Kom i gang på ti minutter",
+      heading: "Kom i gang på få minutter",
       paragraphs: [
         "Kunden scanner en QR kode én gang og har kortet i Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
-        "Du og dine medarbejdere stempler med den telefon, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
+        "Du eller dine medarbejdere stempler med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
   ],
