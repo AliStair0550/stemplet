@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Fraunces } from "next/font/google";
 import { ScrollReset } from "@/components/ScrollReset";
+import { Analytics } from "@/components/Analytics";
+import { GA_ID } from "@/lib/env";
 import "./globals.css";
 
 // Selv-hostede fonts (next/font): ingen render-blokerende eksterne
@@ -104,6 +106,9 @@ export default function RootLayout({
       <body className="antialiased">
         <ScrollReset />
         {children}
+        {/* GA4. GA_ID er kun sat paa produktion, saa preview og lokal udvikling
+            aldrig indlaeser tagget. */}
+        {GA_ID ? <Analytics gaId={GA_ID} /> : null}
       </body>
     </html>
   );
