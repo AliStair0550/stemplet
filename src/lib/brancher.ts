@@ -247,7 +247,7 @@ export const KAFFEBARER: BrancheContent = {
 export const NEGLESALONER: BrancheContent = {
   slug: "/stempelkort-til-neglesaloner",
   shortName: "Neglesaloner",
-  cardTeaser: "Bliv kundernes førstevalg",
+  cardTeaser: "Bliv kundernes førstevalg.",
   stampIcon: "sparkle",
   examples: [
     { target: "Behandling", reward: "+1 stempel" },
