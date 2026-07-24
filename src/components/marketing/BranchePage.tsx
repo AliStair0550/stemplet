@@ -1,18 +1,13 @@
 import Image from "next/image";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
-import {
-  Section,
-  Container,
-  Eyebrow,
-  ButtonLink,
-  CtaGlow,
-} from "@/components/ui";
+import { Section, Container, Eyebrow } from "@/components/ui";
 import { FREE_CUSTOMER_LIMIT } from "@/lib/plans";
 import { type BrancheContent } from "@/lib/brancher";
 import { StampCard } from "@/components/StampCard";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
 import { BrancheExamples } from "@/components/marketing/BrancheExamples";
+import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 
 // Faelles skabelon for en brancheside. Ren server-komponent i sitets designsystem:
 // hero (eyebrow + H1 + intro + stempel-animation), brodtekst-sektioner, et konkret
@@ -151,16 +146,6 @@ export function BranchePage({ b }: { b: BrancheContent }) {
               Sæt dit eget kort op på få minutter. Ingen app, ingen binding, gratis
               op til {FREE_CUSTOMER_LIMIT} kortholdere.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <CtaGlow>
-                <ButtonLink href="/start" variant="primary" size="lg">
-                  Kom gratis i gang
-                </ButtonLink>
-              </CtaGlow>
-              <ButtonLink href="/prøv" variant="outline" size="lg">
-                Prøv det selv
-              </ButtonLink>
-            </div>
           </div>
         </Section>
         {/* Konkret kort-design-eksempel (kun hvis branchen har defineret et) */}
@@ -198,16 +183,9 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             <h2 className="text-[1.6rem] font-bold leading-[1.15] tracking-[-0.025em] text-ink md:text-[2rem]">
               Ofte stillede spørgsmål
             </h2>
-            <dl className="mt-8 flex flex-col divide-y divide-clay">
-              {b.faq.map((f) => (
-                <div key={f.q} className="py-5">
-                  <dt className="text-[1.02rem] font-[500] text-ink">{f.q}</dt>
-                  <dd className="mt-2 text-[0.98rem] leading-[1.7] text-stone">
-                    {f.a}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <div className="mt-8">
+              <FaqAccordion items={b.faq} />
+            </div>
           </div>
         </Section>
 

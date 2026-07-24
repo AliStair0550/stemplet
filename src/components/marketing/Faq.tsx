@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Section, Eyebrow } from "@/components/ui";
+import { FaqAccordion } from "./FaqAccordion";
 
 const FAQS = [
   {
@@ -31,8 +31,6 @@ const FAQS = [
 ];
 
 export default function Faq() {
-  const [open, setOpen] = useState<number | null>(null);
-
   return (
     <Section className="bg-terracotta/[0.05]">
       <div className="grid gap-12 md:grid-cols-[0.85fr_1.15fr] md:gap-16">
@@ -47,46 +45,7 @@ export default function Faq() {
           </p>
         </div>
 
-        <div className="border-t border-fog">
-          {FAQS.map((f, i) => {
-            const isOpen = open === i;
-            return (
-              <div key={f.q} className="border-b border-fog">
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
-                >
-                  <span className="font-[300] text-[1rem] leading-[1.4] text-ink">
-                    {f.q}
-                  </span>
-                  <span className="relative h-3.5 w-3.5 shrink-0">
-                    <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-slate" />
-                    <span
-                      className={`absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-slate transition-transform duration-300 ${
-                        isOpen ? "scale-y-0" : "scale-y-100"
-                      }`}
-                    />
-                  </span>
-                </button>
-                <div
-                  className={`grid transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    isOpen
-                      ? "grid-rows-[1fr] opacity-100"
-                      : "grid-rows-[0fr] opacity-0"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <p className="pb-6 pr-6 font-[200] text-[0.9rem] leading-[1.8] text-stone">
-                      {f.a}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <FaqAccordion items={FAQS} />
       </div>
     </Section>
   );

@@ -154,7 +154,8 @@ export const FRISOERER: BrancheContent = {
   sceneImage: {
     src: "/brancher/frisor-scene.png",
     alt: "Kunde i frisørsalonen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
-    caption: "Kunden scanner i salonen og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Kunden scanner i salonen og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -238,7 +239,8 @@ export const KAFFEBARER: BrancheContent = {
   sceneImage: {
     src: "/brancher/kaffebar-scene.png",
     alt: "Kunde scanner Stemplet-koden på kaffebaren og har sit stempelkort med kaffe-stempler klar i Apple Wallet på telefonen.",
-    caption: "Kunden scanner ved disken og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Kunden scanner ved disken og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -317,7 +319,8 @@ export const NEGLESALONER: BrancheContent = {
   sceneImage: {
     src: "/brancher/neglesalon-scene.png",
     alt: "Kunde i neglesalonen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
-    caption: "Kunden scanner i salonen og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Kunden scanner ved kassen og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -392,7 +395,8 @@ export const PIZZERIAER: BrancheContent = {
   sceneImage: {
     src: "/brancher/pizzeria-scene.png",
     alt: "Kunde i pizzeriaet scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
-    caption: "Kunden scanner ved disken og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Kunden scanner ved bestillingen og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -546,7 +550,8 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
   sceneImage: {
     src: "/brancher/blomster-scene.png",
     alt: "Kunde i blomsterbutikken scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
-    caption: "Kunden scanner ved disken og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Kunden scanner i butikken og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -640,7 +645,8 @@ export const CAFEER: BrancheContent = {
   sceneImage: {
     src: "/brancher/cafe-scene.png",
     alt: "Kunde på caféen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
-    caption: "Kunden scanner ved disken og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Gæsten scanner ved bordet og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
@@ -844,7 +850,8 @@ export const BARER: BrancheContent = {
   sceneImage: {
     src: "/brancher/bar-scene.png",
     alt: "Gæst ved baren scanner Stemplet-koden og har sit stempelkort med i Apple Wallet på telefonen.",
-    caption: "Gæsten scanner ved baren og har stempelkortet i Wallet med det samme.",
+    caption:
+      "Gæsten scanner ved baren og tilføjer kortet til Apple Wallet med ét tryk.",
   },
 };
 
