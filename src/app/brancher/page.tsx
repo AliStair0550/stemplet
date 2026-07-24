@@ -32,11 +32,11 @@ export default function BrancherPage() {
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
               <h1 className="text-balance text-[2rem] font-bold leading-[1.1] tracking-[-0.035em] text-ink md:text-[2.9rem]">
-                Stempelkort til din branche.
+                Stempelkort til din branche
               </h1>
               <p className="mt-6 max-w-xl text-[1.05rem] leading-[1.7] text-taupe">
-                Vælg din branche og se, hvordan stempelkortet passer til netop
-                din forretning.
+                Vælg din branche og lad dig inspirere til, hvordan stempelkortet
+                kan passe til netop din forretning.
               </p>
             </div>
           </Container>

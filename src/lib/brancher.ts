@@ -854,16 +854,20 @@ export const BARER: BrancheContent = {
 };
 
 // Raekkefoelgen styrer visning paa /brancher og krydslinks.
+// Raekkefoelgen fylder 3x3-gitteret paa /brancher raekkevis:
+//   Bagerier      Caféer         Kaffebarer
+//   Isbutikker    Pizzeriaer     Barer
+//   Frisører      Neglesaloner   Blomsterbutikker
 export const BRANCHER: BrancheContent[] = [
-  FRISOERER,
-  KAFFEBARER,
-  NEGLESALONER,
-  PIZZERIAER,
   BAGERIER,
-  BLOMSTERBUTIKKER,
   CAFEER,
+  KAFFEBARER,
   ISBUTIKKER,
+  PIZZERIAER,
   BARER,
+  FRISOERER,
+  NEGLESALONER,
+  BLOMSTERBUTIKKER,
 ];
 
 /** Metadata til en branchesides `export const metadata`. */
