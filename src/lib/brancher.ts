@@ -258,33 +258,31 @@ export const NEGLESALONER: BrancheContent = {
   eyebrow: "Stempelkort til neglesaloner",
   h1: "Gør loyale kunder endnu mere loyale.",
   intro: [
-    "De fleste kunder vender tilbage hver tredje eller fjerde uge. Når de har fundet en salon, de er glade for, bliver besøget hurtigt en fast del af hverdagen.",
-    "Et stempelkort giver dem en ekstra grund til at blive ved med at vælge dig.",
+    "De fleste kunder får ordnet negle hver tredje eller fjerde uge. Når de først har fundet en salon, de er glade for, kan besøget hurtigt blive en fast del af rutinen.",
+    "Et stempelkort giver dem en ekstra grund til at blive ved med at tilvælge din salon.",
   ],
   sections: [
     {
       heading: "Beløn de kunder, der kommer igen",
       paragraphs: [
-        "En enkel model er 5 stempler, hvor det femte besøg udløser 25 % rabat på næste behandling.",
-        "Belønningen ligger tæt nok på til at motivere, men langt nok ude til at skabe en vane. Kunden ved, at hvert besøg bringer dem tættere på den næste belønning, og det gør det mere naturligt at booke den næste tid hos dig.",
-        "Belønningen er selvfølgelig helt op til dig. Nogle saloner vælger rabat, andre tilbyder gratis nail art, en paraffinbehandling eller et plejeprodukt til hjemmebrug.",
-        "Du kan også give et stempel ved køb af negleolie, håndcreme eller andre produkter. Så belønner kortet både behandlinger og produktsalg, og kunderne vænner sig til at købe hjemmeplejen hos dig.",
+        "En enkel model er 5 stempler, hvor der ved femte besøg udløses en procentvis rabat på valgte behandling.",
+        "Belønningen ligger tæt nok på til at motivere, men langt nok ude til at skabe en vane. Kunden ved, at hvert besøg bringer dem tættere på den næste belønning, og det skaber et incitament til at booke den næste manicure hos dig.",
+        "Du bestemmer selvfølgelig helt selv belønningen. Procentvis rabat på behandlinger, et gratis plejeprodukt til hjemmebrug, eller noget helt tredje der passer til ydelserne i din salon.",
       ],
     },
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet gør.",
-        "Hver uge får du et overblik over nye kortholdere, antal stempler og indløste belønninger. Du kan se, hvor ofte dine kunder kommer tilbage, og opdage, hvis en fast kunde pludselig springer en behandling over.",
-        "Kortet tæller også kundens samlede stempler. Når en kunde når 50 eller 100 besøg, har du en oplagt mulighed for at gøre noget særligt. En lille ekstra gestus kan være forskellen på en loyal kunde og en kunde, der anbefaler din salon til sine veninder.",
+        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Du kan se, hvor ofte dine kunder besøger dig og opdage, når faste kunder springer behandlinger over. Det giver dig mulighed for at reagere, bl.a. ved at skabe kampagner der faktisk rammer dine stamkunder.",
+        "Kortet tæller også kundens antal samlede stempler totalt set. Det gør det nemt at belønne særlige milepæle som 25 eller 50 besøg. En lille gestus kan gøre hele forskellen for en loyal kunde, der anbefaler salonen til andre bekendte.",
       ],
     },
     {
       heading: "Kom i gang på få minutter",
       paragraphs: [
-        "Kunden scanner en QR kode én gang og har sit stempelkort direkte i Apple Wallet.",
-        "Ingen app. Ingen oprettelse.",
-        "Du stempler fra den telefon, du allerede har. Ingen ekstra udstyr. Ingen ændringer i dit bookingsystem. Bare en nem måde at skabe flere stamkunder på.",
+        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "Du eller dine medarbejdere stempler med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
   ],
