@@ -84,9 +84,9 @@ export const FRISOERER: BrancheContent = {
   cardTeaser: "Gør dine produkter til kundens vane.",
   stampIcon: "scissors",
   examples: [
-    { target: "5 stempler", reward: "En voks fra hylden" },
-    { target: "Produktkøb", reward: "+1 stempel" },
-    { target: "Fyldt kort", reward: "Gratis vask og styling" },
+    { target: "Behandling", reward: "+1 stempel" },
+    { target: "5 stempler", reward: "Et udvalgt produkt fra hylden" },
+    { target: "10 stempler", reward: "Gratis vask og styling" },
   ],
   title:
     "Stempelkort til frisører. Gør dine produkter til kundens vane | Stemplet",
