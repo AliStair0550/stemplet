@@ -247,7 +247,7 @@ export const KAFFEBARER: BrancheContent = {
 export const NEGLESALONER: BrancheContent = {
   slug: "/stempelkort-til-neglesaloner",
   shortName: "Neglesaloner",
-  cardTeaser: "Hold på dine faste kunder.",
+  cardTeaser: "Bliv kundernes førstevalg",
   stampIcon: "sparkle",
   examples: [
     { target: "Behandling", reward: "+1 stempel" },
@@ -257,7 +257,7 @@ export const NEGLESALONER: BrancheContent = {
   title:
     "Stempelkort til neglesaloner. 25 % på hver 5. behandling | Stemplet",
   metaDescription:
-    "Gør faste kunder til endnu mere loyale kunder. Beløn dem med rabatter via et digitalt stempelkort i Apple Wallet.",
+    "Når det er tid til næste behandling, skal valget være nemt. Et digitalt stempelkort giver kunderne en ekstra grund til at vende tilbage til din salon.",
   eyebrow: "Stempelkort til neglesaloner",
   h1: "Gør loyale kunder endnu mere loyale.",
   intro: [
