@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Wordmark } from "@/components/Wordmark";
 
-export const metadata: Metadata = { title: "Tjek din mail" };
+// Forbigaaende kvitteringsside uden SEO-vaerdi. Crawlbar (ikke i robots-
+// disallow), saa Google ser noindex og holder den ude af indekset.
+export const metadata: Metadata = {
+  title: "Tjek din mail",
+  robots: { index: false },
+};
 
 export default function CheckMailPage() {
   return (

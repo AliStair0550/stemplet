@@ -30,6 +30,11 @@ const fraunces = Fraunces({
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk";
 
+// Google Search Console: HTML-tag-verifikation. Saet selve koden i miljoe-
+// variablen GOOGLE_SITE_VERIFICATION (Vercel, production). Renders som
+// <meta name="google-site-verification" ...>. Er den ikke sat, udelades tagget.
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
@@ -53,6 +58,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Alius", url: "https://alius.dk" }],
   creator: "Alius",
+  verification: googleSiteVerification
+    ? { google: googleSiteVerification }
+    : undefined,
   appleWebApp: {
     capable: true,
     title: "Stemplet",

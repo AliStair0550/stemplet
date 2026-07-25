@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   verifyStampToken,
   readStampBusinessIdAllowExpired,
@@ -6,6 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { WALLET_ENABLED } from "@/lib/env";
 import { ButtonLink } from "@/components/ui";
 import { StampConfirm } from "./StampConfirm";
+
+// Delelink med engangs-token. Ogsaa disallow'd i robots.txt (/s/), men
+// noindex her holder den ude af indekset, selv hvis linket skulle blive delt.
+export const metadata: Metadata = { robots: { index: false } };
 
 export const dynamic = "force-dynamic";
 
