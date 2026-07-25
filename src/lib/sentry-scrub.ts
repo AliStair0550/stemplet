@@ -14,14 +14,25 @@ const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 // er ikke fejl i Stemplet, men fangede af Sentrys globale handler og fylder bare
 // loggen. En AEGTE app-fejl har altid mindst een frame fra vores kode
 // (/_next/-chunks eller in_app), saa den beholdes.
-function isExternalNoise(event: ErrorEvent): boolean {
+export function isExternalNoise(event: ErrorEvent): boolean {
   const values = event.exception?.values;
   if (!values || values.length === 0) return false; // ikke en exception -> behold
   const frames = values.flatMap((v) => v.stacktrace?.frames ?? []);
   if (frames.length === 0) return false; // ingen stak -> behold (kan vaere aegte)
   const touchesApp = frames.some((f) => {
     const fn = f.filename ?? "";
-    return f.in_app === true || fn.includes("/_next/") || fn.includes("stemplet.");
+    // AEgte app-frames beholdes uanset skema: en WebView kan omskrive vores
+    // egne /_next/-chunks til app:///, saa disse signaler vinder foerst.
+    if (fn.includes("/_next/") || fn.includes("stemplet.")) return true;
+    // Injiceret kode fra in-app-browsere/WebViews koerer som "global code" paa
+    // app:/// (og lignende ikke-http-skemaer, fx capacitor:/file:/about:). Det
+    // er ALDRIG vores kode, saa Sentrys in_app-markering (sat ud fra sti-navnet,
+    // fx app:///start) ignoreres her. Fanger fx "Can't find variable:
+    // SCDynimacBridge" og hele familien af native-bro-injektioner. blob: er
+    // bevidst UDE: en worker fra vores egen bundle er blob:https://stemplet...
+    // og fanges allerede af stemplet.-tjekket ovenfor.
+    if (/^(app|capacitor|ionic|file|about):/i.test(fn)) return false;
+    return f.in_app === true;
   });
   return !touchesApp;
 }
