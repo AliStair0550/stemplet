@@ -22,7 +22,7 @@ export default function StatsPreview() {
       <div className="max-w-xl">
         <Eyebrow>Statistik</Eyebrow>
         <h2 className="mt-4 font-bold text-[2rem] leading-[1.12] tracking-[-0.035em] md:text-[2.5rem] text-ink">
-          Se hvad der faktisk virker.
+          Se, hvad der faktisk virker.
         </h2>
         <p className="mt-5 max-w-lg font-[200] text-[0.95rem] leading-[1.7] text-stone">
           Følg genbesøg, stempler og dine mest loyale stamkunder direkte fra

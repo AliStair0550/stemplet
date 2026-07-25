@@ -20,14 +20,15 @@ function Check() {
 const FREE = [
   `Op til ${FREE_CUSTOMER_LIMIT} kortholdere, helt gratis`,
   "Alle funktioner fra dag ét",
-  "Dit eget brand, uden Stemplet-logo",
+  "Dit udtryk hele vejen, intet Stemplet-logo",
   "Kampagner og statistik",
 ];
 
 const PRO = [
   "Ubegrænset antal kortholdere",
   "Fuld indsigt i dine stamkunder",
-  "Alt fra Gratis-pakken er med",
+  "Skræddersyet onboarding-support",
+  "Alle funktioner fra gratispakken inkluderet",
 ];
 
 function Features({ items }: { items: string[] }) {
