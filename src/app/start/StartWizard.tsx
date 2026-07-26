@@ -118,7 +118,7 @@ export function StartWizard() {
   return (
     <div
       className={`mx-auto flex w-full flex-col gap-8 ${
-        step === DONE_STEP ? "max-w-4xl" : "max-w-2xl"
+        step >= DESIGN_STEP ? "max-w-4xl" : "max-w-2xl"
       }`}
     >
       {/* Trin-indikator */}
@@ -189,10 +189,11 @@ export function StartWizard() {
         </div>
       ) : null}
 
-      {/* Trin 1: praktiske detaljer - PIN, branche, placering */}
+      {/* Trin 1: praktiske detaljer - hver i sit eget kort, saa de ikke flyder sammen */}
       {step === 1 ? (
-        <div className="flex flex-col gap-5 animate-step">
-          <label className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-4 animate-step">
+          {/* Personale-PIN */}
+          <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
               Personale-PIN
             </span>
@@ -208,9 +209,11 @@ export function StartWizard() {
               kan altid ændre den senere.
             </span>
           </label>
-          <label className="flex flex-col gap-1.5">
+
+          {/* Branche */}
+          <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Branche (valgfri)
+              Branche
             </span>
             <select
               value={category}
@@ -226,8 +229,8 @@ export function StartWizard() {
             </select>
           </label>
 
-          {/* Valgfri: placering til laaseskaerm allerede fra start */}
-          <div className="flex flex-col gap-1.5 rounded-lg border border-fog bg-sand/40 p-4">
+          {/* Placering til laaseskaerm */}
+          <div className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
             <div className="flex items-center gap-2">
               <PinIcon />
               <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -235,9 +238,8 @@ export function StartWizard() {
               </span>
             </div>
             <p className="font-[200] text-[0.8rem] leading-relaxed text-stone">
-              Skriv butikkens adresse, så dukker kundens stempelkort op på deres
-              låseskærm, når de er i nærheden. En gratis påmindelse, helt uden
-              app. Så kører det, indtil du selv slår det fra.
+              Skriv butikkens adresse, så dukker kortet op på kundens låseskærm,
+              når de er i nærheden. En gratis påmindelse, du selv kan slå fra.
             </p>
             <div className="mt-1">
               <AddressAutocomplete
@@ -371,9 +373,6 @@ export function StartWizard() {
                 />
               ))}
             </div>
-            <span className="max-w-full break-all rounded-md bg-sand px-3 py-2 text-center text-[0.74rem] font-[300] text-slate">
-              {created.cardUrl}
-            </span>
             <div className="flex w-full flex-wrap justify-center gap-2">
               <a
                 href={created.qrDataUrl}
@@ -425,28 +424,27 @@ export function StartWizard() {
               Sådan kommer du i gang
             </h3>
 
-            {/* 1: Log ind (primaer vej videre) */}
+            {/* 1: Tjek din mail (login-linket er sendt automatisk ved oprettelsen) */}
             <div className="flex gap-4 rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-5">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta text-[0.85rem] font-[500] text-parchment">
                 1
               </span>
               <div className="flex flex-1 flex-col items-start gap-3">
-                <h4 className="font-[400] text-[1rem] text-ink">
-                  Log ind på dit dashboard
-                </h4>
+                <h4 className="font-[400] text-[1rem] text-ink">Tjek din mail</h4>
                 <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
-                  Klik herunder, så sender vi et login-link til {email}. Klik
-                  linket i mailen, så er du inde. Herfra styrer du kort, stempler
-                  og statistik. Tjek spam-mappen, hvis mailen ikke dukker op.
+                  {created.loginSent
+                    ? `Vi har sendt et login-link til ${email}. Klik det, så er du inde i dit dashboard.`
+                    : `Klik herunder, så sender vi et login-link til ${email}. Klik linket i mailen, så er du inde.`}{" "}
+                  Tjek spam-mappen, hvis mailen ikke dukker op.
                 </p>
                 <form action={sendOnboardingLogin}>
                   <input type="hidden" name="email" value={email} />
                   <SubmitButton
-                    variant="primary"
+                    variant={created.loginSent ? "outline" : "primary"}
                     size="md"
                     pendingText="Sender login-link..."
                   >
-                    Send login-link
+                    {created.loginSent ? "Send login-link igen" : "Send login-link"}
                   </SubmitButton>
                 </form>
               </div>

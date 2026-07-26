@@ -24,7 +24,15 @@ import { captureServerError } from "@/lib/sentry";
 import type { CardDesign } from "@/components/CardDesigner";
 
 export type CreateResult =
-  | { ok: true; slug: string; cardUrl: string; qrDataUrl: string }
+  | {
+      ok: true;
+      slug: string;
+      cardUrl: string;
+      qrDataUrl: string;
+      // Blev login-linket sendt automatisk ved oprettelsen? Ellers viser
+      // kvitteringen en tydelig "send igen"-knap som fallback.
+      loginSent: boolean;
+    }
   | { ok: false; error: string; field?: "address" };
 
 export async function createBusinessAction(input: {
@@ -160,6 +168,26 @@ export async function createBusinessAction(input: {
     color: { dark: "#1A1A1A", light: "#FFFFFF" },
   });
 
+  // Send login-linket med det samme, saa den brandede login-mail ligger i
+  // kundens indbakke, naar de rammer "Du er klar". redirect:false, saa selve
+  // oprettelses-svaret ikke omdirigeres. Lykkes det ikke, faar de en tydelig
+  // "send igen"-knap paa kvitteringen, saa de aldrig staar strandet.
+  let loginSent = false;
+  try {
+    await signIn("resend", { email: base.data.email, redirect: false });
+    loginSent = true;
+  } catch (e) {
+    const digest = (e as { digest?: string })?.digest;
+    // redirect:false boer forhindre NEXT_REDIRECT; sker det alligevel, ER mailen
+    // afsendt foer redirecten, saa vi behandler det som sendt (og rethrower ikke,
+    // for vi vil BLIVE paa kvitteringen).
+    if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+      loginSent = true;
+    } else {
+      captureServerError(e, { route: "start:auto-login", extra: { slug } });
+    }
+  }
+
   // Giv superadmin besked om den nye butik, saa vi kan foelge med i opstarten.
   // Sendes EFTER svaret (after), saa en mail-fejl aldrig forsinker eller braekker
   // selve oprettelsen. Springes helt over, hvis SUPERADMIN_EMAIL ikke er sat.
@@ -187,7 +215,7 @@ export async function createBusinessAction(input: {
     }
   });
 
-  return { ok: true, slug, cardUrl, qrDataUrl };
+  return { ok: true, slug, cardUrl, qrDataUrl, loginSent };
 }
 
 export async function sendOnboardingLogin(formData: FormData) {

@@ -146,7 +146,7 @@ export function CardDesigner({
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-[1fr_minmax(0,20rem)]">
+    <div className="grid gap-8 md:grid-cols-[1fr_minmax(0,20rem)] md:gap-12">
       {/* Formular */}
       <div className="flex flex-col gap-6">
         <Field label={`Antal stempler (${value.stampsRequired})`}>
@@ -389,8 +389,8 @@ export function CardDesigner({
         ) : null}
       </div>
 
-      {/* Live preview */}
-      <div className="md:sticky md:top-6 md:self-start">
+      {/* Live preview: lidt luft til venstre, saa den staar tydeligt for sig selv */}
+      <div className="md:sticky md:top-6 md:self-start md:pl-4">
         <p className="mb-3 text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
           Sådan ser kortet ud
         </p>
