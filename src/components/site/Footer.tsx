@@ -18,10 +18,7 @@ export default function Footer() {
         {/* Hold mig orienteret: kompakt (kun mail) */}
         <div className="mb-14 flex flex-col gap-6 border-b border-parchment/10 pb-12 md:flex-row md:items-center md:justify-between md:gap-12">
           <div className="max-w-md">
-            <span className="text-label font-medium uppercase tracking-[0.08em] text-parchment/45">
-              Bliv opdateret
-            </span>
-            <p className="mt-2 text-[1.15rem] font-bold leading-[1.2] tracking-[-0.02em] text-parchment">
+            <p className="text-[1.15rem] font-bold leading-[1.2] tracking-[-0.02em] text-parchment">
               Lad os holde kontakten
             </p>
             <p className="mt-2 text-[0.9rem] leading-[1.6] text-parchment/65">

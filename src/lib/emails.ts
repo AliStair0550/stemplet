@@ -452,46 +452,38 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
   };
 }
 
-// ── "Hold mig orienteret": bekraeft tilmelding (dobbelt opt-in) ───────
-// Neutral bekraeftelsesmail. Samtykket er foerst aktivt, naar modtageren klikker.
-// Ingen salg, ingen lokkemad, kun bekraeftelsen.
+// ── "Hold mig orienteret": velkomst (single opt-in) ──────────────────
+// Kort kvittering efter tilmelding. Ingen handling kraevet: tilmeldingen er
+// allerede aktiv (samtykke gemt med tid + IP ved tilmelding). Ingen salg, bare
+// en varm bekraeftelse paa at de er med.
 
-export function marketingConfirmEmail(url: string): Email {
-  const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td style="border-radius:8px;background:${C.ink};">
-      <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Bekræft din tilmelding</a>
-    </td></tr></table>`;
+export function marketingWelcomeEmail(name?: string | null): Email {
+  const hej = name && name.trim() ? `Hej ${name.trim()}.` : "Hej.";
 
   const inner = `
     <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      Bekræft din tilmelding.
+      ${hej} Du er skrevet op.
     </p>
-    <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      Du er ét klik fra at være skrevet op. Klik på knappen for at bekræfte, så holder vi kontakten.
+    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.
     </p>
-    ${button}
-    <p style="margin:24px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
-      Virker knappen ikke, så kopiér linket:<br>
-      <a href="${url}" style="color:${C.terracotta};">${url}</a>
-    </p>
-    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-      Har du ikke skrevet dig op, kan du roligt ignorere denne mail. Så sker der ikke noget.
+    <p style="margin:20px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
+      Har du ikke selv skrevet dig op, så skriv til os på hej@alius.dk, så fjerner vi dig med det samme.
     </p>`;
 
   const text = [
-    "Bekræft din tilmelding.",
+    `${hej} Du er skrevet op.`,
     "",
-    "Du er ét klik fra at være skrevet op. Bekræft her:",
-    url,
+    "Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.",
     "",
-    "Har du ikke skrevet dig op, kan du roligt ignorere denne mail. Så sker der ikke noget.",
+    "Har du ikke selv skrevet dig op, så skriv til os på hej@alius.dk, så fjerner vi dig med det samme.",
     "",
     "Stemplet. Stempelkortet, der skaber flere gensyn.",
   ].join("\n");
 
   return {
-    subject: "Bekræft din tilmelding til Stemplet",
-    html: shell("Bekræft din tilmelding til Stemplet.", inner),
+    subject: "Du er skrevet op hos Stemplet",
+    html: shell("Tak, du er skrevet op hos Stemplet.", inner),
     text,
   };
 }

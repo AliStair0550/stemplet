@@ -23,6 +23,7 @@ export function NewsletterSignup({
 }) {
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [already, setAlready] = useState(false);
 
   const input = cn(
     "w-full rounded-xl border px-4 py-3 text-[0.95rem] outline-none transition-colors",
@@ -52,12 +53,8 @@ export function NewsletterSignup({
       });
       const json = await res.json().catch(() => ({}));
       if (res.ok && json.ok) {
+        setAlready(json.already === true);
         setStatus("done");
-        setMessage(
-          json.already
-            ? "Du er allerede skrevet op. Tak."
-            : "Tjek din mail, og bekræft din tilmelding.",
-        );
         form.reset();
       } else {
         setStatus("error");
@@ -69,22 +66,9 @@ export function NewsletterSignup({
     }
   }
 
-  // Bekraeftelses-tilstand: erstat formularen med en venlig kvittering.
+  // Skrevet-op-tilstand: erstat formularen med en dopamin-kvittering.
   if (status === "done") {
-    return (
-      <p
-        role="status"
-        className={cn(
-          "flex items-center justify-center gap-2 text-[0.95rem] font-medium",
-          tone === "dark" ? "text-parchment" : "text-ink",
-        )}
-      >
-        <span aria-hidden className="text-terracotta">
-          ✓
-        </span>
-        {message}
-      </p>
-    );
+    return <SignupCelebration tone={tone} already={already} />;
   }
 
   const errorClass = tone === "dark" ? "text-[#F0B7A3]" : "text-rust";
@@ -140,5 +124,78 @@ export function NewsletterSignup({
         </p>
       ) : null}
     </form>
+  );
+}
+
+// Dopamin-kvittering: en terracotta-badge med flueben, der popper ind, omgivet af
+// bloede signal-pulser der breder sig udad, saa det antyder "du er paa nu og faar
+// opdateringer". Ikke konfetti. Under prefers-reduced-motion neutraliseres
+// animationerne globalt, saa kun badge + tekst staar tilbage.
+function SignupCelebration({
+  tone,
+  already,
+}: {
+  tone: Tone;
+  already: boolean;
+}) {
+  const heading = already ? "Du er allerede skrevet op." : "Du er skrevet op!";
+  const sub = already
+    ? "Tak, fordi du holder kontakten."
+    : "Vi holder dig opdateret. Ingen spam, kun gode idéer.";
+
+  return (
+    <div
+      role="status"
+      className="flex flex-col items-center gap-3 py-2 text-center"
+    >
+      <div className="relative flex h-16 w-16 items-center justify-center">
+        {!already ? (
+          <>
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-full border border-terracotta/50 [animation:presencePulse_2.4s_ease-out_infinite]"
+            />
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-full border border-terracotta/50 [animation:presencePulse_2.4s_ease-out_infinite] [animation-delay:0.8s]"
+            />
+            <span
+              aria-hidden
+              className="absolute inset-0 rounded-full border border-terracotta/50 [animation:presencePulse_2.4s_ease-out_infinite] [animation-delay:1.6s]"
+            />
+          </>
+        ) : null}
+        <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_6px_20px_-6px_rgba(166,80,46,0.6)] [animation:stampPop_0.55s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-6 w-6"
+            aria-hidden
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+      </div>
+      <p
+        className={cn(
+          "text-[1.05rem] font-bold tracking-[-0.01em]",
+          tone === "dark" ? "text-parchment" : "text-ink",
+        )}
+      >
+        {heading}
+      </p>
+      <p
+        className={cn(
+          "max-w-xs text-[0.9rem] leading-[1.6]",
+          tone === "dark" ? "text-parchment/70" : "text-stone",
+        )}
+      >
+        {sub}
+      </p>
+    </div>
   );
 }

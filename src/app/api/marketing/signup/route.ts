@@ -2,18 +2,22 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clientIp, apiError } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
-import { marketingSignupSchema } from "@/lib/marketing";
-import { signMarketingConfirmToken } from "@/lib/tokens";
+import { marketingSignupSchema, marketingSourceLabel } from "@/lib/marketing";
 import { sendEmail } from "@/lib/send-email";
-import { marketingConfirmEmail } from "@/lib/emails";
+import {
+  marketingWelcomeEmail,
+  superadminMarketingSignupEmail,
+} from "@/lib/emails";
+import { superadminRecipients } from "@/lib/superadmin-emails";
 import { APP_URL } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// "Hold mig orienteret"-tilmelding (dobbelt opt-in). Offentligt endpoint, saa det
-// er rate-limitet pr. IP for at undgaa mail-bombning. Selve samtykket er foerst
-// aktivt, naar bekraeftelseslinket i mailen er klikket (se /api/marketing/confirm).
+// "Hold mig orienteret"-tilmelding (single opt-in). Tilmeldingen er aktiv med det
+// samme: samtykket dokumenteres med tidsstempel + IP ved selve tilmeldingen. En
+// kort velkomstmail sendes (ingen handling kraevet), og superadmin notificeres.
+// Offentligt endpoint, saa det er rate-limitet pr. IP mod misbrug.
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -32,16 +36,11 @@ export async function POST(req: NextRequest) {
   const name = parsed.data.name?.trim() || null;
   const storeName = parsed.data.storeName?.trim() || null;
 
-  // Misbrugsvaern: hver bekraeftelses-mail koster en Resend-afsendelse, saa loft
-  // pr. IP (DB-backet, saa det holder selv uden Redis). Legitime brugere rammer
-  // det aldrig; kun mange fra samme enhed paa kort tid stoppes.
-  const ip = clientIp(req) ?? "ukendt";
-  if (!(await durableRateLimit("marketing-signup", ip, 5, 3600))) {
-    return apiError(
-      "RATE_LIMIT",
-      "For mange forsøg. Prøv igen om lidt.",
-      429,
-    );
+  // Misbrugsvaern: hver tilmelding koster en Resend-afsendelse, saa loft pr. IP
+  // (DB-backet, saa det holder selv uden Redis).
+  const ip = clientIp(req);
+  if (!(await durableRateLimit("marketing-signup", ip ?? "ukendt", 5, 3600))) {
+    return apiError("RATE_LIMIT", "For mange forsøg. Prøv igen om lidt.", 429);
   }
 
   const existing = await prisma.marketingSignup.findUnique({
@@ -49,37 +48,53 @@ export async function POST(req: NextRequest) {
     select: { id: true, confirmedAt: true },
   });
 
-  // Allerede bekraeftet: sig pænt tak, uden at sende en ny bekraeftelses-mail
-  // eller nulstille samtykke-dokumentationen.
+  // Allerede skrevet op: sig pænt tak igen, uden ny mail eller notifikation, og
+  // uden at roere den oprindelige samtykke-dokumentation.
   if (existing?.confirmedAt) {
     return Response.json({ ok: true, already: true });
   }
 
-  let signupId: string;
+  const now = new Date();
   if (existing) {
-    // Ubekraeftet gentilmelding: opdater felterne og send bekraeftelsen igen.
+    // Ubekraeftet legacy-raekke: aktiver den nu.
     await prisma.marketingSignup.update({
       where: { id: existing.id },
-      data: { name, storeName, source, signedUpAt: new Date() },
+      data: { name, storeName, source, signedUpAt: now, confirmedAt: now, confirmIp: ip },
     });
-    signupId = existing.id;
   } else {
-    const created = await prisma.marketingSignup.create({
-      data: { email, name, storeName, source },
-      select: { id: true },
+    await prisma.marketingSignup.create({
+      data: { email, name, storeName, source, confirmedAt: now, confirmIp: ip },
     });
-    signupId = created.id;
   }
 
-  // Bekraeftelses-mail (dobbelt opt-in). Fejler afsendelsen (fx Resend nede),
-  // beholdes raekken, saa et nyt forsoeg bare sender igen; vi vaelter ikke svaret.
+  // Velkomstmail til tilmelderen (best-effort: en mail-fejl vaelter ikke svaret).
   try {
-    const token = await signMarketingConfirmToken(signupId);
-    const url = `${APP_URL}/api/marketing/confirm?token=${encodeURIComponent(token)}`;
-    const mail = marketingConfirmEmail(url);
+    const mail = marketingWelcomeEmail(name);
     await sendEmail({ to: email, subject: mail.subject, html: mail.html, text: mail.text });
   } catch (e) {
-    console.error("Bekraeftelses-mail fejlede:", e);
+    console.error("Velkomstmail fejlede:", e);
+  }
+
+  // Notifikation til superadmin (Ali).
+  try {
+    const recipients = superadminRecipients();
+    if (recipients.length > 0) {
+      const mail = superadminMarketingSignupEmail({
+        name: name || "(ingen)",
+        storeName: storeName || "(ingen)",
+        email,
+        source: marketingSourceLabel(source),
+        adminUrl: `${APP_URL}/admin/marketing`,
+      });
+      await sendEmail({
+        to: recipients.join(","),
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+      });
+    }
+  } catch (e) {
+    console.error("Marketing-notifikation fejlede:", e);
   }
 
   return Response.json({ ok: true });

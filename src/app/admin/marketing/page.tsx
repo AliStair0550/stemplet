@@ -26,17 +26,18 @@ export default async function MarketingPage() {
     return <AdminUnlock />;
   }
 
-  const since = new Date();
-  since.setTime(since.getTime() - 7 * 86_400_000);
+  const since7 = new Date();
+  since7.setTime(since7.getTime() - 7 * 86_400_000);
+  const since30 = new Date();
+  since30.setTime(since30.getTime() - 30 * 86_400_000);
 
-  const [confirmedTotal, newThisWeek, totalSignups, sourceGroups, signups] =
+  const [totalSignups, newThisWeek, new30, sourceGroups, signups] =
     await Promise.all([
-      prisma.marketingSignup.count({ where: { confirmedAt: { not: null } } }),
-      prisma.marketingSignup.count({ where: { signedUpAt: { gte: since } } }),
       prisma.marketingSignup.count(),
+      prisma.marketingSignup.count({ where: { signedUpAt: { gte: since7 } } }),
+      prisma.marketingSignup.count({ where: { signedUpAt: { gte: since30 } } }),
       prisma.marketingSignup.groupBy({
         by: ["source"],
-        where: { confirmedAt: { not: null } },
         _count: { _all: true },
       }),
       prisma.marketingSignup.findMany({
@@ -62,9 +63,9 @@ export default async function MarketingPage() {
   }));
 
   const stat = [
-    { label: "Bekræftede i alt", value: confirmedTotal },
-    { label: "Nye denne uge", value: newThisWeek },
     { label: "Tilmeldinger i alt", value: totalSignups },
+    { label: "Nye denne uge", value: newThisWeek },
+    { label: "Seneste 30 dage", value: new30 },
   ];
 
   return (
@@ -109,7 +110,7 @@ export default async function MarketingPage() {
         {/* Fordeling pr. kilde (bekraeftede) */}
         <div className="mt-4 rounded-lg border border-fog bg-white p-5 shadow-card">
           <p className="text-[0.66rem] font-[400] uppercase tracking-[0.14em] text-slate">
-            Fordeling pr. kilde (bekræftede)
+            Fordeling pr. kilde
           </p>
           {bySource.length ? (
             <div className="mt-3 flex flex-wrap gap-2">

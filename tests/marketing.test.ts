@@ -1,25 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-// AUTH_SECRET kraeves af token-signeringen. Saettes foer import af tokens.
-process.env.AUTH_SECRET =
-  process.env.AUTH_SECRET ?? "test-secret-at-least-32-chars-long-000000";
-
 import {
   marketingSignupSchema,
   marketingSourceLabel,
 } from "../src/lib/marketing";
 import {
-  signMarketingConfirmToken,
-  verifyMarketingConfirmToken,
-  signUnsubscribeToken,
-} from "../src/lib/tokens";
-import {
-  marketingConfirmEmail,
+  marketingWelcomeEmail,
   superadminMarketingSignupEmail,
 } from "../src/lib/emails";
 
-const DASH_RE = /[—–]/;
+// Lange bindestreger (em/en-dash) via unicode-escape, saa selve testfilen ikke
+// indeholder dem (og ikke selv fanges af dash-gaten).
+const DASH_RE = /[\u2014\u2013]/;
 
 // ── Validering ────────────────────────────────────────────────────────
 test("schema: fuld tilmelding er gyldig", () => {
@@ -73,25 +66,18 @@ test("kilde-etiket: forside/footer/branche-slug", () => {
   );
 });
 
-// ── Bekraeft-token ────────────────────────────────────────────────────
-test("bekraeft-token: round-trip giver samme id", async () => {
-  const token = await signMarketingConfirmToken("signup_123");
-  assert.equal(await verifyMarketingConfirmToken(token), "signup_123");
-});
-
-test("bekraeft-token: afviser token med forkert formaal", async () => {
-  const unsub = await signUnsubscribeToken("biz_1");
-  await assert.rejects(() => verifyMarketingConfirmToken(unsub));
-});
-
 // ── Mails ─────────────────────────────────────────────────────────────
-test("bekraeftelses-mail: subject + link + ingen lange bindestreger", () => {
-  const url = "https://stemplet.alius.dk/api/marketing/confirm?token=abc";
-  const mail = marketingConfirmEmail(url);
-  assert.equal(mail.subject, "Bekræft din tilmelding til Stemplet");
-  assert.ok(mail.html.includes(url));
-  assert.ok(mail.text.includes(url));
-  assert.ok(!DASH_RE.test(mail.subject + mail.html + mail.text));
+test("velkomstmail: med og uden navn, ingen lange bindestreger", () => {
+  const withName = marketingWelcomeEmail("Ali");
+  assert.equal(withName.subject, "Du er skrevet op hos Stemplet");
+  assert.ok(withName.html.includes("Hej Ali."));
+  const noName = marketingWelcomeEmail(null);
+  assert.ok(noName.html.includes("Hej."));
+  assert.ok(
+    !DASH_RE.test(
+      withName.subject + withName.html + withName.text + noName.html,
+    ),
+  );
 });
 
 test("notifikations-mail: indeholder mail + kilde, ingen lange bindestreger", () => {

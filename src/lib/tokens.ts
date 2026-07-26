@@ -133,29 +133,3 @@ export async function verifyUnsubscribeToken(token: string): Promise<string> {
   }
   return String(payload.businessId);
 }
-
-// ── Bekraeft-token (dobbelt opt-in til "hold mig orienteret") ─────────
-// Signeret, uden udloeb, saa bekraeftelseslinket i mailen virker, indtil det
-// klikkes. Baerer kun tilmeldingens id; selve bekraeftelsen (og IP) skrives
-// foerst, naar linket aabnes.
-
-export async function signMarketingConfirmToken(
-  signupId: string,
-): Promise<string> {
-  return new SignJWT({ signupId, purpose: "mkt-confirm" })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .sign(secretKey());
-}
-
-export async function verifyMarketingConfirmToken(
-  token: string,
-): Promise<string> {
-  const { payload } = await jwtVerify(token, secretKey(), {
-    algorithms: ["HS256"],
-  });
-  if (payload.purpose !== "mkt-confirm" || !payload.signupId) {
-    throw new Error("Ugyldigt bekraeft-token");
-  }
-  return String(payload.signupId);
-}

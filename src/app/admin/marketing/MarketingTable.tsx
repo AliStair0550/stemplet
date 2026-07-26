@@ -23,11 +23,9 @@ export type SignupRow = {
 
 export function MarketingTable({ rows }: { rows: SignupRow[] }) {
   const [q, setQ] = useState("");
-  const [onlyConfirmed, setOnlyConfirmed] = useState(false);
 
   const needle = q.trim().toLowerCase();
   const shown = rows.filter((r) => {
-    if (onlyConfirmed && !r.confirmedAt) return false;
     if (needle) {
       const hay =
         `${r.name ?? ""} ${r.storeName ?? ""} ${r.email} ${r.source}`.toLowerCase();
@@ -45,15 +43,6 @@ export function MarketingTable({ rows }: { rows: SignupRow[] }) {
           placeholder="Søg navn, butik, mail eller kilde"
           className="min-w-[16rem] flex-1 rounded-md border border-fog bg-white px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
         />
-        <label className="flex items-center gap-2 text-[0.8rem] font-[300] text-stone">
-          <input
-            type="checkbox"
-            checked={onlyConfirmed}
-            onChange={(e) => setOnlyConfirmed(e.target.checked)}
-            className="accent-terracotta"
-          />
-          Kun bekræftede
-        </label>
       </div>
 
       <p className="text-[0.74rem] font-[300] text-slate">
@@ -68,7 +57,7 @@ export function MarketingTable({ rows }: { rows: SignupRow[] }) {
               <th className="px-4 py-3 font-[500]">Navn / butik</th>
               <th className="px-4 py-3 font-[500]">Mail</th>
               <th className="px-4 py-3 font-[500]">Kilde</th>
-              <th className="px-4 py-3 font-[500]">Bekræftet</th>
+              <th className="px-4 py-3 font-[500]">Samtykke</th>
               <th className="px-4 py-3 font-[500]">Status</th>
               <th className="px-4 py-3 font-[500]">Note</th>
             </tr>
