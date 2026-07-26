@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
@@ -73,6 +73,13 @@ export function StartWizard() {
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
 
+  // Start altid oeverst paa hvert trin. Ellers lander man midt paa siden efter
+  // "Opret min butik" (nederst paa design-trinnet) og gaar glip af "Du er
+  // klar"-stemplet. Instant, saa fejringen ses fra foerste frame.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   async function copyLink() {
     if (!created) return;
     try {
@@ -140,12 +147,12 @@ export function StartWizard() {
     >
       {/* Trin-indikator med en lille dopamin: fuldfoerte trin faar et flueben, og
           det netop aktiverede trin popper blidt med en bloed ring-ripple. */}
-      <ol className="flex items-center gap-3">
+      <ol className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
         {STEPS.map((label, i) => {
           const done = i < step;
           const active = i === step;
           return (
-            <li key={label} className="flex flex-1 items-center gap-3">
+            <li key={label} className="flex items-center gap-2.5">
               <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
                 {active ? (
                   <span
@@ -319,10 +326,6 @@ export function StartWizard() {
             businessName={name}
             allowLogo
           />
-          <p className="text-[0.75rem] font-[200] text-slate">
-            Vælg et tema eller dine egne farver, og tilføj gerne dit logo. Du kan
-            ændre alt bagefter i dashboardet.
-          </p>
           <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
             <input
               type="checkbox"
@@ -471,72 +474,28 @@ export function StartWizard() {
             </a>
           </div>
 
-          {/* Sådan kommer du i gang: to klare, nummererede skridt */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-center text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
-              Sådan kommer du i gang
-            </h3>
-
-            {/* 1: Tjek din mail (login-linket er sendt automatisk ved oprettelsen) */}
-            <div className="flex gap-4 rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta text-[0.85rem] font-[500] text-parchment">
-                1
-              </span>
-              <div className="flex flex-1 flex-col items-start gap-3">
-                <h4 className="font-[400] text-[1rem] text-ink">Tjek din mail</h4>
-                <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
-                  {created.loginSent
-                    ? `Vi har sendt et login-link til ${email}. Klik det, så er du inde i dit dashboard.`
-                    : `Klik herunder, så sender vi et login-link til ${email}. Klik linket i mailen, så er du inde.`}{" "}
-                  Tjek spam-mappen, hvis mailen ikke dukker op.
-                </p>
-                <form action={sendOnboardingLogin}>
-                  <input type="hidden" name="email" value={email} />
-                  <SubmitButton
-                    variant={created.loginSent ? "outline" : "primary"}
-                    size="md"
-                    pendingText="Sender login-link..."
-                  >
-                    {created.loginSent ? "Send login-link igen" : "Send login-link"}
-                  </SubmitButton>
-                </form>
-              </div>
-            </div>
-
-            {/* 2: Print et skilt til butikken */}
-            <div className="flex gap-4 rounded-lg border border-fog bg-white p-5 shadow-card">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-[0.85rem] font-[500] text-terracotta">
-                2
-              </span>
-              <div className="flex flex-1 flex-col items-start gap-3">
-                <h4 className="font-[400] text-[1rem] text-ink">
-                  Sæt et skilt op i butikken
-                </h4>
-                <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
-                  Print et færdigt skilt med QR-koden og stil det ved kassen, så
-                  kunderne selv henter kortet.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      ["plakat", "A4-plakat"],
-                      ["a5", "A5-skilt"],
-                      ["visitkort", "Visitkort"],
-                    ] as const
-                  ).map(([t, label]) => (
-                    <a
-                      key={t}
-                      href={`/api/materials/${t}?slug=${created.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={btnClass("outline")}
-                    >
-                      {label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {/* Naeste skridt: kom ind i dashboardet. Skilte til print ligger
+              bagefter i dashboardet, saa kvitteringen holdes enkel og fokuseret. */}
+          <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 text-center">
+            <h4 className="font-[400] text-[1.05rem] text-ink">
+              Log ind på dit dashboard
+            </h4>
+            <p className="mx-auto mt-2 max-w-md font-[200] text-[0.86rem] leading-relaxed text-stone">
+              {created.loginSent
+                ? `Vi har sendt et login-link til ${email}. Klik det, så er du inde. Herfra styrer du kort, stempler, statistik og skilte til print.`
+                : `Klik herunder, så sender vi et login-link til ${email}. Klik linket i mailen, så er du inde.`}{" "}
+              Tjek spam-mappen, hvis mailen ikke dukker op.
+            </p>
+            <form action={sendOnboardingLogin} className="mt-4 flex justify-center">
+              <input type="hidden" name="email" value={email} />
+              <SubmitButton
+                variant={created.loginSent ? "outline" : "primary"}
+                size="md"
+                pendingText="Sender login-link..."
+              >
+                {created.loginSent ? "Send login-link igen" : "Send login-link"}
+              </SubmitButton>
+            </form>
           </div>
         </div>
       ) : null}

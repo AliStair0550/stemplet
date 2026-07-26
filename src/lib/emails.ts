@@ -89,6 +89,75 @@ export function loginEmail(url: string): Email {
   };
 }
 
+// ── Velkomst (foerste login efter oprettelse) ────────────────────────
+// Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (dvs. lige
+// efter onboarding, hvor emailVerified endnu er null). Byder velkommen, giver et
+// tydeligt login-link og et par gode foerste skridt. Selve linket er det samme
+// magiske login-link, saa der er stadig kun een mail og eet klik.
+export function welcomeEmail(url: string): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Log ind på dit dashboard</a>
+    </td></tr></table>`;
+
+  const tipList = [
+    "Print et skilt med din QR-kode og stil det ved kassen.",
+    "Del dit kortlink online, så kunderne kan hente kortet hjemmefra.",
+    "Tilpas farver, ikon og belønning i dashboardet, når du vil.",
+  ]
+    .map(
+      (t, i) => `<tr>
+        <td valign="top" style="padding:6px 10px 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:${C.terracotta};">${i + 1}.</td>
+        <td valign="top" style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">${t}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const inner = `
+    <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:19px;line-height:1.4;font-weight:600;color:${C.ink};">
+      Velkommen til Stemplet.
+    </p>
+    <p style="margin:0 0 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Din butik er oprettet og klar. Du logger ind uden adgangskode, bare klik herunder, så er du inde i dit dashboard.
+    </p>
+    ${button}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:16px 18px;">
+        <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${C.terracotta};">Kom godt fra start</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${tipList}</table>
+      </td></tr>
+    </table>
+    <p style="margin:22px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
+      Virker knappen ikke, så kopiér linket:<br>
+      <a href="${url}" style="color:${C.terracotta};">${url}</a>
+    </p>
+    <p style="margin:16px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
+      Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.
+    </p>`;
+
+  const text = [
+    "Velkommen til Stemplet.",
+    "",
+    "Din butik er oprettet og klar. Du logger ind uden adgangskode, bare klik herunder:",
+    url,
+    "",
+    "Kom godt fra start:",
+    "1. Print et skilt med din QR-kode og stil det ved kassen.",
+    "2. Del dit kortlink online, så kunderne kan hente kortet hjemmefra.",
+    "3. Tilpas farver, ikon og belønning i dashboardet, når du vil.",
+    "",
+    "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.",
+    "",
+    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+  ].join("\n");
+
+  return {
+    subject: "Velkommen til Stemplet",
+    html: shell("Din butik er klar. Log ind og kom i gang.", inner),
+    text,
+  };
+}
+
 // ── Ugentlig statistik-mail ──────────────────────────────────────────
 
 export type WeeklyEmailData = {

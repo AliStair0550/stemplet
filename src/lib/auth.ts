@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
-import { loginEmail } from "./emails";
+import { loginEmail, welcomeEmail } from "./emails";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
 // Kunder logger ALDRIG ind - de identificeres via device-cookie og serial.
@@ -49,7 +49,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.log(`\n🔗 Login-link til ${identifier}:\n${url}\n`);
           return;
         }
-        const mail = loginEmail(url);
+        // Foerste login efter oprettelse (emailVerified == null) faar en
+        // velkomstmail; alle senere logins faar den korte login-mail. Begge
+        // baerer det SAMME magiske link, saa det er stadig eet klik.
+        let firstTime = false;
+        try {
+          const u = await prisma.user.findUnique({
+            where: { email: identifier.toLowerCase() },
+            select: { emailVerified: true },
+          });
+          firstTime = !!u && u.emailVerified === null;
+        } catch {
+          // DB-blip: fald tilbage til den almindelige login-mail.
+        }
+        const mail = firstTime ? welcomeEmail(url) : loginEmail(url);
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
