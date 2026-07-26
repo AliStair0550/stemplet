@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSuperadminEmail, isAdminUnlocked } from "@/lib/admin";
+import {
+  getSuperadminEmail,
+  isAdminUnlocked,
+  adminCodeConfigured,
+} from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { formatDkNumber } from "@/lib/utils";
 import { marketingSourceLabel } from "@/lib/marketing";
 import { AdminUnlock } from "../AdminUnlock";
+import { AdminShell } from "../AdminShell";
 import { MarketingTable, type SignupRow } from "./MarketingTable";
 
 export const metadata: Metadata = {
@@ -25,6 +29,7 @@ export default async function MarketingPage() {
   if (!(await isAdminUnlocked())) {
     return <AdminUnlock />;
   }
+  const codeLock = adminCodeConfigured();
 
   const since7 = new Date();
   since7.setTime(since7.getTime() - 7 * 86_400_000);
@@ -69,29 +74,15 @@ export default async function MarketingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-parchment px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        {/* Sidehoved */}
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-[300] text-[1.6rem] tracking-[0.02em] text-ink">
-              Marketing
-            </h1>
-            <p className="mt-1 font-[300] text-[0.85rem] text-slate">
-              Tilmeldinger til &quot;hold mig orienteret&quot;. Overblik over
-              kommunikation, klar til et nyhedsbrev senere.
-            </p>
-          </div>
-          <Link
-            href="/admin"
-            className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
-          >
-            Til platform-overblik
-          </Link>
-        </div>
+    <AdminShell admin={admin} codeLock={codeLock} active="marketing">
+      <div className="flex flex-col gap-8">
+        <p className="font-[300] text-[0.9rem] leading-relaxed text-slate">
+          Al kommunikation med butiksejere ét sted. Tilmeldinger til &quot;hold
+          mig orienteret&quot;, klar til et nyhedsbrev senere.
+        </p>
 
         {/* Taellekort */}
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {stat.map((s) => (
             <div
               key={s.label}
@@ -107,8 +98,8 @@ export default async function MarketingPage() {
           ))}
         </div>
 
-        {/* Fordeling pr. kilde (bekraeftede) */}
-        <div className="mt-4 rounded-lg border border-fog bg-white p-5 shadow-card">
+        {/* Fordeling pr. kilde */}
+        <div className="rounded-lg border border-fog bg-white p-5 shadow-card">
           <p className="text-[0.66rem] font-[400] uppercase tracking-[0.14em] text-slate">
             Fordeling pr. kilde
           </p>
@@ -126,13 +117,13 @@ export default async function MarketingPage() {
             </div>
           ) : (
             <p className="mt-2 font-[300] text-[0.88rem] text-slate">
-              Ingen bekræftede tilmeldinger endnu.
+              Ingen tilmeldinger endnu.
             </p>
           )}
         </div>
 
         {/* Tabel */}
-        <section className="mt-10">
+        <section>
           <h2 className="font-[400] text-[0.95rem] tracking-[0.01em] text-ink">
             Tilmeldinger
           </h2>
@@ -145,13 +136,13 @@ export default async function MarketingPage() {
           {rows.length === 0 ? (
             <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
               Ingen tilmeldinger endnu. De dukker op her, så snart nogen skriver
-              sig op og bekræfter via mailen.
+              sig op via en af formularerne.
             </p>
           ) : (
             <MarketingTable rows={rows} />
           )}
         </section>
       </div>
-    </main>
+    </AdminShell>
   );
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getSuperadminEmail,
@@ -13,7 +12,8 @@ import { effectiveProPriceKr } from "@/lib/billing";
 import { formatDkNumber, formatDkDateTime } from "@/lib/utils";
 import { BarChart } from "@/components/BarChart";
 import { AdminUnlock } from "./AdminUnlock";
-import { ClearDemoButton, LockButton } from "./AdminControls";
+import { AdminShell } from "./AdminShell";
+import { ClearDemoButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
 
 export const metadata: Metadata = {
@@ -295,44 +295,11 @@ export default async function AdminPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-parchment px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        {/* Sidehoved */}
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-[300] text-[1.6rem] tracking-[0.02em] text-ink">
-              Platform-overblik
-            </h1>
-            <p className="mt-1 font-[300] text-[0.85rem] text-slate">
-              Logget ind som {admin}
-            </p>
-          </div>
-          <div className="flex items-center gap-5">
-            <Link
-              href="/admin/marketing"
-              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
-            >
-              Marketing
-            </Link>
-            <a
-              href="/admin/export"
-              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
-            >
-              Eksportér kontakter (CSV)
-            </a>
-            {codeLock ? <LockButton /> : null}
-            <Link
-              href="/app"
-              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
-            >
-              Til dashboard
-            </Link>
-          </div>
-        </div>
-
+    <AdminShell admin={admin} codeLock={codeLock} active="overblik">
+      <div className="flex flex-col gap-10">
         {/* Advarsel: kode-laasen er ikke slaaet til endnu. */}
         {!codeLock ? (
-          <div className="mt-6 rounded-lg border border-rust/30 bg-rust/5 px-5 py-4">
+          <div className="rounded-lg border border-rust/30 bg-rust/5 px-5 py-4">
             <p className="font-[400] text-[0.85rem] text-rust">
               Ekstra kode-lås er ikke aktiv endnu.
             </p>
@@ -347,7 +314,7 @@ export default async function AdminPage() {
         ) : null}
 
         {/* ── Overblik: noegletal (kun rigtige butikker) ─────────────────── */}
-        <section className="mt-9">
+        <section>
           <SectionHead
             title="Overblik"
             desc="Nøgletal på tværs af rigtige butikker. Demo-forsøg tælles for sig, så tallene er skarpe."
@@ -370,7 +337,7 @@ export default async function AdminPage() {
         </section>
 
         {/* ── Demo-forsoeg ("Proev det selv") ────────────────────────────── */}
-        <section className="mt-10">
+        <section>
           <SectionHead
             title={'Demo-forsøg ("Prøv det selv")'}
             desc="Folk der har hentet demo-kortet på stemplet.alius.dk. De er ikke rigtige kunder og tæller ikke med i Overblik."
@@ -417,12 +384,20 @@ export default async function AdminPage() {
           </div>
         </section>
 
-        {/* ── Butikker: rigtige tilmeldinger + styring ───────────────────── */}
-        <section className="mt-10">
-          <SectionHead
-            title={`Butikker (${real.length})`}
-            desc="Alle rigtige tilmeldinger. Brug knapperne øverst til at se hvad der kræver handling, søg efter en butik, og styr plan, pris og status pr. butik."
-          />
+        {/* ── Butikker: rigtige tilmeldinger + styring + fakturering ──────── */}
+        <section>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <SectionHead
+              title={`Butikker (${real.length})`}
+              desc="Alle rigtige tilmeldinger. Brug knapperne øverst til at se hvad der kræver handling, søg efter en butik, og styr plan, pris og fakturering pr. butik."
+            />
+            <a
+              href="/admin/export"
+              className="shrink-0 text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
+            >
+              Eksportér kontakter (CSV)
+            </a>
+          </div>
           {real.length === 0 ? (
             <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
               Ingen rigtige tilmeldinger endnu. De dukker op her, saa snart en
@@ -433,6 +408,6 @@ export default async function AdminPage() {
           )}
         </section>
       </div>
-    </main>
+    </AdminShell>
   );
 }

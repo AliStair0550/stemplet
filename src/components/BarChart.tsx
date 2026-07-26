@@ -1,7 +1,8 @@
-// Enkelt-serie søjlegraf: terracotta med fin diagonal tekstur (farve + mønster),
-// 4px afrundet top ved baseline, hover-tooltip, og en direkte etiket paa
-// den højeste søjle. Kan vise en fast etiket (fx ugedag) under hver søjle.
-// Ren CSS - vokser blidt ved indlæsning (reduceret bevægelse respekteres).
+// Enkelt-serie soejlegraf: terracotta med fin diagonal tekstur. Vaerdien staar
+// paa EN fast linje lige over soejlerne (samme hoejde for alle), saa tallene er
+// nemme at scanne uafhaengigt af soejlehoejden. Kan vise en fast etiket (fx
+// ugedag eller maaned) under hver soejle. Ren CSS, vokser blidt ved indlaesning
+// (reduceret bevaegelse respekteres globalt).
 export function BarChart({
   data,
   className,
@@ -18,37 +19,34 @@ export function BarChart({
 
   return (
     <div className={className}>
-      <div className="flex h-44 items-end gap-2 sm:gap-2.5">
+      <div className="flex h-44 items-stretch gap-2 sm:gap-2.5">
         {data.map((d, i) => {
           const h = (d.count / max) * 100;
           return (
-            <div
-              key={i}
-              className="group relative flex h-full flex-1 items-end justify-center"
-            >
-              <div
-                className="w-full max-w-[44px] origin-bottom rounded-t-[5px]"
-                style={{
-                  height: `${Math.max(1.5, h)}%`,
-                  background:
-                    "repeating-linear-gradient(135deg, #A6502E 0 5px, #8F432695 5px 6px)",
-                  animation: "growBar 0.7s cubic-bezier(0.16,1,0.3,1) both",
-                  animationDelay: `${i * 0.03}s`,
-                }}
-              />
-              {/* Vaerdi over hver soejle, saa den ogsaa er laesbar paa mobil
-                  (ingen hover). Hoejeste dag fremhaeves. */}
-              {d.count > 0 ? (
-                <span
-                  className={`absolute -top-5 text-[0.6rem] tabular-nums ${
-                    i === maxIdx
-                      ? "font-[400] text-ink"
-                      : "font-[300] text-slate"
-                  }`}
-                >
-                  {d.count}
-                </span>
-              ) : null}
+            <div key={i} className="flex flex-1 flex-col items-center">
+              {/* Tal-raekke: samme linje for alle soejler, lige over dem. */}
+              <span
+                className={`mb-1.5 text-[0.66rem] tabular-nums ${
+                  i === maxIdx && d.count > 0
+                    ? "font-[500] text-ink"
+                    : "font-[300] text-slate"
+                }`}
+              >
+                {d.count}
+              </span>
+              {/* Soejle-omraade fylder resten; soejlen vokser fra baseline. */}
+              <div className="flex w-full flex-1 items-end justify-center">
+                <div
+                  className="w-full max-w-[44px] origin-bottom rounded-t-[5px]"
+                  style={{
+                    height: `${Math.max(1.5, h)}%`,
+                    background:
+                      "repeating-linear-gradient(135deg, #A6502E 0 5px, #8F432695 5px 6px)",
+                    animation: "growBar 0.7s cubic-bezier(0.16,1,0.3,1) both",
+                    animationDelay: `${i * 0.03}s`,
+                  }}
+                />
+              </div>
             </div>
           );
         })}
