@@ -9,7 +9,18 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
-const STEPS = ["Din butik", "Design kortet", "Print og gå i gang"];
+// Progressiv onboarding: vi starter med det absolut vigtigste (navn + login-mail),
+// tager praktiske detaljer bagefter, og designer kortet til sidst. Faerre felter
+// pr. skaerm = roligere, mere Apple-agtig foelelse.
+const STEPS = ["Din butik", "Opsætning", "Design kortet", "Klar"];
+const DESIGN_STEP = 2;
+const DONE_STEP = 3;
+
+const SUBTITLES: Record<number, string> = {
+  0: "Vi starter med det vigtigste: butikkens navn og hvor du logger ind.",
+  1: "Et par praktiske detaljer. Du kan ændre det hele senere i dashboardet.",
+  2: "Gør kortet til dit. Vælg farver, ikon og belønning.",
+};
 
 function PinIcon() {
   return (
@@ -80,10 +91,13 @@ export function StartWizard() {
     setError(null);
     if (step === 0) {
       if (name.trim().length < 2) return setError("Skriv virksomhedens navn.");
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setError("Skriv en gyldig e-mail.");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+        return setError("Skriv en gyldig e-mail.");
+    }
+    if (step === 1) {
       if (!/^\d{4,6}$/.test(pin)) return setError("PIN skal være 4 til 6 cifre.");
     }
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, DONE_STEP));
   }
 
   function submit() {
@@ -92,11 +106,11 @@ export function StartWizard() {
       const res = await createBusinessAction({ name, email, pin, category, address, design, acceptedTerms });
       if (res.ok) {
         setCreated(res);
-        setStep(2);
+        setStep(DONE_STEP);
       } else {
         setError(res.error);
-        // Adressefeltet ligger paa trin 0: hop tilbage, saa fejlen giver mening.
-        if (res.field === "address") setStep(0);
+        // Adressefeltet ligger paa trin "Opsaetning": hop dertil, saa fejlen giver mening.
+        if (res.field === "address") setStep(1);
       }
     });
   }
@@ -104,7 +118,7 @@ export function StartWizard() {
   return (
     <div
       className={`mx-auto flex w-full flex-col gap-8 ${
-        step === 2 ? "max-w-4xl" : "max-w-2xl"
+        step === DONE_STEP ? "max-w-4xl" : "max-w-2xl"
       }`}
     >
       {/* Trin-indikator */}
@@ -112,7 +126,7 @@ export function StartWizard() {
         {STEPS.map((label, i) => (
           <li key={label} className="flex flex-1 items-center gap-3">
             <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.72rem] ${
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.72rem] transition-colors ${
                 i <= step ? "bg-terracotta text-parchment" : "bg-fog text-slate"
               }`}
             >
@@ -129,9 +143,20 @@ export function StartWizard() {
         ))}
       </ol>
 
+      {step < DONE_STEP ? (
+        <div className="flex flex-col gap-1.5">
+          <h2 className="font-[300] text-[1.6rem] tracking-[-0.01em] text-ink">
+            {STEPS[step]}
+          </h2>
+          <p className="font-[200] text-[0.92rem] leading-relaxed text-stone">
+            {SUBTITLES[step]}
+          </p>
+        </div>
+      ) : null}
+
+      {/* Trin 0: det vigtigste - navn + login-mail */}
       {step === 0 ? (
         <div className="flex flex-col gap-5 animate-step">
-          <h2 className="font-[300] text-[1.5rem] text-ink">Din butik</h2>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
               Virksomhedens navn
@@ -139,6 +164,8 @@ export function StartWizard() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoFocus
+              placeholder="Fx Kaffebar Nord"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
@@ -152,9 +179,19 @@ export function StartWizard() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               inputMode="email"
+              placeholder="dig@butik.dk"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
+            <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
+              Du logger ind uden adgangskode. Vi sender et link til denne mail.
+            </span>
           </label>
+        </div>
+      ) : null}
+
+      {/* Trin 1: praktiske detaljer - PIN, branche, placering */}
+      {step === 1 ? (
+        <div className="flex flex-col gap-5 animate-step">
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
               Personale-PIN
@@ -239,9 +276,9 @@ export function StartWizard() {
         </div>
       ) : null}
 
-      {step === 1 ? (
+      {/* Trin 2: design + vilkaar */}
+      {step === DESIGN_STEP ? (
         <div className="flex flex-col gap-5 animate-step">
-          <h2 className="font-[300] text-[1.5rem] text-ink">Design kortet</h2>
           <CardDesigner
             value={design}
             onChange={setDesign}
@@ -249,7 +286,7 @@ export function StartWizard() {
             allowLogo
           />
           <p className="text-[0.75rem] font-[200] text-slate">
-            Tilføj dit logo nu, så henter vi automatisk dine farver. Du kan
+            Vælg et tema eller dine egne farver, og tilføj gerne dit logo. Du kan
             ændre alt bagefter i dashboardet.
           </p>
           <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
@@ -293,7 +330,7 @@ export function StartWizard() {
         </div>
       ) : null}
 
-      {step === 2 && created ? (
+      {step === DONE_STEP && created ? (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 animate-step">
           <div className="text-center">
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
@@ -398,9 +435,9 @@ export function StartWizard() {
                   Log ind på dit dashboard
                 </h4>
                 <p className="font-[200] text-[0.84rem] leading-relaxed text-stone">
-                  Vi har sendt et login-link til {email}. Klik det, så er du
-                  inde. Herfra styrer du kort, stempler og statistik. Tjek
-                  spam-mappen, hvis mailen ikke dukker op.
+                  Klik herunder, så sender vi et login-link til {email}. Klik
+                  linket i mailen, så er du inde. Herfra styrer du kort, stempler
+                  og statistik. Tjek spam-mappen, hvis mailen ikke dukker op.
                 </p>
                 <form action={sendOnboardingLogin}>
                   <input type="hidden" name="email" value={email} />
@@ -409,7 +446,7 @@ export function StartWizard() {
                     size="md"
                     pendingText="Sender login-link..."
                   >
-                    Log ind
+                    Send login-link
                   </SubmitButton>
                 </form>
               </div>
@@ -458,7 +495,7 @@ export function StartWizard() {
       ) : null}
 
       {/* Navigation */}
-      {step < 2 ? (
+      {step < DONE_STEP ? (
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -469,7 +506,7 @@ export function StartWizard() {
           >
             Tilbage
           </button>
-          {step === 0 ? (
+          {step < DESIGN_STEP ? (
             <button onClick={next} className={btnClass("primary")}>
               Fortsæt
             </button>

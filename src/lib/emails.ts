@@ -26,7 +26,7 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
   <tr><td align="center" style="padding:40px 20px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
       <tr><td style="padding:0 4px 20px;">
-        <span style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:600;color:${C.ink};letter-spacing:.02em;">Stemplet<span style="color:${C.terracotta};">.</span></span>
+        <span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:${C.ink};">Stemplet<span style="display:inline-block;width:6px;height:6px;margin-left:2px;border-radius:50%;background:${C.terracotta};vertical-align:baseline;"></span></span>
       </td></tr>
       <tr><td style="background:${C.card};border:1px solid ${C.fog};border-radius:12px;padding:36px 32px;">
         ${inner}
