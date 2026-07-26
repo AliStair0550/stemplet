@@ -29,7 +29,7 @@ export default function GlobalError({
           justifyContent: "center",
           gap: "1.5rem",
           background: "#FAF8F4",
-          color: "#1A1A1A",
+          color: "#1C1917",
           fontFamily: "Arial, Helvetica, sans-serif",
           textAlign: "center",
           padding: "0 1.5rem",
@@ -44,7 +44,7 @@ export default function GlobalError({
             fontWeight: 300,
             fontSize: "0.9rem",
             lineHeight: 1.6,
-            color: "#4A4A4A",
+            color: "#57534E",
             margin: 0,
           }}
         >
@@ -53,7 +53,7 @@ export default function GlobalError({
         <button
           onClick={reset}
           style={{
-            background: "#1A1A1A",
+            background: "#1C1917",
             color: "#FAF8F4",
             border: "none",
             padding: "0.8rem 1.8rem",

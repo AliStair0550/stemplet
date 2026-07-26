@@ -1,7 +1,7 @@
 // Alius-ordmærket. Genbrugt fra alius.dk til "Et produkt fra Alius".
 export default function AliusLogo({
   width = 96,
-  stroke = "#1A1A1A",
+  stroke = "#1C1917",
   dotFill = "#2D5F4A",
   className,
 }: {

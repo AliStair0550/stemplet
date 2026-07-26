@@ -4,15 +4,18 @@
 // inline styles, saa det ser ens ud i alle mail-klienter. Ingen lange
 // bindestreger.
 
+// Praecis samme palette som sitet (globals.css @theme), saa mails og sider
+// spiller sammen. Kun web-sikre fonts i selve mailen (Instrument Sans kan ikke
+// embeddes paalideligt), men farverne er identiske med brandet.
 const C = {
   parchment: "#FAF8F4",
   card: "#FFFFFF",
   terracotta: "#A6502E",
   tint: "#F7EDE7", // lys terracotta-tone til fremhaevede blokke
-  ink: "#1A1A1A",
-  stone: "#4A4A4A",
-  slate: "#6B7B75",
-  fog: "#E8E5DF",
+  ink: "#1C1917",
+  stone: "#57534E",
+  slate: "#78716C",
+  fog: "#ECEAE5",
 };
 
 type Email = { subject: string; html: string; text: string };
