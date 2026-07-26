@@ -40,6 +40,23 @@ function PinIcon() {
   );
 }
 
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.4}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
 export function StartWizard() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
@@ -121,26 +138,43 @@ export function StartWizard() {
         step >= DESIGN_STEP ? "max-w-4xl" : "max-w-2xl"
       }`}
     >
-      {/* Trin-indikator */}
+      {/* Trin-indikator med en lille dopamin: fuldfoerte trin faar et flueben, og
+          det netop aktiverede trin popper blidt med en bloed ring-ripple. */}
       <ol className="flex items-center gap-3">
-        {STEPS.map((label, i) => (
-          <li key={label} className="flex flex-1 items-center gap-3">
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.72rem] transition-colors ${
-                i <= step ? "bg-terracotta text-parchment" : "bg-fog text-slate"
-              }`}
-            >
-              {i + 1}
-            </span>
-            <span
-              className={`hidden text-[0.72rem] font-[300] uppercase tracking-[0.1em] sm:block ${
-                i <= step ? "text-ink" : "text-slate"
-              }`}
-            >
-              {label}
-            </span>
-          </li>
-        ))}
+        {STEPS.map((label, i) => {
+          const done = i < step;
+          const active = i === step;
+          return (
+            <li key={label} className="flex flex-1 items-center gap-3">
+              <span className="relative flex h-7 w-7 shrink-0 items-center justify-center">
+                {active ? (
+                  <span
+                    key={`ripple-${step}`}
+                    aria-hidden
+                    className="absolute inset-0 rounded-full border border-terracotta/50 [animation:stampRipple_0.7s_ease-out_both]"
+                  />
+                ) : null}
+                <span
+                  key={active ? `dot-active-${step}` : `dot-${i}`}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-[0.72rem] transition-colors ${
+                    done || active
+                      ? "bg-terracotta text-parchment"
+                      : "bg-fog text-slate"
+                  } ${active ? "[animation:cardReceive_0.4s_ease-out]" : ""}`}
+                >
+                  {done ? <CheckIcon className="h-3.5 w-3.5" /> : i + 1}
+                </span>
+              </span>
+              <span
+                className={`hidden text-[0.72rem] font-[300] uppercase tracking-[0.1em] sm:block ${
+                  i <= step ? "text-ink" : "text-slate"
+                }`}
+              >
+                {label}
+              </span>
+            </li>
+          );
+        })}
       </ol>
 
       {step < DONE_STEP ? (
@@ -165,7 +199,6 @@ export function StartWizard() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
-              placeholder="Fx Kaffebar Nord"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
@@ -179,7 +212,6 @@ export function StartWizard() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               inputMode="email"
-              placeholder="dig@butik.dk"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
             <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
@@ -239,7 +271,7 @@ export function StartWizard() {
             </div>
             <p className="font-[200] text-[0.8rem] leading-relaxed text-stone">
               Skriv butikkens adresse, så dukker kortet op på kundens låseskærm,
-              når de er i nærheden. En gratis påmindelse, du selv kan slå fra.
+              når de er i nærheden.
             </p>
             <div className="mt-1">
               <AddressAutocomplete
@@ -335,6 +367,27 @@ export function StartWizard() {
       {step === DONE_STEP && created ? (
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 animate-step">
           <div className="text-center">
+            {/* Stempel-landing: brandets egen "dopamin, ikke konfetti"-bevaegelse.
+                Et stempel der presses ned og "lander" som kvittering for at
+                butikken nu er stemplet ind. Prominent, men roligt. Under
+                prefers-reduced-motion staar kun det rolige flueben-stempel. */}
+            <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center">
+              <span
+                aria-hidden
+                className="absolute h-16 w-16 rounded-full bg-terracotta/25 blur-2xl [animation:stampBloom_1.2s_ease-out_both]"
+              />
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full border-2 border-terracotta/40 [animation:stampRipple_1s_ease-out_0.15s_both]"
+              />
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full border-2 border-terracotta/25 [animation:stampRipple_1.15s_ease-out_0.4s_both]"
+              />
+              <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-terracotta text-parchment shadow-[0_10px_30px_-8px_rgba(166,80,46,0.65)] [animation:stampPop_0.6s_cubic-bezier(0.34,1.56,0.64,1)_both]">
+                <CheckIcon className="h-7 w-7" />
+              </span>
+            </div>
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
               Du er klar
             </h2>
