@@ -311,6 +311,40 @@ model WalletRegistration {
   @@index([deviceLibraryId])
 }
 
+// ─────────────────────────────────────────────────────────────
+// "Hold mig orienteret"-tilmelding (marketing/nyhedsbrev-forberedt)
+// Dobbelt opt-in: raekken oprettes ved tilmelding (confirmedAt = null), og
+// samtykket er foerst aktivt, naar bekraeftelseslinket er klikket (confirmedAt
+// sat + IP gemt som dokumentation). email er unik, saa gentilmelding opdaterer
+// samme raekke i stedet for at lave dubletter. unsubscribed er med fra start, saa
+// et senere nyhedsbrevsmodul kan slaa afmelding op uden en ny migration.
+// ─────────────────────────────────────────────────────────────
+
+enum MarketingStatus {
+  NEW // Ny (ikke behandlet)
+  CONTACTED // Kontaktet
+  NOT_RELEVANT // Ikke relevant
+}
+
+model MarketingSignup {
+  id           String          @id @default(cuid())
+  name         String? // valgfrit (footer-varianten har kun mail)
+  storeName    String? // butiksnavn, valgfrit
+  email        String          @unique
+  source       String // "forside", branche-slug (fx /stempelkort-til-kaffebarer) eller "footer"
+  status       MarketingStatus @default(NEW) // saettes manuelt i admin
+  note         String? // frit notefelt pr. tilmelding (admin)
+  signedUpAt   DateTime        @default(now()) // tidsstempel for tilmelding
+  confirmedAt  DateTime? // tidsstempel for bekraeftelse (dobbelt opt-in)
+  confirmIp    String? // IP ved bekraeftelse (samtykkedokumentation)
+  unsubscribed Boolean         @default(false) // forberedt til afmelding senere
+
+  // Nyeste oeverst i admin; kilde-fordeling og "bekraeftede/nye" i tællekortene.
+  @@index([signedUpAt])
+  @@index([confirmedAt])
+  @@index([source])
+}
+
 model AuditLog {
   id         String   @id @default(cuid())
   businessId String

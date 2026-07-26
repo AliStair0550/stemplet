@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Wordmark } from "@/components/Wordmark";
+import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const LINKS = [
   { href: "/login", label: "Log ind" },
@@ -14,6 +15,24 @@ export default function Footer() {
   return (
     <footer className="bg-ink text-parchment">
       <div className="mx-auto w-full max-w-[1120px] px-6 py-20 md:px-8">
+        {/* Hold mig orienteret: kompakt (kun mail) */}
+        <div className="mb-14 flex flex-col gap-6 border-b border-parchment/10 pb-12 md:flex-row md:items-center md:justify-between md:gap-12">
+          <div className="max-w-md">
+            <span className="text-label font-medium uppercase tracking-[0.08em] text-parchment/45">
+              Bliv opdateret
+            </span>
+            <p className="mt-2 text-[1.15rem] font-bold leading-[1.2] tracking-[-0.02em] text-parchment">
+              Lad os holde kontakten
+            </p>
+            <p className="mt-2 text-[0.9rem] leading-[1.6] text-parchment/65">
+              Få inspiration, idéer og nye muligheder. Ingen spam, kun gode idéer.
+            </p>
+          </div>
+          <div className="w-full md:max-w-sm">
+            <NewsletterSignup variant="compact" source="footer" tone="dark" />
+          </div>
+        </div>
+
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-16">
           {/* Brand + mission */}
           <div className="flex flex-col gap-5">

@@ -452,3 +452,108 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
   };
 }
 
+// ── "Hold mig orienteret": bekraeft tilmelding (dobbelt opt-in) ───────
+// Neutral bekraeftelsesmail. Samtykket er foerst aktivt, naar modtageren klikker.
+// Ingen salg, ingen lokkemad, kun bekraeftelsen.
+
+export function marketingConfirmEmail(url: string): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Bekræft din tilmelding</a>
+    </td></tr></table>`;
+
+  const inner = `
+    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      Bekræft din tilmelding.
+    </p>
+    <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      Du er ét klik fra at være skrevet op. Klik på knappen for at bekræfte, så holder vi kontakten.
+    </p>
+    ${button}
+    <p style="margin:24px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
+      Virker knappen ikke, så kopiér linket:<br>
+      <a href="${url}" style="color:${C.terracotta};">${url}</a>
+    </p>
+    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
+      Har du ikke skrevet dig op, kan du roligt ignorere denne mail. Så sker der ikke noget.
+    </p>`;
+
+  const text = [
+    "Bekræft din tilmelding.",
+    "",
+    "Du er ét klik fra at være skrevet op. Bekræft her:",
+    url,
+    "",
+    "Har du ikke skrevet dig op, kan du roligt ignorere denne mail. Så sker der ikke noget.",
+    "",
+    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+  ].join("\n");
+
+  return {
+    subject: "Bekræft din tilmelding til Stemplet",
+    html: shell("Bekræft din tilmelding til Stemplet.", inner),
+    text,
+  };
+}
+
+// ── "Hold mig orienteret": ny bekraeftet tilmelding (til superadmin/Ali) ──
+
+export type SuperadminMarketingSignupData = {
+  name: string; // navn eller "(ingen)"
+  storeName: string; // butiksnavn eller "(ingen)"
+  email: string;
+  source: string; // "forside", branche-slug eller "footer"
+  adminUrl: string;
+};
+
+export function superadminMarketingSignupEmail(
+  d: SuperadminMarketingSignupData,
+): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn Marketing</a>
+    </td></tr></table>`;
+
+  const detailRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+    </tr>`;
+
+  const inner = `
+    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      Ny bekræftet tilmelding.
+    </p>
+    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      En ny person har bekræftet, at de gerne vil holde kontakten.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:14px 18px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${detailRow("Navn", d.name)}
+          ${detailRow("Butik", d.storeName)}
+          ${detailRow("Mail", d.email)}
+          ${detailRow("Kilde", d.source)}
+        </table>
+      </td></tr>
+    </table>
+    ${button}`;
+
+  const text = [
+    "Ny bekræftet tilmelding.",
+    "",
+    `Navn: ${d.name}`,
+    `Butik: ${d.storeName}`,
+    `Mail: ${d.email}`,
+    `Kilde: ${d.source}`,
+    "",
+    `Åbn Marketing: ${d.adminUrl}`,
+  ].join("\n");
+
+  return {
+    subject: `[Stemplet] Ny tilmelding: ${d.email}`,
+    html: shell("Ny bekræftet tilmelding til Stemplet.", inner),
+    text,
+  };
+}
+

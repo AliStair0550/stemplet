@@ -7,6 +7,7 @@ import TryItYourself from "@/components/marketing/TryItYourself";
 import LoyaltySteps from "@/components/marketing/LoyaltySteps";
 import NoCheating from "@/components/marketing/NoCheating";
 import StatsPreview from "@/components/marketing/StatsPreview";
+import { NewsletterSection } from "@/components/marketing/NewsletterSection";
 import Pricing from "@/components/marketing/Pricing";
 import {
   RoiCalculatorLazy,
@@ -59,6 +60,9 @@ export default function Page() {
         </div>
         <div className="cv-section">
           <StatsPreview />
+        </div>
+        <div className="cv-section">
+          <NewsletterSection source="forside" />
         </div>
         <div className="cv-section">
           <Pricing />

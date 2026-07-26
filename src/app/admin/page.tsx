@@ -308,6 +308,12 @@ export default async function AdminPage() {
             </p>
           </div>
           <div className="flex items-center gap-5">
+            <Link
+              href="/admin/marketing"
+              className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"
+            >
+              Marketing
+            </Link>
             <a
               href="/admin/export"
               className="text-[0.78rem] font-[400] uppercase tracking-[0.1em] text-terracotta transition-colors hover:text-terracotta-dark"

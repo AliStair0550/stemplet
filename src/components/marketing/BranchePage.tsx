@@ -8,6 +8,7 @@ import { StampCard } from "@/components/StampCard";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
 import { BrancheExamples } from "@/components/marketing/BrancheExamples";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
+import { NewsletterSection } from "@/components/marketing/NewsletterSection";
 
 // Faelles skabelon for en brancheside. Ren server-komponent i sitets designsystem:
 // hero (eyebrow + H1 + intro + stempel-animation), brodtekst-sektioner, et konkret
@@ -189,6 +190,8 @@ export function BranchePage({ b }: { b: BrancheContent }) {
           </div>
         </Section>
 
+        {/* Hold mig orienteret: kilde = branchens slug */}
+        <NewsletterSection source={b.slug} />
       </main>
       <Footer />
     </>
