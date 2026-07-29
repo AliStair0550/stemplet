@@ -461,8 +461,8 @@ export function CardDesigner({
               />
               <div className="flex items-baseline justify-between gap-2">
                 <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-                  Vises diskret under &quot;Hent mit stempelkort&quot;, ikke på
-                  selve kortet.
+                  Vises når kunden henter kortet og på bagsiden af kortet i
+                  Wallet, ikke på kortets forside.
                 </p>
                 <span
                   className={cn(
@@ -476,8 +476,9 @@ export function CardDesigner({
             </>
           ) : (
             <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Tilføj korte betingelser, fx hvilke produkter kortet gælder for.
-              Vist til kunden, når de henter kortet.
+              Tilføj betingelser f.eks. hvilke produkter kortet gælder for.
+              Betingelserne vises, når kunden henter kortet og på bagsiden af
+              kortet i Wallet.
             </p>
           )}
         </div>

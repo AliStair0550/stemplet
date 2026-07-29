@@ -139,7 +139,9 @@ export default async function ClaimPage({
             Deles linket, viser previewet butikkens stempelkort (OG-billede). */}
         <div className="flex flex-col items-center gap-2 border-t border-fog pt-6">
           <p className="text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
-            Kender du nogen, der elsker {business.name}? Del kortet med dem.
+            Kender du nogen, der elsker {business.name}?
+            <br />
+            Del kortet med dem.
           </p>
           <ShareLinkButton
             businessName={business.name}
