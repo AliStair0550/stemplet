@@ -25,6 +25,9 @@ type PassInput = {
   logoUrl: string | null;
   stampIcon: string;
   rewardText: string;
+  // Valgfrie betingelser. Vises paa BAGSIDEN af passet (kunden trykker "..."-info
+  // og vender kortet). null = ingen betingelser.
+  terms: string | null;
   stamps: number;
   required: number;
   /** Samlet antal stempler NOGENSINDE (nulstilles ikke ved indloesning). */
@@ -289,6 +292,16 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
       value: input.rewardText,
     },
   );
+
+  // Betingelser (valgfri): staar paa bagsiden sammen med beloenningen, saa de
+  // altid er ved haanden i kundens Wallet, ikke kun paa hente-siden.
+  if (input.terms) {
+    pass.backFields.push({
+      key: "terms",
+      label: "Betingelser",
+      value: input.terms,
+    });
+  }
 
   // Historik/stamkunde-tekst paa bagsiden: samlet antal stempler + fyldte kort.
   if (input.lifetimeStamps > 0) {

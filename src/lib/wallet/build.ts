@@ -25,6 +25,7 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     logoUrl: b.logoUrl,
     stampIcon: cc.card.stampIcon,
     rewardText: cc.card.rewardText,
+    terms: cc.card.terms,
     stamps: cc.stamps,
     required: cc.card.stampsRequired,
     lifetimeStamps: cc.lifetimeStamps,
