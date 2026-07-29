@@ -52,12 +52,16 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
         stampsRequired: parsed.data.stampsRequired,
         rewardText: parsed.data.rewardText,
         stampIcon: parsed.data.stampIcon,
+        terms: parsed.data.terms || null,
       },
     }),
   ]);
 
   revalidatePath("/app/kort");
   revalidatePath("/app");
+  // Kundens hente-side er ISR-cachet pr. butik: revalidér den, saa aendret
+  // design (farver, beloenning, betingelser) slaar igennem med det samme.
+  revalidatePath(`/k/${business.slug}`);
   return { ok: true };
 }
 

@@ -140,6 +140,7 @@ export async function createBusinessAction(input: {
             stampsRequired: design.data.stampsRequired,
             rewardText: design.data.rewardText,
             stampIcon: design.data.stampIcon,
+            terms: design.data.terms || null,
             active: true,
           },
         },

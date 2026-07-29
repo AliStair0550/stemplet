@@ -25,6 +25,7 @@ export default async function KortPage() {
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     logoUrl: business.logoUrl,
+    terms: card?.terms ?? null,
   };
 
   const qrDataUrl = await QRCode.toDataURL(`${APP_URL}/k/${business.slug}`, {

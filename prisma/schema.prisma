@@ -180,6 +180,10 @@ model Card {
   stampsRequired Int            @default(10) // 4 til 12
   rewardText     String
   stampIcon      String         @default("coffee") // coffee, scissors, croissant, heart, star, custom
+  // Valgfri betingelser (fx "Gaelder kun ved koeb af kaffe"). Vises IKKE paa
+  // selve kortet, men diskret under "Hent mit stempelkort" paa kundens
+  // hente-side. null = ingen betingelser (slaaet fra i design).
+  terms          String?
   active         Boolean        @default(true)
   customerCards  CustomerCard[]
   campaigns      Campaign[]

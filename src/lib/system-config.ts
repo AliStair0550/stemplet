@@ -36,3 +36,11 @@ export const STAMPS_MAX = 12;
  * med "...". ~28 tegn holder den fuld stOrrelse og laesbar paa aktive kort.
  */
 export const REWARD_TEXT_MAX = 28;
+
+/**
+ * Maks tegn i kortets betingelser (valgfri). Vises IKKE paa selve kortet, men
+ * diskret under "Hent mit stempelkort" paa kundens hente-side, saa fokus bliver
+ * paa kortet. Kort tekst, fx "Gaelder kun ved koeb af kaffe." ~180 tegn giver
+ * plads til et par korte betingelser uden at fylde siden.
+ */
+export const TERMS_MAX = 180;

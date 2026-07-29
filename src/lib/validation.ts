@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { STAMPS_MIN, STAMPS_MAX, REWARD_TEXT_MAX } from "./system-config";
+import {
+  STAMPS_MIN,
+  STAMPS_MAX,
+  REWARD_TEXT_MAX,
+  TERMS_MAX,
+} from "./system-config";
 import { STAMP_ICONS, type StampIconKey } from "./brand";
 
 const hex = z
@@ -48,6 +53,13 @@ export const cardDesignSchema = z.object({
       (v) => v.startsWith("data:image/") || /^https?:\/\//.test(v),
       "Ugyldigt logo",
     )
+    .nullable()
+    .optional(),
+  // Valgfri betingelser. Trimmes; tom tekst behandles som "ingen betingelser".
+  terms: z
+    .string()
+    .trim()
+    .max(TERMS_MAX, "Betingelserne er for lange")
     .nullable()
     .optional(),
 });

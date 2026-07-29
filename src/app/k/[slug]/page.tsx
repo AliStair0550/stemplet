@@ -100,6 +100,18 @@ export default async function ClaimPage({
 
         <div className="flex flex-col items-center gap-4">
           <ClaimFlow slug={slug} walletEnabled={WALLET_ENABLED} />
+          {/* Betingelser (valgfri): diskret under "Hent mit stempelkort", saa
+              fokus bliver paa kortet og knappen, men de er der for kunden. */}
+          {card.terms ? (
+            <div className="w-full rounded-lg border border-fog bg-sand/60 px-4 py-3 text-center">
+              <p className="text-[0.6rem] font-[500] uppercase tracking-[0.14em] text-slate">
+                Betingelser
+              </p>
+              <p className="mt-1 text-[0.78rem] font-[300] leading-relaxed text-stone">
+                {card.terms}
+              </p>
+            </div>
+          ) : null}
           <Link
             href="/find-kort"
             className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"

@@ -12,7 +12,7 @@ import {
   normalizeHex,
   type StampIconKey,
 } from "@/lib/brand";
-import { REWARD_TEXT_MAX } from "@/lib/system-config";
+import { REWARD_TEXT_MAX, TERMS_MAX } from "@/lib/system-config";
 import { cn } from "@/lib/utils";
 
 export type CardDesign = {
@@ -22,6 +22,10 @@ export type CardDesign = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  // Valgfri betingelser. Vises IKKE paa kortet, men under "Hent mit
+  // stempelkort" for kunden. Valgfrit felt, saa preview-byggere (kasse,
+  // kampagner) ikke behoever saette det.
+  terms?: string | null;
 };
 
 export const DEFAULT_DESIGN: CardDesign = {
@@ -32,7 +36,40 @@ export const DEFAULT_DESIGN: CardDesign = {
   primaryColor: "#2A1A10",
   textColor: "#F6EEE4",
   logoUrl: null,
+  terms: null,
 };
+
+// Lille til/fra-kontakt (switch) i brandets stil.
+function Switch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
+        checked ? "bg-terracotta" : "bg-clay",
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
+          checked ? "translate-x-[1.375rem]" : "translate-x-0.5",
+        )}
+      />
+    </button>
+  );
+}
 
 // Hurtige forslag til belOnningen, saa man kan komme i gang med eet klik.
 // BelOnningen er fri tekst, saa fx procent-rabat ("25 % rabat") virker ogsaa.
@@ -116,6 +153,10 @@ export function CardDesigner({
 }) {
   const [uploading, setUploading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
+  // Betingelser: til/fra + en kladde, saa teksten ikke tabes, hvis man slaar
+  // fra og til igen i samme session. Gemt vaerdi er null, naar der er slaaet fra.
+  const [termsOn, setTermsOn] = useState<boolean>(!!value.terms);
+  const [termsDraft, setTermsDraft] = useState<string>(value.terms ?? "");
 
   function set<K extends keyof CardDesign>(key: K, val: CardDesign[K]) {
     onChange({ ...value, [key]: val });
@@ -387,6 +428,59 @@ export function CardDesigner({
             ) : null}
           </div>
         ) : null}
+
+        {/* Betingelser (valgfri): til/fra + kort tekst. Vises IKKE paa kortet,
+            men diskret under "Hent mit stempelkort" for kunden. */}
+        <div className="flex flex-col gap-2 border-t border-fog pt-5">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              Betingelser (valgfri)
+            </span>
+            <Switch
+              checked={termsOn}
+              label="Vis betingelser"
+              onChange={(on) => {
+                setTermsOn(on);
+                // Til: gendan kladden. Fra: ryd den gemte vaerdi (kladde beholdes).
+                set("terms", on ? termsDraft.trim() || null : null);
+              }}
+            />
+          </div>
+          {termsOn ? (
+            <>
+              <textarea
+                value={termsDraft}
+                maxLength={TERMS_MAX}
+                rows={2}
+                onChange={(e) => {
+                  setTermsDraft(e.target.value);
+                  set("terms", e.target.value.trim() || null);
+                }}
+                placeholder="Fx: Gælder kun ved køb af kaffe. Kan indløses i alle vores butikker."
+                className="resize-none border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.9rem] leading-relaxed text-ink outline-none focus:border-terracotta"
+              />
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+                  Vises diskret under &quot;Hent mit stempelkort&quot;, ikke på
+                  selve kortet.
+                </p>
+                <span
+                  className={cn(
+                    "shrink-0 text-[0.68rem] tabular-nums",
+                    termsDraft.length >= TERMS_MAX ? "text-terracotta" : "text-slate",
+                  )}
+                >
+                  {termsDraft.length} / {TERMS_MAX}
+                </span>
+              </div>
+            </>
+          ) : (
+            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Tilføj korte betingelser, fx hvilke produkter kortet gælder for.
+              Vist til kunden, når de henter kortet.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Live preview: lidt luft til venstre, saa den staar tydeligt for sig selv */}
