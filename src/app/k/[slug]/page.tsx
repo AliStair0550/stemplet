@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
@@ -112,12 +111,6 @@ export default async function ClaimPage({
               </p>
             </div>
           ) : null}
-          <Link
-            href="/find-kort"
-            className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
-          >
-            Har du allerede et kort? Find det her.
-          </Link>
           {/* GDPR-formaal: gjort klart FOER kortet hentes, at vi gemmer
               stempelhistorik og hvorfor (belOEnninger + fordele). */}
           <p className="max-w-xs text-center text-[0.7rem] font-[300] leading-relaxed text-slate">
