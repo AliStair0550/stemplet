@@ -135,14 +135,9 @@ export default async function ClaimPage({
           </p>
         </div>
 
-        {/* Inspirerende deling: laeg linket videre, saa venner ogsaa faar kortet.
-            Deles linket, viser previewet butikkens stempelkort (OG-billede). */}
-        <div className="flex flex-col items-center gap-2 border-t border-fog pt-6">
-          <p className="text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
-            Kender du nogen, der elsker {business.name}?
-            <br />
-            Del kortet med dem.
-          </p>
+        {/* Deling: laeg linket videre, saa venner ogsaa faar kortet. Deles
+            linket, viser previewet butikkens stempelkort (OG-billede). */}
+        <div className="flex flex-col items-center border-t border-fog pt-6">
           <ShareLinkButton
             businessName={business.name}
             url={`${APP_URL}/k/${slug}`}
