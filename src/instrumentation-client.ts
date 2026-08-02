@@ -20,6 +20,12 @@ Sentry.init({
     "Script error.",
     "ResizeObserver loop limit exceeded",
     "ResizeObserver loop completed with undelivered notifications.",
+    // In-app-browser/WebView-injektioner (fx SCDynimacBridge): en native "bro",
+    // som kundens browsermiljoe selv injicerer og forventer findes. Aldrig vores
+    // kode. Fanges ogsaa af scrubPii's frame-heuristik, men her paa besked-niveau,
+    // saa selv frame-loese varianter droppes. Vi har ingen egne *Bridge-globaler.
+    /Can't find variable: \w*Bridge/i,
+    /\w*Bridge is not defined/i,
   ],
   // Fejl der stammer fra browser-udvidelser (ikke vores kode).
   denyUrls: [
