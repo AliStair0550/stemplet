@@ -3,6 +3,7 @@ import HeroStampCard from "@/components/marketing/HeroStampCard";
 import { StampCard } from "@/components/StampCard";
 import type { StampIconKey } from "@/lib/brand";
 import { cn } from "@/lib/utils";
+import { PresseVideo } from "./PresseVideo";
 
 // Unlisted marketing-/presse-side: rene, ord-frie produktbilleder (ordmaerke +
 // stempelkort) i Apple-stil, til at screenshotte til LinkedIn m.m. Linkes IKKE
@@ -329,6 +330,18 @@ export default function PresseKitPage() {
               className="w-full shadow-card"
             />
           ))}
+        </div>
+      </section>
+
+      {/* 6. Video: downloadbar animation (scan -> kort -> tilfoej -> Wallet) */}
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#faf8f4] to-[#efe7dd] px-6 py-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[620px] max-w-[120vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.08] blur-[130px]"
+        />
+        <Mark className="relative text-[1.9rem] md:text-[2.2rem]" />
+        <div className="relative mt-12 md:mt-14">
+          <PresseVideo />
         </div>
       </section>
     </main>
