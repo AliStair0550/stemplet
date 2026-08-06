@@ -13,6 +13,8 @@ import {
   EditBilling,
   PauseButton,
   StopButton,
+  ResendLoginButton,
+  FlagToggle,
 } from "./AdminControls";
 
 export type Owner = {
@@ -373,6 +375,7 @@ function BusinessDetail({ r }: { r: Row }) {
                     {o.verified ? "✓ verificeret" : "ikke verificeret"}
                   </span>
                   <EditOwner userId={o.id} email={o.email} name={o.name} />
+                  <ResendLoginButton email={o.email} />
                 </div>
               </li>
             ))}
@@ -429,13 +432,32 @@ function BusinessDetail({ r }: { r: Row }) {
         />
       </div>
 
-      {/* Indstillinger */}
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-        <Fact label="Branche" value={r.category || "-"} />
-        <Fact label="Placering" value={r.hasLocation ? "Ja" : "Nej"} />
-        <Fact label="Selvscan" value={r.selfScan ? "Til" : "Fra"} />
-        <Fact label="Velkomststempel" value={r.welcomeStamp ? "Til" : "Fra"} />
-        <Fact label="Ugebrev" value={r.weeklyEmail ? "Til" : "Fra"} />
+      {/* Indstillinger: branche/placering er info, resten kan slaas til/fra */}
+      <div className="flex flex-col gap-3 rounded-md border border-fog bg-white px-4 py-3">
+        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+          <Fact label="Branche" value={r.category || "-"} />
+          <Fact label="Placering" value={r.hasLocation ? "Ja" : "Nej"} />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <FlagToggle
+            businessId={r.id}
+            flag="selfScanEnabled"
+            value={r.selfScan}
+            label="Selvscan"
+          />
+          <FlagToggle
+            businessId={r.id}
+            flag="welcomeStampEnabled"
+            value={r.welcomeStamp}
+            label="Velkomststempel"
+          />
+          <FlagToggle
+            businessId={r.id}
+            flag="weeklyEmailEnabled"
+            value={r.weeklyEmail}
+            label="Ugebrev"
+          />
+        </div>
       </div>
     </div>
   );

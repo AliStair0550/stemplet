@@ -12,6 +12,8 @@ import {
   setBilling,
   setSignupsPaused,
   setStopped,
+  resendOwnerLogin,
+  setBusinessFlag,
 } from "./actions";
 
 // ── Kopiér ejer-email (til at skrive til dem) ──────────────────────────
@@ -153,6 +155,85 @@ export function ResetStampsButton({ businessId }: { businessId: string }) {
         Fortryd
       </button>
     </span>
+  );
+}
+
+// ── Gensend login-link til en ejer (fx ikke-verificeret) ──────────────
+export function ResendLoginButton({ email }: { email: string }) {
+  const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={pending || status === "sent"}
+      onClick={() =>
+        start(async () => {
+          const r = await resendOwnerLogin(email);
+          setStatus(r.ok ? "sent" : "error");
+        })
+      }
+      className={`rounded-md border px-2 py-0.5 text-[0.62rem] font-[400] uppercase tracking-[0.08em] transition-colors disabled:opacity-60 ${
+        status === "sent"
+          ? "border-terracotta/40 text-terracotta"
+          : status === "error"
+            ? "border-rust/40 text-rust"
+            : "border-fog text-slate hover:border-clay hover:text-ink"
+      }`}
+    >
+      {pending
+        ? "Sender..."
+        : status === "sent"
+          ? "Login-link sendt ✓"
+          : status === "error"
+            ? "Fejl, prøv igen"
+            : "Send login-link"}
+    </button>
+  );
+}
+
+// ── Slaa en butiksindstilling til/fra (selvscan, velkomststempel, ugebrev) ──
+export function FlagToggle({
+  businessId,
+  flag,
+  value,
+  label,
+}: {
+  businessId: string;
+  flag: "selfScanEnabled" | "welcomeStampEnabled" | "weeklyEmailEnabled";
+  value: boolean;
+  label: string;
+}) {
+  const [on, setOn] = useState(value);
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      disabled={pending}
+      onClick={() => {
+        const next = !on;
+        setOn(next);
+        start(() => setBusinessFlag(businessId, flag, next));
+      }}
+      className="inline-flex items-center gap-2 disabled:opacity-60"
+    >
+      <span
+        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+          on ? "bg-terracotta" : "bg-clay"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            on ? "translate-x-[1.125rem]" : "translate-x-0.5"
+          }`}
+        />
+      </span>
+      <span className="text-[0.76rem] font-[300] text-stone">
+        {label}: <span className="text-ink">{on ? "Til" : "Fra"}</span>
+      </span>
+    </button>
   );
 }
 

@@ -13,6 +13,8 @@ import {
   UNLOCK_TTL_SECONDS,
 } from "@/lib/admin";
 import { DEMO_SLUG } from "@/lib/demo";
+import { signIn } from "@/lib/auth";
+import { captureServerError } from "@/lib/sentry";
 
 // Alle admin-handlinger er superadmin-gated paa serveren (ikke kun i UI'et), saa
 // de ikke kan kaldes af andre. Ud over email-gaten kraeves ogsaa, at admin er
@@ -219,4 +221,65 @@ export async function updateOwner(
   });
   revalidatePath("/admin");
   return { error: null, ok: true };
+}
+
+/**
+ * Gensend et magisk login-link til en ejer (fx en der aldrig fik verificeret sig).
+ * Bruger samme Auth.js-flow som normalt login, saa foerste login sender velkomst-
+ * mailen. redirect:false, saa superadmins egen session ikke omdirigeres.
+ */
+export async function resendOwnerLogin(
+  email: string,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { ok: false, error: "Ikke tilladt." };
+  }
+  const clean = email.trim().toLowerCase();
+  if (!clean) return { ok: false, error: "Mangler email." };
+  const user = await prisma.user.findUnique({
+    where: { email: clean },
+    select: { id: true },
+  });
+  if (!user) return { ok: false, error: "Ukendt bruger." };
+
+  try {
+    await signIn("resend", { email: clean, redirect: false });
+  } catch (e) {
+    const digest = (e as { digest?: string })?.digest;
+    // redirect:false boer forhindre NEXT_REDIRECT; sker det alligevel, ER mailen
+    // afsendt foer redirecten, saa vi behandler det som sendt.
+    if (!(typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))) {
+      captureServerError(e, { route: "admin:resendOwnerLogin" });
+      return { ok: false, error: "Kunne ikke sende. Prøv igen." };
+    }
+  }
+  return { ok: true };
+}
+
+// Butiks-flag superadmin maa slaa til/fra (whitelistet, saa kun disse felter).
+const BUSINESS_FLAGS = [
+  "selfScanEnabled",
+  "welcomeStampEnabled",
+  "weeklyEmailEnabled",
+] as const;
+type BusinessFlag = (typeof BUSINESS_FLAGS)[number];
+
+/** Slaa en butiksindstilling til/fra direkte fra admin. Reversibelt. */
+export async function setBusinessFlag(
+  businessId: string,
+  flag: BusinessFlag,
+  value: boolean,
+): Promise<void> {
+  await requireAdmin();
+  if (!BUSINESS_FLAGS.includes(flag)) throw new Error("Ugyldigt felt");
+  const data =
+    flag === "selfScanEnabled"
+      ? { selfScanEnabled: value }
+      : flag === "welcomeStampEnabled"
+        ? { welcomeStampEnabled: value }
+        : { weeklyEmailEnabled: value };
+  await prisma.business.update({ where: { id: businessId }, data });
+  revalidatePath("/admin");
 }
