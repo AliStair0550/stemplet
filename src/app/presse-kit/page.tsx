@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import HeroStampCard from "@/components/marketing/HeroStampCard";
 import { StampCard } from "@/components/StampCard";
+import type { StampIconKey } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 // Unlisted marketing-/presse-side: rene, ord-frie produktbilleder (ordmaerke +
@@ -78,6 +79,84 @@ const WALL = [
   { name: "Iskiosken", primary: "#1C2433", text: "#E8ECF3", icon: "heart" as const, reward: "Gratis is", stamps: 2, required: 6 },
 ];
 
+type CardTheme = {
+  name: string;
+  primary: string;
+  text: string;
+  icon: StampIconKey;
+  reward: string;
+  stamps: number;
+  required: number;
+};
+
+// Genbrugelig "vifte"-sektion (samme stil som sektion 3): tre kort, det midterste
+// fremhaevet foran. Bruges til de ekstra varianter. Roerer ikke sektion 3.
+function FanCard({
+  t,
+  shine,
+  className,
+}: {
+  t: CardTheme;
+  shine?: boolean;
+  className?: string;
+}) {
+  return (
+    <StampCard
+      businessName={t.name}
+      primaryColor={t.primary}
+      textColor={t.text}
+      stampIcon={t.icon}
+      stamps={t.stamps}
+      required={t.required}
+      rewardText={t.reward}
+      shine={shine}
+      className={className}
+    />
+  );
+}
+
+function FanSection({
+  left,
+  center,
+  right,
+  className,
+}: {
+  left: CardTheme;
+  center: CardTheme;
+  right: CardTheme;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        "relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24",
+        className,
+      )}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[900px] max-w-[120vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.05] blur-[130px]"
+      />
+      <Mark className="relative text-[1.9rem] md:text-[2.2rem]" />
+      <div className="relative mt-16 flex flex-wrap items-center justify-center gap-8 md:mt-20 md:flex-nowrap md:gap-0">
+        <FanCard
+          t={left}
+          className="w-[15rem] rotate-[-7deg] shadow-hero md:mr-[-2.5rem] md:w-[16rem]"
+        />
+        <FanCard
+          t={center}
+          shine
+          className="relative z-10 w-[16.5rem] shadow-hero md:w-[18rem]"
+        />
+        <FanCard
+          t={right}
+          className="w-[15rem] rotate-[7deg] shadow-hero md:ml-[-2.5rem] md:w-[16rem]"
+        />
+      </div>
+    </section>
+  );
+}
+
 export default function PresseKitPage() {
   return (
     <main className="bg-parchment">
@@ -146,6 +225,70 @@ export default function PresseKitPage() {
           />
         </div>
       </section>
+
+      {/* 3b. Vifte: Nord Kaffebar, Little Brother (pizzeria, midt), Bageriet */}
+      <FanSection
+        className="bg-sand"
+        left={{
+          name: "Nord Kaffebar",
+          primary: "#23150E",
+          text: "#F4E9DD",
+          icon: "coffee",
+          reward: "10. kop gratis",
+          stamps: 6,
+          required: 10,
+        }}
+        center={{
+          name: "Little Brother",
+          primary: "#14392B",
+          text: "#EAF3EE",
+          icon: "pizza",
+          reward: "10. pizza gratis",
+          stamps: 7,
+          required: 10,
+        }}
+        right={{
+          name: "Bageriet",
+          primary: "#3A2A16",
+          text: "#F6ECDA",
+          icon: "croissant",
+          reward: "Gratis brød",
+          stamps: 7,
+          required: 8,
+        }}
+      />
+
+      {/* 3c. Vifte: friske farver (grOn, vin, navy) */}
+      <FanSection
+        className="bg-gradient-to-b from-[#faf8f4] to-[#efe7dd]"
+        left={{
+          name: "Grønt & Godt",
+          primary: "#173029",
+          text: "#E6F0EB",
+          icon: "leaf",
+          reward: "5. gang -25%",
+          stamps: 4,
+          required: 5,
+        }}
+        center={{
+          name: "Vinbaren",
+          primary: "#3A151C",
+          text: "#F5E3E7",
+          icon: "wine",
+          reward: "Gratis glas",
+          stamps: 6,
+          required: 10,
+        }}
+        right={{
+          name: "Iskiosken",
+          primary: "#1C2433",
+          text: "#E8ECF3",
+          icon: "icecream",
+          reward: "Gratis is",
+          stamps: 5,
+          required: 6,
+        }}
+      />
 
       {/* 4. Beloenning klar: eet fuldt kort, taet paa */}
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#faf8f4] to-[#efe7dd] px-6 py-24">
