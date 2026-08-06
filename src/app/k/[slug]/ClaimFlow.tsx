@@ -11,6 +11,9 @@ const ERRORS: Record<string, string> = {
   fuld: "Butikken kan ikke tage imod flere stempelkort lige nu. Spørg personalet.",
   pause: "Butikken tager ikke imod nye stempelkort lige nu. Spørg personalet.",
   stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
+  // Forbigaaende serverfejl (fx en kortvarig database-blip): kunden kan bare
+  // proeve igen om et oejeblik, saa vi viser en "Proev igen"-knap.
+  serverfejl: "Der opstod en kortvarig fejl. Prøv igen om et øjeblik.",
 };
 
 // "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
@@ -59,12 +62,19 @@ export function ClaimFlow({
 
   if (fejl) {
     return (
-      <p
-        role="status"
-        className="w-full rounded-lg border border-rust/30 bg-rust/5 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
-      >
-        {ERRORS[fejl]}
-      </p>
+      <div className="flex w-full flex-col items-center gap-3">
+        <p
+          role="status"
+          className="w-full rounded-lg border border-rust/30 bg-rust/5 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
+        >
+          {ERRORS[fejl]}
+        </p>
+        {fejl === "serverfejl" ? (
+          <a href={claimUrl} className={`${btnClass("primary", "lg")} w-full`}>
+            Prøv igen
+          </a>
+        ) : null}
+      </div>
     );
   }
 

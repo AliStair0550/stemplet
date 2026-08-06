@@ -7,7 +7,7 @@ import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
 import { maybeFireCardholderThresholds } from "@/lib/billing";
 import { cardCookieName, cardCookieOptions } from "@/lib/cookies";
 import { durableRateLimit } from "@/lib/rate-limit";
-import { captureWalletError } from "@/lib/sentry";
+import { captureWalletError, captureServerError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,7 +36,15 @@ export async function GET(
   );
   if (!allowed) return back(`/k/${slug}?fejl=fuld`);
 
-  const r = await resolveOrCreateCard(slug);
+  // Faldt DB'en fra (Neon-blip trods retries)? Vis kunden en rolig "prOv igen"
+  // paa /k i stedet for en haard 500. Loggen fanger en aegte, laengere udfald.
+  let r;
+  try {
+    r = await resolveOrCreateCard(slug);
+  } catch (e) {
+    captureServerError(e, { route: "wallet:claim:resolve", extra: { slug } });
+    return back(`/k/${slug}?fejl=serverfejl`);
+  }
   if (!r.ok) return back(`/k/${slug}?fejl=${r.error}`);
 
   // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.

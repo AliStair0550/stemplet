@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import { getCardToken } from "./cookies";
 import { loadCardByToken, createCardholderAtomically } from "./stamp";
 import { signupBlockReason } from "./billing";
+import { withDbRetry } from "./db-retry";
 
 export type ClaimError = "lukket" | "pause" | "stoppet" | "fuld";
 export type ResolvedCard =
@@ -20,12 +21,21 @@ export type ResolvedCard =
 // loft). SAETTER IKKE cookien og fyrer IKKE taerskler - det goer kalderen (claim-
 // ruten), saa cookien kan saettes paa den maade der er paalidelig i konteksten.
 export async function resolveOrCreateCard(slug: string): Promise<ResolvedCard> {
-  const business = await prisma.business.findUnique({
-    where: { slug },
-    include: {
-      cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
-    },
-  });
+  // Foerste DB-touch i claim-flowet: mest udsat for et Neon cold start, saa den
+  // koeres med korte retries paa forbigaaende forbindelsesfejl. Er computen
+  // vaekket her, er resten af requesten varm.
+  const business = await withDbRetry(() =>
+    prisma.business.findUnique({
+      where: { slug },
+      include: {
+        cards: {
+          where: { active: true },
+          orderBy: { createdAt: "asc" },
+          take: 1,
+        },
+      },
+    }),
+  );
   if (!business || business.cards.length === 0) {
     return { ok: false, error: "lukket" };
   }
