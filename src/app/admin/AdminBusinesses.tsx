@@ -36,6 +36,7 @@ export type Row = {
   weeklyEmail: boolean;
   owners: Owner[];
   customers: number;
+  newCustomers7d: number;
   stamps: number;
   redemptions: number;
   lastActive: Date | null;
@@ -50,13 +51,8 @@ export type Row = {
   stopped: boolean;
 };
 
-type Filter =
-  | "all"
-  | "over"
-  | "near"
-  | "pending"
-  | "paused"
-  | "stopped";
+type Filter = "all" | "over" | "near" | "pending" | "paused" | "stopped";
+type Sort = "cardholders" | "growth" | "active" | "newest";
 
 // Kanoniske tilstande, saa taeller og filter altid er enige.
 const isOver = (r: Row) => r.customers >= FREE_CUSTOMER_LIMIT;
@@ -68,7 +64,7 @@ const isPending = (r: Row) =>
 export function AdminBusinesses({ rows }: { rows: Row[] }) {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const [sort, setSort] = useState<"cardholders" | "newest">("cardholders");
+  const [sort, setSort] = useState<Sort>("cardholders");
 
   const counts = useMemo(
     () => ({
@@ -83,7 +79,7 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    let list = rows.filter((r) => {
+    const list = rows.filter((r) => {
       if (needle) {
         const hay =
           `${r.name} ${r.slug} ${r.owners.map((o) => o.email).join(" ")}`.toLowerCase();
@@ -104,12 +100,19 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
           return true;
       }
     });
-    list = [...list].sort((a, b) =>
-      sort === "cardholders"
-        ? b.customers - a.customers
-        : b.createdAt.getTime() - a.createdAt.getTime(),
-    );
-    return list;
+    const at = (d: Date | null) => (d ? d.getTime() : 0);
+    return [...list].sort((a, b) => {
+      switch (sort) {
+        case "growth":
+          return b.newCustomers7d - a.newCustomers7d;
+        case "active":
+          return at(b.lastActive) - at(a.lastActive);
+        case "newest":
+          return b.createdAt.getTime() - a.createdAt.getTime();
+        default:
+          return b.customers - a.customers;
+      }
+    });
   }, [rows, q, filter, sort]);
 
   const attention: { key: Filter; label: string; n: number }[] = [
@@ -118,6 +121,13 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
     { key: "pending", label: "Afventer godkendelse", n: counts.pending },
     { key: "paused", label: "På pause", n: counts.paused },
     { key: "stopped", label: "Stoppet", n: counts.stopped },
+  ];
+
+  const sorts: { key: Sort; label: string }[] = [
+    { key: "cardholders", label: "Kortholdere" },
+    { key: "growth", label: "Nye 7d" },
+    { key: "active", label: "Sidst aktiv" },
+    { key: "newest", label: "Nyeste" },
   ];
 
   return (
@@ -158,15 +168,13 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Søg butik, slug eller ejer-email"
-          className="min-w-[16rem] flex-1 rounded-md border border-fog bg-white px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
+          className="min-w-[15rem] flex-1 rounded-md border border-fog bg-white px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
         />
         <div className="flex items-center gap-1 rounded-md border border-fog bg-white p-1">
-          {(
-            [
-              ["cardholders", "Kortholdere"],
-              ["newest", "Nyeste"],
-            ] as const
-          ).map(([key, label]) => (
+          <span className="px-1.5 text-[0.62rem] font-[400] uppercase tracking-[0.1em] text-slate">
+            Sortér
+          </span>
+          {sorts.map(({ key, label }) => (
             <button
               key={key}
               type="button"
@@ -184,7 +192,8 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
 
       {/* Aktivt filter + antal */}
       <p className="text-[0.74rem] font-[300] text-slate">
-        Viser {shown.length} af {rows.length}
+        Viser {shown.length} af {rows.length}. Klik en butik for detaljer og
+        styring.
         {filter !== "all" ? (
           <button
             type="button"
@@ -196,88 +205,130 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
         ) : null}
       </p>
 
-      <div className="flex flex-col gap-4">
-        {shown.map((r) => (
-          <BusinessCard key={r.id} r={r} />
-        ))}
-      </div>
-
       {shown.length === 0 ? (
         <p className="rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
           Ingen butikker matcher. Ryd søgning eller filter.
         </p>
-      ) : null}
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-fog bg-white shadow-card">
+          <table className="w-full min-w-[720px] border-collapse text-left text-[0.84rem]">
+            <thead>
+              <tr className="border-b border-fog text-[0.6rem] uppercase tracking-[0.1em] text-slate">
+                <th className="px-4 py-3 font-[500]">Butik</th>
+                <th className="px-4 py-3 text-right font-[500]">Kortholdere</th>
+                <th className="px-4 py-3 text-right font-[500]">Nye 7d</th>
+                <th className="px-4 py-3 text-right font-[500]">Stempler</th>
+                <th className="px-4 py-3 font-[500]">Sidst aktiv</th>
+                <th className="px-4 py-3 font-[500]">Plan</th>
+                <th className="px-2 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((r) => (
+                <BusinessRow key={r.id} r={r} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Chevron({ open }: { open: boolean }) {
   return (
-    <div>
-      <p className="text-[0.6rem] font-[400] uppercase tracking-[0.12em] text-slate">
-        {label}
-      </p>
-      <p className="mt-0.5 font-[400] text-[0.95rem] tabular-nums text-ink">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="text-[0.76rem] font-[300] text-stone">
-      <span className="text-slate">{label}:</span> {value}
-    </span>
-  );
-}
-
-function StateBadge({ text, tone }: { text: string; tone: "rust" | "amber" | "terracotta" }) {
-  const cls =
-    tone === "rust"
-      ? "border-rust/40 bg-rust/5 text-rust"
-      : tone === "amber"
-        ? "border-clay bg-sand text-ink"
-        : "border-terracotta/40 bg-terracotta/5 text-terracotta";
-  return (
-    <span
-      className={`rounded-full border px-2 py-0.5 text-[0.6rem] font-[500] uppercase tracking-[0.08em] ${cls}`}
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`h-4 w-4 text-slate transition-transform ${open ? "rotate-180" : ""}`}
+      aria-hidden
     >
-      {text}
-    </span>
+      <path d="M6 9l6 6 6-6" />
+    </svg>
   );
 }
 
-function BusinessCard({ r }: { r: Row }) {
+function BusinessRow({ r }: { r: Row }) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="rounded-lg border border-fog bg-white p-5 shadow-card">
-      {/* Titel + tilstands-badges + plan + slet */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-[400] text-[1.05rem] text-ink">{r.name}</span>
-            <Link
-              href={`/k/${r.slug}`}
-              className="font-[300] text-[0.78rem] text-slate underline-offset-2 hover:text-ink hover:underline"
-            >
-              /{r.slug}
-            </Link>
-            {r.stopped ? <StateBadge text="Stoppet" tone="rust" /> : null}
-            {r.newSignupsPaused ? (
-              <StateBadge text="Pause" tone="amber" />
-            ) : null}
-            {isOver(r) ? <StateBadge text="Over 100" tone="amber" /> : null}
+    <>
+      <tr
+        onClick={() => setOpen((o) => !o)}
+        className="cursor-pointer border-b border-fog/70 align-middle transition-colors hover:bg-sand/40"
+      >
+        <td className="px-4 py-3">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="font-[400] text-ink">{r.name}</span>
+            {r.stopped ? <Dot tone="rust" title="Stoppet" /> : null}
+            {r.newSignupsPaused ? <Dot tone="amber" title="På pause" /> : null}
+            {isOver(r) ? <Dot tone="amber" title="Over 100" /> : null}
             {r.proApprovedAt ? (
-              <StateBadge text="Pro godkendt" tone="terracotta" />
+              <Dot tone="terracotta" title="Pro godkendt" />
             ) : null}
           </div>
-          <p className="mt-1 font-[300] text-[0.76rem] text-slate">
-            Oprettet {formatDkDate(r.createdAt)}
-            {r.termsAcceptedAt
-              ? ` · Vilkår accepteret ${formatDkDate(r.termsAcceptedAt)}`
-              : " · Vilkår ikke registreret"}
-          </p>
-        </div>
+          <span className="font-[300] text-[0.72rem] text-slate">/{r.slug}</span>
+        </td>
+        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+          <span className={isOver(r) ? "font-[500] text-terracotta" : "text-ink"}>
+            {formatDkNumber(r.customers)}
+          </span>
+        </td>
+        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+          {r.newCustomers7d > 0 ? (
+            <span className="font-[500] text-terracotta">
+              +{formatDkNumber(r.newCustomers7d)}
+            </span>
+          ) : (
+            <span className="text-slate">0</span>
+          )}
+        </td>
+        <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums text-ink">
+          {formatDkNumber(r.stamps)}
+        </td>
+        <td className="whitespace-nowrap px-4 py-3 font-[300] text-slate">
+          {r.lastActive ? formatDkDate(r.lastActive) : "Ingen"}
+        </td>
+        <td className="whitespace-nowrap px-4 py-3">
+          <PlanBadge plan={r.plan} />
+        </td>
+        <td className="px-2 py-3 text-right">
+          <Chevron open={open} />
+        </td>
+      </tr>
+
+      {open ? (
+        <tr className="border-b border-fog/70 bg-sand/20">
+          <td colSpan={7} className="px-4 py-4">
+            <BusinessDetail r={r} />
+          </td>
+        </tr>
+      ) : null}
+    </>
+  );
+}
+
+function BusinessDetail({ r }: { r: Row }) {
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Hoved: oprettet + hurtige handlinger */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="font-[300] text-[0.76rem] text-slate">
+          <Link
+            href={`/k/${r.slug}`}
+            className="text-terracotta underline-offset-2 hover:underline"
+          >
+            Åbn kortside
+          </Link>{" "}
+          · Oprettet {formatDkDate(r.createdAt)}
+          {r.termsAcceptedAt
+            ? ` · Vilkår accepteret ${formatDkDate(r.termsAcceptedAt)}`
+            : " · Vilkår ikke registreret"}
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <PlanSelect businessId={r.id} plan={r.plan} />
           <ResetStampsButton businessId={r.id} />
@@ -285,8 +336,23 @@ function BusinessCard({ r }: { r: Row }) {
         </div>
       </div>
 
-      {/* Kontaktinfo */}
-      <div className="mt-4 rounded-md border border-fog bg-sand/40 px-4 py-3">
+      {/* Aktivitet */}
+      <div className="grid grid-cols-2 gap-4 rounded-md border border-fog bg-white px-4 py-3 sm:grid-cols-5">
+        <Metric label="Kortholdere" value={formatDkNumber(r.customers)} />
+        <Metric
+          label="Nye (7 dage)"
+          value={r.newCustomers7d > 0 ? `+${formatDkNumber(r.newCustomers7d)}` : "0"}
+        />
+        <Metric label="Stempler" value={formatDkNumber(r.stamps)} />
+        <Metric label="Indløst" value={formatDkNumber(r.redemptions)} />
+        <Metric
+          label="Sidst aktiv"
+          value={r.lastActive ? formatDkDateTime(r.lastActive) : "Ingen"}
+        />
+      </div>
+
+      {/* Ejer / kontakt */}
+      <div className="rounded-md border border-fog bg-white px-4 py-3">
         <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
           Ejer / kontakt
         </p>
@@ -318,19 +384,8 @@ function BusinessCard({ r }: { r: Row }) {
         )}
       </div>
 
-      {/* Aktivitet */}
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Metric label="Kortholdere" value={formatDkNumber(r.customers)} />
-        <Metric label="Stempler" value={formatDkNumber(r.stamps)} />
-        <Metric label="Indløst" value={formatDkNumber(r.redemptions)} />
-        <Metric
-          label="Sidst aktiv"
-          value={r.lastActive ? formatDkDateTime(r.lastActive) : "Ingen"}
-        />
-      </div>
-
       {/* Pro & fakturering */}
-      <div className="mt-4 rounded-md border border-fog bg-sand/40 px-4 py-3">
+      <div className="rounded-md border border-fog bg-white px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
             Pro &amp; fakturering
@@ -369,15 +424,13 @@ function BusinessCard({ r }: { r: Row }) {
         <EditBilling
           businessId={r.id}
           proPriceKr={r.proPriceKr}
-          proPriceUntil={
-            r.proPriceUntil ? isoDate(r.proPriceUntil) : ""
-          }
+          proPriceUntil={r.proPriceUntil ? isoDate(r.proPriceUntil) : ""}
           lastInvoicedAt={r.lastInvoicedAt ? isoDate(r.lastInvoicedAt) : ""}
         />
       </div>
 
       {/* Indstillinger */}
-      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 border-t border-fog pt-3">
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
         <Fact label="Branche" value={r.category || "-"} />
         <Fact label="Placering" value={r.hasLocation ? "Ja" : "Nej"} />
         <Fact label="Selvscan" value={r.selfScan ? "Til" : "Fra"} />
@@ -385,6 +438,63 @@ function BusinessCard({ r }: { r: Row }) {
         <Fact label="Ugebrev" value={r.weeklyEmail ? "Til" : "Fra"} />
       </div>
     </div>
+  );
+}
+
+function PlanBadge({ plan }: { plan: "FREE" | "PRO" }) {
+  return (
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[0.62rem] font-[500] uppercase tracking-[0.06em] ${
+        plan === "PRO"
+          ? "border-terracotta/40 bg-terracotta/5 text-terracotta"
+          : "border-fog bg-sand/60 text-slate"
+      }`}
+    >
+      {plan}
+    </span>
+  );
+}
+
+// Lille statusprik i tabelraekken (fuld tekst vises i detaljen).
+function Dot({
+  tone,
+  title,
+}: {
+  tone: "rust" | "amber" | "terracotta";
+  title: string;
+}) {
+  const cls =
+    tone === "rust"
+      ? "bg-rust"
+      : tone === "amber"
+        ? "bg-[#C9A24B]"
+        : "bg-terracotta";
+  return (
+    <span
+      title={title}
+      className={`inline-block h-2 w-2 shrink-0 rounded-full ${cls}`}
+    />
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[0.6rem] font-[400] uppercase tracking-[0.12em] text-slate">
+        {label}
+      </p>
+      <p className="mt-0.5 font-[400] text-[0.95rem] tabular-nums text-ink">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="text-[0.76rem] font-[300] text-stone">
+      <span className="text-slate">{label}:</span> {value}
+    </span>
   );
 }
 

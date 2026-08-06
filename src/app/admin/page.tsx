@@ -24,6 +24,7 @@ export const dynamic = "force-dynamic";
 
 type RowMetrics = {
   customers: number;
+  newCustomers7d: number;
   stamps: number;
   redemptions: number;
   lastActive: Date | null;
@@ -82,6 +83,7 @@ function buildRow(
       verified: u.emailVerified != null,
     })),
     customers: m.customers,
+    newCustomers7d: m.newCustomers7d,
     stamps: m.stamps,
     redemptions: m.redemptions,
     lastActive: m.lastActive,
@@ -199,8 +201,11 @@ export default async function AdminPage() {
   const cardToBiz = new Map<string, string>();
   for (const b of businesses) for (const c of b.cards) cardToBiz.set(c.id, b.id);
   const cardIds = [...cardToBiz.keys()];
+  const since7 = new Date();
+  since7.setTime(since7.getTime() - 7 * 86_400_000);
 
-  const [stampAgg, cardCounts, redemptionRows] = await Promise.all([
+  const [stampAgg, cardCounts, newCardCounts, redemptionRows] =
+    await Promise.all([
     prisma.stamp.groupBy({
       by: ["businessId"],
       where: { businessId: { in: businessIds } },
@@ -210,6 +215,12 @@ export default async function AdminPage() {
     prisma.customerCard.groupBy({
       by: ["cardId"],
       where: { cardId: { in: cardIds } },
+      _count: { _all: true },
+    }),
+    // Udvikling: nye kortholdere pr. butik de seneste 7 dage.
+    prisma.customerCard.groupBy({
+      by: ["cardId"],
+      where: { cardId: { in: cardIds }, createdAt: { gte: since7 } },
       _count: { _all: true },
     }),
     businessIds.length
@@ -238,6 +249,11 @@ export default async function AdminPage() {
       customersByBiz.set(biz, (customersByBiz.get(biz) ?? 0) + g._count._all);
     }
   }
+  const newByBiz = new Map<string, number>();
+  for (const g of newCardCounts) {
+    const biz = cardToBiz.get(g.cardId);
+    if (biz) newByBiz.set(biz, (newByBiz.get(biz) ?? 0) + g._count._all);
+  }
   const redemptionsByBiz = new Map<string, number>();
   for (const r of redemptionRows) {
     redemptionsByBiz.set(r.businessId, Number(r.count));
@@ -246,6 +262,7 @@ export default async function AdminPage() {
   const rows = businesses.map((b) =>
     buildRow(b, {
       customers: customersByBiz.get(b.id) ?? 0,
+      newCustomers7d: newByBiz.get(b.id) ?? 0,
       stamps: stampsByBiz.get(b.id) ?? 0,
       redemptions: redemptionsByBiz.get(b.id) ?? 0,
       lastActive: lastByBiz.get(b.id) ?? null,
