@@ -208,9 +208,9 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
 
   // Faser
   const camA = t < 2.3 ? 1 : 1 - seg(t, 2.3, 2.8);
-  const inWallet = seg(t, 5.3, 5.9); // 0..1 overgang til Wallet
+  const inWallet = seg(t, 3.9, 4.4); // 0..1 overgang til Wallet (efter "Tilfoej")
   // Skaerm-baggrund: kamera (moerk) -> pergament -> wallet (let graa-varm)
-  const bgLight = seg(t, 2.4, 2.9);
+  const bgLight = seg(t, 2.35, 2.85);
   ctx.fillStyle = "#141210";
   ctx.fillRect(sx, sy, sw, sh);
   if (bgLight > 0) {
@@ -281,36 +281,37 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
   }
 
   // ── Kortet (fra scan og resten) ────────────────────────────────────
-  const cardIn = seg(t, 2.4, 2.9); // ind paa skaermen
+  const cardIn = seg(t, 2.3, 2.8); // kortet (+ Tilfoej) kommer ind efter scan
   if (cardIn > 0) {
     const cardW = sw * 0.82;
     const cardH = cardW * 0.62;
     const cx = sx + sw / 2;
     // y: settler midt paa skaermen; i wallet loeftes den lidt op
-    const restY = sy + sh * 0.34;
+    const restY = sy + sh * 0.32;
     const walletY = sy + sh * 0.26;
     const cy = mix(restY, walletY, easeInOut(inWallet));
     const s = mix(0.86, 1, easeBack(cardIn));
     const floaty = Math.sin(t * 1.6) * 5 * (1 - inWallet) * cardIn;
 
-    // stempel-antal: 4 fra start, popper til 8 i Wallet
-    const base = 4;
+    // Kortet starter TOMT; stemplerne poppes 0 -> 10 EFTER "Tilfoej".
     const stampsPop: { i: number; p: number }[] = [];
-    let filled = base;
-    for (let k = 0; k < 4; k++) {
-      const ps = 6.0 + k * 0.4;
-      const p = seg(t, ps, ps + 0.42);
+    let filled = 0;
+    for (let k = 0; k < 10; k++) {
+      const ps = 4.5 + k * 0.26;
+      const p = seg(t, ps, ps + 0.3);
       if (p > 0) {
-        filled = base + k + 1;
-        if (p < 1) stampsPop.push({ i: base + k, p });
+        filled = k + 1;
+        if (p < 1) stampsPop.push({ i: k, p });
       }
     }
+    // Beloenningen "En gratis kaffe" afsloeres, naar kortet er fuldt.
+    const rewardGlow = seg(t, 7.15, 7.9);
 
     ctx.save();
     ctx.globalAlpha = cardIn;
     ctx.translate(cx, cy + floaty);
     ctx.scale(s, s);
-    drawCard(ctx, cardW, cardH, filled, stampsPop, t);
+    drawCard(ctx, cardW, cardH, filled, stampsPop, t, rewardGlow);
     ctx.restore();
 
     // dopamin: glimt naar hvert stempel lander
@@ -332,18 +333,18 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
     }
   }
 
-  // ── Fase C: "Tilfoej"-ark + tap ────────────────────────────────────
-  const addIn = seg(t, 4.2, 4.6) * (1 - seg(t, 5.1, 5.4));
+  // ── "Tilfoej"-ark + tap: kommer SAMMEN med kortet, fader ved Wallet ──
+  const addIn = seg(t, 2.5, 2.9) * (1 - seg(t, 3.8, 4.2));
   if (addIn > 0.01) {
     const barH = 150;
-    const by = mix(sy + sh, sy + sh - barH, easeOut(seg(t, 4.2, 4.6)));
+    const by = mix(sy + sh, sy + sh - barH, easeOut(seg(t, 2.5, 2.9)));
     ctx.save();
     ctx.globalAlpha = clamp(addIn);
     ctx.fillStyle = "rgba(255,255,255,0.96)";
     roundRect(ctx, sx + 26, by, sw - 52, barH + 60, 40);
     ctx.fill();
     // knap
-    const tap = seg(t, 4.7, 5.0);
+    const tap = seg(t, 3.3, 3.7);
     const press = 1 - 0.06 * Math.sin(clamp(tap) * Math.PI);
     const bw = sw - 120;
     const bh = 84;
@@ -377,8 +378,8 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
 
   ctx.restore(); // skaerm-klip
 
-  // ── Afsluttende dopamin-bloom (efter kortet er fyldt) ──────────────
-  const fin = seg(t, 7.6, 8.5);
+  // ── Afsluttende dopamin-bloom (naar kortet er fyldt + beloenning) ──
+  const fin = seg(t, 7.15, 8.3);
   if (fin > 0) {
     const a = Math.sin(clamp(fin) * Math.PI);
     const bloom = ctx.createRadialGradient(
@@ -444,6 +445,7 @@ function drawCard(
   filled: number,
   pops: { i: number; p: number }[],
   t: number,
+  rewardGlow = 0,
 ) {
   const x = -cardW / 2;
   const y = -cardH / 2;
@@ -477,23 +479,12 @@ function drawCard(
   ctx.fillRect(x, y, cardW, cardH);
   ctx.restore();
 
-  // top: navn + stempler X/10
+  // top: kun butikkens navn (stempel-taeller er bevidst fjernet)
   ctx.fillStyle = CREAM;
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
   ctx.font = "700 30px 'Instrument Sans', system-ui, sans-serif";
   ctx.fillText("Nord Kaffebar", x + cardW * 0.08, y + cardH * 0.2);
-  ctx.textAlign = "right";
-  ctx.globalAlpha = 0.7;
-  ctx.font = "600 15px 'Instrument Sans', system-ui, sans-serif";
-  ctx.fillText("STEMPLER", x + cardW * 0.92, y + cardH * 0.15);
-  ctx.globalAlpha = 1;
-  ctx.font = "700 30px 'Instrument Sans', system-ui, sans-serif";
-  ctx.fillText(
-    `${Math.min(filled, 10)}/10`,
-    x + cardW * 0.92,
-    y + cardH * 0.22,
-  );
 
   // stempler (5x2)
   const cols = 5;
@@ -531,15 +522,31 @@ function drawCard(
     ctx.restore();
   }
 
-  // fod: beloenning
+  // fod: beloenning "En gratis kaffe" - afsloeres i guld naar kortet er fuldt
+  const rxLeft = x + cardW * 0.08;
+  if (rewardGlow > 0) {
+    const gg = ctx.createRadialGradient(
+      x + cardW * 0.4,
+      y + cardH * 0.9,
+      4,
+      x + cardW * 0.4,
+      y + cardH * 0.9,
+      cardW * 0.5,
+    );
+    gg.addColorStop(0, `rgba(201,162,75,${0.4 * rewardGlow})`);
+    gg.addColorStop(1, "rgba(201,162,75,0)");
+    ctx.fillStyle = gg;
+    ctx.fillRect(x, y + cardH * 0.72, cardW, cardH * 0.28);
+  }
   ctx.fillStyle = CREAM;
   ctx.globalAlpha = 0.6;
   ctx.textAlign = "left";
   ctx.font = "600 14px 'Instrument Sans', system-ui, sans-serif";
-  ctx.fillText("BELØNNING", x + cardW * 0.08, y + cardH * 0.86);
-  ctx.globalAlpha = 0.95;
-  ctx.font = "300 22px 'Instrument Sans', system-ui, sans-serif";
-  ctx.fillText("10. kop er gratis", x + cardW * 0.08, y + cardH * 0.95);
+  ctx.fillText("BELØNNING", rxLeft, y + cardH * 0.86);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = rewardGlow > 0.25 ? GOLD : CREAM;
+  ctx.font = `${rewardGlow > 0.25 ? "600" : "300"} 23px 'Instrument Sans', system-ui, sans-serif`;
+  ctx.fillText("En gratis kaffe", rxLeft, y + cardH * 0.95);
   ctx.restore();
 }
 
