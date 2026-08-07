@@ -10,7 +10,7 @@ import { btnClass } from "@/components/ui";
 
 const W = 1080;
 const H = 1350;
-const LOOP = 9.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
+const LOOP = 10.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
 
 // ── Palette (brand) ───────────────────────────────────────────────────
 const PARCH = "#FAF8F4";
@@ -484,6 +484,54 @@ function draw(
         k % 2 ? GOLD : RUST,
         a,
       );
+    }
+  }
+
+  // ── Outro (sidste sekund): Stemplet-logoet i midten ────────────────
+  const outro = seg(t, 9.0, 9.5);
+  if (outro > 0) {
+    // Ren pergament-ramme toner ind over hele scenen.
+    ctx.save();
+    ctx.globalAlpha = clamp(outro);
+    ctx.fillStyle = PARCH;
+    ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(
+      W / 2,
+      H * 0.46,
+      40,
+      W / 2,
+      H * 0.46,
+      W * 0.6,
+    );
+    glow.addColorStop(0, "rgba(166,80,46,0.10)");
+    glow.addColorStop(1, "rgba(166,80,46,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    // Ordmaerket "Stemplet." skalerer + toner blidt ind i midten.
+    const la = seg(t, 9.2, 9.7);
+    if (la > 0) {
+      const sc = mix(0.9, 1, easeOut(la));
+      ctx.save();
+      ctx.globalAlpha = clamp(la);
+      ctx.translate(W / 2, H * 0.47);
+      ctx.scale(sc, sc);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.font = "700 100px 'Instrument Sans', system-ui, sans-serif";
+      const word = "Stemplet";
+      const ww = ctx.measureText(word).width;
+      const dotR = 15;
+      const ml = 11;
+      const startX = -(ww + ml + dotR * 2) / 2;
+      ctx.fillStyle = INK;
+      ctx.fillText(word, startX, 0);
+      ctx.fillStyle = RUST;
+      ctx.beginPath();
+      ctx.arc(startX + ww + ml + dotR, -dotR, dotR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
   }
 }
