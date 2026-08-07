@@ -227,6 +227,28 @@ function draw(
   ctx.shadowColor = "transparent";
   ctx.restore();
 
+  // Ordmaerke UNDER telefonen, hoejrestillet: logoet er der stadig, men
+  // stjaeler ikke fokus fra selve telefon-animationen.
+  ctx.save();
+  ctx.globalAlpha = intro;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.font = "700 46px 'Instrument Sans', system-ui, sans-serif";
+  const mark = "Stemplet";
+  const mw = ctx.measureText(mark).width;
+  const mDotR = 8;
+  const mMl = 6;
+  const mRightX = px + pw; // flugter med telefonens hoejre kant
+  const mBaseY = py + ph + 78;
+  const mStartX = mRightX - (mw + mMl + mDotR * 2);
+  ctx.fillStyle = INK;
+  ctx.fillText(mark, mStartX, mBaseY);
+  ctx.fillStyle = RUST;
+  ctx.beginPath();
+  ctx.arc(mStartX + mw + mMl + mDotR, mBaseY - mDotR, mDotR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
   // Skaerm-region (klip alt skaerm-indhold hertil).
   const sx = px + 20;
   const sy = py + 20;
