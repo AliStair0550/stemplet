@@ -21,6 +21,12 @@ const RUST_LO = "#974829";
 const CREAM = "#F7EFE6";
 const GOLD = "#C9A24B";
 
+// Antal stempler i videoen (4 kolonner x 2 raekker).
+const STAMPS = 8;
+const COLS = 4;
+// Kamera-baggrund under scanningen: samme billede som paa kaffebar-branchesiden.
+const SCAN_BG = "/brancher/kaffebar-scene.png";
+
 // ── Smaa hjaelpere ────────────────────────────────────────────────────
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -138,10 +144,49 @@ function sparkle(
   ctx.restore();
 }
 
+// Tegn et billede saa det daekker (cover) omraadet, beskaeret proportionalt.
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+) {
+  const ir = img.naturalWidth / img.naturalHeight;
+  const r = w / h;
+  let dw = w;
+  let dh = h;
+  let dx = x;
+  let dy = y;
+  if (ir > r) {
+    dh = h;
+    dw = h * ir;
+    dx = x - (dw - w) / 2;
+  } else {
+    dw = w;
+    dh = w / ir;
+    dy = y - (dh - h) / 2;
+  }
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+// Faelles stempel-layout, saa selve tegningen og glimt-positionerne passer sammen.
+function stampLayout(cardW: number, cardH: number) {
+  const gx = cardW * 0.14;
+  const gap = (cardW - gx * 2) / (COLS - 1);
+  return { gx, gap, r: gap * 0.3, gridTop: cardH * 0.37, rowGap: cardH * 0.3 };
+}
+
 type QR = ReturnType<typeof buildQR>;
 
 // Selve tegne-funktionen: t = loop-tid i sekunder (0..LOOP).
-function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
+function draw(
+  ctx: CanvasRenderingContext2D,
+  t: number,
+  qr: QR,
+  bgImg: HTMLImageElement | null,
+) {
   ctx.clearRect(0, 0, W, H);
 
   // Baggrund: varm pergament + bloedt terracotta-skaer der aander.
@@ -211,8 +256,16 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
   const inWallet = seg(t, 3.9, 4.4); // 0..1 overgang til Wallet (efter "Tilfoej")
   // Skaerm-baggrund: kamera (moerk) -> pergament -> wallet (let graa-varm)
   const bgLight = seg(t, 2.35, 2.85);
-  ctx.fillStyle = "#141210";
-  ctx.fillRect(sx, sy, sw, sh);
+  // Kamera-baggrund: kaffebar-billedet (som paa branchesiden) med et let moerkt
+  // slOr for QR-kontrast. Falder tilbage til moerk, hvis billedet ikke er klar.
+  if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+    drawCover(ctx, bgImg, sx, sy, sw, sh);
+    ctx.fillStyle = "rgba(18,16,14,0.42)";
+    ctx.fillRect(sx, sy, sw, sh);
+  } else {
+    ctx.fillStyle = "#141210";
+    ctx.fillRect(sx, sy, sw, sh);
+  }
   if (bgLight > 0) {
     ctx.globalAlpha = bgLight;
     ctx.fillStyle = mixWallet(inWallet);
@@ -296,7 +349,7 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
     // Kortet starter TOMT; stemplerne poppes 0 -> 10 EFTER "Tilfoej".
     const stampsPop: { i: number; p: number }[] = [];
     let filled = 0;
-    for (let k = 0; k < 10; k++) {
+    for (let k = 0; k < STAMPS; k++) {
       const ps = 4.5 + k * 0.26;
       const p = seg(t, ps, ps + 0.3);
       if (p > 0) {
@@ -304,8 +357,8 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
         if (p < 1) stampsPop.push({ i: k, p });
       }
     }
-    // Beloenningen "En gratis kaffe" afsloeres, naar kortet er fuldt.
-    const rewardGlow = seg(t, 7.15, 7.9);
+    // Beloenningen "En gratis kaffe" afsloeres, naar kortet er fuldt (8/8).
+    const rewardGlow = seg(t, 6.7, 7.4);
 
     ctx.save();
     ctx.globalAlpha = cardIn;
@@ -379,7 +432,7 @@ function draw(ctx: CanvasRenderingContext2D, t: number, qr: QR) {
   ctx.restore(); // skaerm-klip
 
   // ── Afsluttende dopamin-bloom (naar kortet er fyldt + beloenning) ──
-  const fin = seg(t, 7.15, 8.3);
+  const fin = seg(t, 6.7, 8.0);
   if (fin > 0) {
     const a = Math.sin(clamp(fin) * Math.PI);
     const bloom = ctx.createRadialGradient(
@@ -425,15 +478,12 @@ function stampPos(
   cardH: number,
   i: number,
 ) {
-  const cols = 5;
-  const gx = cardW * 0.16;
-  const gap = (cardW - gx * 2) / (cols - 1);
-  const row = Math.floor(i / cols);
-  const col = i % cols;
-  const gridTop = -cardH / 2 + cardH * 0.4;
+  const L = stampLayout(cardW, cardH);
+  const row = Math.floor(i / COLS);
+  const col = i % COLS;
   return {
-    x: cx - cardW / 2 + gx + col * gap,
-    y: cy + gridTop + row * gap,
+    x: cx - cardW / 2 + L.gx + col * L.gap,
+    y: cy - cardH / 2 + L.gridTop + row * L.rowGap,
   };
 }
 
@@ -486,17 +536,14 @@ function drawCard(
   ctx.font = "700 30px 'Instrument Sans', system-ui, sans-serif";
   ctx.fillText("Nord Kaffebar", x + cardW * 0.08, y + cardH * 0.2);
 
-  // stempler (5x2)
-  const cols = 5;
-  const gx = cardW * 0.16;
-  const gap = (cardW - gx * 2) / (cols - 1);
-  const r = gap * 0.34;
-  const gridTop = cardH * 0.4;
-  for (let i = 0; i < 10; i++) {
-    const row = Math.floor(i / cols);
-    const col = i % cols;
-    const px = x + gx + col * gap;
-    const py = y + gridTop + row * gap;
+  // stempler (4x2)
+  const L = stampLayout(cardW, cardH);
+  const r = L.r;
+  for (let i = 0; i < STAMPS; i++) {
+    const row = Math.floor(i / COLS);
+    const col = i % COLS;
+    const px = x + L.gx + col * L.gap;
+    const py = y + L.gridTop + row * L.rowGap;
     const pop = pops.find((p) => p.i === i);
     const isFilled = i < filled;
     let s = 1;
@@ -563,6 +610,10 @@ export function PresseVideo() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const qr = buildQR();
+    // Preload kaffebar-baggrunden (samme-origin, saa canvas ikke "taintes" og
+    // optagelsen stadig virker).
+    const bg = new Image();
+    bg.src = SCAN_BG;
     let raf = 0;
     startRef.current = performance.now();
     // Vent paa fonts, saa canvas-teksten bruger Instrument Sans.
@@ -570,7 +621,7 @@ export function PresseVideo() {
     const frame = (now: number) => {
       const base = recStartRef.current ?? startRef.current;
       const t = ((now - base) / 1000) % LOOP;
-      draw(ctx, t, qr);
+      draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
