@@ -346,7 +346,7 @@ function draw(
     const s = mix(0.86, 1, easeBack(cardIn));
     const floaty = Math.sin(t * 1.6) * 5 * (1 - inWallet) * cardIn;
 
-    // Kortet starter TOMT; stemplerne poppes 0 -> 10 EFTER "Tilfoej".
+    // Kortet starter TOMT; stemplerne poppes 0 -> 8 EFTER "Tilfoej".
     const stampsPop: { i: number; p: number }[] = [];
     let filled = 0;
     for (let k = 0; k < STAMPS; k++) {
@@ -357,14 +357,16 @@ function draw(
         if (p < 1) stampsPop.push({ i: k, p });
       }
     }
-    // Beloenningen "En gratis kaffe" afsloeres, naar kortet er fuldt (8/8).
-    const rewardGlow = seg(t, 6.7, 7.4);
+    // Nulstilling til sidst: kortet toemmes til 0, saa man ser "starter forfra".
+    const clear = seg(t, 8.2, 8.8);
+    // Beloenningen afsloeres i guld naar kortet er fuldt, og fader ved nulstilling.
+    const rewardGlow = seg(t, 6.7, 7.4) * (1 - seg(t, 8.2, 8.7));
 
     ctx.save();
     ctx.globalAlpha = cardIn;
     ctx.translate(cx, cy + floaty);
     ctx.scale(s, s);
-    drawCard(ctx, cardW, cardH, filled, stampsPop, t, rewardGlow);
+    drawCard(ctx, cardW, cardH, filled, stampsPop, t, rewardGlow, clear);
     ctx.restore();
 
     // dopamin: glimt naar hvert stempel lander
@@ -384,6 +386,30 @@ function draw(
         );
       }
     }
+  }
+
+  // Beloennings-tekst i midten, naar kortet er fuldt (dopamin). Fader ved reset.
+  const rewardTextA = seg(t, 6.8, 7.4) * (1 - seg(t, 8.2, 8.6));
+  if (rewardTextA > 0.01) {
+    const tx = sx + sw / 2;
+    const ty = sy + sh * 0.62;
+    const sc = easeBack(seg(t, 6.8, 7.4));
+    ctx.save();
+    ctx.globalAlpha = clamp(rewardTextA);
+    const gg = ctx.createRadialGradient(tx, ty, 8, tx, ty, sw * 0.55);
+    gg.addColorStop(0, "rgba(201,162,75,0.32)");
+    gg.addColorStop(1, "rgba(201,162,75,0)");
+    ctx.fillStyle = gg;
+    ctx.fillRect(sx, ty - sh * 0.2, sw, sh * 0.4);
+    ctx.translate(tx, ty);
+    ctx.scale(sc, sc);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = INK;
+    ctx.font = "700 44px 'Instrument Sans', system-ui, sans-serif";
+    ctx.fillText("En valgfri", 0, -28);
+    ctx.fillText("gratis kaffe", 0, 28);
+    ctx.restore();
   }
 
   // ── "Tilfoej"-ark + tap: kommer SAMMEN med kortet, fader ved Wallet ──
@@ -496,6 +522,7 @@ function drawCard(
   pops: { i: number; p: number }[],
   t: number,
   rewardGlow = 0,
+  clear = 0,
 ) {
   const x = -cardW / 2;
   const y = -cardH / 2;
@@ -546,25 +573,26 @@ function drawCard(
     const py = y + L.gridTop + row * L.rowGap;
     const pop = pops.find((p) => p.i === i);
     const isFilled = i < filled;
-    let s = 1;
-    if (pop) s = easeBack(pop.p);
+    const s = pop ? easeBack(pop.p) : 1;
     ctx.save();
     ctx.translate(px, py);
-    ctx.scale(s, s);
-    if (isFilled) {
+    // Tom ring tegnes ALTID, saa den viser sig igen, naar kortet nulstilles.
+    ctx.strokeStyle = "rgba(247,239,230,0.4)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Fyldt stempel ovenpaa; fader ud igen ved nulstilling (clear).
+    if (isFilled && clear < 1) {
+      ctx.globalAlpha = 1 - clear;
+      ctx.scale(s, s);
       ctx.fillStyle = CREAM;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
       drawCoffee(ctx, 0, 1, r * 1.25, RUST);
-    } else {
-      ctx.strokeStyle = "rgba(247,239,230,0.4)";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
     }
     ctx.restore();
   }
@@ -592,8 +620,8 @@ function drawCard(
   ctx.fillText("BELØNNING", rxLeft, y + cardH * 0.86);
   ctx.globalAlpha = 1;
   ctx.fillStyle = rewardGlow > 0.25 ? GOLD : CREAM;
-  ctx.font = `${rewardGlow > 0.25 ? "600" : "300"} 23px 'Instrument Sans', system-ui, sans-serif`;
-  ctx.fillText("En gratis kaffe", rxLeft, y + cardH * 0.95);
+  ctx.font = `${rewardGlow > 0.25 ? "600" : "300"} 22px 'Instrument Sans', system-ui, sans-serif`;
+  ctx.fillText("En valgfri gratis kaffe", rxLeft, y + cardH * 0.95);
   ctx.restore();
 }
 
