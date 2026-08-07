@@ -10,7 +10,7 @@ import { btnClass } from "@/components/ui";
 
 const W = 1080;
 const H = 1350;
-const LOOP = 10.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
+const LOOP = 11.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
 
 // ── Palette (brand) ───────────────────────────────────────────────────
 const PARCH = "#FAF8F4";
@@ -208,21 +208,7 @@ function draw(
 
   const intro = easeOut(seg(t, 0, 0.4));
 
-  // Ordmaerke Ooverst.
-  ctx.save();
-  ctx.globalAlpha = intro;
-  ctx.fillStyle = INK;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
-  ctx.font = "700 62px 'Instrument Sans', system-ui, sans-serif";
-  const mark = "Stemplet";
-  const mw = ctx.measureText(mark).width;
-  ctx.fillText(mark, W / 2 - 12, 132);
-  ctx.fillStyle = RUST;
-  ctx.beginPath();
-  ctx.arc(W / 2 - 12 + mw / 2 + 20, 128, 11, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // (Intet ordmaerke over telefonen: renere look. Logoet vises kun i outroen.)
 
   // ── Telefon ─────────────────────────────────────────────────────────
   const pw = 520;
