@@ -55,8 +55,8 @@ const PIZZA: Variant = {
   rewardBig: ["En valgfri", "gratis pizza"],
   icon: "pizza",
   scanBg: "/brancher/pizzeria-scene.png",
-  cardHi: "#1C4636",
-  cardLo: "#122E23",
+  cardHi: "#9A2B24", // dyb roed (tomat)
+  cardLo: "#631712",
   filename: "stemplet-pizza",
 };
 
@@ -776,10 +776,13 @@ export function PresseVideo({
       );
       return;
     }
+    // Vaelg codec med et niveau der HELT sikkert klarer 1080x1350 skarpt.
+    // (avc1.42E01E = H.264 Baseline Level 3.0 -> kun ~720p, giver udydelig video.)
     const mimes = [
-      "video/mp4;codecs=avc1.42E01E",
-      "video/mp4",
+      "video/mp4;codecs=avc1.640028", // H.264 High@4.0
+      "video/mp4;codecs=avc1.4d0028", // H.264 Main@4.0
       "video/webm;codecs=vp9",
+      "video/mp4",
       "video/webm;codecs=vp8",
       "video/webm",
     ];
@@ -795,9 +798,10 @@ export function PresseVideo({
     const stream = canvas.captureStream(30);
     let rec: MediaRecorder;
     try {
+      // Hoej bitrate, saa detaljer (QR, tekst, baggrund) forbliver skarpe.
       rec = new MediaRecorder(
         stream,
-        mime ? { mimeType: mime, videoBitsPerSecond: 9_000_000 } : undefined,
+        mime ? { mimeType: mime, videoBitsPerSecond: 24_000_000 } : undefined,
       );
     } catch {
       setNote("Kunne ikke starte optagelse i denne browser.");
