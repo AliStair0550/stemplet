@@ -4,14 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { btnClass } from "@/components/ui";
 
 // Downloadbar produkt-animation (canvas, saa browseren kan optage den til en
-// videofil). 11 sek, hurtige klip, dopamin: scan QR -> se stempelkort -> tryk
-// Tilfoej -> Wallet aabner og stemplerne popper ind -> beloenning -> Stemplet-logo.
-// Findes i to varianter (kaffe/pizza) via variant-proppen. DOM/CSS kan ikke optages
-// af MediaRecorder, derfor tegnes alt paa canvas.
+// videofil). 12 sek, hurtige klip, dopamin: scan QR -> se stempelkort -> tryk
+// Tilfoej -> Wallet aabner og stemplerne popper ind -> beloenning -> kortet
+// nulstilles og et par nye stempler popper paa (man kan blive ved) -> Stemplet-logo.
+// Findes i tre varianter (kaffe/pizza/espresso) via variant-proppen. DOM/CSS kan
+// ikke optages af MediaRecorder, derfor tegnes alt paa canvas.
 
-const W = 1080;
-const H = 1350;
-const LOOP = 11.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
+const W = 1080; // logisk bredde (tegne-koordinater)
+const H = 1350; // logisk hoejde
+// Supersampling: canvas-bufferen er SS gange stOrre end det logiske koordinatsystem,
+// saa alt (QR, tekst, ikoner) optages i hOejere oplOesning og bliver skarpt.
+const SS = 2;
+const LOOP = 12.0; // sekunder pr. gennemloeb (og laengden af den optagne video)
 
 // ── Palette (brand) ───────────────────────────────────────────────────
 const PARCH = "#FAF8F4";
@@ -414,19 +418,37 @@ function draw(
     const s = mix(0.86, 1, easeBack(cardIn));
     const floaty = Math.sin(t * 1.6) * 5 * (1 - inWallet) * cardIn;
 
-    // Kortet starter TOMT; stemplerne poppes 0 -> 8 EFTER "Tilfoej".
+    // Kortets liv i loopet:
+    //  1) fyldes 0 -> 8 EFTER "Tilfoej"
+    //  2) toemmes til 0 (nulstilling), saa man ser "starter forfra"
+    //  3) et par nye stempler popper paa igen: man kan blive ved
     const stampsPop: { i: number; p: number }[] = [];
     let filled = 0;
-    for (let k = 0; k < STAMPS; k++) {
-      const ps = 4.5 + k * 0.26;
-      const p = seg(t, ps, ps + 0.3);
-      if (p > 0) {
-        filled = k + 1;
-        if (p < 1) stampsPop.push({ i: k, p });
+    let clear = 0;
+    if (t < 8.2) {
+      for (let k = 0; k < STAMPS; k++) {
+        const ps = 4.5 + k * 0.26;
+        const p = seg(t, ps, ps + 0.3);
+        if (p > 0) {
+          filled = k + 1;
+          if (p < 1) stampsPop.push({ i: k, p });
+        }
+      }
+    } else if (t < 9.4) {
+      filled = STAMPS;
+      clear = seg(t, 8.2, 8.8);
+    } else {
+      // genstart: et par nye stempler popper paa det tomme kort
+      const RESTART = 3;
+      for (let k = 0; k < RESTART; k++) {
+        const ps = 9.4 + k * 0.3;
+        const p = seg(t, ps, ps + 0.32);
+        if (p > 0) {
+          filled = k + 1;
+          if (p < 1) stampsPop.push({ i: k, p });
+        }
       }
     }
-    // Nulstilling til sidst: kortet toemmes til 0, saa man ser "starter forfra".
-    const clear = seg(t, 8.2, 8.8);
     // Beloenningen afsloeres i guld naar kortet er fuldt, og fader ved nulstilling.
     const rewardGlow = seg(t, 6.7, 7.4) * (1 - seg(t, 8.2, 8.7));
 
@@ -556,7 +578,7 @@ function draw(
   }
 
   // ── Outro (sidste sekund): Stemplet-logoet i midten ────────────────
-  const outro = seg(t, 9.0, 9.5);
+  const outro = seg(t, 10.6, 11.1);
   if (outro > 0) {
     // Ren pergament-ramme toner ind over hele scenen.
     ctx.save();
@@ -578,7 +600,7 @@ function draw(
     ctx.restore();
 
     // Ordmaerket "Stemplet." skalerer + toner blidt ind i midten.
-    const la = seg(t, 9.2, 9.7);
+    const la = seg(t, 10.8, 11.3);
     if (la > 0) {
       const sc = mix(0.9, 1, easeOut(la));
       ctx.save();
@@ -709,8 +731,8 @@ function drawCard(
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
-      if (cfg.icon === "pizza") drawPizza(ctx, 0, 1, r * 1.25, RUST);
-      else drawCoffee(ctx, 0, 1, r * 1.25, RUST);
+      if (cfg.icon === "pizza") drawPizza(ctx, 0, 1, r * 1.05, RUST);
+      else drawCoffee(ctx, 0, 1, r * 1.05, RUST);
     }
     ctx.restore();
   }
@@ -773,6 +795,8 @@ export function PresseVideo({
     const frame = (now: number) => {
       const base = recStartRef.current ?? startRef.current;
       const t = ((now - base) / 1000) % LOOP;
+      // Skaler op til supersampling-bufferen; alt tegnes i logiske W x H koordinater.
+      ctx.setTransform(SS, 0, 0, SS, 0, 0);
       draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null, cfg);
       raf = requestAnimationFrame(frame);
     };
@@ -789,12 +813,13 @@ export function PresseVideo({
       );
       return;
     }
-    // Vaelg codec med et niveau der HELT sikkert klarer 1080x1350 skarpt.
-    // (avc1.42E01E = H.264 Baseline Level 3.0 -> kun ~720p, giver udydelig video.)
+    // Vaelg codec med et niveau der klarer den supersamplede oplOesning
+    // (2160x2700) skarpt. avc1.640033 = H.264 High@5.1 (op til ~9.4 MP); VP9
+    // klarer enhver oplOesning. Undgaa lave niveauer, der nedskalerer og slOrer.
     const mimes = [
-      "video/mp4;codecs=avc1.640028", // H.264 High@4.0
-      "video/mp4;codecs=avc1.4d0028", // H.264 Main@4.0
+      "video/mp4;codecs=avc1.640033", // H.264 High@5.1
       "video/webm;codecs=vp9",
+      "video/mp4;codecs=avc1.640028", // High@4.0 (fallback)
       "video/mp4",
       "video/webm;codecs=vp8",
       "video/webm",
@@ -811,10 +836,11 @@ export function PresseVideo({
     const stream = canvas.captureStream(30);
     let rec: MediaRecorder;
     try {
-      // Hoej bitrate, saa detaljer (QR, tekst, baggrund) forbliver skarpe.
+      // Hoej bitrate, saa detaljer (QR, tekst, ikoner) forbliver skarpe ved den
+      // hOejere oplOesning.
       rec = new MediaRecorder(
         stream,
-        mime ? { mimeType: mime, videoBitsPerSecond: 24_000_000 } : undefined,
+        mime ? { mimeType: mime, videoBitsPerSecond: 40_000_000 } : undefined,
       );
     } catch {
       setNote("Kunne ikke starte optagelse i denne browser.");
@@ -854,8 +880,8 @@ export function PresseVideo({
     <div className="flex flex-col items-center gap-5">
       <canvas
         ref={canvasRef}
-        width={W}
-        height={H}
+        width={W * SS}
+        height={H * SS}
         className="w-full max-w-[19rem] rounded-[2rem] shadow-hero"
       />
       <button
@@ -864,7 +890,7 @@ export function PresseVideo({
         disabled={recording}
         className={`${btnClass("primary", "md")} disabled:opacity-60`}
       >
-        {recording ? "Optager... (ca. 11 sek.)" : "Download video"}
+        {recording ? "Optager... (ca. 12 sek.)" : "Download video"}
       </button>
       {note ? (
         <p className="max-w-xs text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
