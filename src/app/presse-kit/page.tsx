@@ -333,7 +333,7 @@ export default function PresseKitPage() {
         </div>
       </section>
 
-      {/* 6. Video: downloadbar animation (scan -> kort -> tilfoej -> Wallet) */}
+      {/* 6. Video (kaffe): downloadbar animation (scan -> kort -> tilfoej -> Wallet) */}
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#faf8f4] to-[#efe7dd] px-6 py-24">
         <div
           aria-hidden
@@ -341,7 +341,19 @@ export default function PresseKitPage() {
         />
         <Mark className="relative text-[1.9rem] md:text-[2.2rem]" />
         <div className="relative mt-12 md:mt-14">
-          <PresseVideo />
+          <PresseVideo variant="coffee" />
+        </div>
+      </section>
+
+      {/* 7. Video (pizza): samme animation, pizzeria-eksempel */}
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#faf8f4] to-[#efe7dd] px-6 py-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[620px] w-[620px] max-w-[120vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.08] blur-[130px]"
+        />
+        <Mark className="relative text-[1.9rem] md:text-[2.2rem]" />
+        <div className="relative mt-12 md:mt-14">
+          <PresseVideo variant="pizza" />
         </div>
       </section>
     </main>

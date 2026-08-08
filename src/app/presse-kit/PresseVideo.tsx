@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { btnClass } from "@/components/ui";
 
 // Downloadbar produkt-animation (canvas, saa browseren kan optage den til en
-// videofil). ~9 sek, hurtige klip, dopamin: scan QR -> se stempelkort -> tryk
-// Tilfoej -> Wallet aabner og stemplerne popper ind. Kaffebar-eksempel i brandets
-// farver. DOM/CSS kan ikke optages af MediaRecorder, derfor tegnes alt paa canvas.
+// videofil). 11 sek, hurtige klip, dopamin: scan QR -> se stempelkort -> tryk
+// Tilfoej -> Wallet aabner og stemplerne popper ind -> beloenning -> Stemplet-logo.
+// Findes i to varianter (kaffe/pizza) via variant-proppen. DOM/CSS kan ikke optages
+// af MediaRecorder, derfor tegnes alt paa canvas.
 
 const W = 1080;
 const H = 1350;
@@ -24,8 +25,40 @@ const GOLD = "#C9A24B";
 // Antal stempler i videoen (4 kolonner x 2 raekker).
 const STAMPS = 8;
 const COLS = 4;
-// Kamera-baggrund under scanningen: samme billede som paa kaffebar-branchesiden.
-const SCAN_BG = "/brancher/kaffebar-scene.png";
+
+// ── Varianter (samme animation, forskellig branche) ───────────────────
+type Variant = {
+  storeName: string; // butikkens navn paa kortet
+  rewardCard: string; // beloenning i kortets fod
+  rewardBig: [string, string]; // stor beloennings-tekst i to linjer
+  icon: "coffee" | "pizza"; // hvilket glyf stemplerne bruger
+  scanBg: string; // kamera-baggrund under scanningen (branchesidens billede)
+  cardHi: string; // kortets gradient (top)
+  cardLo: string; // kortets gradient (bund)
+  filename: string; // filnavn ved download
+};
+
+const COFFEE: Variant = {
+  storeName: "Nord Kaffebar",
+  rewardCard: "En valgfri gratis kaffe",
+  rewardBig: ["En valgfri", "gratis kaffe"],
+  icon: "coffee",
+  scanBg: "/brancher/kaffebar-scene.png",
+  cardHi: RUST_HI,
+  cardLo: RUST_LO,
+  filename: "stemplet-stempelkort",
+};
+
+const PIZZA: Variant = {
+  storeName: "Little Brother",
+  rewardCard: "En valgfri gratis pizza",
+  rewardBig: ["En valgfri", "gratis pizza"],
+  icon: "pizza",
+  scanBg: "/brancher/pizzeria-scene.png",
+  cardHi: "#1C4636",
+  cardLo: "#122E23",
+  filename: "stemplet-pizza",
+};
 
 // ── Smaa hjaelpere ────────────────────────────────────────────────────
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -119,6 +152,40 @@ function drawCoffee(
   ctx.restore();
 }
 
+// Lille pizza-stykke-glyf (rust) centreret i (x,y) med stOrrelse s.
+function drawPizza(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = s * 0.11;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  const w = s * 0.64; // bredde ved skorpen (top)
+  const top = y - s * 0.32;
+  const tip = y + s * 0.4; // spidsen nedad
+  // Stykkets omrids: spids -> venstre skorpe -> buet skorpe -> tilbage til spids
+  ctx.beginPath();
+  ctx.moveTo(x, tip);
+  ctx.lineTo(x - w / 2, top);
+  ctx.quadraticCurveTo(x, top - s * 0.14, x + w / 2, top);
+  ctx.closePath();
+  ctx.stroke();
+  // pepperoni (fyldte prikker)
+  const pr = s * 0.055;
+  ctx.beginPath();
+  ctx.arc(x - w * 0.17, top + s * 0.15, pr, 0, Math.PI * 2);
+  ctx.arc(x + w * 0.17, top + s * 0.14, pr, 0, Math.PI * 2);
+  ctx.arc(x, top + s * 0.34, pr, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 // Fire-takket glimt (dopamin).
 function sparkle(
   ctx: CanvasRenderingContext2D,
@@ -186,6 +253,7 @@ function draw(
   t: number,
   qr: QR,
   bgImg: HTMLImageElement | null,
+  cfg: Variant,
 ) {
   ctx.clearRect(0, 0, W, H);
 
@@ -227,27 +295,7 @@ function draw(
   ctx.shadowColor = "transparent";
   ctx.restore();
 
-  // Ordmaerke UNDER telefonen, hoejrestillet: logoet er der stadig, men
-  // stjaeler ikke fokus fra selve telefon-animationen.
-  ctx.save();
-  ctx.globalAlpha = intro;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "alphabetic";
-  ctx.font = "700 46px 'Instrument Sans', system-ui, sans-serif";
-  const mark = "Stemplet";
-  const mw = ctx.measureText(mark).width;
-  const mDotR = 8;
-  const mMl = 6;
-  const mRightX = px + pw; // flugter med telefonens hoejre kant
-  const mBaseY = py + ph + 78;
-  const mStartX = mRightX - (mw + mMl + mDotR * 2);
-  ctx.fillStyle = INK;
-  ctx.fillText(mark, mStartX, mBaseY);
-  ctx.fillStyle = RUST;
-  ctx.beginPath();
-  ctx.arc(mStartX + mw + mMl + mDotR, mBaseY - mDotR, mDotR, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  // (Intet ordmaerke ved telefonen: rent look. Logoet vises kun i outroen.)
 
   // Skaerm-region (klip alt skaerm-indhold hertil).
   const sx = px + 20;
@@ -374,7 +422,7 @@ function draw(
     ctx.globalAlpha = cardIn;
     ctx.translate(cx, cy + floaty);
     ctx.scale(s, s);
-    drawCard(ctx, cardW, cardH, filled, stampsPop, t, rewardGlow, clear);
+    drawCard(ctx, cardW, cardH, filled, stampsPop, t, rewardGlow, clear, cfg);
     ctx.restore();
 
     // dopamin: glimt naar hvert stempel lander
@@ -415,8 +463,8 @@ function draw(
     ctx.textBaseline = "middle";
     ctx.fillStyle = INK;
     ctx.font = "700 44px 'Instrument Sans', system-ui, sans-serif";
-    ctx.fillText("En valgfri", 0, -28);
-    ctx.fillText("gratis kaffe", 0, 28);
+    ctx.fillText(cfg.rewardBig[0], 0, -28);
+    ctx.fillText(cfg.rewardBig[1], 0, 28);
     ctx.restore();
   }
 
@@ -579,6 +627,7 @@ function drawCard(
   t: number,
   rewardGlow = 0,
   clear = 0,
+  cfg: Variant,
 ) {
   const x = -cardW / 2;
   const y = -cardH / 2;
@@ -587,8 +636,8 @@ function drawCard(
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 22;
   const g = ctx.createLinearGradient(0, y, 0, y + cardH);
-  g.addColorStop(0, RUST_HI);
-  g.addColorStop(1, RUST_LO);
+  g.addColorStop(0, cfg.cardHi);
+  g.addColorStop(1, cfg.cardLo);
   ctx.fillStyle = g;
   roundRect(ctx, x, y, cardW, cardH, 34);
   ctx.fill();
@@ -617,7 +666,7 @@ function drawCard(
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
   ctx.font = "700 30px 'Instrument Sans', system-ui, sans-serif";
-  ctx.fillText("Nord Kaffebar", x + cardW * 0.08, y + cardH * 0.2);
+  ctx.fillText(cfg.storeName, x + cardW * 0.08, y + cardH * 0.2);
 
   // stempler (4x2)
   const L = stampLayout(cardW, cardH);
@@ -648,12 +697,13 @@ function drawCard(
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fill();
-      drawCoffee(ctx, 0, 1, r * 1.25, RUST);
+      if (cfg.icon === "pizza") drawPizza(ctx, 0, 1, r * 1.25, RUST);
+      else drawCoffee(ctx, 0, 1, r * 1.25, RUST);
     }
     ctx.restore();
   }
 
-  // fod: beloenning "En gratis kaffe" - afsloeres i guld naar kortet er fuldt
+  // fod: beloenningen afsloeres i guld, naar kortet er fuldt
   const rxLeft = x + cardW * 0.08;
   if (rewardGlow > 0) {
     const gg = ctx.createRadialGradient(
@@ -677,11 +727,16 @@ function drawCard(
   ctx.globalAlpha = 1;
   ctx.fillStyle = rewardGlow > 0.25 ? GOLD : CREAM;
   ctx.font = `${rewardGlow > 0.25 ? "600" : "300"} 22px 'Instrument Sans', system-ui, sans-serif`;
-  ctx.fillText("En valgfri gratis kaffe", rxLeft, y + cardH * 0.95);
+  ctx.fillText(cfg.rewardCard, rxLeft, y + cardH * 0.95);
   ctx.restore();
 }
 
-export function PresseVideo() {
+export function PresseVideo({
+  variant = "coffee",
+}: {
+  variant?: "coffee" | "pizza";
+}) {
+  const cfg = variant === "pizza" ? PIZZA : COFFEE;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const recStartRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
@@ -694,10 +749,10 @@ export function PresseVideo() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const qr = buildQR();
-    // Preload kaffebar-baggrunden (samme-origin, saa canvas ikke "taintes" og
+    // Preload branchesidens baggrund (samme-origin, saa canvas ikke "taintes" og
     // optagelsen stadig virker).
     const bg = new Image();
-    bg.src = SCAN_BG;
+    bg.src = cfg.scanBg;
     let raf = 0;
     startRef.current = performance.now();
     // Vent paa fonts, saa canvas-teksten bruger Instrument Sans.
@@ -705,12 +760,12 @@ export function PresseVideo() {
     const frame = (now: number) => {
       const base = recStartRef.current ?? startRef.current;
       const t = ((now - base) / 1000) % LOOP;
-      draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null);
+      draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null, cfg);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [cfg]);
 
   function download() {
     const canvas = canvasRef.current;
@@ -757,7 +812,7 @@ export function PresseVideo() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `stemplet-stempelkort.${ext}`;
+      a.download = `${cfg.filename}.${ext}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -792,7 +847,7 @@ export function PresseVideo() {
         disabled={recording}
         className={`${btnClass("primary", "md")} disabled:opacity-60`}
       >
-        {recording ? "Optager... (ca. 9 sek.)" : "Download video"}
+        {recording ? "Optager... (ca. 11 sek.)" : "Download video"}
       </button>
       {note ? (
         <p className="max-w-xs text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
