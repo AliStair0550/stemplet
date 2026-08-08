@@ -60,6 +60,18 @@ const PIZZA: Variant = {
   filename: "stemplet-pizza",
 };
 
+// Samme kaffe-eksempel, men med et dybt brunt (espresso) kort.
+const ESPRESSO: Variant = {
+  storeName: "Nord Kaffebar",
+  rewardCard: "En valgfri gratis kaffe",
+  rewardBig: ["En valgfri", "gratis kaffe"],
+  icon: "coffee",
+  scanBg: "/brancher/kaffebar-scene.png",
+  cardHi: "#4A3125", // dyb brun (espresso)
+  cardLo: "#291A11",
+  filename: "stemplet-kaffe-brun",
+};
+
 // ── Smaa hjaelpere ────────────────────────────────────────────────────
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -734,9 +746,10 @@ function drawCard(
 export function PresseVideo({
   variant = "coffee",
 }: {
-  variant?: "coffee" | "pizza";
+  variant?: "coffee" | "pizza" | "espresso";
 }) {
-  const cfg = variant === "pizza" ? PIZZA : COFFEE;
+  const cfg =
+    variant === "pizza" ? PIZZA : variant === "espresso" ? ESPRESSO : COFFEE;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const recStartRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
