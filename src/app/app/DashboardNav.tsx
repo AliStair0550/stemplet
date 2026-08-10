@@ -77,22 +77,29 @@ export function DashboardNav({
             </button>
           </form>
         </div>
-        <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={cn(
-                "whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
-                isActive(l.href)
-                  ? "bg-terracotta/10 text-terracotta"
-                  : "text-stone hover:text-ink",
-              )}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="relative">
+          <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={cn(
+                  "whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
+                  isActive(l.href)
+                    ? "bg-terracotta/10 text-terracotta"
+                    : "text-stone hover:text-ink",
+                )}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          {/* BlOd fade i hoejre kant, saa det er tydeligt at menuen kan scrolles. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-parchment to-transparent"
+          />
+        </div>
       </div>
     </>
   );

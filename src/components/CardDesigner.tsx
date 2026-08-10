@@ -188,8 +188,9 @@ export function CardDesigner({
 
   return (
     <div className="grid gap-8 md:grid-cols-[1fr_minmax(0,20rem)] md:gap-12">
-      {/* Formular */}
-      <div className="flex flex-col gap-6">
+      {/* Formular. Paa mobil ligger den UNDER preview'et (order), saa man ser
+          kortet, mens man designer. Paa desktop staar den til venstre som foer. */}
+      <div className="order-2 flex flex-col gap-6 md:order-none">
         <Field label={`Antal stempler (${value.stampsRequired})`}>
           <input
             type="range"
@@ -484,8 +485,8 @@ export function CardDesigner({
         </div>
       </div>
 
-      {/* Live preview: lidt luft til venstre, saa den staar tydeligt for sig selv */}
-      <div className="md:sticky md:top-6 md:self-start md:pl-4">
+      {/* Live preview: paa mobil oeverst (order-1), paa desktop klaebende til hoejre */}
+      <div className="order-1 md:order-none md:sticky md:top-6 md:self-start md:pl-4">
         <p className="mb-3 text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
           Sådan ser kortet ud
         </p>
