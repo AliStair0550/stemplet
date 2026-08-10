@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { loginEmail, welcomeEmail } from "./emails";
+import { verifyOnboardingToken } from "./onboarding-token";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
 // Kunder logger ALDRIG ind - de identificeres via device-cookie og serial.
@@ -83,6 +85,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
+    // Auto-login direkte efter oprettelse: success-skaermen paa /start sender et
+    // kortlivet, signeret token, saa den nye ejer kommer direkte ind i dashboardet
+    // uden foerst at aabne login-mailen. Token'et kan kun logge den bruger ind,
+    // det blev udstedt til, og udloeber efter faa minutter.
+    Credentials({
+      id: "onboarding",
+      name: "Onboarding",
+      credentials: { token: {} },
+      authorize: async (creds) => {
+        const token = typeof creds?.token === "string" ? creds.token : "";
+        const payload = verifyOnboardingToken(token);
+        if (!payload) return null;
+        const user = await prisma.user.findUnique({
+          where: { id: payload.uid },
+          select: { id: true, email: true },
+        });
+        return user ? { id: user.id, email: user.email } : null;
+      },
+    }),
   ],
   pages: {
     signIn: "/login",
@@ -100,11 +121,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return Boolean(existing);
     },
     async jwt({ token }) {
-      if (token.email && !token.businessId) {
-        const u = await prisma.user.findUnique({
-          where: { email: token.email },
-          select: { id: true, businessId: true },
-        });
+      // Slaa virksomheden op paa token'et. Virker baade for magic-link (email)
+      // og for onboarding-auto-login (hvor vi ogsaa har bruger-id'et i token.sub).
+      if (!token.businessId && (token.email || token.sub)) {
+        const u = token.email
+          ? await prisma.user.findUnique({
+              where: { email: token.email },
+              select: { id: true, businessId: true },
+            })
+          : await prisma.user.findUnique({
+              where: { id: token.sub as string },
+              select: { id: true, businessId: true },
+            });
         if (u) {
           token.uid = u.id;
           token.businessId = u.businessId;

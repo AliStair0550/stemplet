@@ -65,72 +65,141 @@ function IconShare() {
   );
 }
 
+const CTA =
+  "inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70";
+
+function CtaArrow() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-3.5 w-3.5"
+      aria-hidden
+    >
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+// Foerste-gangs-guide: gOr det tydeligt at der er TO veje i gang (fysisk QR i
+// butikken + deling online) og forklarer helt konkret hvordan man stempler og
+// giver personalet adgang. Vises indtil det foerste stempel er givet.
 function GettingStarted({ slug }: { slug: string }) {
-  const steps = [
-    {
-      icon: <IconQr />,
-      title: "Del QR-kode",
-      body: "QR-koden ved kassen, så kunderne nemt kan hente stempelkortet.",
-      href: "/app/materialer",
-      link: "Hent materialer",
-    },
-    {
-      icon: <IconStamp />,
-      title: "Giv det første stempel",
-      body: "Scan kundens kort fra deres Wallet og giv det første stempel.",
-      href: "/app/kasse",
-      link: "Åbn Stempel",
-    },
-    {
-      icon: <IconShare />,
-      title: "Del dit kort",
-      body: "Del på sociale medier, så kunderne har kortet klar ved næste besøg.",
-      href: `/k/${slug}`,
-      link: "Se kundesiden",
-    },
+  const stampSteps = [
+    "Kunden viser sit stempelkort fra sin Wallet.",
+    "Åbn Stempel og scan QR-koden på kortet.",
+    "Stemplet lander på kundens kort med det samme.",
   ];
   return (
-    <div className="mb-6 overflow-hidden rounded-lg border border-terracotta/30 bg-white">
+    <div className="mb-6 overflow-hidden rounded-lg border border-terracotta/30 bg-white shadow-card">
       <div className="border-b border-fog bg-terracotta/[0.05] px-6 py-5 md:px-8">
         <span className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
           Kom godt i gang
         </span>
+        <p className="mt-2 max-w-xl font-[300] text-[0.9rem] leading-relaxed text-stone">
+          Der er to måder at få kunderne i gang. Brug den ene eller begge, det
+          tager få minutter.
+        </p>
       </div>
-      <ol className="grid gap-px bg-fog sm:grid-cols-3">
-        {steps.map((s, i) => (
-          <li key={s.title} className="flex flex-col gap-3 bg-white p-6">
-            <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-                {s.icon}
-              </span>
-              <span className="font-fraunces text-[1.15rem] font-light italic text-terracotta/70">
-                0{i + 1}
-              </span>
-            </div>
-            <span className="font-[400] text-[1rem] text-ink">{s.title}</span>
-            <span className="break-words font-[300] text-[0.84rem] leading-relaxed text-stone">
-              {s.body}
+
+      {/* De to veje: fysisk QR i butikken, eller deling online */}
+      <div className="grid gap-px bg-fog sm:grid-cols-2">
+        <div className="flex flex-col gap-3 bg-white p-6 md:p-7">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+              <IconQr />
             </span>
-            <Link
-              href={s.href}
-              className="mt-auto inline-flex items-center gap-1.5 pt-1 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
-            >
-              {s.link}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3.5 w-3.5"
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
+            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta/80">
+              Vej 1 · I butikken
+            </span>
+          </div>
+          <span className="font-[400] text-[1.05rem] text-ink">
+            Sæt din QR op ved kassen
+          </span>
+          <span className="font-[300] text-[0.85rem] leading-relaxed text-stone">
+            Print plakaten med din QR-kode og hæng den op. Kunderne scanner den
+            og henter stempelkortet direkte i deres Wallet.
+          </span>
+          <Link href="/app/materialer" className={`mt-auto pt-1 ${CTA}`}>
+            Hent QR og skilte til print
+            <CtaArrow />
+          </Link>
+        </div>
+
+        <div className="flex flex-col gap-3 bg-white p-6 md:p-7">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+              <IconShare />
+            </span>
+            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta/80">
+              Vej 2 · Online
+            </span>
+          </div>
+          <span className="font-[400] text-[1.05rem] text-ink">
+            Del kortet på sociale medier
+          </span>
+          <span className="font-[300] text-[0.85rem] leading-relaxed text-stone">
+            Læg kortet på Instagram eller Facebook. Kunderne henter det
+            hjemmefra og har det klar ved næste besøg.
+          </span>
+          <div className="mt-auto flex flex-col gap-2 pt-1">
+            <Link href="/app/kampagner" className={CTA}>
+              Del kortet
+              <CtaArrow />
             </Link>
-          </li>
-        ))}
-      </ol>
+            <Link
+              href={`/k/${slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[0.74rem] font-[300] text-slate transition-colors hover:text-ink"
+            >
+              Se hvordan kundesiden ser ud
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Sådan giver du et stempel + adgang til personalet */}
+      <div className="border-t border-fog px-6 py-6 md:px-8">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+            <IconStamp />
+          </span>
+          <span className="font-[400] text-[1rem] text-ink">
+            Sådan giver du et stempel
+          </span>
+        </div>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+          {stampSteps.map((t, i) => (
+            <li
+              key={t}
+              className="flex gap-2.5 text-[0.85rem] font-[300] leading-relaxed text-stone"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-terracotta/10 font-fraunces text-[0.8rem] italic text-terracotta">
+                {i + 1}
+              </span>
+              <span>{t}</span>
+            </li>
+          ))}
+        </ol>
+        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <ButtonLink href="/app/kasse" variant="primary" size="md">
+            Åbn Stempel
+          </ButtonLink>
+          <Link href="/app/indstillinger" className={CTA}>
+            Skal personalet også kunne stemple? Par en kasse-enhed
+            <CtaArrow />
+          </Link>
+        </div>
+        <p className="mt-4 font-[300] text-[0.78rem] leading-relaxed text-slate">
+          Din personale-PIN bruges kun, når en kunde skal indløse en fuld
+          belønning, ikke for at give stempler.
+        </p>
+      </div>
     </div>
   );
 }

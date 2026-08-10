@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { unstable_rethrow, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
+import { createOnboardingToken } from "@/lib/onboarding-token";
 import { durableRateLimit } from "@/lib/rate-limit";
 import {
   onboardingStartSchema,
@@ -32,6 +33,9 @@ export type CreateResult =
       // Blev login-linket sendt automatisk ved oprettelsen? Ellers viser
       // kvitteringen en tydelig "send igen"-knap som fallback.
       loginSent: boolean;
+      // Kortlivet token til at komme DIREKTE ind i dashboardet (auto-login),
+      // saa ejeren ikke behoever at aabne mailen foerst.
+      loginToken?: string;
     }
   | { ok: false; error: string; field?: "address" };
 
@@ -117,8 +121,10 @@ export async function createBusinessAction(input: {
     };
   }
 
+  let createdUserId: string | null = null;
   try {
-    await prisma.business.create({
+    const businessRow = await prisma.business.create({
+      select: { users: { select: { id: true } } },
       data: {
         name: base.data.name,
         slug,
@@ -146,6 +152,7 @@ export async function createBusinessAction(input: {
         },
       },
     });
+    createdUserId = businessRow.users[0]?.id ?? null;
   } catch (e) {
     if (
       e &&
@@ -175,7 +182,14 @@ export async function createBusinessAction(input: {
   // "send igen"-knap paa kvitteringen, saa de aldrig staar strandet.
   let loginSent = false;
   try {
-    await signIn("resend", { email: base.data.email, redirect: false });
+    // redirectTo: "/app" gOr, at mail-linket fOrer DIREKTE ind i dashboardet
+    // (ikke tilbage til start). redirect:false holder selve oprettelses-svaret
+    // paa kvitteringen.
+    await signIn("resend", {
+      email: base.data.email,
+      redirect: false,
+      redirectTo: "/app",
+    });
     loginSent = true;
   } catch (e) {
     const digest = (e as { digest?: string })?.digest;
@@ -216,7 +230,26 @@ export async function createBusinessAction(input: {
     }
   });
 
-  return { ok: true, slug, cardUrl, qrDataUrl, loginSent };
+  // Token til "Gå til mit dashboard"-knappen paa kvitteringen (auto-login).
+  const loginToken = createdUserId
+    ? createOnboardingToken(createdUserId)
+    : undefined;
+
+  return { ok: true, slug, cardUrl, qrDataUrl, loginSent, loginToken };
+}
+
+// Auto-login efter oprettelse: kvitteringens "Gå til mit dashboard"-knap sender
+// det kortlivede token her, saa ejeren kommer direkte ind uden at aabne mailen.
+export async function loginWithOnboardingToken(formData: FormData) {
+  const token = String(formData.get("token") ?? "");
+  if (!token) redirect("/login?fejl=onboarding");
+  try {
+    await signIn("onboarding", { token, redirectTo: "/app" });
+  } catch (e) {
+    unstable_rethrow(e); // lad succes-redirecten til /app passere
+    // Ugyldigt/udloebet token: send pænt til login, hvor de kan hente linket.
+    redirect("/login?fejl=onboarding");
+  }
 }
 
 export async function sendOnboardingLogin(formData: FormData) {

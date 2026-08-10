@@ -6,7 +6,12 @@ import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/Card
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
-import { createBusinessAction, sendOnboardingLogin, type CreateResult } from "./actions";
+import {
+  createBusinessAction,
+  sendOnboardingLogin,
+  loginWithOnboardingToken,
+  type CreateResult,
+} from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 // Progressiv onboarding: vi starter med det absolut vigtigste (navn + login-mail),
@@ -474,22 +479,40 @@ export function StartWizard() {
             </a>
           </div>
 
-          {/* Naeste skridt: kom ind i dashboardet. Skilte til print ligger
-              bagefter i dashboardet, saa kvitteringen holdes enkel og fokuseret. */}
+          {/* Naeste skridt: kom DIREKTE ind i dashboardet (auto-login), saa ejeren
+              ikke behoever at aabne mailen. Login-mailen sendes stadig som backup. */}
           <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 text-center">
             <h4 className="font-[400] text-[1.05rem] text-ink">
-              Log ind på dit dashboard
+              Kom ind i dit dashboard
             </h4>
             <p className="mx-auto mt-2 max-w-md font-[200] text-[0.86rem] leading-relaxed text-stone">
-              {created.loginSent
-                ? `Vi har sendt et login-link til ${email}. Klik det, så er du inde. Herfra styrer du kort, stempler, statistik og skilte til print.`
-                : `Klik herunder, så sender vi et login-link til ${email}. Klik linket i mailen, så er du inde.`}{" "}
-              Tjek spam-mappen, hvis mailen ikke dukker op.
+              Gå direkte ind, hvor du henter QR og skilte til print, deler kortet
+              og giver det første stempel. Vi guider dig hele vejen.
             </p>
-            <form action={sendOnboardingLogin} className="mt-4 flex justify-center">
+            {created.loginToken ? (
+              <form
+                action={loginWithOnboardingToken}
+                className="mt-4 flex justify-center"
+              >
+                <input type="hidden" name="token" value={created.loginToken} />
+                <SubmitButton
+                  variant="primary"
+                  size="md"
+                  pendingText="Åbner dashboard..."
+                >
+                  Gå til mit dashboard
+                </SubmitButton>
+              </form>
+            ) : null}
+            <p className="mx-auto mt-4 max-w-md font-[200] text-[0.8rem] leading-relaxed text-slate">
+              {created.loginSent
+                ? `Vi har også sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
+                : `Vil du hellere logge ind via mail? Så sender vi et link til ${email}.`}
+            </p>
+            <form action={sendOnboardingLogin} className="mt-2 flex justify-center">
               <input type="hidden" name="email" value={email} />
               <SubmitButton
-                variant={created.loginSent ? "outline" : "primary"}
+                variant="outline"
                 size="md"
                 pendingText="Sender login-link..."
               >
