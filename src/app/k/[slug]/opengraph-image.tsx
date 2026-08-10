@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/prisma";
+import { cardTitle } from "@/lib/brand";
 
 // Delings-billede (1200x630) for tilmeldings-siden: naar butikken deler linket
 // paa iMessage, Facebook, Instagram osv., vises butikkens eget stempelkort med
@@ -55,7 +56,7 @@ export default async function Image({
     },
   });
 
-  const name = business?.name ?? "Stempelkort";
+  const name = business ? cardTitle(business) : "Stempelkort";
   const primary = business?.primaryColor ?? "#061C3D";
   const fg = business?.textColor ?? "#FFFFFF";
   const reward = business?.cards[0]?.rewardText ?? "";

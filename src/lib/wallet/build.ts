@@ -2,6 +2,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "../prisma";
 import { PLAN_LIMITS } from "../plans";
+import { cardTitle } from "../brand";
 import { buildPass } from "./pass";
 
 /** Loader kundekort med alt, Wallet-passet skal bruge. */
@@ -19,7 +20,7 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
   return buildPass({
     serial: cc.serial,
     authToken: cc.authToken,
-    businessName: b.name,
+    businessName: cardTitle(b),
     primaryColor: b.primaryColor,
     textColor: b.textColor,
     logoUrl: b.logoUrl,

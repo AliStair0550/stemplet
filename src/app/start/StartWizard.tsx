@@ -212,7 +212,7 @@ export function StartWizard() {
         <div className="flex flex-col gap-5 animate-step">
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Butikkens navn
+              Firmanavn
             </span>
             <input
               value={name}
@@ -221,7 +221,8 @@ export function StartWizard() {
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
             <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-              Det navn dine kunder kender jer på. Det står på kortet.
+              Firmanavnet, fx Pizzeria ApS. Du vælger selv, hvad der står på
+              kortet, når du designer det.
             </span>
           </label>
           <label className="flex flex-col gap-1.5">

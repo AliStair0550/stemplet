@@ -8,6 +8,7 @@ import { APP_URL } from "@/lib/env";
 import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
+import { cardTitle } from "@/lib/brand";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { MaterialsPrint } from "./MaterialsPrint";
 import { PLAN_LIMITS } from "@/lib/plans";
@@ -54,7 +55,7 @@ export default async function MaterialerPage() {
           </div>
           <div className="mt-5 flex flex-1 items-center justify-center">
             <StampCard
-              businessName={business.name}
+              businessName={cardTitle(business)}
               logoUrl={business.logoUrl}
               primaryColor={business.primaryColor}
               textColor={business.textColor}
@@ -107,7 +108,7 @@ export default async function MaterialerPage() {
                 Se kundens side
               </a>
               <ShareLinkButton
-                businessName={business.name}
+                businessName={cardTitle(business)}
                 url={cardUrl}
                 label="Del kortet"
                 className="w-full"

@@ -42,6 +42,13 @@ export const cardDesignSchema = z.object({
     .min(2, "Skriv en belønning")
     .max(REWARD_TEXT_MAX, "Belønningen er for lang til Apple Wallet"),
   stampIcon: stampIconEnum,
+  // Navn vist paa kundens kort. Tomt = brug firmanavnet.
+  displayName: z
+    .string()
+    .trim()
+    .max(40, "Navnet på kortet er for langt")
+    .nullable()
+    .optional(),
   primaryColor: hex,
   textColor: hex,
   // Logo er enten en data-URL (gemt direkte, ingen ekstern tjeneste) eller

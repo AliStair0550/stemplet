@@ -245,7 +245,9 @@ export async function resendOwnerLogin(
   if (!user) return { ok: false, error: "Ukendt bruger." };
 
   try {
-    await signIn("resend", { email: clean, redirect: false });
+    // redirectTo: "/app" gOr, at linket i mailen fOrer DIREKTE ind i dashboardet
+    // (ikke tilbage til start), praecis som ved oprettelse.
+    await signIn("resend", { email: clean, redirect: false, redirectTo: "/app" });
   } catch (e) {
     const digest = (e as { digest?: string })?.digest;
     // redirect:false boer forhindre NEXT_REDIRECT; sker det alligevel, ER mailen

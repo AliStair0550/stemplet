@@ -22,7 +22,8 @@ enum Plan {
 
 model Business {
   id               String     @id @default(cuid())
-  name             String
+  name             String // firmanavn (login, faktura, konto)
+  displayName      String? // navn vist paa kundens kort; tomt = brug name
   slug             String     @unique
   category         String? // branche (kode), backfilles i indstillinger
   logoUrl          String?

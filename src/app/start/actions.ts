@@ -127,6 +127,7 @@ export async function createBusinessAction(input: {
       select: { users: { select: { id: true } } },
       data: {
         name: base.data.name,
+        displayName: design.data.displayName?.trim() || null,
         slug,
         primaryColor: design.data.primaryColor,
         textColor: design.data.textColor,

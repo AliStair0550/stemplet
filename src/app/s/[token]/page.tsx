@@ -5,6 +5,7 @@ import {
 } from "@/lib/tokens";
 import { prisma } from "@/lib/prisma";
 import { WALLET_ENABLED } from "@/lib/env";
+import { cardTitle } from "@/lib/brand";
 import { ButtonLink } from "@/components/ui";
 import { StampConfirm } from "./StampConfirm";
 
@@ -37,6 +38,7 @@ export default async function StampPage({
       select: {
         slug: true,
         name: true,
+        displayName: true,
         primaryColor: true,
         textColor: true,
         logoUrl: true,
@@ -50,7 +52,7 @@ export default async function StampPage({
     if (business) {
       brand = {
         slug: business.slug,
-        name: business.name,
+        name: cardTitle(business),
         primaryColor: business.primaryColor,
         textColor: business.textColor,
         logoUrl: business.logoUrl,

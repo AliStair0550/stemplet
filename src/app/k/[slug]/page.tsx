@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
-import type { StampIconKey } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { ClaimFlow } from "./ClaimFlow";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 
@@ -35,9 +35,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const business = await prisma.business.findUnique({ where: { slug } });
-  const title = business ? `Stempelkort hos ${business.name}` : "Stempelkort";
+  const brandName = business ? cardTitle(business) : "";
+  const title = business ? `Stempelkort hos ${brandName}` : "Stempelkort";
   const description = business
-    ? `Hent dit digitale stempelkort hos ${business.name} direkte i Apple Wallet. Ingen app. Ingen tilmelding.`
+    ? `Hent dit digitale stempelkort hos ${brandName} direkte i Apple Wallet. Ingen app. Ingen tilmelding.`
     : "Digitalt stempelkort i Apple Wallet.";
   return {
     title,
@@ -78,7 +79,7 @@ export default async function ClaimPage({
             />
           ) : null}
           <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">
-            Dit stempelkort hos {business.name}
+            Dit stempelkort hos {cardTitle(business)}
           </h1>
           <p className="max-w-xs font-[200] text-[0.9rem] leading-relaxed text-stone">
             {card.rewardText}. Ingen app. Ingen tilmelding.
@@ -86,7 +87,7 @@ export default async function ClaimPage({
         </div>
 
         <StampCard
-          businessName={business.name}
+          businessName={cardTitle(business)}
           logoUrl={business.logoUrl}
           primaryColor={business.primaryColor}
           textColor={business.textColor}
@@ -132,7 +133,7 @@ export default async function ClaimPage({
             linket, viser previewet butikkens stempelkort (OG-billede). */}
         <div className="flex flex-col items-center border-t border-fog pt-6">
           <ShareLinkButton
-            businessName={business.name}
+            businessName={cardTitle(business)}
             url={`${APP_URL}/k/${slug}`}
             label="Del kortet"
           />

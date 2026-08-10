@@ -131,7 +131,7 @@ export function KortEditor({
         <div ref={shareRef} className="w-[560px]">
           <ShareCard
             design={design}
-            businessName={businessName}
+            businessName={design.displayName?.trim() || businessName}
             qrDataUrl={qrDataUrl}
           />
         </div>

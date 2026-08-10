@@ -7,7 +7,7 @@ import { PageHeading } from "@/components/dash";
 import { CampaignManager } from "./CampaignManager";
 import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
-import type { StampIconKey } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export default async function KampagnerPage() {
       />
       <ShareCardSection
         design={design}
-        businessName={business.name}
+        businessName={cardTitle(business)}
         slug={business.slug}
         cardUrl={cardUrl}
         qrDataUrl={qr}

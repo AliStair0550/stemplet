@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { requireKasseBusinessId } from "@/lib/kasse";
 import { loadCardBySerial } from "@/lib/stamp";
+import { cardTitle } from "@/lib/brand";
 import { apiError } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
     stampIcon: cc.card.stampIcon,
     primaryColor: cc.card.business.primaryColor,
     textColor: cc.card.business.textColor,
-    businessName: cc.card.business.name,
+    businessName: cardTitle(cc.card.business),
     completedCount: cc.completedCount,
     lifetimeStamps: cc.lifetimeStamps,
   });

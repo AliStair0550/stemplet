@@ -6,6 +6,11 @@
 export const DEFAULT_PRIMARY = "#2A1A10";
 export const DEFAULT_TEXT = "#F6EEE4";
 
+// Navnet der vises paa kundens kort: butikkens valgte kort-navn, ellers firmanavnet.
+export function cardTitle(b: { name: string; displayName?: string | null }): string {
+  return b.displayName?.trim() || b.name;
+}
+
 export type StampIconKey =
   | "coffee"
   | "croissant"

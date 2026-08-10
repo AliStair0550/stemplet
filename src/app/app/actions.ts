@@ -44,6 +44,7 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
         primaryColor: parsed.data.primaryColor,
         textColor: parsed.data.textColor,
         logoUrl: parsed.data.logoUrl ?? null,
+        displayName: parsed.data.displayName?.trim() || null,
       },
     }),
     prisma.card.update({

@@ -7,7 +7,7 @@ import { LiveRefresh } from "@/components/LiveRefresh";
 import { WebCardActions } from "./WebCardActions";
 import { WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
-import type { StampIconKey } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 
 // Dedup pr. request: metadata, viewport OG selve siden bruger kortet. Uden dette
 // koerte samme DB-opslag 3 gange pr. sideindlaesning.
@@ -54,7 +54,7 @@ export default async function WebCardPage({
       <LiveRefresh />
       <div className="flex w-full max-w-sm flex-col items-center gap-6">
         <StampCard
-          businessName={business.name}
+          businessName={cardTitle(business)}
           logoUrl={business.logoUrl}
           primaryColor={business.primaryColor}
           textColor={business.textColor}

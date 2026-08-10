@@ -22,6 +22,9 @@ export type CardDesign = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  // Navn vist paa kundens kort. Tomt = brug firmanavnet. Valgfrit, saa
+  // preview-byggere (kasse, kampagner) ikke behoever saette det.
+  displayName?: string | null;
   // Valgfri betingelser. Vises IKKE paa kortet, men under "Hent mit
   // stempelkort" for kunden. Valgfrit felt, saa preview-byggere (kasse,
   // kampagner) ikke behoever saette det.
@@ -32,6 +35,7 @@ export const DEFAULT_DESIGN: CardDesign = {
   stampsRequired: 10,
   rewardText: "10. kop er gratis",
   stampIcon: "coffee",
+  displayName: null,
   // Espresso: det foerste indbyggede tema, varmt og laesbart for de fleste.
   primaryColor: "#2A1A10",
   textColor: "#F6EEE4",
@@ -392,6 +396,23 @@ export function CardDesigner({
           </div>
         ) : null}
 
+        <div className="flex flex-col gap-2">
+          <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+            Navn på kortet
+          </span>
+          <input
+            value={value.displayName ?? ""}
+            onChange={(e) => set("displayName", e.target.value)}
+            placeholder={businessName}
+            maxLength={40}
+            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate/60 focus:border-terracotta"
+          />
+          <p className="text-[0.72rem] font-[300] leading-relaxed text-stone">
+            Det navn dine kunder ser på kortet. Lad feltet stå tomt for at bruge
+            firmanavnet ({businessName}).
+          </p>
+        </div>
+
         {allowLogo ? (
           <div className="flex flex-col gap-2">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -491,7 +512,7 @@ export function CardDesigner({
           Sådan ser kortet ud
         </p>
         <StampCard
-          businessName={businessName}
+          businessName={value.displayName?.trim() || businessName}
           logoUrl={value.logoUrl}
           primaryColor={value.primaryColor}
           textColor={value.textColor}
