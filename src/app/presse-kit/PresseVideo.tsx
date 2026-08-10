@@ -47,7 +47,7 @@ const COFFEE: Variant = {
   rewardCard: "En valgfri gratis kaffe",
   rewardBig: ["En valgfri", "gratis kaffe"],
   icon: "coffee",
-  scanBg: "/brancher/kaffebar-scene.png",
+  scanBg: "/brancher/kaffebar-scene-sm.webp",
   cardHi: RUST_HI,
   cardLo: RUST_LO,
   filename: "stemplet-stempelkort",
@@ -58,7 +58,7 @@ const PIZZA: Variant = {
   rewardCard: "En valgfri gratis pizza",
   rewardBig: ["En valgfri", "gratis pizza"],
   icon: "pizza",
-  scanBg: "/brancher/pizzeria-scene.png",
+  scanBg: "/brancher/pizzeria-scene-sm.webp",
   cardHi: "#9A2B24", // dyb roed (tomat)
   cardLo: "#631712",
   filename: "stemplet-pizza",
@@ -70,7 +70,7 @@ const ESPRESSO: Variant = {
   rewardCard: "En valgfri gratis kaffe",
   rewardBig: ["En valgfri", "gratis kaffe"],
   icon: "coffee",
-  scanBg: "/brancher/kaffebar-scene.png",
+  scanBg: "/brancher/kaffebar-scene-sm.webp",
   cardHi: "#4A3125", // dyb brun (espresso)
   cardLo: "#291A11",
   filename: "stemplet-kaffe-brun",
@@ -789,10 +789,11 @@ export function PresseVideo({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const qr = buildQR();
-    // Preload branchesidens baggrund (samme-origin, saa canvas ikke "taintes" og
-    // optagelsen stadig virker).
+    // Branchesidens baggrund (samme-origin, saa canvas ikke "taintes"). Hentes
+    // fOrst naar videoen kommer i syne, saa forsiden ikke belastes af billeder,
+    // der maaske aldrig ses.
     const bg = new Image();
-    bg.src = cfg.scanBg;
+    let bgRequested = false;
     let raf = 0;
     let last = -1;
     startRef.current = performance.now();
@@ -811,6 +812,10 @@ export function PresseVideo({
       draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null, cfg);
     };
     const play = () => {
+      if (!bgRequested) {
+        bgRequested = true;
+        bg.src = cfg.scanBg;
+      }
       if (!raf) raf = requestAnimationFrame(frame);
     };
     const pause = () => {
