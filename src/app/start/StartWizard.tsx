@@ -131,6 +131,13 @@ export function StartWizard() {
 
   function submit() {
     setError(null);
+    // Vis en tydelig besked i stedet for en "doed" graa knap, hvis fluebenet
+    // ved betingelserne mangler.
+    if (!acceptedTerms) {
+      return setError(
+        "Sæt flueben ved betingelserne nederst, så kan du oprette butikken.",
+      );
+    }
     startTransition(async () => {
       const res = await createBusinessAction({ name, email, pin, category, address, design, acceptedTerms });
       if (res.ok) {
@@ -205,7 +212,7 @@ export function StartWizard() {
         <div className="flex flex-col gap-5 animate-step">
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Virksomhedens navn
+              Butikkens navn
             </span>
             <input
               value={name}
@@ -213,6 +220,9 @@ export function StartWizard() {
               autoFocus
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
+            <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
+              Det navn dine kunder kender jer på. Det står på kortet.
+            </span>
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -226,7 +236,7 @@ export function StartWizard() {
               inputMode="email"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
-            <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
+            <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
               Du logger ind uden adgangskode. Vi sender et link til denne mail.
             </span>
           </label>
@@ -405,7 +415,49 @@ export function StartWizard() {
             </p>
           </div>
 
-          {/* Dit stempelkort: QR vist pænt, klar til download og deling */}
+          {/* Primaer handling: kom DIREKTE ind i dashboardet (auto-login), saa
+              ejeren ikke behoever at aabne mailen. Login-mailen er backup. */}
+          <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 text-center md:p-8">
+            <h4 className="font-[400] text-[1.15rem] text-ink">
+              Kom ind i dit dashboard
+            </h4>
+            <p className="mx-auto mt-2 max-w-md font-[300] text-[0.88rem] leading-relaxed text-stone">
+              Gå direkte ind, hvor du henter QR og skilte til print, deler kortet
+              og giver det første stempel. Vi guider dig hele vejen.
+            </p>
+            {created.loginToken ? (
+              <form
+                action={loginWithOnboardingToken}
+                className="mt-5 flex justify-center"
+              >
+                <input type="hidden" name="token" value={created.loginToken} />
+                <SubmitButton
+                  variant="primary"
+                  size="lg"
+                  pendingText="Åbner dashboard..."
+                >
+                  Gå til mit dashboard
+                </SubmitButton>
+              </form>
+            ) : null}
+            <p className="mx-auto mt-4 max-w-md font-[300] text-[0.8rem] leading-relaxed text-slate">
+              {created.loginSent
+                ? `Vi har også sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
+                : `Vil du hellere logge ind via mail? Så sender vi et link til ${email}.`}
+            </p>
+            <form action={sendOnboardingLogin} className="mt-2 flex justify-center">
+              <input type="hidden" name="email" value={email} />
+              <SubmitButton
+                variant="outline"
+                size="md"
+                pendingText="Sender login-link..."
+              >
+                {created.loginSent ? "Send login-link igen" : "Send login-link"}
+              </SubmitButton>
+            </form>
+          </div>
+
+          {/* Dit stempelkort: QR til download og deling (sekundaert) */}
           <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
             <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
               Dit stempelkort
@@ -438,7 +490,7 @@ export function StartWizard() {
               <a
                 href={created.qrDataUrl}
                 download={`${created.slug}-stempelkort-qr.png`}
-                className={btnClass("primary")}
+                className={btnClass("outline")}
               >
                 Download QR
               </a>
@@ -447,7 +499,7 @@ export function StartWizard() {
                 onClick={shareCard}
                 className={btnClass("outline")}
               >
-                Del
+                Del kort
               </button>
               <button
                 type="button"
@@ -463,7 +515,7 @@ export function StartWizard() {
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-[0.8rem] font-[400] text-terracotta transition-opacity hover:opacity-70"
             >
-              Se Stempelkort
+              Se kortet
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -477,48 +529,6 @@ export function StartWizard() {
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </a>
-          </div>
-
-          {/* Naeste skridt: kom DIREKTE ind i dashboardet (auto-login), saa ejeren
-              ikke behoever at aabne mailen. Login-mailen sendes stadig som backup. */}
-          <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 text-center">
-            <h4 className="font-[400] text-[1.05rem] text-ink">
-              Kom ind i dit dashboard
-            </h4>
-            <p className="mx-auto mt-2 max-w-md font-[200] text-[0.86rem] leading-relaxed text-stone">
-              Gå direkte ind, hvor du henter QR og skilte til print, deler kortet
-              og giver det første stempel. Vi guider dig hele vejen.
-            </p>
-            {created.loginToken ? (
-              <form
-                action={loginWithOnboardingToken}
-                className="mt-4 flex justify-center"
-              >
-                <input type="hidden" name="token" value={created.loginToken} />
-                <SubmitButton
-                  variant="primary"
-                  size="md"
-                  pendingText="Åbner dashboard..."
-                >
-                  Gå til mit dashboard
-                </SubmitButton>
-              </form>
-            ) : null}
-            <p className="mx-auto mt-4 max-w-md font-[200] text-[0.8rem] leading-relaxed text-slate">
-              {created.loginSent
-                ? `Vi har også sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
-                : `Vil du hellere logge ind via mail? Så sender vi et link til ${email}.`}
-            </p>
-            <form action={sendOnboardingLogin} className="mt-2 flex justify-center">
-              <input type="hidden" name="email" value={email} />
-              <SubmitButton
-                variant="outline"
-                size="md"
-                pendingText="Sender login-link..."
-              >
-                {created.loginSent ? "Send login-link igen" : "Send login-link"}
-              </SubmitButton>
-            </form>
           </div>
         </div>
       ) : null}
@@ -546,7 +556,7 @@ export function StartWizard() {
           ) : (
             <button
               onClick={submit}
-              disabled={pending || !acceptedTerms}
+              disabled={pending}
               className={`${btnClass("terracotta")} disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {pending ? "Opretter..." : "Opret min butik"}

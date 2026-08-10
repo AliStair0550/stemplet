@@ -155,7 +155,7 @@ export function ShareCardSection({
               disabled={busy !== null}
               className={btnClass("outline")}
             >
-              {busy === "download" ? "Laver billede..." : "Download billede"}
+              {busy === "download" ? "Laver billede..." : "Download billede til opslag"}
             </button>
             <a
               href={cardUrl}
@@ -163,7 +163,7 @@ export function ShareCardSection({
               rel="noreferrer"
               className={btnClass("outline")}
             >
-              Åbn kortside
+              Se kundens side
             </a>
             <button
               onClick={copyLink}

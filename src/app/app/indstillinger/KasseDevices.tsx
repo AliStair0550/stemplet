@@ -55,7 +55,10 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
   }
 
   return (
-    <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
+    <section
+      id="kasse-enheder"
+      className="scroll-mt-24 rounded-lg border border-fog bg-white shadow-card p-6 md:p-8"
+    >
       <div className="flex flex-col gap-1">
         <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
           Kasse-enheder

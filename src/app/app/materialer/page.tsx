@@ -96,7 +96,7 @@ export default async function MaterialerPage() {
                 download={`stemplet-qr-${business.slug}.png`}
                 className={btnClass("primary") + " w-full"}
               >
-                Download QR (PNG)
+                Download QR-kode
               </a>
               <a
                 href={cardUrl}
@@ -104,12 +104,12 @@ export default async function MaterialerPage() {
                 rel="noreferrer"
                 className={btnClass("outline") + " w-full"}
               >
-                Vis stempelkort
+                Se kundens side
               </a>
               <ShareLinkButton
                 businessName={business.name}
                 url={cardUrl}
-                label="Del stempelkort"
+                label="Del kortet"
                 className="w-full"
               />
             </div>

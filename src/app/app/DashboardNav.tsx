@@ -13,7 +13,7 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },
   { href: "/app/materialer", label: "Materialer" },
-  { href: "/app/guide", label: "Sådan virker det" },
+  { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 // "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
