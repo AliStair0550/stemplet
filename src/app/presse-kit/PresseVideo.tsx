@@ -775,6 +775,11 @@ export function PresseVideo({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const recStartRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
+  // Idle-visning kOrer i lav oplOesning (ss=1); vi skruer fOrst op til fuld
+  // supersampling (ss=SS) mens der optages. Saa slipper mobilen for tre store
+  // buffere paa een gang.
+  const ssRef = useRef(1);
+  const recordingRef = useRef(false);
   const [recording, setRecording] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
@@ -789,19 +794,47 @@ export function PresseVideo({
     const bg = new Image();
     bg.src = cfg.scanBg;
     let raf = 0;
+    let last = -1;
     startRef.current = performance.now();
     // Vent paa fonts, saa canvas-teksten bruger Instrument Sans.
     document.fonts?.ready?.catch(() => {});
     const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      // Cap til ~30 fps: halverer tegne-arbejdet og matcher optagelsens 30 fps.
+      if (last >= 0 && now - last < 30) return;
+      last = now;
       const base = recStartRef.current ?? startRef.current;
       const t = ((now - base) / 1000) % LOOP;
-      // Skaler op til supersampling-bufferen; alt tegnes i logiske W x H koordinater.
-      ctx.setTransform(SS, 0, 0, SS, 0, 0);
+      // Skaler til canvas-bufferen; alt tegnes i logiske W x H koordinater.
+      const ss = ssRef.current;
+      ctx.setTransform(ss, 0, 0, ss, 0, 0);
       draw(ctx, t, qr, bg.complete && bg.naturalWidth > 0 ? bg : null, cfg);
-      raf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    const play = () => {
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+    const pause = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+    // Kun den video, der faktisk er i billedet, animerer. Uden dette kOrer alle
+    // tre animationer konstant og faar mobil-Safari til at gaa i staa/crashe.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) play();
+          else if (!recordingRef.current) pause();
+        }
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(canvas);
+    return () => {
+      io.disconnect();
+      pause();
+    };
   }, [cfg]);
 
   function download() {
@@ -833,6 +866,16 @@ export function PresseVideo({
         }
       }) || "";
     const ext = mime.includes("mp4") ? "mp4" : "webm";
+    // Skru op til fuld supersampling KUN mens vi optager, saa downloaden bliver
+    // skarp uden at belaste idle-visningen.
+    const restore = () => {
+      ssRef.current = 1;
+      canvas.width = W;
+      canvas.height = H;
+    };
+    ssRef.current = SS;
+    canvas.width = W * SS;
+    canvas.height = H * SS;
     const stream = canvas.captureStream(30);
     let rec: MediaRecorder;
     try {
@@ -843,6 +886,7 @@ export function PresseVideo({
         mime ? { mimeType: mime, videoBitsPerSecond: 40_000_000 } : undefined,
       );
     } catch {
+      restore();
       setNote("Kunne ikke starte optagelse i denne browser.");
       return;
     }
@@ -860,7 +904,9 @@ export function PresseVideo({
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      restore();
       recStartRef.current = null;
+      recordingRef.current = false;
       setRecording(false);
       setNote(
         ext === "webm"
@@ -870,6 +916,7 @@ export function PresseVideo({
     };
     // Nulstil tidslinjen, saa videoen starter rent fra begyndelsen.
     recStartRef.current = performance.now();
+    recordingRef.current = true;
     setRecording(true);
     setNote(null);
     rec.start();
@@ -880,8 +927,8 @@ export function PresseVideo({
     <div className="flex flex-col items-center gap-5">
       <canvas
         ref={canvasRef}
-        width={W * SS}
-        height={H * SS}
+        width={W}
+        height={H}
         className="w-full max-w-[19rem] rounded-[2rem] shadow-hero"
       />
       <button
