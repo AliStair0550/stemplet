@@ -12,6 +12,7 @@ const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
 
 const LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
+  { href: "/app/kom-i-gang", label: "Kom i gang" },
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },
@@ -20,21 +21,20 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 
+// Tydeligt flueben med en linje-kant nedenunder (som et stempel, der lander).
 function StampGlyph({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.7}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
       aria-hidden
     >
-      <circle cx="12" cy="9" r="5" />
-      <path d="M9.5 9l1.7 1.7L15 7" />
-      <path d="M5 20h14" />
+      <path d="M4.5 11.5l4.2 4.2L19 5.5" strokeWidth={2.6} />
+      <path d="M4 20.5h16" strokeWidth={1.6} />
     </svg>
   );
 }
