@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
-import { PageHeading, Panel } from "@/components/dash";
+import { PageHeading, Panel, SectionHeader } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
 import { cardTitle } from "@/lib/brand";
@@ -14,7 +14,7 @@ import { MaterialsPrint } from "./MaterialsPrint";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Materialer" };
+export const metadata: Metadata = { title: "Del dit kort" };
 export const dynamic = "force-dynamic";
 
 export default async function MaterialerPage() {
@@ -34,96 +34,103 @@ export default async function MaterialerPage() {
   return (
     <>
       <PageHeading
-        title="Materialer"
-        subtitle="Print et færdigt skilt i dit eget design, eller download QR-koden og send den til trykkeriet."
+        title="Del dit kort"
+        subtitle="Få kunderne i gang med stempelkortet: hent QR-koden, print et færdigt skilt i dit design, eller del linket online."
       />
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
-        {/* Dit design: samme kort-preview som paa Design-siden. flex-col, saa
-            panelet kan strække sig lige saa hoejt som QR-panelet ved siden af. */}
-        <Panel className="flex flex-col">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-              Dit design
-            </span>
-            <Link
-              href="/app/kort"
-              className="text-[0.72rem] font-[300] text-terracotta hover:opacity-70"
-            >
-              Rediger
-            </Link>
-          </div>
-          <div className="mt-5 flex flex-1 items-center justify-center">
-            <StampCard
-              businessName={cardTitle(business)}
-              logoUrl={business.logoUrl}
-              primaryColor={business.primaryColor}
-              textColor={business.textColor}
-              stampIcon={(card?.stampIcon as StampIconKey) ?? "coffee"}
-              stamps={Math.min(3, card?.stampsRequired ?? 10)}
-              required={card?.stampsRequired ?? 10}
-              rewardText={card?.rewardText ?? "10. kop er gratis"}
-              showPoweredBy={showPoweredBy}
-              serial="STEMPLET01"
-              serialLabel={business.name}
-              className="max-w-[19rem]"
-            />
-          </div>
-          <p className="mt-5 text-center text-[0.8rem] font-[300] leading-relaxed text-stone">
-            Skiltene bruger dine farver og de samme stempler. Ret designet på
-            Design-siden, så følger materialerne med.
-          </p>
-        </Panel>
-
-        {/* QR-kode: hurtig download til print eller deling */}
-        <Panel>
-          <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-            QR-kode
-          </span>
-          <div className="mt-5 flex flex-col items-center gap-5">
-            <div className="rounded-lg border border-fog bg-white p-3">
-              <Image
-                src={qr}
-                alt="QR til dit stempelkort"
-                width={200}
-                height={200}
-                className="h-44 w-44"
-                unoptimized
-              />
+      <div className="flex flex-col gap-10">
+        {/* 1. QR-koden: den ene ting alt andet peger paa. Download til trykkeri
+            eller send-linket, plus et kig paa kundens side. */}
+        <section>
+          <SectionHeader title="QR-kode" />
+          <Panel>
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              <div className="mx-auto shrink-0 rounded-lg border border-fog bg-white p-3 sm:mx-0">
+                <Image
+                  src={qr}
+                  alt="QR til dit stempelkort"
+                  width={200}
+                  height={200}
+                  className="h-40 w-40"
+                  unoptimized
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                <p className="max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
+                  Kunderne scanner koden med kameraet og henter kortet med det
+                  samme. Download PNG-filen til trykkeriet, eller print et
+                  færdigt skilt herunder.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <a
+                    href={qr}
+                    download={`stemplet-qr-${business.slug}.png`}
+                    className={btnClass("primary")}
+                  >
+                    Download QR-kode
+                  </a>
+                  <a
+                    href={cardUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={btnClass("outline")}
+                  >
+                    Se kundens side
+                  </a>
+                </div>
+              </div>
             </div>
-            <div className="flex w-full flex-col gap-2">
-              <a
-                href={qr}
-                download={`stemplet-qr-${business.slug}.png`}
-                className={btnClass("primary") + " w-full"}
-              >
-                Download QR-kode
-              </a>
-              <a
-                href={cardUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={btnClass("outline") + " w-full"}
-              >
-                Se kundens side
-              </a>
-              <ShareLinkButton
-                businessName={cardTitle(business)}
-                url={cardUrl}
-                label="Del kortet"
-                className="w-full"
-              />
-            </div>
-            <p className="max-w-xs text-center text-[0.74rem] font-[300] leading-relaxed text-slate">
-              Send PNG-filen til trykkeriet for et skilt i høj kvalitet, eller
-              print et af de færdige skilte herunder med det samme.
-            </p>
-          </div>
-        </Panel>
-      </div>
+          </Panel>
+        </section>
 
-      <div className="mt-8">
-        <MaterialsPrint />
+        {/* 2. Faerdige skilte til print: tilpas eet sted, hent et hvilket som
+            helst format. */}
+        <section>
+          <SectionHeader title="Færdige skilte, klar til print" />
+          <MaterialsPrint />
+        </section>
+
+        {/* 3. Del online: kortet som kunderne ser det, med et delelink til
+            Instagram, Facebook eller din bio. */}
+        <section>
+          <SectionHeader title="Del kortet online" />
+          <Panel>
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              <div className="mx-auto shrink-0 sm:mx-0">
+                <StampCard
+                  businessName={cardTitle(business)}
+                  logoUrl={business.logoUrl}
+                  primaryColor={business.primaryColor}
+                  textColor={business.textColor}
+                  stampIcon={(card?.stampIcon as StampIconKey) ?? "coffee"}
+                  stamps={Math.min(3, card?.stampsRequired ?? 10)}
+                  required={card?.stampsRequired ?? 10}
+                  rewardText={card?.rewardText ?? "10. kop er gratis"}
+                  showPoweredBy={showPoweredBy}
+                  serial="STEMPLET01"
+                  serialLabel={business.name}
+                  className="max-w-[17rem]"
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-4">
+                <p className="max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
+                  Sådan ser kortet ud for kunderne. Del linket på Instagram,
+                  Facebook eller i din bio, så folk kan hente det hjemmefra.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <ShareLinkButton
+                    businessName={cardTitle(business)}
+                    url={cardUrl}
+                    label="Del kortet"
+                  />
+                  <Link href="/app/kort" className={btnClass("outline")}>
+                    Rediger design
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Panel>
+        </section>
       </div>
     </>
   );

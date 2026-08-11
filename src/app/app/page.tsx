@@ -190,7 +190,11 @@ function pickRecommendation(
     eyebrow: "Voks videre",
     title: "Få flere kortholdere",
     body: "Del dit kort på Instagram og Facebook, så kunderne kan hente det hjemmefra.",
-    action: { type: "link", href: "/app/kampagner", label: "Del dit kort" },
+    action: {
+      type: "link",
+      href: "/app/kampagner",
+      label: "Del på sociale medier",
+    },
   };
 }
 

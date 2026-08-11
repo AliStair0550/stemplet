@@ -9,10 +9,10 @@ import {
 } from "@/lib/materials";
 
 const MATERIALS = [
-  { type: "plakat", title: "A4-plakat", body: "Til opslagstavlen eller vinduet." },
-  { type: "a5", title: "A5-skilt", body: "Mellemstort skilt til disken eller væggen." },
+  { type: "plakat", title: "A4-plakat", body: "Til vindue eller opslagstavle." },
+  { type: "a5", title: "A5-skilt", body: "Mellemstort skilt til disk eller væg." },
   { type: "skilt", title: "A6-diskskilt", body: "Lille skilt til at stå ved kassen." },
-  { type: "visitkort", title: "Visitkort", body: "Til hånden eller ved betalingen. 85 x 55 mm." },
+  { type: "visitkort", title: "Visitkort", body: "85 x 55 mm, til hånden eller ved betalingen." },
 ] as const;
 
 function IconDoc() {
@@ -21,6 +21,14 @@ function IconDoc() {
       <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
       <path d="M14 3v5h5M9 13h6M9 17h6" />
     </svg>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-label font-[400] uppercase tracking-[0.12em] text-slate">
+      {children}
+    </span>
   );
 }
 
@@ -42,122 +50,123 @@ export function MaterialsPrint() {
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-        Færdige skilte, klar til print
-      </h2>
+    <div className="flex flex-col gap-5">
+      <p className="max-w-2xl font-[300] text-[0.9rem] leading-relaxed text-stone">
+        Alle skilte bruger dit design og de samme stempler. Tilpas dem her, og
+        hent så det format, du vil printe.
+      </p>
 
-      {/* Valg: tilpas skiltet, saa det passer jer, og print med det samme */}
-      <div className="flex flex-col gap-5 rounded-lg border border-fog bg-white p-6 shadow-card">
-        {/* Overskrift: fri tekst med et loft, saa skiltet altid ser paent ud */}
-        <label className="flex flex-col gap-1.5">
-          <span className="text-label font-[400] uppercase tracking-[0.12em] text-slate">
-            Overskrift
-          </span>
-          <div className="relative w-full max-w-sm">
-            <input
-              type="text"
-              value={titel}
-              maxLength={MATERIAL_HEADLINE_MAX}
-              onChange={(e) => setTitel(e.target.value)}
-              placeholder={DEFAULT_MATERIAL_HEADLINE}
-              className="w-full rounded-md border border-clay bg-parchment px-3 py-2.5 pr-14 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
-            />
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[0.72rem] font-[300] tabular-nums text-slate">
-              {titel.length}/{MATERIAL_HEADLINE_MAX}
-            </span>
-          </div>
-        </label>
-
-        {/* Baggrund */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-label font-[400] uppercase tracking-[0.12em] text-slate">
-            Baggrund
-          </span>
-          <div className="inline-flex w-fit rounded-full border border-clay p-0.5">
-            {[
-              { on: false, label: "Farvet" },
-              { on: true, label: "Lys" },
-            ].map((o) => (
-              <button
-                key={o.label}
-                type="button"
-                onClick={() => setLight(o.on)}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-[0.82rem] transition-colors",
-                  light === o.on
-                    ? "bg-terracotta text-parchment"
-                    : "text-stone hover:text-ink",
-                )}
-              >
-                {o.label}
-              </button>
-            ))}
-          </div>
-          <span className="text-[0.76rem] font-[300] text-slate">
-            {light
-              ? "Lys baggrund sparer blæk og passer til enhver printer."
-              : "Farvet baggrund matcher dit stempelkort."}
-          </span>
-        </div>
-
-        {/* Til/fra-valg */}
-        <div className="flex flex-col gap-3 border-t border-fog pt-4">
-          <label className="flex cursor-pointer items-center gap-3">
-            <input
-              type="checkbox"
-              checked={withStamps}
-              onChange={(e) => setWithStamps(e.target.checked)}
-              className="h-4 w-4 shrink-0 accent-terracotta"
-            />
-            <span className="text-[0.9rem] font-[400] text-ink">
-              Vis stempler på skiltet
-            </span>
-          </label>
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={withBrand}
-              onChange={(e) => setWithBrand(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-terracotta"
-            />
-            <span className="text-[0.9rem] font-[400] text-ink">
-              Tilføj butikkens navn og logo
-              <span className="mt-0.5 block text-[0.78rem] font-[300] leading-relaxed text-stone">
-                Fra som standard, så navnet kan stå i jeres egen skrift. Slå til,
-                hvis I vil have det med.
+      {/* Trin 1: tilpasning der gaelder ALLE formater. Egen, lysere flade, saa
+          det er tydeligt at det ikke er endnu et format, men indstillinger. */}
+      <div className="rounded-lg border border-fog bg-sand/30 p-6">
+        <FieldLabel>Tilpas skiltet</FieldLabel>
+        <div className="mt-4 flex flex-col gap-5">
+          <label className="flex flex-col gap-1.5">
+            <FieldLabel>Overskrift</FieldLabel>
+            <div className="relative w-full max-w-sm">
+              <input
+                type="text"
+                value={titel}
+                maxLength={MATERIAL_HEADLINE_MAX}
+                onChange={(e) => setTitel(e.target.value)}
+                placeholder={DEFAULT_MATERIAL_HEADLINE}
+                className="w-full rounded-md border border-clay bg-parchment px-3 py-2.5 pr-14 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
+              />
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[0.72rem] font-[300] tabular-nums text-slate">
+                {titel.length}/{MATERIAL_HEADLINE_MAX}
               </span>
-            </span>
+            </div>
           </label>
+
+          <div className="flex flex-col gap-1.5">
+            <FieldLabel>Baggrund</FieldLabel>
+            <div className="inline-flex w-fit rounded-full border border-clay bg-parchment p-0.5">
+              {[
+                { on: false, label: "Farvet" },
+                { on: true, label: "Lys" },
+              ].map((o) => (
+                <button
+                  key={o.label}
+                  type="button"
+                  onClick={() => setLight(o.on)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-[0.82rem] transition-colors",
+                    light === o.on
+                      ? "bg-terracotta text-parchment"
+                      : "text-stone hover:text-ink",
+                  )}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <span className="text-[0.76rem] font-[300] text-slate">
+              {light
+                ? "Lys baggrund sparer blæk og passer til enhver printer."
+                : "Farvet baggrund matcher dit stempelkort."}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-fog pt-4">
+            <label className="flex cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                checked={withStamps}
+                onChange={(e) => setWithStamps(e.target.checked)}
+                className="h-4 w-4 shrink-0 accent-terracotta"
+              />
+              <span className="text-[0.9rem] font-[400] text-ink">
+                Vis stempler på skiltet
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={withBrand}
+                onChange={(e) => setWithBrand(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-terracotta"
+              />
+              <span className="text-[0.9rem] font-[400] text-ink">
+                Tilføj butikkens navn og logo
+                <span className="mt-0.5 block text-[0.78rem] font-[300] leading-relaxed text-stone">
+                  Fra som standard, så navnet kan stå i jeres egen skrift. Slå
+                  til, hvis I vil have det med.
+                </span>
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 
-      {/* Formater: hent PDF med de valgte indstillinger */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {MATERIALS.map((m) => (
-          <div
-            key={m.type}
-            className="flex items-center gap-5 rounded-lg border border-fog bg-white p-6 shadow-card"
-          >
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-              <IconDoc />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-[400] text-[1rem] text-ink">{m.title}</h3>
-              <p className="mt-0.5 font-[300] text-[0.84rem] leading-relaxed text-stone">
-                {m.body}
-              </p>
-            </div>
-            <a
-              href={`/api/materials/${m.type}${suffix}`}
-              target="_blank"
-              rel="noopener"
-              className={btnClass("outline")}
+      {/* Trin 2: vaelg format og hent. Hvert kort er eet format. */}
+      <div>
+        <FieldLabel>Vælg format og hent</FieldLabel>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {MATERIALS.map((m) => (
+            <div
+              key={m.type}
+              className="flex items-center gap-4 rounded-lg border border-fog bg-white p-5 shadow-card"
             >
-              Hent PDF
-            </a>
-          </div>
-        ))}
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+                <IconDoc />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-[400] text-[0.98rem] text-ink">{m.title}</h3>
+                <p className="mt-0.5 font-[300] text-[0.82rem] leading-relaxed text-stone">
+                  {m.body}
+                </p>
+              </div>
+              <a
+                href={`/api/materials/${m.type}${suffix}`}
+                target="_blank"
+                rel="noopener"
+                className={btnClass("outline")}
+              >
+                Hent PDF
+              </a>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

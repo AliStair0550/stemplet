@@ -17,7 +17,7 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },
-  { href: "/app/materialer", label: "Materialer" },
+  { href: "/app/materialer", label: "Del dit kort" },
   { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
