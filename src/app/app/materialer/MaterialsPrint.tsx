@@ -4,7 +4,6 @@ import { useState } from "react";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import {
-  MATERIAL_HEADLINES,
   MATERIAL_HEADLINE_MAX,
   DEFAULT_MATERIAL_HEADLINE,
 } from "@/lib/materials";
@@ -67,26 +66,6 @@ export function MaterialsPrint() {
             <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[0.72rem] font-[300] tabular-nums text-slate">
               {titel.length}/{MATERIAL_HEADLINE_MAX}
             </span>
-          </div>
-          <span className="text-[0.76rem] font-[300] text-slate">
-            Skriv din egen overskrift, eller vælg et forslag:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {MATERIAL_HEADLINES.map((h) => (
-              <button
-                key={h}
-                type="button"
-                onClick={() => setTitel(h)}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-[0.78rem] font-[300] transition-colors",
-                  trimmedTitel === h
-                    ? "border-terracotta bg-terracotta/10 text-terracotta"
-                    : "border-clay text-stone hover:border-terracotta hover:text-ink",
-                )}
-              >
-                {h}
-              </button>
-            ))}
           </div>
         </label>
 

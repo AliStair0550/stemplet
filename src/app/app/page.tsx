@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity } from "@/lib/stats";
-import { StatTile, Panel } from "@/components/dash";
+import { StatTile, Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { ButtonLink } from "@/components/ui";
 import { formatDkNumber, relativeDk } from "@/lib/utils";
@@ -43,7 +43,7 @@ function HubCard({
   return (
     <Link
       href={href}
-      className="group flex items-start gap-4 rounded-lg border border-fog bg-white p-5 shadow-card transition-colors hover:border-terracotta/40"
+      className="group flex items-start gap-4 rounded-lg border border-fog bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-terracotta/40 hover:shadow-lift"
     >
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
         {icon}
@@ -86,8 +86,9 @@ export default async function OverviewPage() {
 
   return (
     <>
-      {/* Velkomst-band: butikkens brand-glimt, dato og status i et roligt panel */}
-      <div className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white shadow-card">
+      {/* Velkomst-band: butikkens brand-glimt, dato og status. Loeftet frem som
+          sidens hero med bloed skygge. */}
+      <div className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white shadow-lift">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[90px]"
@@ -120,18 +121,18 @@ export default async function OverviewPage() {
           <AddToHomeHint />
 
           {/* Essentielle noegletal. Det fulde overblik ligger paa Statistik. */}
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-              Nøgletal
-            </h2>
-            <Link
-              href="/app/statistik"
-              className="inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
-            >
-              Se al statistik
-              <CtaArrow />
-            </Link>
-          </div>
+          <SectionHeader
+            title="Nøgletal"
+            action={
+              <Link
+                href="/app/statistik"
+                className="inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
+              >
+                Se al statistik
+                <CtaArrow />
+              </Link>
+            }
+          />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatTile
               label="Kortholdere i alt"
@@ -154,10 +155,8 @@ export default async function OverviewPage() {
           </div>
 
           {/* Vigtigt for dig: genveje til de centrale ejer-handlinger */}
-          <div className="mt-8">
-            <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
-              Vigtigt for dig
-            </h2>
+          <div className="mt-9">
+            <SectionHeader title="Vigtigt for dig" />
             <div className="grid gap-4 sm:grid-cols-2">
               <HubCard
                 href="/app/kort"
@@ -187,11 +186,9 @@ export default async function OverviewPage() {
           </div>
 
           {/* Seneste aktivitet: en kompakt puls, det fulde ligger paa Statistik */}
-          <div className="mt-8">
+          <div className="mt-9">
+            <SectionHeader title="Seneste aktivitet" />
             <Panel>
-              <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
-                Seneste aktivitet
-              </h2>
               {activity.length === 0 ? (
                 <p className="font-[300] text-[0.85rem] text-slate">
                   Ingen aktivitet endnu. Sæt dit skilt op ved kassen.
