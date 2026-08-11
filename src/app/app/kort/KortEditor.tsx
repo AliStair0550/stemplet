@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { CardDesigner, type CardDesign } from "@/components/CardDesigner";
 import { ShareCard } from "@/components/ShareCard";
 import { saveCardDesign } from "../actions";
@@ -22,16 +22,32 @@ export function KortEditor({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [downloading, setDownloading] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
+  // Sidst gemte design. Er der uafgemte aendringer, advarer vi foer siden
+  // forlades (genindlaesning/luk/tilbage), saa arbejdet ikke tabes lydloest.
+  const savedRef = useRef(JSON.stringify(initial));
+  const dirty = JSON.stringify(design) !== savedRef.current;
+
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   function save() {
+    const snapshot = JSON.stringify(design);
     setMsg(null);
     start(async () => {
       const res = await saveCardDesign(design);
-      setMsg(
-        res.ok
-          ? { ok: true, text: "Gemt" }
-          : { ok: false, text: res.error ?? "Noget gik galt." },
-      );
+      if (res.ok) {
+        savedRef.current = snapshot;
+        setMsg({ ok: true, text: "Gemt" });
+      } else {
+        setMsg({ ok: false, text: res.error ?? "Noget gik galt." });
+      }
     });
   }
 
@@ -108,7 +124,11 @@ export function KortEditor({
           >
             {downloading ? "Laver billede..." : "Download som billede"}
           </button>
-          {msg ? (
+          {dirty ? (
+            <span className="text-[0.82rem] font-[300] text-slate">
+              Ikke gemt endnu
+            </span>
+          ) : msg ? (
             <span
               className={`text-[0.82rem] font-[300] ${
                 msg.ok ? "text-terracotta" : "text-rust"

@@ -4,7 +4,7 @@ import { kasseAccess } from "@/lib/kasse";
 import { Kassemodus, type KioskCard } from "@/app/app/kasse/Kassemodus";
 import type { StampIconKey } from "@/lib/brand";
 import { PairDevice } from "./PairDevice";
-import { unpairAction } from "./actions";
+import { UnpairButton } from "./UnpairButton";
 
 export const metadata: Metadata = {
   title: "Kasse",
@@ -53,13 +53,7 @@ export default async function KasseRegisterPage({
             Kasse
           </span>
         </span>
-        {access.source === "device" ? (
-          <form action={unpairAction}>
-            <button className="text-[0.68rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-rust">
-              Frakobl enhed
-            </button>
-          </form>
-        ) : null}
+        {access.source === "device" ? <UnpairButton /> : null}
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
         <Kassemodus card={kioskCard} selfScan={business.selfScanEnabled} />

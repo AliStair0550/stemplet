@@ -149,6 +149,8 @@ export function SettingsForms({
             <input
               name="pin"
               inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
               placeholder="****"
               className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
             />

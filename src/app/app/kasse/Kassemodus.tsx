@@ -536,6 +536,8 @@ function StaffCard({
   // Samme rolle for indloesning: samme noegle paa et retry, saa en tabt-svar-
   // gentagelse ikke laeser som "kortet er ikke fuldt endnu".
   const redeemKeyRef = useRef(newIdemKey());
+  // Og for fortryd: samme noegle paa et retry fjerner ikke et ekstra stempel.
+  const undoKeyRef = useRef(newIdemKey());
   // Stiger for hvert stempel: bruges som key til at gen-udloese kortets
   // "burst"-animation og den flyvende "+1", saa personalet faar en tydelig
   // kvittering paa skaermen (Wallet-pass'et opdaterer Apple lidt senere).
@@ -720,9 +722,21 @@ function StaffCard({
       const res = await fetchWithTimeout("/api/staff/unstamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial }),
+        body: JSON.stringify({
+          serial: card.serial,
+          idempotencyKey: undoKeyRef.current,
+        }),
       });
       const data = await res.json();
+      if (res.status === 409) {
+        setNote({
+          ok: false,
+          text: data.message ?? "Fortryd behandles. Prøv igen om lidt.",
+        });
+        return;
+      }
+      // Endeligt svar -> naeste fortryd er en NY handling.
+      undoKeyRef.current = newIdemKey();
       if (res.ok) {
         setCard({
           ...card,

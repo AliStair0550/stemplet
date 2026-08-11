@@ -464,7 +464,7 @@ export function StampConfirm({
               <div className="flex flex-col items-center gap-5">
                 {ERROR_GLYPH}
                 <h1 className="font-[300] text-[1.4rem] text-ink">Prøv igen</h1>
-                <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+                <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-rust">
                   {s.message}
                 </p>
                 <button onClick={doStamp} className={btnClass("primary", "lg")}>

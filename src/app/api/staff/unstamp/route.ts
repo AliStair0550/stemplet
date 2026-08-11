@@ -4,6 +4,7 @@ import { loadCardBySerial, undoLastStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
+import { runOnce, IdempotencyInFlight } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,10 +23,20 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await undoLastStamp({ customerCardId: cc.id, ip: clientIp(req) });
+    // Idempotens: et tabt svar + retry med samme noegle fjerner IKKE et ekstra
+    // stempel, men returnerer foerste fortryd-resultat.
+    const res = await runOnce(
+      parsed.data.idempotencyKey
+        ? `unstamp:${businessId}:${parsed.data.idempotencyKey}`
+        : undefined,
+      () => undoLastStamp({ customerCardId: cc.id, ip: clientIp(req) }),
+    );
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
+    if (e instanceof IdempotencyInFlight) {
+      return apiError("RETRY", "Fortryd behandles. Prøv igen om lidt.", 409);
+    }
     captureServerError(e, { route: "staff/unstamp", businessId });
     console.error(e);
     return apiError("SERVER", "Noget gik galt.", 500);

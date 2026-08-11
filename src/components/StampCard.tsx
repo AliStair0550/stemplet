@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { StampIcon } from "./StampIcon";
-import { hexToRgb, type StampIconKey } from "@/lib/brand";
+import {
+  contrastText,
+  hexToRgb,
+  isCardReadable,
+  type StampIconKey,
+} from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 export type StampCardProps = {
@@ -64,7 +69,7 @@ export function StampCard({
   businessName,
   logoUrl,
   primaryColor = "#2A1A10",
-  textColor = "#F6EEE4",
+  textColor: textColorProp = "#F6EEE4",
   stampIcon = "coffee",
   stamps,
   required,
@@ -79,6 +84,12 @@ export function StampCard({
   serialLabel,
   className,
 }: StampCardProps) {
+  // Samme laesbarheds-fallback som Wallet-passet (passColors): er den valgte
+  // tekstfarve for lav i kontrast mod baggrunden, retter vi til hvid/naesten-sort,
+  // saa web-kortet paa /k og /kort aldrig bliver ulaeseligt.
+  const textColor = isCardReadable(primaryColor, textColorProp)
+    ? textColorProp
+    : contrastText(primaryColor);
   const rewardReady = stamps >= required;
   const slots = Array.from({ length: required });
   // Balancerede raekker: 10 stempler bliver 5+5, 8 bliver 4+4 osv.

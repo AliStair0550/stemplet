@@ -61,7 +61,34 @@ export default async function ClaimPage({
       cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
     },
   });
-  if (!business || business.cards.length === 0) notFound();
+  if (!business) notFound();
+  // Ukendt butik = aegte 404. Men findes butikken uden et AKTIVT kort (sat paa
+  // pause/slettet), er en plakat-scanning ikke en fejl: vis en rolig besked i
+  // stedet for den generiske 404, hvis eneste udvej er B2B-forsiden.
+  if (business.cards.length === 0) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
+        <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
+          {business.logoUrl ? (
+            <Image
+              src={business.logoUrl}
+              alt={business.name}
+              width={56}
+              height={56}
+              className="h-14 w-14 rounded-lg object-contain"
+            />
+          ) : null}
+          <h1 className="font-[300] text-[1.4rem] leading-tight text-ink">
+            {cardTitle(business)}
+          </h1>
+          <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
+            Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken, så
+            hjælper de dig.
+          </p>
+        </div>
+      </main>
+    );
+  }
   const card = business.cards[0];
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
 

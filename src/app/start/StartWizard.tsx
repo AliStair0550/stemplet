@@ -129,6 +129,15 @@ export function StartWizard() {
     setStep((s) => Math.min(s + 1, DONE_STEP));
   }
 
+  // Enter i et felt paa trin 0/1 gaar videre (samme som "Fortsæt"), saa man
+  // slipper for at flytte haanden til musen.
+  function onFieldEnter(e: React.KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      next();
+    }
+  }
+
   function submit() {
     setError(null);
     // Vis en tydelig besked i stedet for en "doed" graa knap, hvis fluebenet
@@ -219,6 +228,7 @@ export function StartWizard() {
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={onFieldEnter}
               autoFocus
               maxLength={60}
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
@@ -236,6 +246,7 @@ export function StartWizard() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={onFieldEnter}
               autoComplete="email"
               inputMode="email"
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
@@ -259,6 +270,7 @@ export function StartWizard() {
               inputMode="numeric"
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onKeyDown={onFieldEnter}
               placeholder="4 til 6 cifre"
               className="w-40 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
             />
