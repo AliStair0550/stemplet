@@ -104,6 +104,17 @@ export async function setPin(formData: FormData): Promise<Result> {
   return { ok: true };
 }
 
+/** Slaar personale-PIN'en FRA (indloesning kraever da ingen PIN). */
+export async function clearStaffPin(): Promise<Result> {
+  const { business } = await requireBusiness();
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { staffPin: null },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
 /** Danner (eller fornyer) API-nøglen. Vises kun her - opbevar den sikkert. */
 export async function generateApiKeyAction(): Promise<Result> {
   const { business } = await requireBusiness();

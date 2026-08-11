@@ -15,6 +15,7 @@ import {
   createBusinessAction,
   sendOnboardingLogin,
   loginWithOnboardingToken,
+  createOnboardingPairingCode,
   type CreateResult,
 } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
@@ -37,7 +38,7 @@ const STEP_INFO: Record<number, { title: string; value: string }> = {
   1: {
     title: "Opsætning",
     value:
-      "Personale-PIN beskytter belønninger. En adresse kan få kortet frem på kundens låseskærm, når de er i nærheden. Begge kan ændres senere.",
+      "Helt valgfrit. En adresse kan få kortet frem på kundens låseskærm, når de er i nærheden. Alt kan ændres senere i dashboardet.",
   },
   2: {
     title: "Design kortet",
@@ -85,7 +86,6 @@ export function StartWizard() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [pin, setPin] = useState("");
   const [category, setCategory] = useState("");
   const [address, setAddress] = useState("");
   // Sat naar en rigtig adresse er valgt fra listen (til synlig bekraeftelse).
@@ -99,6 +99,11 @@ export function StartWizard() {
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [showBigQr, setShowBigQr] = useState(false);
+  const [pairing, setPairing] = useState<{
+    code: string;
+    qrDataUrl: string;
+  } | null>(null);
+  const [pairingPending, startPairing] = useTransition();
   const [hydrated, setHydrated] = useState(false);
 
   // Auto-gem: gendan tidligere fremskridt fra localStorage, saa en
@@ -110,7 +115,6 @@ export function StartWizard() {
         const s = JSON.parse(raw);
         if (typeof s.name === "string") setName(s.name);
         if (typeof s.email === "string") setEmail(s.email);
-        if (typeof s.pin === "string") setPin(s.pin);
         if (typeof s.category === "string") setCategory(s.category);
         if (typeof s.address === "string") setAddress(s.address);
         if (typeof s.addrConfirmed === "boolean") setAddrConfirmed(s.addrConfirmed);
@@ -135,7 +139,6 @@ export function StartWizard() {
         JSON.stringify({
           name,
           email,
-          pin,
           category,
           address,
           addrConfirmed,
@@ -152,7 +155,6 @@ export function StartWizard() {
     created,
     name,
     email,
-    pin,
     category,
     address,
     addrConfirmed,
@@ -167,15 +169,27 @@ export function StartWizard() {
     window.scrollTo(0, 0);
   }, [step]);
 
-  // Escape lukker den store QR-visning.
+  // Escape lukker QR-visningen / parrings-dialogen.
   useEffect(() => {
-    if (!showBigQr) return;
+    if (!showBigQr && !pairing) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowBigQr(false);
+      if (e.key === "Escape") {
+        setShowBigQr(false);
+        setPairing(null);
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [showBigQr]);
+  }, [showBigQr, pairing]);
+
+  function addEmployee() {
+    const token = created?.loginToken;
+    if (!token) return;
+    startPairing(async () => {
+      const res = await createOnboardingPairingCode(token);
+      setPairing(res.ok ? { code: res.code, qrDataUrl: res.qrDataUrl } : null);
+    });
+  }
 
   // Navnet paa kortet: valgt kort-navn, ellers firmanavnet, ellers en pladsholder.
   const cardName = design.displayName?.trim() || name.trim() || "Din butik";
@@ -203,12 +217,7 @@ export function StartWizard() {
           "Skriv en gyldig e-mail, fx navn@butik.dk. Det er dit login.",
         );
     }
-    if (step === 1) {
-      if (!/^\d{4,6}$/.test(pin))
-        return setError(
-          "Personale-PIN skal være 4 til 6 cifre. Vælg et tal, personalet kan huske.",
-        );
-    }
+    // Trin 1 (Opsætning) er valgfrit: intet at validere.
     setStep((s) => Math.min(s + 1, DONE_STEP));
   }
 
@@ -231,7 +240,6 @@ export function StartWizard() {
       const res = await createBusinessAction({
         name,
         email,
-        pin,
         category,
         address,
         design,
@@ -272,10 +280,6 @@ export function StartWizard() {
         serial="STEMPLET01"
         serialLabel={cardName}
       />
-      <p className="mt-3 max-w-xs font-[300] text-[0.78rem] leading-relaxed text-stone">
-        Kortet opdaterer sig, mens du udfylder. Kunderne gemmer det i deres Apple
-        Wallet, ingen app.
-      </p>
     </div>
   );
 
@@ -347,10 +351,6 @@ export function StartWizard() {
                     maxLength={60}
                     className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
                   />
-                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-                    Firmanavnet, fx Pizzeria ApS. Du vælger selv, hvad der står på
-                    kortet, når du designer det.
-                  </span>
                 </label>
                 <label className="flex flex-col gap-1.5">
                   <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -365,10 +365,6 @@ export function StartWizard() {
                     inputMode="email"
                     className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
                   />
-                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-                    Du logger ind uden adgangskode. Vi sender et link til denne
-                    mail.
-                  </span>
                 </label>
               </div>
             ) : null}
@@ -376,26 +372,6 @@ export function StartWizard() {
             {/* Trin 1: praktiske detaljer */}
             {step === 1 ? (
               <div className="flex flex-col gap-4 animate-step">
-                <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
-                  <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                    Personale-PIN
-                  </span>
-                  <input
-                    inputMode="numeric"
-                    value={pin}
-                    onChange={(e) =>
-                      setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
-                    onKeyDown={onFieldEnter}
-                    placeholder="4 til 6 cifre"
-                    className="w-40 border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
-                  />
-                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-                    Bruges når personalet indløser en fyldt belønning ved kassen.
-                    Du kan altid ændre den senere.
-                  </span>
-                </label>
-
                 <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
                   <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
                     Branche (valgfri)
@@ -574,9 +550,9 @@ export function StartWizard() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-[minmax(0,16rem)_1fr] md:items-start">
-            {/* Det faerdige kort */}
-            <div className="mx-auto w-full max-w-[16rem]">
+          <div className="grid gap-8 md:grid-cols-[minmax(0,19rem)_1fr] md:items-start">
+            {/* Det faerdige kort (fuld bredde paa mobil, saa hele kortet ses) */}
+            <div className="mx-auto w-full max-w-sm md:max-w-[19rem]">
               <StampCard
                 businessName={cardName}
                 logoUrl={design.logoUrl}
@@ -627,26 +603,14 @@ export function StartWizard() {
                 </a>
                 {created.loginToken ? (
                   <>
-                    <form action={loginWithOnboardingToken} className="w-full">
-                      <input
-                        type="hidden"
-                        name="token"
-                        value={created.loginToken}
-                      />
-                      <input
-                        type="hidden"
-                        name="dest"
-                        value="/app/indstillinger#kasse-enheder"
-                      />
-                      <SubmitButton
-                        variant="outline"
-                        size="md"
-                        className="w-full"
-                        pendingText="Åbner..."
-                      >
-                        Tilføj medarbejder
-                      </SubmitButton>
-                    </form>
+                    <button
+                      type="button"
+                      onClick={addEmployee}
+                      disabled={pairingPending}
+                      className={`${btnClass("outline")} w-full disabled:opacity-60`}
+                    >
+                      {pairingPending ? "Åbner..." : "Tilføj medarbejder"}
+                    </button>
                     <form action={loginWithOnboardingToken} className="w-full">
                       <input
                         type="hidden"
@@ -768,6 +732,52 @@ export function StartWizard() {
               className={btnClass("primary")}
             >
               Luk
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Tilføj medarbejder: parringskode INLINE, saa man bliver paa kvitteringen */}
+      {pairing ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tilføj en medarbejder"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-parchment/98 p-6 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-fog bg-white p-6 text-center shadow-hero">
+            <h3 className="font-[400] text-[1.15rem] text-ink">
+              Tilføj en medarbejder
+            </h3>
+            <p className="mx-auto mt-2 max-w-xs font-[300] text-[0.86rem] leading-relaxed text-stone">
+              Åbn{" "}
+              <span className="font-[500] text-ink">stemplet.alius.dk/kasse</span>{" "}
+              på medarbejderens telefon og indtast koden, eller scan QR-koden.
+            </p>
+            <p className="my-4 font-fraunces text-[2.2rem] tracking-[0.25em] text-terracotta">
+              {pairing.code}
+            </p>
+            <div className="mx-auto w-fit rounded-xl border border-fog bg-white p-3">
+              <Image
+                src={pairing.qrDataUrl}
+                width={180}
+                height={180}
+                alt="QR til parring af enhed"
+                unoptimized
+                className="h-[160px] w-[160px] rounded-[6px]"
+              />
+            </div>
+            <p className="mt-3 font-[300] text-[0.76rem] text-slate">
+              Koden virker i 10 minutter. Enheden kan stemple og indløse, men
+              aldrig se dine indstillinger.
+            </p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setPairing(null)}
+              className={`${btnClass("primary")} mt-5 w-full`}
+            >
+              Færdig
             </button>
           </div>
         </div>

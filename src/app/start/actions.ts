@@ -6,7 +6,11 @@ import { after } from "next/server";
 import { unstable_rethrow, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
-import { createOnboardingToken } from "@/lib/onboarding-token";
+import {
+  createOnboardingToken,
+  verifyOnboardingToken,
+} from "@/lib/onboarding-token";
+import { createPairingCode } from "@/lib/kasse";
 import { durableRateLimit } from "@/lib/rate-limit";
 import {
   onboardingStartSchema,
@@ -42,7 +46,7 @@ export type CreateResult =
 export async function createBusinessAction(input: {
   name: string;
   email: string;
-  pin: string;
+  pin?: string;
   category?: string;
   address?: string;
   design: CardDesign;
@@ -62,9 +66,16 @@ export async function createBusinessAction(input: {
   if (!base.success) {
     return { ok: false, error: base.error.issues[0]?.message ?? "Tjek felterne." };
   }
-  const pinParsed = pinSchema.safeParse(input.pin);
-  if (!pinParsed.success) {
-    return { ok: false, error: "Personale-PIN skal være 4 til 6 cifre." };
+  // Personale-PIN er valgfri. Er der indtastet en, valideres og hashes den;
+  // ellers oprettes butikken uden PIN (indloesning kraever da ingen PIN).
+  const rawPin = (input.pin ?? "").trim();
+  let staffPin: string | null = null;
+  if (rawPin) {
+    const pinParsed = pinSchema.safeParse(rawPin);
+    if (!pinParsed.success) {
+      return { ok: false, error: "Personale-PIN skal være 4 til 6 cifre." };
+    }
+    staffPin = await hashPin(pinParsed.data);
   }
   const design = cardDesignSchema.safeParse(input.design);
   if (!design.success) {
@@ -94,7 +105,6 @@ export async function createBusinessAction(input: {
     slug = `${root}-${n}`;
   }
 
-  const staffPin = await hashPin(pinParsed.data);
   const category =
     input.category && isBusinessCategory(input.category) ? input.category : null;
 
@@ -256,6 +266,27 @@ export async function loginWithOnboardingToken(formData: FormData) {
     unstable_rethrow(e); // lad succes-redirecten passere
     // Ugyldigt/udloebet token: send pænt til login, hvor de kan hente linket.
     redirect("/login?fejl=onboarding");
+  }
+}
+
+// Danner en parringskode til en kasse-enhed DIREKTE fra kvitteringen (uden at
+// forlade successiden), autentificeret via onboarding-tokenet.
+export async function createOnboardingPairingCode(
+  token: string,
+): Promise<{ ok: true; code: string; qrDataUrl: string } | { ok: false }> {
+  const payload = verifyOnboardingToken(token);
+  if (!payload) return { ok: false };
+  const user = await prisma.user.findUnique({
+    where: { id: payload.uid },
+    select: { businessId: true },
+  });
+  if (!user) return { ok: false };
+  try {
+    const { code, qrDataUrl } = await createPairingCode(user.businessId);
+    return { ok: true, code, qrDataUrl };
+  } catch (e) {
+    captureServerError(e, { route: "start:onboarding-pairing" });
+    return { ok: false };
   }
 }
 

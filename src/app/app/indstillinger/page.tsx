@@ -75,6 +75,7 @@ export default async function IndstillingerPage({
         cooldown={business.stampCooldownMin}
         category={business.category}
         selfScan={business.selfScanEnabled}
+        hasPin={business.staffPin != null}
       />
 
       <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">

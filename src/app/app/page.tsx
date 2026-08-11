@@ -115,7 +115,7 @@ export default async function OverviewPage() {
       </div>
 
       {stats.stampsTotal === 0 ? (
-        <GettingStarted slug={business.slug} />
+        <GettingStarted />
       ) : (
         <>
           <AddToHomeHint />

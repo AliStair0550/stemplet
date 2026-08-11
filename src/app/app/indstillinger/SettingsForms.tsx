@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveSettings, setPin } from "../actions";
+import { saveSettings, setPin, clearStaffPin } from "../actions";
 import { btnClass } from "@/components/ui";
 import { Panel } from "@/components/dash";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
@@ -20,11 +20,13 @@ export function SettingsForms({
   cooldown,
   category,
   selfScan,
+  hasPin,
 }: {
   name: string;
   cooldown: number;
   category: string | null;
   selfScan: boolean;
+  hasPin: boolean;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -60,6 +62,18 @@ export function SettingsForms({
           : { ok: false, text: res.error ?? "Fejl" },
       );
       if (res.ok) form.reset();
+    });
+  }
+
+  function onClearPin() {
+    setPinMsg(null);
+    startPin(async () => {
+      const res = await clearStaffPin();
+      setPinMsg(
+        res.ok
+          ? { ok: true, text: "PIN slået fra" }
+          : { ok: false, text: res.error ?? "Fejl" },
+      );
     });
   }
 
@@ -138,13 +152,18 @@ export function SettingsForms({
       </Panel>
 
       <Panel>
-        <h2 className="mb-4 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-          Personale-PIN
+        <h2 className="mb-2 text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
+          Personale-PIN (valgfri)
         </h2>
+        <p className="mb-4 font-[300] text-[0.84rem] leading-relaxed text-stone">
+          {hasPin
+            ? "Slået til: personalet skal indtaste PIN'en for at indløse en belønning."
+            : "Slået fra: enhver ved kassen kan indløse belønninger. Slå den til for et ekstra tjek."}
+        </p>
         <form onSubmit={onPin} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
-              Ny PIN (4 til 6 cifre)
+              {hasPin ? "Skift PIN (4 til 6 cifre)" : "Sæt en PIN (4 til 6 cifre)"}
             </span>
             <input
               name="pin"
@@ -152,20 +171,27 @@ export function SettingsForms({
               pattern="[0-9]*"
               maxLength={6}
               placeholder="****"
-              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[200] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
+              className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
             />
-            <span className="text-[0.72rem] font-[200] text-slate">
-              Kræves ved indløsning af belønninger.
-            </span>
           </label>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="submit"
               disabled={pinPending}
               className={btnClass("primary")}
             >
-              {pinPending ? "Gemmer..." : "Opdater PIN"}
+              {pinPending ? "Gemmer..." : hasPin ? "Skift PIN" : "Slå PIN til"}
             </button>
+            {hasPin ? (
+              <button
+                type="button"
+                onClick={onClearPin}
+                disabled={pinPending}
+                className={btnClass("outline")}
+              >
+                Slå PIN fra
+              </button>
+            ) : null}
             <Msg text={pinMsg?.text ?? null} ok={pinMsg?.ok} />
           </div>
         </form>

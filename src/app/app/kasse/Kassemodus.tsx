@@ -274,9 +274,12 @@ function useKioskToken(active: boolean) {
 export function Kassemodus({
   card,
   selfScan,
+  hasPin,
 }: {
   card: KioskCard;
   selfScan: boolean;
+  // Har butikken sat en personale-PIN? Ellers indloeses uden PIN.
+  hasPin: boolean;
 }) {
   const [mode, setMode] = useState<"qr" | "scan">("qr");
   const [kioskOpen, setKioskOpen] = useState(false);
@@ -305,7 +308,7 @@ export function Kassemodus({
   if (!selfScan) {
     return (
       <div className="flex flex-col gap-7">
-        <ScanPanel />
+        <ScanPanel hasPin={hasPin} />
       </div>
     );
   }
@@ -346,7 +349,7 @@ export function Kassemodus({
         </button>
       </div>
 
-      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel />}
+      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel hasPin={hasPin} />}
 
       {kioskOpen ? <KioskShell card={card} onClose={closeKiosk} /> : null}
     </div>
@@ -425,7 +428,7 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 }
 
 // ── Panel: scan kundens kort (personalet stempler selv) ───────────────
-function ScanPanel() {
+function ScanPanel({ hasPin }: { hasPin: boolean }) {
   const [scanning, setScanning] = useState(false);
   const [serial, setSerial] = useState<string | null>(null);
   // Manuel indtastning: fallback naar QR'en ikke kan scannes (glare, revnet
@@ -446,6 +449,7 @@ function ScanPanel() {
       <div className="flex justify-center">
         <StaffCard
           serial={serial}
+          hasPin={hasPin}
           onRescan={() => {
             setSerial(null);
             setScanning(true);
@@ -542,10 +546,12 @@ type CardState = {
 
 function StaffCard({
   serial,
+  hasPin,
   onRescan,
   onExit,
 }: {
   serial: string;
+  hasPin: boolean;
   onRescan: () => void;
   onExit: () => void;
 }) {
@@ -692,7 +698,8 @@ function StaffCard({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           serial: card.serial,
-          pin,
+          // PIN sendes kun, hvis butikken kraever en (ellers udeladt).
+          pin: pin || undefined,
           // Samme noegle paa et retry -> server-side dedup (samme resultat).
           idempotencyKey: redeemKeyRef.current,
         }),
@@ -920,31 +927,33 @@ function StaffCard({
                   {card.rewardText}
                 </p>
               </div>
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[0.66rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                  Personale-PIN for at indløse
-                </span>
-                <input
-                  inputMode="numeric"
-                  value={pin}
-                  onChange={(e) =>
-                    setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  placeholder="****"
-                  autoFocus
-                  aria-describedby="staff-pin-hint"
-                  className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
-                />
-                <span
-                  id="staff-pin-hint"
-                  className="text-[0.72rem] font-[300] text-slate"
-                >
-                  Indtast 4 til 6 cifre.
-                </span>
-              </label>
+              {hasPin ? (
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[0.66rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    Personale-PIN for at indløse
+                  </span>
+                  <input
+                    inputMode="numeric"
+                    value={pin}
+                    onChange={(e) =>
+                      setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="****"
+                    autoFocus
+                    aria-describedby="staff-pin-hint"
+                    className="w-40 border border-clay bg-parchment px-4 py-2.5 font-[300] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
+                  />
+                  <span
+                    id="staff-pin-hint"
+                    className="text-[0.72rem] font-[300] text-slate"
+                  >
+                    Indtast 4 til 6 cifre.
+                  </span>
+                </label>
+              ) : null}
               <button
                 onClick={redeem}
-                disabled={busy || pin.length < 4}
+                disabled={busy || (hasPin && pin.length < 4)}
                 className={btnClass("primary") + " self-start"}
               >
                 {busy ? "Indløser..." : "Indløs belønning"}

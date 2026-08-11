@@ -93,10 +93,10 @@ export const campaignSchema = z
     path: ["endsAt"],
   });
 
-// Indløsning kræver PIN
+// Indløsning. PIN er valgfri: kraeves kun, hvis butikken har sat en.
 export const redeemSchema = z.object({
   serial: z.string().min(4),
-  pin: pinSchema,
+  pin: pinSchema.optional(),
   // Samme noegle paa et retry (fx tabt svar) -> server returnerer FOERSTE
   // resultat i stedet for at fejle med "kortet er ikke fuldt endnu".
   idempotencyKey: z.string().min(8).max(200).optional(),

@@ -35,7 +35,11 @@ export default async function KassePage() {
             : "Scan kundens kort for at give stempler eller indløse en belønning."
         }
       />
-      <Kassemodus card={kioskCard} selfScan={business.selfScanEnabled} />
+      <Kassemodus
+        card={kioskCard}
+        selfScan={business.selfScanEnabled}
+        hasPin={business.staffPin != null}
+      />
     </>
   );
 }

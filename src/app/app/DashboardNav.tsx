@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
 
 const LINKS: { href: string; label: string }[] = [
-  { href: "/app", label: "Overblik" },
   { href: "/app/kom-i-gang", label: "Kom i gang" },
+  { href: "/app", label: "Overblik" },
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },

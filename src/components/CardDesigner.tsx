@@ -414,7 +414,7 @@ export function CardDesigner({
 
         <div className="flex flex-col gap-2">
           <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Navn på kortet
+            Butiksnavn
           </span>
           <input
             value={value.displayName ?? ""}

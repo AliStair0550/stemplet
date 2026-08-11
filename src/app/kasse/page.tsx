@@ -56,7 +56,11 @@ export default async function KasseRegisterPage({
         {access.source === "device" ? <UnpairButton /> : null}
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
-        <Kassemodus card={kioskCard} selfScan={business.selfScanEnabled} />
+        <Kassemodus
+          card={kioskCard}
+          selfScan={business.selfScanEnabled}
+          hasPin={business.staffPin != null}
+        />
       </div>
     </main>
   );
