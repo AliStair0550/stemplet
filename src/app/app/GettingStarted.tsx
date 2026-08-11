@@ -5,7 +5,7 @@ import {
   IconDevice,
   IconQr,
   IconShare,
-  IconStamp,
+  IconStampMark,
 } from "./icons";
 
 // Foerste-gangs-guide: visuel og let at skimme. Fire trin som ikon-kort, minimal
@@ -30,7 +30,7 @@ const STEPS = [
     href: "/app/kampagner",
   },
   {
-    icon: <IconStamp />,
+    icon: <IconStampMark />,
     title: "Giv et stempel",
     body: "Scan kundens kort",
     href: "/app/kasse",
@@ -42,9 +42,6 @@ export function GettingStarted() {
     <div className="mb-6 overflow-hidden rounded-lg border border-terracotta/30 bg-white shadow-card">
       <div className="border-b border-fog bg-terracotta/[0.05] px-6 py-5 md:px-8">
         <h2 className="font-[400] text-[1.2rem] text-ink">Kom godt i gang</h2>
-        <p className="mt-1 font-[300] text-[0.88rem] text-stone">
-          Fire trin, så er du klar til dit første stempel.
-        </p>
       </div>
 
       <div className="grid gap-px bg-fog sm:grid-cols-2 lg:grid-cols-4">

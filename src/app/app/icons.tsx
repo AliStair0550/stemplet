@@ -36,6 +36,24 @@ export function IconStamp() {
     </svg>
   );
 }
+// Selve "stempel"-glyfen (fluebenet der lander med en linje under). EEN kilde,
+// saa menuens Stempel-knap og "Giv et stempel" altid ser ens ud.
+export function IconStampMark({ className = ICON }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M4.5 11.5l4.2 4.2L19 5.5" strokeWidth={2.6} />
+      <path d="M4 20.5h16" strokeWidth={1.6} />
+    </svg>
+  );
+}
 export function IconGift() {
   return (
     <svg {...svgProps} className={ICON}>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wordmark } from "@/components/Wordmark";
 import { signOutAction } from "./actions";
+import { IconStampMark } from "./icons";
 import { cn } from "@/lib/utils";
 
 // "Stempel" (kassen) er dagens primaere handling og loeftes bevidst ud fra de
@@ -21,23 +22,6 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 
-// Tydeligt flueben med en linje-kant nedenunder (som et stempel, der lander).
-function StampGlyph({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M4.5 11.5l4.2 4.2L19 5.5" strokeWidth={2.6} />
-      <path d="M4 20.5h16" strokeWidth={1.6} />
-    </svg>
-  );
-}
 // "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
 // Siden findes stadig paa /app/integrationer for den, der kender adressen.
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
@@ -76,7 +60,7 @@ export function DashboardNav({
                 : "border-terracotta/25 bg-terracotta/[0.06] text-terracotta hover:bg-terracotta/[0.11]",
             )}
           >
-            <StampGlyph className="h-[1.05rem] w-[1.05rem]" />
+            <IconStampMark className="h-[1.05rem] w-[1.05rem]" />
             {STAMP_LINK.label}
           </Link>
 
@@ -128,7 +112,7 @@ export function DashboardNav({
                   : "border-terracotta/30 bg-terracotta/[0.08] text-terracotta",
               )}
             >
-              <StampGlyph className="h-4 w-4" />
+              <IconStampMark className="h-4 w-4" />
               {STAMP_LINK.label}
             </Link>
 
