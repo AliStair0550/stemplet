@@ -6,9 +6,12 @@ import { Wordmark } from "@/components/Wordmark";
 import { signOutAction } from "./actions";
 import { cn } from "@/lib/utils";
 
+// "Stempel" (kassen) er dagens primaere handling og loeftes bevidst ud fra de
+// oevrige menupunkter, saa det staar tydeligt for sig selv.
+const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
+
 const LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
-  { href: "/app/kasse", label: "Stempel" },
   { href: "/app/statistik", label: "Statistik" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/kort", label: "Design" },
@@ -16,6 +19,25 @@ const LINKS: { href: string; label: string }[] = [
   { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
+
+function StampGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="12" cy="9" r="5" />
+      <path d="M9.5 9l1.7 1.7L15 7" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}
 // "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
 // Siden findes stadig paa /app/integrationer for den, der kender adressen.
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
@@ -43,13 +65,30 @@ export function DashboardNav({
           {businessName}
         </span>
 
-        <nav className="mt-10 flex flex-col gap-1">
+        <nav className="mt-9 flex flex-col gap-1">
+          {/* Stempel: dagens primaere handling, som en tydelig knap for sig selv */}
+          <Link
+            href={STAMP_LINK.href}
+            className={cn(
+              "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-[0.85rem] font-[400] tracking-[0.01em] transition-colors",
+              isActive(STAMP_LINK.href)
+                ? "border-terracotta bg-terracotta text-parchment shadow-[0_8px_22px_-10px_rgba(166,80,46,0.7)]"
+                : "border-terracotta/25 bg-terracotta/[0.06] text-terracotta hover:bg-terracotta/[0.11]",
+            )}
+          >
+            <StampGlyph className="h-[1.05rem] w-[1.05rem]" />
+            {STAMP_LINK.label}
+          </Link>
+
+          {/* Hårfin adskillelse til de oevrige (administrations)punkter */}
+          <div className="my-3 h-px bg-fog" aria-hidden />
+
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
+                "rounded-lg px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
                 isActive(l.href)
                   ? "bg-terracotta/10 text-terracotta"
                   : "text-stone hover:text-ink",
@@ -78,13 +117,33 @@ export function DashboardNav({
           </form>
         </div>
         <div className="relative">
-          <nav className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-3">
+          <nav className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-4 pb-3">
+            {/* Stempel: loeftet ud som en tydelig knap foerst i raekken */}
+            <Link
+              href={STAMP_LINK.href}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-2 text-[0.8rem] font-[400] transition-colors",
+                isActive(STAMP_LINK.href)
+                  ? "border-terracotta bg-terracotta text-parchment"
+                  : "border-terracotta/30 bg-terracotta/[0.08] text-terracotta",
+              )}
+            >
+              <StampGlyph className="h-4 w-4" />
+              {STAMP_LINK.label}
+            </Link>
+
+            {/* Lodret hårstreg, der skiller Stempel fra de oevrige punkter */}
+            <span
+              aria-hidden
+              className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
+            />
+
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
+                  "shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
                   isActive(l.href)
                     ? "bg-terracotta/10 text-terracotta"
                     : "text-stone hover:text-ink",
