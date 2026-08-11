@@ -405,7 +405,7 @@ export function CardDesigner({
             onChange={(e) => set("displayName", e.target.value)}
             placeholder={businessName}
             maxLength={40}
-            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate/60 focus:border-terracotta"
+            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-terracotta"
           />
           <p className="text-[0.72rem] font-[300] leading-relaxed text-stone">
             Det navn dine kunder ser på kortet. Lad feltet stå tomt for at bruge

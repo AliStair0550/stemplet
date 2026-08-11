@@ -53,6 +53,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [type, setType] = useState<CampaignType>("DOUBLE_STAMP");
 
   function onCreate(e: React.FormEvent<HTMLFormElement>) {
@@ -73,6 +74,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
   }
 
   function onDelete(id: string) {
+    setConfirmDeleteId(null);
     start(async () => {
       await deleteCampaign(id);
       router.refresh();
@@ -223,13 +225,34 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => onDelete(c.id)}
-                    disabled={pending}
-                    className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-rust"
-                  >
-                    Slet
-                  </button>
+                  {confirmDeleteId === c.id ? (
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span className="text-[0.74rem] font-[300] text-stone">
+                        Slet?
+                      </span>
+                      <button
+                        onClick={() => onDelete(c.id)}
+                        disabled={pending}
+                        className="text-[0.72rem] font-[500] uppercase tracking-[0.1em] text-rust transition-opacity hover:opacity-70 disabled:opacity-50"
+                      >
+                        Bekræft
+                      </button>
+                      <button
+                        onClick={() => setConfirmDeleteId(null)}
+                        disabled={pending}
+                        className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink disabled:opacity-50"
+                      >
+                        Fortryd
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmDeleteId(c.id)}
+                      className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-rust"
+                    >
+                      Slet
+                    </button>
+                  )}
                 </li>
               );
             })}

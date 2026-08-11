@@ -24,7 +24,7 @@ export function WeeklyEmailToggle({ initial }: { initial: boolean }) {
       aria-label="Ugentligt overblik"
       onClick={toggle}
       disabled={pending}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 ${
         on ? "bg-terracotta" : "bg-clay"
       } disabled:opacity-60`}
     >

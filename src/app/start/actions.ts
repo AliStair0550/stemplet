@@ -37,7 +37,7 @@ export type CreateResult =
       // saa ejeren ikke behoever at aabne mailen foerst.
       loginToken?: string;
     }
-  | { ok: false; error: string; field?: "address" };
+  | { ok: false; error: string; field?: "address" | "email" };
 
 export async function createBusinessAction(input: {
   name: string;
@@ -80,6 +80,7 @@ export async function createBusinessAction(input: {
   if (existing) {
     return {
       ok: false,
+      field: "email",
       error: "Der findes allerede en konto med den e-mail. Log ind i stedet.",
     };
   }
@@ -163,6 +164,7 @@ export async function createBusinessAction(input: {
     ) {
       return {
         ok: false,
+        field: "email",
         error:
           "Der findes allerede en konto med den e-mail, eller navnet er lige blevet taget. Prøv igen.",
       };

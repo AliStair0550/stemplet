@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { Spinner } from "@/components/SubmitButton";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
@@ -14,7 +14,12 @@ const ERRORS: Record<string, string> = {
   // Forbigaaende serverfejl (fx en kortvarig database-blip): kunden kan bare
   // proeve igen om et oejeblik, saa vi viser en "Proev igen"-knap.
   serverfejl: "Der opstod en kortvarig fejl. Prøv igen om et øjeblik.",
+  // For mange henvendelser fra samme netvaerk lige nu (fx travl cafe-WiFi).
+  optaget: "Der er lidt travlt lige nu. Prøv igen om et øjeblik.",
 };
+
+// Fejl-koder hvor et nyt forsoeg giver mening (vis en "Prøv igen"-knap).
+const RETRYABLE = new Set(["serverfejl", "optaget"]);
 
 // "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
 // opretter kortet og returnerer .pkpass'et i samme svar, saa Safari aabner Apple
@@ -34,8 +39,16 @@ export function ClaimFlow({
   slug: string;
   walletEnabled: boolean;
 }) {
-  const [phase, setPhase] = useState<"idle" | "opening" | "added">("idle");
+  const [phase, setPhase] = useState<
+    "idle" | "opening" | "added" | "usikker"
+  >("idle");
   const [fejl, setFejl] = useState<string | null>(null);
+  // Blev siden skjult, mens vi ventede? Saa AABNEDE Wallet-arket sig, og
+  // kvitteringen er aegte. Skete det aldrig, ved vi ikke, om det lykkedes.
+  const wasHiddenRef = useRef(false);
+  // Bloker et hurtigt dobbelt-tryk (fx desktop-dobbeltklik), saa der ikke
+  // oprettes to kort paa samme enhed.
+  const clickedRef = useRef(false);
   const claimUrl = `/api/wallet/claim/${slug}`;
 
   // Læs en evt. ?fejl=... paa klienten, saa /k-siden kan forblive statisk (ISR).
@@ -44,16 +57,24 @@ export function ClaimFlow({
     if (code && ERRORS[code]) setFejl(code);
   }, []);
 
-  // Naar Wallet-arket er aabnet ("opening"), viser vi kvitteringen naar kunden
-  // vender tilbage (visibility -> visible), ellers efter en faldback paa 4 sek.
+  // Naar Wallet-arket er aabnet ("opening"): viser vi kvitteringen, naar kunden
+  // vender TILBAGE fra arket (siden blev skjult og saa synlig igen). Aabnede
+  // arket sig aldrig (typisk et cold start, der stadig arbejder), viser vi ikke
+  // en falsk kvittering, men en "prøv igen" efter en romelig faldback.
   useEffect(() => {
     if (phase !== "opening") return;
-    const finish = () => setPhase("added");
+    wasHiddenRef.current = false;
     const onVisible = () => {
-      if (document.visibilityState === "visible") finish();
+      if (document.visibilityState === "hidden") {
+        wasHiddenRef.current = true;
+      } else if (document.visibilityState === "visible" && wasHiddenRef.current) {
+        setPhase("added");
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
-    const timer = setTimeout(finish, 4000);
+    const timer = setTimeout(() => {
+      setPhase(wasHiddenRef.current ? "added" : "usikker");
+    }, 9000);
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       clearTimeout(timer);
@@ -69,8 +90,12 @@ export function ClaimFlow({
         >
           {ERRORS[fejl]}
         </p>
-        {fejl === "serverfejl" ? (
-          <a href={claimUrl} className={`${btnClass("primary", "lg")} w-full`}>
+        {RETRYABLE.has(fejl) ? (
+          <a
+            href={claimUrl}
+            onClick={onTap}
+            className={`${btnClass("primary", "lg")} w-full`}
+          >
             Prøv igen
           </a>
         ) : null}
@@ -92,6 +117,27 @@ export function ClaimFlow({
     );
   }
 
+  if (phase === "usikker") {
+    return (
+      <div className="flex w-full flex-col items-center gap-3">
+        <p
+          role="status"
+          className="w-full rounded-lg border border-fog bg-sand/60 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-stone"
+        >
+          Åbnede Apple Wallet sig ikke? Første gang kan det tage et øjeblik.
+          Prøv igen.
+        </p>
+        <a
+          href={claimUrl}
+          onClick={onTap}
+          className={`${btnClass("primary", "lg")} w-full`}
+        >
+          Prøv igen
+        </a>
+      </div>
+    );
+  }
+
   if (phase === "opening") {
     return (
       <div className="flex w-full flex-col items-center gap-2 rounded-xl border border-fog bg-white p-5 text-center">
@@ -107,7 +153,18 @@ export function ClaimFlow({
     );
   }
 
-  function onTap() {
+  function onTap(e: React.MouseEvent) {
+    // Bloker et hurtigt dobbelt-tryk, saa der ikke fyres to claim-requests (og
+    // dermed to kort) af paa samme enhed. Slippes igen efter kort tid, saa et
+    // aegte nyt forsoeg stadig virker.
+    if (clickedRef.current) {
+      e.preventDefault();
+      return;
+    }
+    clickedRef.current = true;
+    setTimeout(() => {
+      clickedRef.current = false;
+    }, 1500);
     // iPhone: passet aabnes i Wallet-arket, og siden bliver liggende. Vi gaar i
     // "opening" og venter med kvitteringen til kunden kommer tilbage. Android/
     // desktop sendes videre af ruten (ingen kvittering her).

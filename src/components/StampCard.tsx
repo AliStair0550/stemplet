@@ -121,7 +121,7 @@ export function StampCard({
       >
         {/* Toplinje: logo + tæl */}
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
             {/* Enten logo eller navn, aldrig begge og intet auto-monogram: har
                 butikken et logo, staar det alene; ellers vises navnet som tekst. */}
             {logoUrl ? (
@@ -137,12 +137,12 @@ export function StampCard({
                 unoptimized
               />
             ) : !hideName && businessName ? (
-              <span className="text-[0.9rem] font-[500] tracking-[0.01em]">
+              <span className="truncate text-[0.9rem] font-[500] tracking-[0.01em]">
                 {businessName}
               </span>
             ) : null}
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <div
               className="text-[0.55rem] font-[500] uppercase tracking-[0.16em]"
               style={{ color: rgba(textColor, 0.6) }}
@@ -156,7 +156,7 @@ export function StampCard({
         </div>
 
         {/* Beløn - teksten forklarer sig selv, ingen label */}
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {rewardReady ? (
             <span
               className="shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-[500] uppercase tracking-[0.14em]"
@@ -167,7 +167,7 @@ export function StampCard({
           ) : null}
           <div
             className={cn(
-              "text-[1.1rem] font-[300] leading-snug",
+              "min-w-0 line-clamp-2 text-[1.1rem] font-[300] leading-snug",
               rewardReady && "animate-reward-glow rounded-md",
             )}
             style={

@@ -145,8 +145,10 @@ export function StartWizard() {
         setStep(DONE_STEP);
       } else {
         setError(res.error);
-        // Adressefeltet ligger paa trin "Opsaetning": hop dertil, saa fejlen giver mening.
+        // Hop til det trin, hvor feltet med fejlen staar, saa beskeden giver
+        // mening (ellers strander man paa design-trinnet uden at kunne rette).
         if (res.field === "address") setStep(1);
+        else if (res.field === "email") setStep(0);
       }
     });
   }
@@ -218,6 +220,7 @@ export function StartWizard() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
+              maxLength={60}
               className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
             />
             <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">

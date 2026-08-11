@@ -33,6 +33,9 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
     code: string;
     qrDataUrl: string;
   } | null>(null);
+  // Hvilken enhed er ved at blive spaerret (inline bekraeftelse, saa en aktiv
+  // kasse ikke mister adgang ved et enkelt fejl-tryk).
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   function newCode() {
@@ -48,6 +51,7 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
   }
 
   function revoke(id: string) {
+    setConfirmId(null);
     start(async () => {
       await revokeDeviceAction(id);
       router.refresh();
@@ -108,13 +112,34 @@ export function KasseDevices({ devices }: { devices: Device[] }) {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => revoke(d.id)}
-                disabled={pending}
-                className="shrink-0 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:text-rust disabled:opacity-50"
-              >
-                Spær
-              </button>
+              {confirmId === d.id ? (
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="text-[0.74rem] font-[300] text-stone">
+                    Spær enheden?
+                  </span>
+                  <button
+                    onClick={() => revoke(d.id)}
+                    disabled={pending}
+                    className="text-[0.72rem] font-[500] uppercase tracking-[0.08em] text-rust transition-opacity hover:opacity-70 disabled:opacity-50"
+                  >
+                    Bekræft
+                  </button>
+                  <button
+                    onClick={() => setConfirmId(null)}
+                    disabled={pending}
+                    className="text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:text-ink disabled:opacity-50"
+                  >
+                    Fortryd
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmId(d.id)}
+                  className="shrink-0 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:text-rust"
+                >
+                  Spær
+                </button>
+              )}
             </div>
           ))
         )}

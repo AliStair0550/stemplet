@@ -162,7 +162,11 @@ export function StampConfirm({
   }, [doStamp]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-12 text-center">
+    <main
+      aria-live="polite"
+      aria-atomic="true"
+      className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-12 text-center"
+    >
       {/* Konfetti baade ved den fulde beloenning OG ved allerfoerste kort
           (velkomst), saa kundens foerste indtryk gnistrer. */}
       <Celebration

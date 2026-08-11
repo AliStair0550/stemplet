@@ -61,7 +61,7 @@ export function DashboardNav({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex print:hidden">
         <Wordmark />
-        <span className="mt-1 block truncate text-[0.75rem] font-[200] text-slate">
+        <span className="mt-1 block truncate text-[0.75rem] font-[300] text-stone">
           {businessName}
         </span>
 
@@ -122,7 +122,7 @@ export function DashboardNav({
             <Link
               href={STAMP_LINK.href}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-2 text-[0.8rem] font-[400] transition-colors",
+                "flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.8rem] font-[400] transition-colors",
                 isActive(STAMP_LINK.href)
                   ? "border-terracotta bg-terracotta text-parchment"
                   : "border-terracotta/30 bg-terracotta/[0.08] text-terracotta",
@@ -143,7 +143,7 @@ export function DashboardNav({
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-[0.8rem] font-[300] transition-colors",
+                  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
                   isActive(l.href)
                     ? "bg-terracotta/10 text-terracotta"
                     : "text-stone hover:text-ink",

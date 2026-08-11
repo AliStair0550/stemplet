@@ -24,7 +24,7 @@ export function SelfScanToggle({ initial }: { initial: boolean }) {
       aria-label="Selvbetjening: kunden scanner selv"
       onClick={toggle}
       disabled={pending}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 ${
         on ? "bg-terracotta" : "bg-clay"
       } disabled:opacity-60`}
     >

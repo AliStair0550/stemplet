@@ -17,6 +17,22 @@ const Scanner = dynamic(
   { ssr: false },
 );
 
+// fetch med timeout: en STALLED forbindelse (ikke fejlet) faar ellers loeftet
+// aldrig til at settle, saa den primaere knap haenger paa "Et oejeblik..." for
+// evigt. Efter timeout afbrydes kaldet og catch'et viser "prOv igen"-noten.
+// Sikkert paa stempel/redeem, fordi begge er idempotente/atomiske server-side.
+function fetchWithTimeout(
+  url: string,
+  init: RequestInit = {},
+  ms = 12000,
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { ...init, signal: ctrl.signal }).finally(() =>
+    clearTimeout(t),
+  );
+}
+
 // Kort haptik paa personalets enhed (telefon/tablet). Valgfrit.
 function haptic(pattern: number | number[]) {
   try {
@@ -536,7 +552,7 @@ function StaffCard({
     setNote(null);
     setLoadError(null);
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `/api/staff/card?serial=${encodeURIComponent(s)}`,
         { cache: "no-store" },
       );
@@ -567,7 +583,7 @@ function StaffCard({
     setBusy(true);
     setNote(null);
     try {
-      const res = await fetch("/api/staff/stamp", {
+      const res = await fetchWithTimeout("/api/staff/stamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -630,7 +646,7 @@ function StaffCard({
     setBusy(true);
     setNote(null);
     try {
-      const res = await fetch("/api/staff/redeem", {
+      const res = await fetchWithTimeout("/api/staff/redeem", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ serial: card.serial, pin }),
@@ -680,7 +696,7 @@ function StaffCard({
     setBusy(true);
     setNote(null);
     try {
-      const res = await fetch("/api/staff/unstamp", {
+      const res = await fetchWithTimeout("/api/staff/unstamp", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ serial: card.serial }),
@@ -814,6 +830,8 @@ function StaffCard({
 
           {note ? (
             <p
+              role="status"
+              aria-live="polite"
               className={cn(
                 "text-center font-[300] text-[0.9rem]",
                 note.ok ? "text-terracotta" : "text-rust",

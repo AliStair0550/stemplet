@@ -25,16 +25,18 @@ export async function GET(
   const back = (path: string) => NextResponse.redirect(new URL(path, APP_URL));
 
   // Let, generoes rate-limit pr. IP, saa ruten ikke kan misbruges til at oprette
-  // kort en masse. 60/time rammer ikke normal butikstrafik (kunder henter EEN
-  // gang), men stopper en loebsk bot.
+  // kort en masse. Hoej nok til at en travl cafe paa EEN delt WiFi-IP ikke rammer
+  // loftet under et rush (kunder henter EEN gang), men stopper en loebsk bot. Ved
+  // et hit viser vi "der er travlt, prOv igen" (IKKE "butikken er fuld", som er
+  // en anden ting) med en tydelig proev-igen-knap.
   const ip =
     req.headers.get("x-real-ip")?.trim() ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "ukendt";
-  const allowed = await durableRateLimit("claim-ip", ip, 60, 3600).catch(
+  const allowed = await durableRateLimit("claim-ip", ip, 200, 3600).catch(
     () => true,
   );
-  if (!allowed) return back(`/k/${slug}?fejl=fuld`);
+  if (!allowed) return back(`/k/${slug}?fejl=optaget`);
 
   // Faldt DB'en fra (Neon-blip trods retries)? Vis kunden en rolig "prOv igen"
   // paa /k i stedet for en haard 500. Loggen fanger en aegte, laengere udfald.
