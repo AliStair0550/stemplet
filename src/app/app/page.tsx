@@ -169,7 +169,7 @@ function pickRecommendation(
       )} kortholdere. Den gratis plan rummer op til 100, så det er værd at kigge på abonnementet i god tid.`,
       action: {
         type: "link",
-        href: "/app/indstillinger",
+        href: "/app/indstillinger#abonnement",
         label: "Se abonnement",
       },
     };

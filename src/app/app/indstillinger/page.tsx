@@ -161,7 +161,7 @@ export default async function IndstillingerPage({
         Konto
       </h2>
       {/* Abonnement */}
-      <div>
+      <div id="abonnement" className="scroll-mt-24">
         <Panel>
           <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
             Abonnement

@@ -284,6 +284,7 @@ export function QrPrintPanel({
                 <button
                   key={o.v}
                   type="button"
+                  aria-pressed={orient === o.v}
                   onClick={() => setOrient(o.v)}
                   className={cn(
                     "rounded-full px-4 py-1.5 text-[0.82rem] transition-colors",

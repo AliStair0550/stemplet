@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { StampCard } from "@/components/StampCard";
+import { SectionHeader } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { StampIconKey } from "@/lib/brand";
@@ -163,9 +164,7 @@ export function GettingStarted(props: Props) {
 
       {/* Guidede handlinger: gør det nu */}
       <div>
-        <h3 className="mb-3 text-label font-[400] uppercase tracking-[0.14em] text-slate">
-          Gør butikken klar
-        </h3>
+        <SectionHeader title="Gør butikken klar" />
         <div className="grid gap-3 sm:grid-cols-2">
           <ActionCard
             icon={<IconQr />}
@@ -215,7 +214,7 @@ export function GettingStarted(props: Props) {
                 href="/app/kasse"
                 className={`${btnClass("primary")} w-full`}
               >
-                Åbn Stempel
+                Giv et stempel
                 <CtaArrow />
               </Link>
             }

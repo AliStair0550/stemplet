@@ -150,6 +150,7 @@ export function MaterialsPrint() {
                   <button
                     key={o.label}
                     type="button"
+                    aria-pressed={light === o.on}
                     onClick={() => setLight(o.on)}
                     className={cn(
                       "rounded-full px-4 py-1.5 text-[0.82rem] transition-colors",

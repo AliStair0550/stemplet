@@ -125,7 +125,7 @@ export default async function MaterialerPage() {
                   showPoweredBy={showPoweredBy}
                   serial="STEMPLET01"
                   serialLabel={business.name}
-                  className="max-w-[17rem]"
+                  className="w-full max-w-[22rem]"
                 />
               </div>
               <div className="flex flex-1 flex-col gap-4">

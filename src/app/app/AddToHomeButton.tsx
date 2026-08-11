@@ -82,6 +82,7 @@ export function AddToHomeButton() {
         <button
           type="button"
           onClick={onClick}
+          aria-expanded={!deferred && showHint}
           className={`${btnClass("outline")} shrink-0`}
         >
           Føj til hjemmeskærm
