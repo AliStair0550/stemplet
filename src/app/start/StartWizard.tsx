@@ -11,6 +11,7 @@ import { StampCard } from "@/components/StampCard";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
+import { QrReadyPanel } from "./QrReadyPanel";
 import {
   createBusinessAction,
   sendOnboardingLogin,
@@ -666,6 +667,17 @@ export function StartWizard() {
               </div>
             </div>
           </div>
+
+          {/* Gør QR-koden klar: hent visitkort eller A4-plakat, klar til print */}
+          <QrReadyPanel
+            slug={created.slug}
+            cardUrl={created.cardUrl}
+            qrDataUrl={created.qrDataUrl}
+            businessName={cardName}
+            primaryColor={design.primaryColor}
+            textColor={design.textColor}
+            logoUrl={design.logoUrl}
+          />
 
           {/* Login-mail som backup, nedtonet */}
           <div className="border-t border-fog pt-6 text-center">
