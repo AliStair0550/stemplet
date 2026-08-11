@@ -10,6 +10,7 @@ import { btnClass } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
 import { cardTitle } from "@/lib/brand";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
+import { QrPrintPanel } from "./QrPrintPanel";
 import { MaterialsPrint } from "./MaterialsPrint";
 import { PLAN_LIMITS } from "@/lib/plans";
 import type { StampIconKey } from "@/lib/brand";
@@ -83,14 +84,29 @@ export default async function MaterialerPage() {
           </Panel>
         </section>
 
-        {/* 2. Faerdige skilte til print: tilpas eet sted, hent et hvilket som
-            helst format. */}
+        {/* 2. Print QR-koden: den faerdige, previewede QR i dit design
+            (visitkort + A4-plakat). Den staerke print-oplevelse. */}
         <section>
-          <SectionHeader title="Færdige skilte, klar til print" />
+          <SectionHeader title="Print QR-koden" />
+          <QrPrintPanel
+            slug={business.slug}
+            cardUrl={cardUrl}
+            qrDataUrl={qr}
+            businessName={cardTitle(business)}
+            primaryColor={business.primaryColor}
+            textColor={business.textColor}
+            logoUrl={business.logoUrl}
+          />
+        </section>
+
+        {/* 3. Flere skilte: mellemstoerrelser med tomt stempel-gitter, tilpasses
+            eet sted. */}
+        <section>
+          <SectionHeader title="Skilte til disk og væg" />
           <MaterialsPrint />
         </section>
 
-        {/* 3. Del online: kortet som kunderne ser det, med et delelink til
+        {/* 4. Del online: kortet som kunderne ser det, med et delelink til
             Instagram, Facebook eller din bio. */}
         <section>
           <SectionHeader title="Del kortet online" />

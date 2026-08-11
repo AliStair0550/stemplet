@@ -25,68 +25,36 @@ type Props = {
 // Forhaandsvisning der skalerer rent: artboardet er en container, og alt indeni
 // maales i cqw (procent af artboardets bredde), saa kortet ser ens ud i enhver
 // stoerrelse. Spejler PDF'ens opbygning (QR som det tydeligste element).
-const LAYOUT: Record<
-  string,
-  {
-    ratio: string;
-    maxW: number;
-    pad: string;
-    row: boolean;
-    qr: string;
-    tilePad: string;
-    name: string;
-    head: string;
-    help: string;
-    brand: string;
-  }
-> = {
+type Layout = {
+  ratio: string;
+  maxW: number;
+  pad: string;
+  row: boolean;
+  qr: string;
+  tilePad: string;
+  logoH: string;
+  name: string;
+  head: string;
+  help: string;
+  brand: string;
+};
+
+const LAYOUT: Record<string, Layout> = {
   "visitkort-landscape": {
-    ratio: "85 / 55",
-    maxW: 340,
-    pad: "7cqw",
-    row: true,
-    qr: "33cqw",
-    tilePad: "2.5cqw",
-    name: "4cqw",
-    head: "5.2cqw",
-    help: "3.4cqw",
-    brand: "2.9cqw",
+    ratio: "85 / 55", maxW: 360, pad: "7cqw", row: true, qr: "34cqw",
+    tilePad: "2.6cqw", logoH: "10cqw", name: "4cqw", head: "5.2cqw", help: "3.4cqw", brand: "2.9cqw",
   },
   "visitkort-portrait": {
-    ratio: "55 / 85",
-    maxW: 224,
-    pad: "8cqw",
-    row: false,
-    qr: "44cqw",
-    tilePad: "3cqw",
-    name: "5.5cqw",
-    head: "7cqw",
-    help: "4.6cqw",
-    brand: "3.8cqw",
+    ratio: "55 / 85", maxW: 230, pad: "8cqw", row: false, qr: "46cqw",
+    tilePad: "3cqw", logoH: "12cqw", name: "5.5cqw", head: "7cqw", help: "4.6cqw", brand: "3.8cqw",
   },
   "a4-portrait": {
-    ratio: "210 / 297",
-    maxW: 300,
-    pad: "9cqw",
-    row: false,
-    qr: "56cqw",
-    tilePad: "3.5cqw",
-    name: "5cqw",
-    head: "8cqw",
-    help: "4.6cqw",
-    brand: "3.4cqw",
+    ratio: "210 / 297", maxW: 300, pad: "9cqw", row: false, qr: "56cqw",
+    tilePad: "3.5cqw", logoH: "13cqw", name: "5cqw", head: "8cqw", help: "4.6cqw", brand: "3.4cqw",
   },
   "a4-landscape": {
-    ratio: "297 / 210",
-    maxW: 380,
-    pad: "6cqw",
-    row: false,
-    qr: "38cqw",
-    tilePad: "2.5cqw",
-    name: "3.6cqw",
-    head: "5.6cqw",
-    help: "3.2cqw",
-    brand: "2.5cqw",
+    ratio: "297 / 210", maxW: 400, pad: "7cqw", row: true, qr: "44cqw",
+    tilePad: "3cqw", logoH: "9cqw", name: "3.6cqw", head: "5cqw", help: "3cqw", brand: "2.4cqw",
   },
 };
 
@@ -115,6 +83,7 @@ function Preview({
         borderRadius: "3cqw",
         padding: l.tilePad,
         lineHeight: 0,
+        flexShrink: 0,
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -130,10 +99,20 @@ function Preview({
     <img
       src={logoUrl}
       alt=""
-      style={{ height: format === "a4" ? "13cqw" : "10cqw", maxWidth: "60%", objectFit: "contain" }}
+      style={{ height: l.logoH, maxWidth: "70%", objectFit: "contain" }}
     />
   ) : (
-    <span style={{ fontSize: l.name, fontWeight: 700, lineHeight: 1.1 }}>
+    <span
+      style={{
+        fontSize: l.name,
+        fontWeight: 700,
+        lineHeight: 1.1,
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      }}
+    >
       {businessName}
     </span>
   );
@@ -199,7 +178,7 @@ function Preview({
   );
 }
 
-export function QrReadyPanel({
+export function QrPrintPanel({
   slug,
   cardUrl,
   qrDataUrl,
@@ -213,7 +192,6 @@ export function QrReadyPanel({
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<"idle" | "done" | "error">("idle");
 
-  // Skift af format/retning nulstiller bekraeftelsen, saa den ikke haenger ved.
   useEffect(() => {
     setPhase("idle");
   }, [format, orient]);
@@ -258,21 +236,15 @@ export function QrReadyPanel({
   ];
 
   return (
-    <section className="rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
-      <div className="max-w-xl">
-        <h3 className="font-fraunces font-light italic text-[1.4rem] text-ink">
-          Gør QR-koden klar til kunderne
-        </h3>
-        <p className="mt-2 font-[300] text-[0.9rem] leading-relaxed text-stone">
-          Print QR-koden, og placér den ved kassen. Kunderne scanner den med
-          kameraet og får straks jeres stempelkort.
-        </p>
-      </div>
+    <div className="rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
+      <p className="max-w-xl font-[300] text-[0.9rem] leading-relaxed text-stone">
+        En færdig QR-kode i dit design, klar til print. Kunderne scanner den med
+        kameraet og henter kortet med det samme.
+      </p>
 
       <div className="mt-6 grid gap-8 md:grid-cols-[1fr_minmax(0,20rem)] md:items-start">
         {/* Venstre: valg + handlinger */}
         <div className="order-2 flex flex-col gap-5 md:order-1">
-          {/* Format */}
           <div className="grid grid-cols-2 gap-2">
             {FORMATS.map((f) => {
               const active = format === f.key;
@@ -300,7 +272,6 @@ export function QrReadyPanel({
             })}
           </div>
 
-          {/* Retning */}
           <div className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
               Retning
@@ -327,7 +298,6 @@ export function QrReadyPanel({
             </div>
           </div>
 
-          {/* Tjek QR virker */}
           <p className="font-[300] text-[0.78rem] leading-relaxed text-slate">
             Tjek at koden virker: scan forhåndsvisningen med kameraet, eller{" "}
             <a
@@ -341,7 +311,6 @@ export function QrReadyPanel({
             .
           </p>
 
-          {/* Handlinger */}
           <div className="flex flex-col gap-2">
             <button
               type="button"
@@ -360,7 +329,6 @@ export function QrReadyPanel({
             </button>
           </div>
 
-          {/* Feedback */}
           <div aria-live="polite" className="min-h-[1.25rem]">
             {phase === "done" ? (
               <p className="font-[300] text-[0.82rem] leading-relaxed text-terracotta">
@@ -394,6 +362,6 @@ export function QrReadyPanel({
           />
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -9,10 +9,8 @@ import {
 } from "@/lib/materials";
 
 const MATERIALS = [
-  { type: "plakat", title: "A4-plakat", body: "Til vindue eller opslagstavle." },
   { type: "a5", title: "A5-skilt", body: "Mellemstort skilt til disk eller væg." },
   { type: "skilt", title: "A6-diskskilt", body: "Lille skilt til at stå ved kassen." },
-  { type: "visitkort", title: "Visitkort", body: "85 x 55 mm, til hånden eller ved betalingen." },
 ] as const;
 
 function IconDoc() {
@@ -52,8 +50,8 @@ export function MaterialsPrint() {
   return (
     <div className="flex flex-col gap-5">
       <p className="max-w-2xl font-[300] text-[0.9rem] leading-relaxed text-stone">
-        Alle skilte bruger dit design og de samme stempler. Tilpas dem her, og
-        hent så det format, du vil printe.
+        Skilte med et tomt stempelkort i dit design, til disk og væg. Tilpas dem
+        her, og hent så den størrelse, du vil printe.
       </p>
 
       {/* Trin 1: tilpasning der gaelder ALLE formater. Egen, lysere flade, saa

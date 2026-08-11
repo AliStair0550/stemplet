@@ -11,12 +11,10 @@ import { StampCard } from "@/components/StampCard";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
-import { QrReadyPanel } from "./QrReadyPanel";
 import {
   createBusinessAction,
   sendOnboardingLogin,
   loginWithOnboardingToken,
-  createOnboardingPairingCode,
   type CreateResult,
 } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
@@ -100,11 +98,6 @@ export function StartWizard() {
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [showBigQr, setShowBigQr] = useState(false);
-  const [pairing, setPairing] = useState<{
-    code: string;
-    qrDataUrl: string;
-  } | null>(null);
-  const [pairingPending, startPairing] = useTransition();
   const [hydrated, setHydrated] = useState(false);
 
   // Auto-gem: gendan tidligere fremskridt fra localStorage, saa en
@@ -170,27 +163,15 @@ export function StartWizard() {
     window.scrollTo(0, 0);
   }, [step]);
 
-  // Escape lukker QR-visningen / parrings-dialogen.
+  // Escape lukker den store QR-visning.
   useEffect(() => {
-    if (!showBigQr && !pairing) return;
+    if (!showBigQr) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setShowBigQr(false);
-        setPairing(null);
-      }
+      if (e.key === "Escape") setShowBigQr(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [showBigQr, pairing]);
-
-  function addEmployee() {
-    const token = created?.loginToken;
-    if (!token) return;
-    startPairing(async () => {
-      const res = await createOnboardingPairingCode(token);
-      setPairing(res.ok ? { code: res.code, qrDataUrl: res.qrDataUrl } : null);
-    });
-  }
+  }, [showBigQr]);
 
   // Navnet paa kortet: valgt kort-navn, ellers firmanavnet, ellers en pladsholder.
   const cardName = design.displayName?.trim() || name.trim() || "Din butik";
@@ -543,141 +524,68 @@ export function StartWizard() {
               </span>
             </div>
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
-              Dit stempelkort er klar
+              Din butik er klar
             </h2>
             <p className="mx-auto mt-3 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
-              Vis QR-koden, så en kunde kan hente kortet og få sit første
-              stempel.
+              Se hvordan kortet ser ud, og prøv QR-koden. Så tager vi dig videre
+              til Kom i gang, hvor du bliver guidet hele vejen.
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-[minmax(0,19rem)_1fr] md:items-start">
-            {/* Det faerdige kort (fuld bredde paa mobil, saa hele kortet ses) */}
-            <div className="mx-auto w-full max-w-sm md:max-w-[19rem]">
-              <StampCard
-                businessName={cardName}
-                logoUrl={design.logoUrl}
-                primaryColor={design.primaryColor}
-                textColor={design.textColor}
-                stampIcon={design.stampIcon}
-                stamps={Math.min(3, design.stampsRequired)}
-                required={design.stampsRequired}
-                rewardText={design.rewardText}
-                serial={created.slug}
-                serialLabel={cardName}
-              />
-            </div>
-
-            {/* Handlinger + tjekliste */}
-            <div className="flex flex-col gap-5">
-              {/* Anbefalet primaer handling */}
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setShowBigQr(true)}
-                  className={`${btnClass("primary", "lg")} w-full`}
-                >
-                  Vis din QR-kode
-                </button>
-                <p className="mt-1.5 text-center font-[300] text-[0.78rem] leading-relaxed text-stone">
-                  Anbefalet: hold koden frem, så en kunde kan scanne den med det
-                  samme.
-                </p>
-              </div>
-
-              {/* Sekundaere handlinger */}
-              <div className="grid grid-cols-2 gap-2">
-                <a
-                  href={created.qrDataUrl}
-                  download={`${created.slug}-stempelkort-qr.png`}
-                  className={`${btnClass("outline")} w-full`}
-                >
-                  Hent QR-kode
-                </a>
-                <a
-                  href={created.cardUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${btnClass("outline")} w-full`}
-                >
-                  Se kundens oplevelse
-                </a>
-                {created.loginToken ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={addEmployee}
-                      disabled={pairingPending}
-                      className={`${btnClass("outline")} w-full disabled:opacity-60`}
-                    >
-                      {pairingPending ? "Åbner..." : "Tilføj medarbejder"}
-                    </button>
-                    <form action={loginWithOnboardingToken} className="w-full">
-                      <input
-                        type="hidden"
-                        name="token"
-                        value={created.loginToken}
-                      />
-                      <input type="hidden" name="dest" value="/app" />
-                      <SubmitButton
-                        variant="outline"
-                        size="md"
-                        className="w-full"
-                        pendingText="Åbner..."
-                      >
-                        Gå til overblik
-                      </SubmitButton>
-                    </form>
-                  </>
-                ) : null}
-              </div>
-
-              {/* Tjekliste: hvad der er gjort, og hvad der er naeste skridt */}
-              <div className="rounded-lg border border-fog bg-white p-4 shadow-card">
-                <p className="mb-3 text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
-                  Din tjekliste
-                </p>
-                <ul className="flex flex-col gap-2.5">
-                  {[
-                    { label: "Kortet er oprettet", done: true },
-                    { label: "QR-koden er klar", done: true },
-                    { label: "Første medarbejder er tilføjet", done: false },
-                    { label: "Første kunde har hentet kortet", done: false },
-                    { label: "Første stempel er givet", done: false },
-                  ].map((item) => (
-                    <li
-                      key={item.label}
-                      className="flex items-center gap-2.5 text-[0.85rem] font-[300]"
-                    >
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
-                          item.done
-                            ? "bg-terracotta text-parchment"
-                            : "border border-clay bg-white"
-                        }`}
-                      >
-                        {item.done ? <CheckIcon className="h-3 w-3" /> : null}
-                      </span>
-                      <span className={item.done ? "text-stone" : "text-ink"}>
-                        {item.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+          {/* Det faerdige kort: her SER ejeren, at butikken er klar */}
+          <div className="mx-auto w-full max-w-sm">
+            <StampCard
+              businessName={cardName}
+              logoUrl={design.logoUrl}
+              primaryColor={design.primaryColor}
+              textColor={design.textColor}
+              stampIcon={design.stampIcon}
+              stamps={Math.min(3, design.stampsRequired)}
+              required={design.stampsRequired}
+              rewardText={design.rewardText}
+              serial={created.slug}
+              serialLabel={cardName}
+            />
           </div>
 
-          {/* Gør QR-koden klar: hent visitkort eller A4-plakat, klar til print */}
-          <QrReadyPanel
-            slug={created.slug}
-            cardUrl={created.cardUrl}
-            qrDataUrl={created.qrDataUrl}
-            businessName={cardName}
-            primaryColor={design.primaryColor}
-            textColor={design.textColor}
-            logoUrl={design.logoUrl}
-          />
+          {/* Test det, og gaa saa videre til den guidede Kom i gang */}
+          <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowBigQr(true)}
+                className={`${btnClass("outline")} w-full`}
+              >
+                Vis QR-kode
+              </button>
+              <a
+                href={created.cardUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`${btnClass("outline")} w-full`}
+              >
+                Se kundens side
+              </a>
+            </div>
+            <p className="text-center font-[300] text-[0.78rem] leading-relaxed text-stone">
+              Prøv det: vis QR-koden og scan den med kameraet, eller se hvad
+              kunden møder.
+            </p>
+            {created.loginToken ? (
+              <form action={loginWithOnboardingToken} className="mt-1 w-full">
+                <input type="hidden" name="token" value={created.loginToken} />
+                <input type="hidden" name="dest" value="/app/kom-i-gang" />
+                <SubmitButton
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  pendingText="Åbner..."
+                >
+                  Gå til Kom i gang
+                </SubmitButton>
+              </form>
+            ) : null}
+          </div>
 
           {/* Login-mail som backup, nedtonet */}
           <div className="border-t border-fog pt-6 text-center">
@@ -744,52 +652,6 @@ export function StartWizard() {
               className={btnClass("primary")}
             >
               Luk
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Tilføj medarbejder: parringskode INLINE, saa man bliver paa kvitteringen */}
-      {pairing ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Tilføj en medarbejder"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-parchment/98 p-6 backdrop-blur-sm"
-        >
-          <div className="w-full max-w-sm rounded-2xl border border-fog bg-white p-6 text-center shadow-hero">
-            <h3 className="font-[400] text-[1.15rem] text-ink">
-              Tilføj en medarbejder
-            </h3>
-            <p className="mx-auto mt-2 max-w-xs font-[300] text-[0.86rem] leading-relaxed text-stone">
-              Åbn{" "}
-              <span className="font-[500] text-ink">stemplet.alius.dk/kasse</span>{" "}
-              på medarbejderens telefon og indtast koden, eller scan QR-koden.
-            </p>
-            <p className="my-4 font-fraunces text-[2.2rem] tracking-[0.25em] text-terracotta">
-              {pairing.code}
-            </p>
-            <div className="mx-auto w-fit rounded-xl border border-fog bg-white p-3">
-              <Image
-                src={pairing.qrDataUrl}
-                width={180}
-                height={180}
-                alt="QR til parring af enhed"
-                unoptimized
-                className="h-[160px] w-[160px] rounded-[6px]"
-              />
-            </div>
-            <p className="mt-3 font-[300] text-[0.76rem] text-slate">
-              Koden virker i 10 minutter. Enheden kan stemple og indløse, men
-              aldrig se dine indstillinger.
-            </p>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setPairing(null)}
-              className={`${btnClass("primary")} mt-5 w-full`}
-            >
-              Færdig
             </button>
           </div>
         </div>
