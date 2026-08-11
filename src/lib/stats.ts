@@ -397,3 +397,120 @@ export async function getRecentActivity(businessId: string, take = 12) {
     take,
   });
 }
+
+// Overblikkets "hvad er der sket i dag, og hvad boer jeg goere"-tal. Alt er
+// enten smaa dags-vinduer eller enkelt-tal, saa det er billigt at regne friskt
+// ved hvert besoeg (ejeren skal se dagen rykke straks efter et stempel).
+export type OverviewPulse = {
+  // Genbesoeg = distinkte kunder der fik et stempel i dag, OG som havde hentet
+  // kortet paa en tidligere dag (altsaa "kommet igen"). Bruges baade i hilsenen
+  // og som noegletal.
+  visitorsToday: number;
+  returningToday: number;
+  returningYesterday: number;
+  redemptionsToday: number;
+  redemptionsYesterday: number;
+  // Beslutnings-signaler til den ene anbefalede handling.
+  deviceCount: number; // aktive (ikke-spaerrede) kasse-enheder
+  nearReward: number; // kunder der mangler praecis eet stempel til beloenning
+};
+
+function zeroPulse(): OverviewPulse {
+  return {
+    visitorsToday: 0,
+    returningToday: 0,
+    returningYesterday: 0,
+    redemptionsToday: 0,
+    redemptionsYesterday: 0,
+    deviceCount: 0,
+    nearReward: 0,
+  };
+}
+
+export async function getOverviewPulse(
+  businessId: string,
+): Promise<OverviewPulse> {
+  const cards = await prisma.card.findMany({
+    where: { businessId },
+    select: { id: true },
+  });
+  const cardIds = cards.map((c) => c.id);
+  if (cardIds.length === 0) return zeroPulse();
+
+  // Bucket paa KOEBENHAVNS-dagen (samme keyFmt som grafen), saa "i dag"/"i gaar"
+  // aldrig forskydes ved UTC-midnat. ISO-datonoegler sammenlignes leksikografisk
+  // = kronologisk, saa "hentet foer i dag" bliver bare signupKey < dagens noegle.
+  const keyFmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Copenhagen",
+  });
+  const todayKey = keyFmt.format(new Date());
+  const yestKey = keyFmt.format(daysAgo(1));
+  // 3-dages vindue daekker sikkert baade i dag og i gaar uanset tidszone-offset.
+  const since = daysAgo(3);
+
+  const [stampRows, redemptionRows, deviceCount, nearRewardRows] =
+    await Promise.all([
+      prisma.stamp.findMany({
+        where: { businessId, createdAt: { gte: since } },
+        select: {
+          createdAt: true,
+          customerCardId: true,
+          customerCard: { select: { createdAt: true } },
+        },
+      }),
+      prisma.redemption.findMany({
+        where: {
+          customerCard: { cardId: { in: cardIds } },
+          createdAt: { gte: since },
+        },
+        select: { createdAt: true },
+      }),
+      prisma.device.count({ where: { businessId, revokedAt: null } }),
+      prisma.$queryRaw<{ n: number }[]>(Prisma.sql`
+        SELECT COUNT(*)::int AS n
+        FROM "CustomerCard" cc
+        JOIN "Card" c ON c."id" = cc."cardId"
+        WHERE c."businessId" = ${businessId}
+          AND cc."stamps" >= c."stampsRequired" - 1
+          AND cc."stamps" < c."stampsRequired"
+      `),
+    ]);
+
+  // Distinkte besoegende + genbesoeg pr. dag.
+  const visitors = new Map<string, Set<string>>();
+  const returning = new Map<string, Set<string>>();
+  const addTo = (map: Map<string, Set<string>>, key: string, id: string) => {
+    let set = map.get(key);
+    if (!set) {
+      set = new Set();
+      map.set(key, set);
+    }
+    set.add(id);
+  };
+  for (const s of stampRows) {
+    const k = keyFmt.format(s.createdAt);
+    if (k !== todayKey && k !== yestKey) continue;
+    addTo(visitors, k, s.customerCardId);
+    if (keyFmt.format(s.customerCard.createdAt) < k) {
+      addTo(returning, k, s.customerCardId);
+    }
+  }
+
+  let redemptionsToday = 0;
+  let redemptionsYesterday = 0;
+  for (const r of redemptionRows) {
+    const k = keyFmt.format(r.createdAt);
+    if (k === todayKey) redemptionsToday += 1;
+    else if (k === yestKey) redemptionsYesterday += 1;
+  }
+
+  return {
+    visitorsToday: visitors.get(todayKey)?.size ?? 0,
+    returningToday: returning.get(todayKey)?.size ?? 0,
+    returningYesterday: returning.get(yestKey)?.size ?? 0,
+    redemptionsToday,
+    redemptionsYesterday,
+    deviceCount,
+    nearReward: Number(nearRewardRows[0]?.n ?? 0),
+  };
+}
