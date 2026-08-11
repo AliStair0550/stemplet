@@ -535,6 +535,7 @@ export function StartWizard() {
           <LoyaltyStory
             businessName={cardName}
             serialLabel={cardName}
+            qrDataUrl={created.qrDataUrl}
             primaryColor={design.primaryColor}
             textColor={design.textColor}
             stampIcon={design.stampIcon}

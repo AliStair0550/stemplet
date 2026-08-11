@@ -36,7 +36,7 @@ export const DEFAULT_DESIGN: CardDesign = {
   rewardText: "10. kop er gratis",
   stampIcon: "coffee",
   displayName: null,
-  // Espresso: det foerste indbyggede tema, varmt og laesbart for de fleste.
+  // "Mørk": det foerste indbyggede tema, varmt og laesbart for de fleste.
   primaryColor: "#2A1A10",
   textColor: "#F6EEE4",
   logoUrl: null,
@@ -142,6 +142,29 @@ function Field({
   );
 }
 
+// Gruppe-overskrift, saa designeren laeses som faa klare afsnit i stedet for
+// en lang liste af felter. Samme terracotta-streg som dashboardets sektioner.
+function GroupHeader({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span
+        aria-hidden
+        className="h-[1.05rem] w-[3px] shrink-0 rounded-full bg-terracotta"
+      />
+      <div>
+        <h3 className="text-[0.95rem] font-[500] leading-tight text-ink">
+          {title}
+        </h3>
+        {hint ? (
+          <p className="mt-0.5 text-[0.75rem] font-[300] leading-tight text-stone">
+            {hint}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function CardDesigner({
   value,
   onChange,
@@ -165,6 +188,11 @@ export function CardDesigner({
   // fra og til igen i samme session. Gemt vaerdi er null, naar der er slaaet fra.
   const [termsOn, setTermsOn] = useState<boolean>(!!value.terms);
   const [termsDraft, setTermsDraft] = useState<string>(value.terms ?? "");
+  // Egne hex-farver ligger bag en knap, saa temaerne staar rent frem. Aabnes
+  // automatisk, hvis kortet allerede bruger en egen farve.
+  const [showCustom, setShowCustom] = useState<boolean>(
+    () => themeNameFor(value.primaryColor, value.textColor) === null,
+  );
 
   function set<K extends keyof CardDesign>(key: K, val: CardDesign[K]) {
     onChange({ ...value, [key]: val });
@@ -207,269 +235,306 @@ export function CardDesigner({
       <div
         className={
           hidePreview
-            ? "flex w-full flex-col gap-6"
-            : "order-2 flex flex-col gap-6 md:order-none"
+            ? "flex w-full flex-col gap-7"
+            : "order-2 flex flex-col gap-7 md:order-none"
         }
       >
-        <Field label={`Antal stempler (${value.stampsRequired})`}>
-          <input
-            type="range"
-            min={4}
-            max={12}
-            value={value.stampsRequired}
-            onChange={(e) => set("stampsRequired", Number(e.target.value))}
-            className="accent-terracotta"
-          />
-        </Field>
-
-        <div className="flex flex-col gap-2">
-          <label className="flex flex-col gap-1.5">
-            <span className="flex items-baseline justify-between gap-2">
-              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                Belønningstekst
-              </span>
-              <span
-                className={cn(
-                  "text-[0.68rem] tabular-nums",
-                  value.rewardText.length >= REWARD_TEXT_MAX
-                    ? "text-terracotta"
-                    : "text-slate",
-                )}
-              >
-                {value.rewardText.length} / {REWARD_TEXT_MAX}
-              </span>
-            </span>
+        {/* Belønning: kernen i kortet */}
+        <div className="flex flex-col gap-4">
+          <GroupHeader title="Belønning" hint="Det, kunderne sparer op til" />
+          <Field label={`Antal stempler (${value.stampsRequired})`}>
             <input
-              type="text"
-              value={value.rewardText}
-              maxLength={REWARD_TEXT_MAX}
-              onChange={(e) => set("rewardText", e.target.value)}
-              placeholder="10. kop er gratis"
-              className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+              type="range"
+              min={4}
+              max={12}
+              value={value.stampsRequired}
+              onChange={(e) => set("stampsRequired", Number(e.target.value))}
+              className="accent-terracotta"
             />
-          </label>
-          <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-            Kort tekst ser bedst ud i Apple Wallet. Maks {REWARD_TEXT_MAX} tegn.
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {REWARD_SUGGESTIONS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => set("rewardText", s)}
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-[0.72rem] font-[300] transition-colors",
-                  value.rewardText === s
-                    ? "border-terracotta bg-terracotta/10 text-terracotta"
-                    : "border-clay text-stone hover:border-terracotta hover:text-terracotta",
-                )}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
+          </Field>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Stempel-ikon
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {STAMP_ICONS.map((icon) => (
-              <button
-                key={icon.key}
-                type="button"
-                onClick={() => set("stampIcon", icon.key)}
-                aria-label={icon.label}
-                className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-md border transition-colors",
-                  value.stampIcon === icon.key
-                    ? "border-terracotta bg-terracotta/10 text-terracotta"
-                    : "border-clay text-stone hover:border-terracotta",
-                )}
-              >
-                <StampIcon icon={icon.key} className="h-5 w-5" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Tema
-            </span>
-            <span className="text-[0.72rem] font-[300] text-slate">
-              {activeThemeName ?? "Egen farve"}
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2.5">
-            {CARD_THEMES.map((t) => {
-              const active =
-                value.primaryColor.toUpperCase() === t.primary.toUpperCase() &&
-                value.textColor.toUpperCase() === t.text.toUpperCase();
-              return (
-                <button
-                  key={t.name}
-                  type="button"
-                  aria-label={t.name}
-                  aria-pressed={active}
-                  onClick={() =>
-                    onChange({
-                      ...value,
-                      primaryColor: t.primary,
-                      textColor: t.text,
-                    })
-                  }
+          <div className="flex flex-col gap-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="flex items-baseline justify-between gap-2">
+                <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                  Belønningstekst
+                </span>
+                <span
                   className={cn(
-                    "group flex flex-col items-center gap-1.5 rounded-[14px] border p-2.5 transition",
-                    active
-                      ? "border-terracotta bg-terracotta/[0.06]"
-                      : "border-clay hover:border-terracotta/60",
+                    "text-[0.68rem] tabular-nums",
+                    value.rewardText.length >= REWARD_TEXT_MAX
+                      ? "text-terracotta"
+                      : "text-slate",
                   )}
                 >
-                  <span
-                    className="flex h-11 w-full items-center justify-center rounded-[9px] ring-1 ring-black/5"
-                    style={{ background: t.primary }}
-                  >
-                    <span
-                      className="text-[0.9rem] font-[500] leading-none"
-                      style={{ color: t.text }}
-                    >
-                      Aa
-                    </span>
-                  </span>
-                  <span
+                  {value.rewardText.length} / {REWARD_TEXT_MAX}
+                </span>
+              </span>
+              <input
+                type="text"
+                value={value.rewardText}
+                maxLength={REWARD_TEXT_MAX}
+                onChange={(e) => set("rewardText", e.target.value)}
+                placeholder="10. kop er gratis"
+                className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+              />
+            </label>
+            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Kort tekst ser bedst ud i Apple Wallet. Maks {REWARD_TEXT_MAX} tegn.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {REWARD_SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => set("rewardText", s)}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[0.72rem] font-[300] transition-colors",
+                    value.rewardText === s
+                      ? "border-terracotta bg-terracotta/10 text-terracotta"
+                      : "border-clay text-stone hover:border-terracotta hover:text-terracotta",
+                  )}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Kortets udtryk: tema, farver og stempel */}
+        <div className="flex flex-col gap-5 border-t border-fog pt-6">
+          <GroupHeader
+            title="Kortets udtryk"
+            hint="Farverne og stemplet, kunden ser i sin Wallet"
+          />
+
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                Farvetema
+              </span>
+              <span className="text-[0.72rem] font-[300] text-slate">
+                {activeThemeName ?? "Egen farve"}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2.5">
+              {CARD_THEMES.map((t) => {
+                const active =
+                  value.primaryColor.toUpperCase() === t.primary.toUpperCase() &&
+                  value.textColor.toUpperCase() === t.text.toUpperCase();
+                return (
+                  <button
+                    key={t.name}
+                    type="button"
+                    aria-label={t.name}
+                    aria-pressed={active}
+                    onClick={() => {
+                      onChange({
+                        ...value,
+                        primaryColor: t.primary,
+                        textColor: t.text,
+                      });
+                      setShowCustom(false);
+                    }}
                     className={cn(
-                      "text-[0.72rem] leading-none transition-colors",
+                      "group flex flex-col items-center gap-1.5 rounded-[14px] border p-2.5 transition",
                       active
-                        ? "font-[500] text-ink"
-                        : "font-[300] text-stone group-hover:text-ink",
+                        ? "border-terracotta bg-terracotta/[0.06]"
+                        : "border-clay hover:border-terracotta/60",
                     )}
                   >
-                    {t.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Kortfarve">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={value.primaryColor}
-                onChange={(e) =>
-                  set("primaryColor", e.target.value.toUpperCase())
-                }
-                className="h-10 w-12 cursor-pointer rounded border border-clay bg-transparent"
-              />
-              <input
-                type="text"
-                value={value.primaryColor}
-                onChange={(e) =>
-                  set("primaryColor", normalizeHex(e.target.value, value.primaryColor))
-                }
-                className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-terracotta"
-              />
+                    <span
+                      className="flex h-11 w-full items-center justify-center rounded-[9px] ring-1 ring-black/5"
+                      style={{ background: t.primary }}
+                    >
+                      <span
+                        className="text-[0.9rem] font-[500] leading-none"
+                        style={{ color: t.text }}
+                      >
+                        Aa
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[0.72rem] leading-none transition-colors",
+                        active
+                          ? "font-[500] text-ink"
+                          : "font-[300] text-stone group-hover:text-ink",
+                      )}
+                    >
+                      {t.name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          </Field>
-          <Field label="Tekstfarve">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={value.textColor}
-                onChange={(e) => set("textColor", e.target.value.toUpperCase())}
-                className="h-10 w-12 cursor-pointer rounded border border-clay bg-transparent"
-              />
-              <input
-                type="text"
-                value={value.textColor}
-                onChange={(e) =>
-                  set("textColor", normalizeHex(e.target.value, value.textColor))
-                }
-                className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-terracotta"
-              />
-            </div>
-          </Field>
-        </div>
-
-        {!isCardReadable(value.primaryColor, value.textColor) ? (
-          <div className="-mt-2 flex items-start justify-between gap-3 rounded-lg border border-rust/40 bg-rust/5 px-3 py-2.5">
-            <p className="text-[0.76rem] font-[300] leading-relaxed text-rust">
-              Teksten er svær at læse på denne kortfarve. Vælg mere kontrast, så
-              kunderne kan se deres stempler.
-            </p>
             <button
               type="button"
-              onClick={() => set("textColor", contrastText(value.primaryColor))}
-              className="shrink-0 self-center text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-terracotta hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
+              onClick={() => setShowCustom((v) => !v)}
+              aria-expanded={showCustom}
+              className="self-start text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
             >
-              Ret automatisk
+              {showCustom ? "Skjul egne farver" : "Vælg egen farve"}
             </button>
-          </div>
-        ) : null}
 
-        <div className="flex flex-col gap-2">
-          <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Butiksnavn
-          </span>
-          <input
-            value={value.displayName ?? ""}
-            onChange={(e) => set("displayName", e.target.value)}
-            placeholder={businessName}
-            maxLength={40}
-            className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-terracotta"
-          />
-          <p className="text-[0.72rem] font-[300] leading-relaxed text-stone">
-            Det navn dine kunder ser på kortet. Lad feltet stå tomt for at bruge
-            firmanavnet ({businessName}).
-          </p>
-        </div>
+            {showCustom ? (
+              <div className="grid grid-cols-1 gap-4 pt-1 sm:grid-cols-2">
+                <Field label="Kortfarve">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={value.primaryColor}
+                      onChange={(e) =>
+                        set("primaryColor", e.target.value.toUpperCase())
+                      }
+                      className="h-10 w-12 cursor-pointer rounded border border-clay bg-transparent"
+                    />
+                    <input
+                      type="text"
+                      value={value.primaryColor}
+                      onChange={(e) =>
+                        set(
+                          "primaryColor",
+                          normalizeHex(e.target.value, value.primaryColor),
+                        )
+                      }
+                      className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-terracotta"
+                    />
+                  </div>
+                </Field>
+                <Field label="Tekstfarve">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={value.textColor}
+                      onChange={(e) =>
+                        set("textColor", e.target.value.toUpperCase())
+                      }
+                      className="h-10 w-12 cursor-pointer rounded border border-clay bg-transparent"
+                    />
+                    <input
+                      type="text"
+                      value={value.textColor}
+                      onChange={(e) =>
+                        set(
+                          "textColor",
+                          normalizeHex(e.target.value, value.textColor),
+                        )
+                      }
+                      className="w-full border border-clay bg-parchment px-3 py-2 font-[300] text-[0.85rem] text-ink outline-none focus:border-terracotta"
+                    />
+                  </div>
+                </Field>
+              </div>
+            ) : null}
 
-        {allowLogo ? (
-          <div className="flex flex-col gap-2">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Logo
-            </span>
-            <div className="flex items-center gap-3">
-              <label className="cursor-pointer border border-clay px-4 py-2 text-[0.78rem] font-[300] uppercase tracking-[0.08em] text-ink hover:border-terracotta hover:text-terracotta">
-                {uploading ? "Behandler..." : "Vælg fil"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={uploading}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleLogo(f);
-                  }}
-                />
-              </label>
-              {value.logoUrl ? (
+            {!isCardReadable(value.primaryColor, value.textColor) ? (
+              <div className="flex items-start justify-between gap-3 rounded-lg border border-rust/40 bg-rust/5 px-3 py-2.5">
+                <p className="text-[0.76rem] font-[300] leading-relaxed text-rust">
+                  Teksten er svær at læse på denne kortfarve. Vælg mere kontrast,
+                  så kunderne kan se deres stempler.
+                </p>
                 <button
                   type="button"
-                  onClick={() => set("logoUrl", null)}
-                  className="text-[0.75rem] font-[300] text-slate hover:text-ink"
+                  onClick={() =>
+                    set("textColor", contrastText(value.primaryColor))
+                  }
+                  className="shrink-0 self-center text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-terracotta hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                 >
-                  Fjern
+                  Ret automatisk
                 </button>
-              ) : null}
-            </div>
-            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Har du et logo, viser kortet det i stedet for butikkens navn.
-            </p>
-            {logoError ? (
-              <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
+              </div>
             ) : null}
           </div>
-        ) : null}
+
+          <div className="flex flex-col gap-2">
+            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              Stempel-ikon
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {STAMP_ICONS.map((icon) => (
+                <button
+                  key={icon.key}
+                  type="button"
+                  onClick={() => set("stampIcon", icon.key)}
+                  aria-label={icon.label}
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center rounded-md border transition-colors",
+                    value.stampIcon === icon.key
+                      ? "border-terracotta bg-terracotta/10 text-terracotta"
+                      : "border-clay text-stone hover:border-terracotta",
+                  )}
+                >
+                  <StampIcon icon={icon.key} className="h-5 w-5" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Navn og logo */}
+        <div className="flex flex-col gap-5 border-t border-fog pt-6">
+          <GroupHeader title="Navn og logo" />
+          <div className="flex flex-col gap-2">
+            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              Butiksnavn
+            </span>
+            <input
+              value={value.displayName ?? ""}
+              onChange={(e) => set("displayName", e.target.value)}
+              placeholder={businessName}
+              maxLength={40}
+              className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-terracotta"
+            />
+            <p className="text-[0.72rem] font-[300] leading-relaxed text-stone">
+              Det navn dine kunder ser på kortet. Lad feltet stå tomt for at
+              bruge firmanavnet ({businessName}).
+            </p>
+          </div>
+
+          {allowLogo ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                Logo
+              </span>
+              <div className="flex items-center gap-3">
+                <label className="cursor-pointer border border-clay px-4 py-2 text-[0.78rem] font-[300] uppercase tracking-[0.08em] text-ink hover:border-terracotta hover:text-terracotta">
+                  {uploading ? "Behandler..." : "Vælg fil"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleLogo(f);
+                    }}
+                  />
+                </label>
+                {value.logoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => set("logoUrl", null)}
+                    className="text-[0.75rem] font-[300] text-slate hover:text-ink"
+                  >
+                    Fjern
+                  </button>
+                ) : null}
+              </div>
+              <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+                Har du et logo, viser kortet det i stedet for butikkens navn.
+              </p>
+              {logoError ? (
+                <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
 
         {/* Betingelser (valgfri): til/fra + kort tekst. Vises IKKE paa kortet,
             men diskret under "Hent mit stempelkort" for kunden. */}
-        <div className="flex flex-col gap-2 border-t border-fog pt-5">
+        <div className="flex flex-col gap-2 border-t border-fog pt-6">
           <div className="flex items-center justify-between gap-4">
             <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
               Betingelser (valgfri)

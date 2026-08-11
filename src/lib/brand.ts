@@ -1,7 +1,7 @@
 // Brand-hjælpere for kundekortene: stempel-ikoner, farver, kontrast.
 // Ren logik uden server-afhængigheder, så den kan bruges på klienten.
 
-// Espresso: foerste indbyggede tema, varmt og laesbart. Bruges som reserve, saa
+// "Mørk": foerste indbyggede tema, varmt og laesbart. Bruges som reserve, saa
 // et kort uden eksplicit farve stadig lander paa det nye brand.
 export const DEFAULT_PRIMARY = "#2A1A10";
 export const DEFAULT_TEXT = "#F6EEE4";
@@ -68,7 +68,7 @@ export type CardTheme = {
 };
 
 export const CARD_THEMES: CardTheme[] = [
-  { name: "Espresso", primary: "#2A1A10", text: "#F6EEE4" },
+  { name: "Mørk", primary: "#2A1A10", text: "#F6EEE4" },
   { name: "Terrakotta", primary: "#8A3B24", text: "#FBEDE6" },
   { name: "Skov", primary: "#1F3A2E", text: "#F3F7F4" },
   { name: "Midnat", primary: "#101F33", text: "#EAF0F8" },
