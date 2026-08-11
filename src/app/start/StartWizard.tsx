@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import {
   CardDesigner,
@@ -11,9 +10,9 @@ import { StampCard } from "@/components/StampCard";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
+import { LoyaltyStory } from "./LoyaltyStory";
 import {
   createBusinessAction,
-  sendOnboardingLogin,
   loginWithOnboardingToken,
   type CreateResult,
 } from "./actions";
@@ -23,8 +22,10 @@ import { BUSINESS_CATEGORIES } from "@/lib/categories";
 // live preview af kortet ved siden af og auto-gemt fremskridt. Faerre felter pr.
 // skaerm = roligere, mere Apple-agtig foelelse. Vi forklarer VAERDIEN af hvert
 // trin, ikke bare hvad der skal skrives.
-const STEPS = ["Din butik", "Opsætning", "Design kortet", "Klar"];
-const DESIGN_STEP = 2;
+const STEPS = ["Din butik", "Design kortet", "Opsætning", "Klar"];
+const DESIGN_STEP = 1;
+// Sidste input-trin: praktiske detaljer, vilkaar og "Opret min butik".
+const SETUP_STEP = 2;
 const DONE_STEP = 3;
 const STORAGE_KEY = "stemplet-onboarding-v1";
 
@@ -35,14 +36,14 @@ const STEP_INFO: Record<number, { title: string; value: string }> = {
       "Navnet står på kundens kort, og e-mailen er dit login. Ingen adgangskode at huske.",
   },
   1: {
-    title: "Opsætning",
-    value:
-      "Helt valgfrit. En adresse kan få kortet frem på kundens låseskærm, når de er i nærheden. Alt kan ændres senere i dashboardet.",
-  },
-  2: {
     title: "Design kortet",
     value:
       "Gør kortet til dit. Det er præcis dette, kunderne ser i deres Apple Wallet.",
+  },
+  2: {
+    title: "Opsætning",
+    value:
+      "Sidste trin. Tilføj gerne en adresse, så kortet dukker op på kundens låseskærm i nærheden. Alt kan ændres senere i dashboardet.",
   },
 };
 
@@ -96,8 +97,6 @@ export function StartWizard() {
     null,
   );
   const [pending, startTransition] = useTransition();
-  const [copied, setCopied] = useState(false);
-  const [showBigQr, setShowBigQr] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   // Auto-gem: gendan tidligere fremskridt fra localStorage, saa en
@@ -116,7 +115,7 @@ export function StartWizard() {
           setDesign({ ...DEFAULT_DESIGN, ...s.design });
         if (typeof s.acceptedTerms === "boolean") setAcceptedTerms(s.acceptedTerms);
         if (typeof s.step === "number")
-          setStep(Math.max(0, Math.min(s.step, DESIGN_STEP)));
+          setStep(Math.max(0, Math.min(s.step, SETUP_STEP)));
       }
     } catch {
       /* ignorer korrupt gemt tilstand */
@@ -138,7 +137,7 @@ export function StartWizard() {
           addrConfirmed,
           design,
           acceptedTerms,
-          step: Math.min(step, DESIGN_STEP),
+          step: Math.min(step, SETUP_STEP),
         }),
       );
     } catch {
@@ -163,29 +162,8 @@ export function StartWizard() {
     window.scrollTo(0, 0);
   }, [step]);
 
-  // Escape lukker den store QR-visning.
-  useEffect(() => {
-    if (!showBigQr) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowBigQr(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [showBigQr]);
-
   // Navnet paa kortet: valgt kort-navn, ellers firmanavnet, ellers en pladsholder.
   const cardName = design.displayName?.trim() || name.trim() || "Din butik";
-
-  async function copyLink() {
-    if (!created) return;
-    try {
-      await navigator.clipboard.writeText(created.cardUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* udklipsholder ikke tilgaengelig */
-    }
-  }
 
   function next() {
     setError(null);
@@ -238,7 +216,7 @@ export function StartWizard() {
       } else {
         setError(res.error);
         // Hop til det trin, hvor feltet med fejlen staar.
-        if (res.field === "address") setStep(1);
+        if (res.field === "address") setStep(SETUP_STEP);
         else if (res.field === "email") setStep(0);
       }
     });
@@ -351,8 +329,22 @@ export function StartWizard() {
               </div>
             ) : null}
 
-            {/* Trin 1: praktiske detaljer */}
-            {step === 1 ? (
+            {/* Trin 1: design (preview'et vises i sidepanelet). Fokuseret paa
+                design alene, saa vilkaar ligger paa naeste trin. */}
+            {step === DESIGN_STEP ? (
+              <div className="flex flex-col gap-5 animate-step">
+                <CardDesigner
+                  value={design}
+                  onChange={setDesign}
+                  businessName={name}
+                  allowLogo
+                  hidePreview
+                />
+              </div>
+            ) : null}
+
+            {/* Trin 2: praktiske detaljer + vilkaar. Sidste trin foer oprettelse. */}
+            {step === SETUP_STEP ? (
               <div className="flex flex-col gap-4 animate-step">
                 <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
                   <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
@@ -410,19 +402,7 @@ export function StartWizard() {
                     )}
                   </div>
                 </div>
-              </div>
-            ) : null}
 
-            {/* Trin 2: design + vilkaar (preview'et vises i sidepanelet) */}
-            {step === DESIGN_STEP ? (
-              <div className="flex flex-col gap-5 animate-step">
-                <CardDesigner
-                  value={design}
-                  onChange={setDesign}
-                  businessName={name}
-                  allowLogo
-                  hidePreview
-                />
                 <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
                   <input
                     type="checkbox"
@@ -481,7 +461,7 @@ export function StartWizard() {
               >
                 Tilbage
               </button>
-              {step < DESIGN_STEP ? (
+              {step < SETUP_STEP ? (
                 <button onClick={next} className={btnClass("primary")}>
                   Fortsæt
                 </button>
@@ -503,7 +483,7 @@ export function StartWizard() {
       ) : null}
 
       {step === DONE_STEP && created ? (
-        <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-8 animate-step">
+        <div className="mx-auto mt-4 flex w-full max-w-2xl flex-col items-center gap-8 animate-step">
           <div className="text-center">
             {/* Stempel-landing: brandets "dopamin, ikke konfetti"-bevaegelse. */}
             <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center">
@@ -526,134 +506,42 @@ export function StartWizard() {
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
               Din butik er klar
             </h2>
-            <p className="mx-auto mt-3 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
-              Se hvordan kortet ser ud, og prøv QR-koden. Så tager vi dig videre
-              til Kom i gang, hvor du bliver guidet hele vejen.
-            </p>
           </div>
 
-          {/* Det faerdige kort: her SER ejeren, at butikken er klar */}
-          <div className="mx-auto w-full max-w-sm">
-            <StampCard
-              businessName={cardName}
-              logoUrl={design.logoUrl}
-              primaryColor={design.primaryColor}
-              textColor={design.textColor}
-              stampIcon={design.stampIcon}
-              stamps={Math.min(3, design.stampsRequired)}
-              required={design.stampsRequired}
-              rewardText={design.rewardText}
-              serial={created.slug}
-              serialLabel={cardName}
-            />
-          </div>
-
-          {/* Test det, og gaa saa videre til den guidede Kom i gang */}
-          <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setShowBigQr(true)}
-                className={`${btnClass("outline")} w-full`}
-              >
-                Vis QR-kode
-              </button>
-              <a
-                href={created.cardUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={`${btnClass("outline")} w-full`}
-              >
-                Se kundens side
-              </a>
-            </div>
-            <p className="text-center font-[300] text-[0.78rem] leading-relaxed text-stone">
-              Prøv det: vis QR-koden og scan den med kameraet, eller se hvad
-              kunden møder.
-            </p>
-            {created.loginToken ? (
-              <form action={loginWithOnboardingToken} className="mt-1 w-full">
-                <input type="hidden" name="token" value={created.loginToken} />
-                <input type="hidden" name="dest" value="/app/kom-i-gang" />
-                <SubmitButton
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  pendingText="Åbner..."
-                >
-                  Gå til Kom i gang
-                </SubmitButton>
-              </form>
-            ) : null}
-          </div>
-
-          {/* Login-mail som backup, nedtonet */}
-          <div className="border-t border-fog pt-6 text-center">
-            <p className="mx-auto max-w-md font-[300] text-[0.8rem] leading-relaxed text-slate">
-              {created.loginSent
-                ? `Vi har sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
-                : `Vil du logge ind via mail? Så sender vi et link til ${email}.`}
-            </p>
-            <form action={sendOnboardingLogin} className="mt-3 flex justify-center">
-              <input type="hidden" name="email" value={email} />
+          {/* Primaer handling: direkte ind til den guidede Kom i gang */}
+          {created.loginToken ? (
+            <form action={loginWithOnboardingToken} className="w-full max-w-xs">
+              <input type="hidden" name="token" value={created.loginToken} />
+              <input type="hidden" name="dest" value="/app/kom-i-gang" />
               <SubmitButton
-                variant="ghost"
-                size="md"
-                pendingText="Sender login-link..."
+                variant="primary"
+                size="lg"
+                className="w-full"
+                pendingText="Åbner..."
               >
-                {created.loginSent ? "Send login-link igen" : "Send login-link"}
+                Gå til Kom i gang
               </SubmitButton>
             </form>
-            <button
-              type="button"
-              onClick={copyLink}
-              className="mt-1 text-[0.76rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
-            >
-              {copied ? "Link kopieret" : "Kopiér link til kortet"}
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Stor QR-visning: den anbefalede handling, saa en kunde kan scanne nu */}
-      {showBigQr && created ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Din QR-kode"
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-parchment/98 p-6 backdrop-blur-sm"
-        >
-          <p className="max-w-xs text-center font-[300] text-[0.95rem] leading-relaxed text-ink">
-            Bed kunden scanne koden med kameraet. Så henter de dit stempelkort til
-            deres Apple Wallet.
-          </p>
-          <div className="rounded-2xl bg-white p-4 shadow-hero">
-            <Image
-              src={created.qrDataUrl}
-              width={340}
-              height={340}
-              alt="Din QR-kode"
-              unoptimized
-              className="h-[min(78vw,340px)] w-[min(78vw,340px)] rounded-[8px]"
-            />
-          </div>
-          <div className="flex flex-wrap justify-center gap-2">
+          ) : (
             <a
-              href={created.qrDataUrl}
-              download={`${created.slug}-stempelkort-qr.png`}
-              className={btnClass("outline")}
+              href="/login"
+              className={`${btnClass("primary", "lg")} w-full max-w-xs`}
             >
-              Hent QR-kode
+              Gå til login
             </a>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setShowBigQr(false)}
-              className={btnClass("primary")}
-            >
-              Luk
-            </button>
-          </div>
+          )}
+
+          {/* A til Z: hvordan kortet skaber loyalitet, i butikkens eget design */}
+          <LoyaltyStory
+            businessName={cardName}
+            serialLabel={cardName}
+            primaryColor={design.primaryColor}
+            textColor={design.textColor}
+            stampIcon={design.stampIcon}
+            stampsRequired={design.stampsRequired}
+            rewardText={design.rewardText}
+            logoUrl={design.logoUrl}
+          />
         </div>
       ) : null}
     </div>
