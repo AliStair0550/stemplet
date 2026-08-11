@@ -24,18 +24,48 @@ export async function createCardholderAtomically(
   plan: Plan,
   businessId: string,
   cardId: string,
+  // Enheds-id (stemplet_device-cookie). Sat -> dedup pr. (kort, enhed), saa et
+  // dobbelt-tryk/retry ikke opretter to kort. Null -> som foer (ingen dedup).
+  deviceId: string | null = null,
   db: typeof prisma = prisma,
 ): Promise<{ id: string; serial: string; authToken: string } | null> {
-  const data = {
+  const select = { id: true, serial: true, authToken: true } as const;
+  const newData = () => ({
     cardId,
     serial: generateSerial(),
     authToken: generateAuthToken(),
-  };
-  const select = { id: true, serial: true, authToken: true } as const;
+    deviceId,
+  });
 
-  // Loft slaaet fra: ingen optaelling, ingen laas, bare opret.
+  // Opret EET kort, dedup'et pr. enhed: har enheden allerede et kort til dette
+  // kort, genbruges det. Vinder to samtidige oprettelser kapløbet, fanger unique-
+  // constrainten ([cardId, deviceId]) den ene (P2002), og vi genfinder i stedet.
+  // Bruges kun paa loft-fri sti; loft-stien serialiserer via advisory-laasen.
+  const createDeduped = async () => {
+    if (deviceId) {
+      const found = await db.customerCard.findFirst({
+        where: { cardId, deviceId },
+        select,
+      });
+      if (found) return found;
+    }
+    try {
+      return await db.customerCard.create({ data: newData(), select });
+    } catch (e) {
+      if (deviceId && (e as { code?: string }).code === "P2002") {
+        const found = await db.customerCard.findFirst({
+          where: { cardId, deviceId },
+          select,
+        });
+        if (found) return found;
+      }
+      throw e;
+    }
+  };
+
+  // Loft slaaet fra: ingen optaelling, ingen laas, bare (dedup-)opret.
   if (PLAN_LIMITS[plan].maxCustomers === null) {
-    return db.customerCard.create({ data, select });
+    return createDeduped();
   }
 
   // Loft aktivt: serialisér count + create PR. BUTIK, saa graensen ikke kan races.
@@ -44,9 +74,19 @@ export async function createCardholderAtomically(
     // wrap i en subquery, saa den YDRE select giver en int-kolonne. Laasen tages
     // stadig (subqueryen evalueres) og frigives ved commit/rollback.
     await tx.$queryRaw`SELECT 1 AS locked FROM (SELECT pg_advisory_xact_lock(${CARDHOLDER_CAP_LOCK}::int, hashtext(${businessId}))) _lock`;
+    // Laasen serialiserer pr. butik, saa en find-foer-create er nok her: en
+    // samtidig tilmelding fra samme enhed ser det committede kort og genbruger
+    // det (ingen P2002 i transaktionen, som ellers ville aborte den).
+    if (deviceId) {
+      const found = await tx.customerCard.findFirst({
+        where: { cardId, deviceId },
+        select,
+      });
+      if (found) return found;
+    }
     const total = await tx.customerCard.count({ where: { card: { businessId } } });
     if (!canCreateCustomer(plan, total)) return null;
-    return tx.customerCard.create({ data, select });
+    return tx.customerCard.create({ data: newData(), select });
   });
 }
 

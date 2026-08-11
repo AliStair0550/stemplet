@@ -203,6 +203,7 @@ model CustomerCard {
   card           Card                 @relation(fields: [cardId], references: [id], onDelete: Cascade)
   serial         String               @unique // bruges i pass og stregkode
   authToken      String               @unique // hemmeligt, til Wallet web service
+  deviceId       String? // stemplet_device-cookie: dedup af claim + genfind ved tabt kort-cookie
   stamps         Int                  @default(0)
   completedCount Int                  @default(0)
   // Livstidstaeller: samlet antal stempler kunden NOGENSINDE har optjent hos
@@ -217,6 +218,7 @@ model CustomerCard {
   createdAt      DateTime             @default(now())
   lastStampAt    DateTime?
 
+  @@unique([cardId, deviceId]) // een enhed = eet kort pr. butik (race-sikker dedup)
   @@index([cardId])
   // Statistik scoper alt paa cardId og filtrerer paa tid/livstid. Uden disse
   // scanner hver count/aggregate alle butikkens kortholder-raekker. Daekker

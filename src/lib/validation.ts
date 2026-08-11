@@ -97,6 +97,9 @@ export const campaignSchema = z
 export const redeemSchema = z.object({
   serial: z.string().min(4),
   pin: pinSchema,
+  // Samme noegle paa et retry (fx tabt svar) -> server returnerer FOERSTE
+  // resultat i stedet for at fejle med "kortet er ikke fuldt endnu".
+  idempotencyKey: z.string().min(8).max(200).optional(),
 });
 
 // Personale-scan (stempl via serial). count: antal stempler paa denne scanning.

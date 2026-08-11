@@ -1,11 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { WALLET_ENABLED, APP_URL } from "@/lib/env";
 import { resolveOrCreateCard } from "@/lib/claim";
 import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
 import { maybeFireCardholderThresholds } from "@/lib/billing";
-import { cardCookieName, cardCookieOptions } from "@/lib/cookies";
+import {
+  cardCookieName,
+  cardCookieOptions,
+  DEVICE_ID_COOKIE,
+  deviceCookieOptions,
+} from "@/lib/cookies";
+import { newDeviceId } from "@/lib/ids";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureWalletError, captureServerError } from "@/lib/sentry";
 
@@ -22,7 +28,18 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  const back = (path: string) => NextResponse.redirect(new URL(path, APP_URL));
+
+  // Enheds-id: genbrug den eksisterende stemplet_device-cookie, ellers lav en ny
+  // og saet den paa svaret. Bruges til at dedup'e claim (intet dublet-kort ved
+  // retry) og genfinde kortet, hvis kort-cookien tabes.
+  const existingDid = (await cookies()).get(DEVICE_ID_COOKIE)?.value;
+  const deviceId = existingDid ?? newDeviceId();
+  const withDevice = (res: NextResponse) => {
+    if (!existingDid) res.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
+    return res;
+  };
+  const back = (path: string) =>
+    withDevice(NextResponse.redirect(new URL(path, APP_URL)));
 
   // Let, generoes rate-limit pr. IP, saa ruten ikke kan misbruges til at oprette
   // kort en masse. Hoej nok til at en travl cafe paa EEN delt WiFi-IP ikke rammer
@@ -42,7 +59,7 @@ export async function GET(
   // paa /k i stedet for en haard 500. Loggen fanger en aegte, laengere udfald.
   let r;
   try {
-    r = await resolveOrCreateCard(slug);
+    r = await resolveOrCreateCard(slug, deviceId);
   } catch (e) {
     captureServerError(e, { route: "wallet:claim:resolve", extra: { slug } });
     return back(`/k/${slug}?fejl=serverfejl`);
@@ -52,10 +69,11 @@ export async function GET(
   // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.
   if (r.created) await maybeFireCardholderThresholds(r.businessId);
 
-  // Device-cookien saettes paa svaret (mest paalidelige maade i en route-handler).
+  // Kort-cookien (+ enheds-cookien) saettes paa svaret (mest paalidelige maade i
+  // en route-handler).
   const withCookie = (res: NextResponse) => {
     res.cookies.set(cardCookieName(r.businessId), r.authToken, cardCookieOptions());
-    return res;
+    return withDevice(res);
   };
 
   const ua = (await headers()).get("user-agent") ?? "";

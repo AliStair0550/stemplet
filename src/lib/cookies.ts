@@ -2,9 +2,22 @@ import "server-only";
 import { cookies } from "next/headers";
 import { newDeviceId } from "./ids";
 
-const DEVICE_ID_COOKIE = "stemplet_device";
+export const DEVICE_ID_COOKIE = "stemplet_device";
 const secure = process.env.NODE_ENV === "production";
 const CARD_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 2; // 2 aar
+const DEVICE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 aar
+
+/** Cookie-indstillinger for enheds-id'et. Deles, saa route-handlers kan saette
+ *  den direkte paa NextResponse (fx claim-ruten der bygger sit eget svar). */
+export function deviceCookieOptions() {
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: DEVICE_COOKIE_MAX_AGE,
+  };
+}
 
 export function cardCookieName(businessId: string) {
   return `stemplet_card_${businessId}`;
@@ -44,13 +57,7 @@ export async function ensureDeviceId(): Promise<string> {
   const existing = c.get(DEVICE_ID_COOKIE)?.value;
   if (existing) return existing;
   const id = newDeviceId();
-  c.set(DEVICE_ID_COOKIE, id, {
-    httpOnly: true,
-    secure,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-  });
+  c.set(DEVICE_ID_COOKIE, id, deviceCookieOptions());
   return id;
 }
 

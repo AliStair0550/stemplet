@@ -12,6 +12,7 @@ import {
 import { ensureDeviceId } from "@/lib/cookies";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
+import { runOnce, IdempotencyInFlight } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,13 +82,23 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const res = await redeemReward({
-      customerCardId: cc.id,
-      ip,
-    });
+    // Idempotens: et tabt svar + retry med samme noegle returnerer FOERSTE
+    // indloesnings-resultat i stedet for at fejle med "kortet er ikke fuldt
+    // endnu" (som ville faa personalet til at tro, det slog fejl). Noeglen
+    // scopes pr. butik.
+    const res = await runOnce(
+      parsed.data.idempotencyKey
+        ? `redeem:${businessId}:${parsed.data.idempotencyKey}`
+        : undefined,
+      () => redeemReward({ customerCardId: cc.id, ip }),
+    );
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
+    // Samtidigt identisk forsoeg er stadig i gang: bed om et roligt retry.
+    if (e instanceof IdempotencyInFlight) {
+      return apiError("RETRY", "Belønningen behandles. Prøv igen om lidt.", 409);
+    }
     captureServerError(e, { route: "staff/redeem", businessId });
     console.error(e);
     return apiError("SERVER", "Noget gik galt.", 500);

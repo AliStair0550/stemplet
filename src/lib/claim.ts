@@ -20,7 +20,10 @@ export type ResolvedCard =
 // kundens kort via device-cookien, eller opret et nyt (race-sikkert, med evt.
 // loft). SAETTER IKKE cookien og fyrer IKKE taerskler - det goer kalderen (claim-
 // ruten), saa cookien kan saettes paa den maade der er paalidelig i konteksten.
-export async function resolveOrCreateCard(slug: string): Promise<ResolvedCard> {
+export async function resolveOrCreateCard(
+  slug: string,
+  deviceId: string | null = null,
+): Promise<ResolvedCard> {
   // Foerste DB-touch i claim-flowet: mest udsat for et Neon cold start, saa den
   // koeres med korte retries paa forbigaaende forbindelsesfejl. Er computen
   // vaekket her, er resten af requesten varm.
@@ -41,7 +44,7 @@ export async function resolveOrCreateCard(slug: string): Promise<ResolvedCard> {
   }
   const card = business.cards[0];
 
-  // Samme telefon rammer altid samme kort (device-cookie).
+  // Samme telefon rammer altid samme kort (kort-cookie).
   const existingToken = await getCardToken(business.id);
   if (existingToken) {
     const cc = await loadCardByToken(existingToken);
@@ -50,6 +53,25 @@ export async function resolveOrCreateCard(slug: string): Promise<ResolvedCard> {
         ok: true,
         serial: cc.serial,
         authToken: existingToken,
+        businessId: business.id,
+        created: false,
+      };
+    }
+  }
+
+  // Enheds-fallback: mistede kunden kort-cookien (ryddet/anden fane), men har
+  // stadig enheds-cookien, saa genfind deres eksisterende kort i stedet for et
+  // nyt tomt. Ligger FOER loft/pause-check, saa en returkunde altid faar sit kort.
+  if (deviceId) {
+    const cc = await prisma.customerCard.findFirst({
+      where: { cardId: card.id, deviceId },
+      select: { serial: true, authToken: true },
+    });
+    if (cc) {
+      return {
+        ok: true,
+        serial: cc.serial,
+        authToken: cc.authToken,
         businessId: business.id,
         created: false,
       };
@@ -65,6 +87,7 @@ export async function resolveOrCreateCard(slug: string): Promise<ResolvedCard> {
     business.plan,
     business.id,
     card.id,
+    deviceId,
   );
   if (!created) return { ok: false, error: "fuld" };
 

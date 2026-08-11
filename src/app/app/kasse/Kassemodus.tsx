@@ -533,6 +533,9 @@ function StaffCard({
   // endeligt svar; beholdes ved tabt forbindelse, saa et nyt tryk deduplikeres
   // server-side i stedet for at give kunden et ekstra stempel.
   const stampKeyRef = useRef(newIdemKey());
+  // Samme rolle for indloesning: samme noegle paa et retry, saa en tabt-svar-
+  // gentagelse ikke laeser som "kortet er ikke fuldt endnu".
+  const redeemKeyRef = useRef(newIdemKey());
   // Stiger for hvert stempel: bruges som key til at gen-udloese kortets
   // "burst"-animation og den flyvende "+1", saa personalet faar en tydelig
   // kvittering paa skaermen (Wallet-pass'et opdaterer Apple lidt senere).
@@ -649,9 +652,25 @@ function StaffCard({
       const res = await fetchWithTimeout("/api/staff/redeem", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ serial: card.serial, pin }),
+        body: JSON.stringify({
+          serial: card.serial,
+          pin,
+          // Samme noegle paa et retry -> server-side dedup (samme resultat).
+          idempotencyKey: redeemKeyRef.current,
+        }),
       });
       const data = await res.json();
+      if (res.status === 409) {
+        // Identisk indloesning behandles stadig. Behold noeglen, saa et nyt tryk
+        // henter DET foerste resultat i stedet for at fejle.
+        setNote({
+          ok: false,
+          text: data.message ?? "Belønningen behandles. Prøv igen om lidt.",
+        });
+        return;
+      }
+      // Vi fik et endeligt svar -> naeste indloesning er en NY handling.
+      redeemKeyRef.current = newIdemKey();
       if (res.ok) {
         // Stor kvittering: markér tydeligt at beloenningen skal gives NU, og
         // kraev et bevidst "OK" for at lukke, saa den ikke overses. Serveren
@@ -668,6 +687,8 @@ function StaffCard({
         setPin("");
       }
     } catch {
+      // Intet svar (tabt/stallet): BEHOLD noeglen, saa et retry deduplikeres til
+      // det foerste resultat (ingen falsk "kortet er ikke fuldt endnu").
       setNote({ ok: false, text: "Ingen forbindelse. Prøv igen." });
     } finally {
       busyRef.current = false;
