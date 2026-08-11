@@ -87,6 +87,7 @@ export async function resolveOrCreateCard(
     business.plan,
     business.id,
     card.id,
+    prisma,
     deviceId,
   );
   if (!created) return { ok: false, error: "fuld" };

@@ -24,10 +24,11 @@ export async function createCardholderAtomically(
   plan: Plan,
   businessId: string,
   cardId: string,
+  // db er 4. parameter, saa unit-tests kan injicere en fake (Parameters<...>[3]).
+  db: typeof prisma = prisma,
   // Enheds-id (stemplet_device-cookie). Sat -> dedup pr. (kort, enhed), saa et
   // dobbelt-tryk/retry ikke opretter to kort. Null -> som foer (ingen dedup).
   deviceId: string | null = null,
-  db: typeof prisma = prisma,
 ): Promise<{ id: string; serial: string; authToken: string } | null> {
   const select = { id: true, serial: true, authToken: true } as const;
   const newData = () => ({
