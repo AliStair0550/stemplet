@@ -275,8 +275,10 @@ export async function sendOnboardingLogin(formData: FormData) {
       durableRateLimit("login-ip", ip, 10, 3600),
     ]);
     // Ved onboarding er kontoen lige oprettet - bloker ikke, men undgaa
-    // gentagne mails hvis nogen spammer knappen.
-    if (!emailOk || !ipOk) return;
+    // gentagne mails hvis nogen spammer knappen. Send dog til "tjek din
+    // mail" (i stedet for et stille no-op), saa knappen ikke foeles doed:
+    // brugeren har allerede faaet et link for nylig.
+    if (!emailOk || !ipOk) redirect("/login/tjek-mail");
 
     await signIn("resend", { email, redirectTo: "/app" });
   } catch (e) {

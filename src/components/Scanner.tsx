@@ -28,9 +28,22 @@ export function Scanner({
   const [status, setStatus] = useState<"starting" | "scanning" | "error">(
     "starting",
   );
+  // Stiger, naar man trykker "Prøv igen": genstarter kamera-effekten.
+  const [retryKey, setRetryKey] = useState(0);
+
+  // Escape lukker overlayet (tastatur/desktop), som en rigtig dialog.
+  useEffect(() => {
+    if (!onClose) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   useEffect(() => {
     let cancelled = false;
+    doneRef.current = false;
 
     async function getStream(): Promise<MediaStream> {
       // Foerst bagkameraet; falder tilbage til et hvilket som helst kamera,
@@ -113,11 +126,15 @@ export function Scanner({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       streamRef.current?.getTracks().forEach((t) => t.stop());
     };
-    // Bevidst tom: kameraet startes een gang og lukkes kun ved unmount.
-  }, []);
+    // Kameraet startes een gang (og ved "Prøv igen" via retryKey); ikke af
+    // almindelige re-renders, som ellers ville rive kameraet ned midt i en scan.
+  }, [retryKey]);
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Scan QR-kode"
       className={`fixed inset-0 flex flex-col items-center justify-center bg-ink/95 p-6 ${
         overlayClassName ?? "z-50"
       }`}
@@ -140,13 +157,31 @@ export function Scanner({
             ? "Åbner kamera..."
             : (hint ?? "Ret kameraet mod QR-koden.")}
       </p>
-      {onClose ? (
-        <button
-          onClick={onClose}
-          className="mt-6 rounded-full border border-parchment/30 px-6 py-2.5 text-[0.78rem] font-[400] uppercase tracking-[0.12em] text-parchment/90 transition-colors hover:bg-parchment/10"
-        >
-          Luk
-        </button>
+      {onClose || status === "error" ? (
+        <div className="mt-6 flex items-center gap-3">
+          {status === "error" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setStatus("starting");
+                setRetryKey((k) => k + 1);
+              }}
+              className="rounded-full bg-parchment px-6 py-2.5 text-[0.78rem] font-[500] uppercase tracking-[0.12em] text-ink transition-opacity hover:opacity-80"
+            >
+              Prøv igen
+            </button>
+          ) : null}
+          {onClose ? (
+            <button
+              type="button"
+              autoFocus
+              onClick={onClose}
+              className="rounded-full border border-parchment/30 px-6 py-2.5 text-[0.78rem] font-[400] uppercase tracking-[0.12em] text-parchment/90 transition-colors hover:bg-parchment/10"
+            >
+              Luk
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

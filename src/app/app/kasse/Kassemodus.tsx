@@ -57,6 +57,7 @@ function newIdemKey(): string {
 function GiftGlyph({ className }: { className?: string }) {
   return (
     <svg
+      aria-hidden
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -89,6 +90,7 @@ function rgba(hex: string, alpha: number): string {
 function ScanFrameIcon({ className }: { className?: string }) {
   return (
     <svg
+      aria-hidden
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -426,6 +428,10 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 function ScanPanel() {
   const [scanning, setScanning] = useState(false);
   const [serial, setSerial] = useState<string | null>(null);
+  // Manuel indtastning: fallback naar QR'en ikke kan scannes (glare, revnet
+  // skaerm, afvist kamera, eller en desktop uden brugbart kamera).
+  const [showManual, setShowManual] = useState(false);
+  const [manualVal, setManualVal] = useState("");
 
   const onResult = (text: string) => {
     const value = text.includes("/kort/")
@@ -476,6 +482,36 @@ function ScanPanel() {
         >
           Åbn kamera
         </button>
+
+        {showManual ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = manualVal.trim();
+              if (v) onResult(v);
+            }}
+            className="flex w-full max-w-xs items-center gap-2"
+          >
+            <input
+              value={manualVal}
+              onChange={(e) => setManualVal(e.target.value)}
+              placeholder="Kort-id eller link"
+              autoFocus
+              className="min-w-0 flex-1 border border-clay bg-parchment px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
+            />
+            <button type="submit" className={btnClass("outline")}>
+              Slå op
+            </button>
+          </form>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowManual(true)}
+            className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
+          >
+            Kan QR&apos;en ikke scannes? Indtast kort-id
+          </button>
+        )}
       </div>
 
       {scanning ? (
