@@ -245,11 +245,15 @@ export async function createBusinessAction(input: {
 // det kortlivede token her, saa ejeren kommer direkte ind uden at aabne mailen.
 export async function loginWithOnboardingToken(formData: FormData) {
   const token = String(formData.get("token") ?? "");
+  // Maalside efter login. Whitelistes til interne /app-stier, saa den ikke kan
+  // misbruges til open redirect. Standard er overblikket.
+  const destRaw = String(formData.get("dest") ?? "/app");
+  const dest = /^\/app(\/[\w\-/#]*)?$/.test(destRaw) ? destRaw : "/app";
   if (!token) redirect("/login?fejl=onboarding");
   try {
-    await signIn("onboarding", { token, redirectTo: "/app" });
+    await signIn("onboarding", { token, redirectTo: dest });
   } catch (e) {
-    unstable_rethrow(e); // lad succes-redirecten til /app passere
+    unstable_rethrow(e); // lad succes-redirecten passere
     // Ugyldigt/udloebet token: send pænt til login, hvor de kan hente linket.
     redirect("/login?fejl=onboarding");
   }

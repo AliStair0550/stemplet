@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
-import { CardDesigner, DEFAULT_DESIGN, type CardDesign } from "@/components/CardDesigner";
+import {
+  CardDesigner,
+  DEFAULT_DESIGN,
+  type CardDesign,
+} from "@/components/CardDesigner";
+import { StampCard } from "@/components/StampCard";
 import { AddressAutocomplete } from "@/components/AddressAutocomplete";
 import { btnClass } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -14,17 +19,31 @@ import {
 } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
-// Progressiv onboarding: vi starter med det absolut vigtigste (navn + login-mail),
-// tager praktiske detaljer bagefter, og designer kortet til sidst. Faerre felter
-// pr. skaerm = roligere, mere Apple-agtig foelelse.
+// Progressiv onboarding: eet naturligt sporgsmaal ad gangen, med et vedvarende
+// live preview af kortet ved siden af og auto-gemt fremskridt. Faerre felter pr.
+// skaerm = roligere, mere Apple-agtig foelelse. Vi forklarer VAERDIEN af hvert
+// trin, ikke bare hvad der skal skrives.
 const STEPS = ["Din butik", "Opsætning", "Design kortet", "Klar"];
 const DESIGN_STEP = 2;
 const DONE_STEP = 3;
+const STORAGE_KEY = "stemplet-onboarding-v1";
 
-const SUBTITLES: Record<number, string> = {
-  0: "Vi starter med det vigtigste: butikkens navn og hvor du logger ind.",
-  1: "Et par praktiske detaljer. Du kan ændre det hele senere i dashboardet.",
-  2: "Gør kortet til dit. Vælg farver, ikon og belønning.",
+const STEP_INFO: Record<number, { title: string; value: string }> = {
+  0: {
+    title: "Din butik",
+    value:
+      "Navnet står på kundens kort, og e-mailen er dit login. Ingen adgangskode at huske.",
+  },
+  1: {
+    title: "Opsætning",
+    value:
+      "Personale-PIN beskytter belønninger. En adresse kan få kortet frem på kundens låseskærm, når de er i nærheden. Begge kan ændres senere.",
+  },
+  2: {
+    title: "Design kortet",
+    value:
+      "Gør kortet til dit. Det er præcis dette, kunderne ser i deres Apple Wallet.",
+  },
 };
 
 function PinIcon() {
@@ -74,16 +93,92 @@ export function StartWizard() {
   const [design, setDesign] = useState<CardDesign>(DEFAULT_DESIGN);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [created, setCreated] = useState<Extract<CreateResult, { ok: true }> | null>(null);
+  const [created, setCreated] = useState<Extract<CreateResult, { ok: true }> | null>(
+    null,
+  );
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
+  const [showBigQr, setShowBigQr] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Start altid oeverst paa hvert trin. Ellers lander man midt paa siden efter
-  // "Opret min butik" (nederst paa design-trinnet) og gaar glip af "Du er
-  // klar"-stemplet. Instant, saa fejringen ses fra foerste frame.
+  // Auto-gem: gendan tidligere fremskridt fra localStorage, saa en
+  // genindlaesning (eller et uheld) ikke starter forfra.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (typeof s.name === "string") setName(s.name);
+        if (typeof s.email === "string") setEmail(s.email);
+        if (typeof s.pin === "string") setPin(s.pin);
+        if (typeof s.category === "string") setCategory(s.category);
+        if (typeof s.address === "string") setAddress(s.address);
+        if (typeof s.addrConfirmed === "boolean") setAddrConfirmed(s.addrConfirmed);
+        if (s.design && typeof s.design === "object")
+          setDesign({ ...DEFAULT_DESIGN, ...s.design });
+        if (typeof s.acceptedTerms === "boolean") setAcceptedTerms(s.acceptedTerms);
+        if (typeof s.step === "number")
+          setStep(Math.max(0, Math.min(s.step, DESIGN_STEP)));
+      }
+    } catch {
+      /* ignorer korrupt gemt tilstand */
+    }
+    setHydrated(true);
+  }, []);
+
+  // Gem loebende (efter hydrering, og ikke naar butikken allerede er oprettet).
+  useEffect(() => {
+    if (!hydrated || created) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          name,
+          email,
+          pin,
+          category,
+          address,
+          addrConfirmed,
+          design,
+          acceptedTerms,
+          step: Math.min(step, DESIGN_STEP),
+        }),
+      );
+    } catch {
+      /* fx privat-tilstand uden storage */
+    }
+  }, [
+    hydrated,
+    created,
+    name,
+    email,
+    pin,
+    category,
+    address,
+    addrConfirmed,
+    design,
+    acceptedTerms,
+    step,
+  ]);
+
+  // Start altid oeverst paa hvert trin (ellers lander man midt paa siden efter
+  // "Opret min butik" og gaar glip af "Du er klar"-fejringen).
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [step]);
+
+  // Escape lukker den store QR-visning.
+  useEffect(() => {
+    if (!showBigQr) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowBigQr(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showBigQr]);
+
+  // Navnet paa kortet: valgt kort-navn, ellers firmanavnet, ellers en pladsholder.
+  const cardName = design.displayName?.trim() || name.trim() || "Din butik";
 
   async function copyLink() {
     if (!created) return;
@@ -96,41 +191,28 @@ export function StartWizard() {
     }
   }
 
-  async function shareCard() {
-    if (!created) return;
-    const data = {
-      title: `${name || "Stempelkort"} i din Wallet`,
-      text: "Saml stempler og få en belønning. Ingen app, det ligger i din Wallet.",
-      url: created.cardUrl,
-    };
-    try {
-      if (navigator.share) {
-        await navigator.share(data);
-        return;
-      }
-    } catch {
-      // Brugeren afbroed delingen (eller den fejlede). Goer intet: "Kopiér link"
-      // staar lige ved siden af som fallback.
-      return;
-    }
-    copyLink();
-  }
-
   function next() {
     setError(null);
     if (step === 0) {
-      if (name.trim().length < 2) return setError("Skriv virksomhedens navn.");
+      if (name.trim().length < 2)
+        return setError(
+          "Skriv butikkens navn (mindst 2 tegn). Det står på kundens kort.",
+        );
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
-        return setError("Skriv en gyldig e-mail.");
+        return setError(
+          "Skriv en gyldig e-mail, fx navn@butik.dk. Det er dit login.",
+        );
     }
     if (step === 1) {
-      if (!/^\d{4,6}$/.test(pin)) return setError("PIN skal være 4 til 6 cifre.");
+      if (!/^\d{4,6}$/.test(pin))
+        return setError(
+          "Personale-PIN skal være 4 til 6 cifre. Vælg et tal, personalet kan huske.",
+        );
     }
     setStep((s) => Math.min(s + 1, DONE_STEP));
   }
 
-  // Enter i et felt paa trin 0/1 gaar videre (samme som "Fortsæt"), saa man
-  // slipper for at flytte haanden til musen.
+  // Enter i et felt paa trin 0/1 gaar videre (samme som "Fortsæt").
   function onFieldEnter(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -140,36 +222,66 @@ export function StartWizard() {
 
   function submit() {
     setError(null);
-    // Vis en tydelig besked i stedet for en "doed" graa knap, hvis fluebenet
-    // ved betingelserne mangler.
     if (!acceptedTerms) {
       return setError(
         "Sæt flueben ved betingelserne nederst, så kan du oprette butikken.",
       );
     }
     startTransition(async () => {
-      const res = await createBusinessAction({ name, email, pin, category, address, design, acceptedTerms });
+      const res = await createBusinessAction({
+        name,
+        email,
+        pin,
+        category,
+        address,
+        design,
+        acceptedTerms,
+      });
       if (res.ok) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          /* ligegyldigt */
+        }
         setCreated(res);
         setStep(DONE_STEP);
       } else {
         setError(res.error);
-        // Hop til det trin, hvor feltet med fejlen staar, saa beskeden giver
-        // mening (ellers strander man paa design-trinnet uden at kunne rette).
+        // Hop til det trin, hvor feltet med fejlen staar.
         if (res.field === "address") setStep(1);
         else if (res.field === "email") setStep(0);
       }
     });
   }
 
+  // ── Vedvarende live preview (trin 0-2) ────────────────────────────────
+  const livePreview = (
+    <div className="lg:sticky lg:top-8">
+      <p className="mb-3 text-[0.66rem] font-[500] uppercase tracking-[0.16em] text-slate">
+        Sådan ser dit kort ud
+      </p>
+      <StampCard
+        businessName={cardName}
+        logoUrl={design.logoUrl}
+        primaryColor={design.primaryColor}
+        textColor={design.textColor}
+        stampIcon={design.stampIcon}
+        stamps={Math.min(3, design.stampsRequired)}
+        required={design.stampsRequired}
+        rewardText={design.rewardText}
+        serial="STEMPLET01"
+        serialLabel={cardName}
+      />
+      <p className="mt-3 max-w-xs font-[300] text-[0.78rem] leading-relaxed text-stone">
+        Kortet opdaterer sig, mens du udfylder. Kunderne gemmer det i deres Apple
+        Wallet, ingen app.
+      </p>
+    </div>
+  );
+
   return (
-    <div
-      className={`mx-auto flex w-full flex-col gap-8 ${
-        step >= DESIGN_STEP ? "max-w-4xl" : "max-w-2xl"
-      }`}
-    >
-      {/* Trin-indikator med en lille dopamin: fuldfoerte trin faar et flueben, og
-          det netop aktiverede trin popper blidt med en bloed ring-ripple. */}
+    <div className="mx-auto w-full max-w-5xl">
+      {/* Trin-indikator: fuldfoerte trin faar et flueben, det aktive popper blidt. */}
       <ol className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
         {STEPS.map((label, i) => {
           const done = i < step;
@@ -208,203 +320,234 @@ export function StartWizard() {
       </ol>
 
       {step < DONE_STEP ? (
-        <div className="flex flex-col gap-1.5">
-          <h2 className="font-[300] text-[1.6rem] tracking-[-0.01em] text-ink">
-            {STEPS[step]}
-          </h2>
-          <p className="font-[200] text-[0.92rem] leading-relaxed text-stone">
-            {SUBTITLES[step]}
-          </p>
-        </div>
-      ) : null}
-
-      {/* Trin 0: det vigtigste - navn + login-mail */}
-      {step === 0 ? (
-        <div className="flex flex-col gap-5 animate-step">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Firmanavn
-            </span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={onFieldEnter}
-              autoFocus
-              maxLength={60}
-              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-            />
-            <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-              Firmanavnet, fx Pizzeria ApS. Du vælger selv, hvad der står på
-              kortet, når du designer det.
-            </span>
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              E-mail (til login)
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={onFieldEnter}
-              autoComplete="email"
-              inputMode="email"
-              className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-            />
-            <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
-              Du logger ind uden adgangskode. Vi sender et link til denne mail.
-            </span>
-          </label>
-        </div>
-      ) : null}
-
-      {/* Trin 1: praktiske detaljer - hver i sit eget kort, saa de ikke flyder sammen */}
-      {step === 1 ? (
-        <div className="flex flex-col gap-4 animate-step">
-          {/* Personale-PIN */}
-          <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Personale-PIN
-            </span>
-            <input
-              inputMode="numeric"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              onKeyDown={onFieldEnter}
-              placeholder="4 til 6 cifre"
-              className="w-40 border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
-            />
-            <span className="text-[0.74rem] font-[200] leading-relaxed text-slate">
-              Bruges når personalet indløser en fyldt belønning ved kassen. Du
-              kan altid ændre den senere.
-            </span>
-          </label>
-
-          {/* Branche */}
-          <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Branche
-            </span>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-            >
-              <option value="">Vælg branche</option>
-              {BUSINESS_CATEGORIES.map((c) => (
-                <option key={c.key} value={c.key}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {/* Placering til laaseskaerm */}
-          <div className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
-            <div className="flex items-center gap-2">
-              <PinIcon />
-              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-                Placering til låseskærm (valgfri)
-              </span>
+        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_minmax(0,21rem)] lg:items-start lg:gap-12">
+          {/* Formular-panel (paa mobil UNDER preview'et) */}
+          <div className="order-2 flex flex-col gap-6 lg:order-none">
+            <div className="flex flex-col gap-1.5">
+              <h2 className="font-[300] text-[1.6rem] tracking-[-0.01em] text-ink">
+                {STEP_INFO[step].title}
+              </h2>
+              <p className="font-[300] text-[0.92rem] leading-relaxed text-stone">
+                {STEP_INFO[step].value}
+              </p>
             </div>
-            <p className="font-[200] text-[0.8rem] leading-relaxed text-stone">
-              Skriv butikkens adresse, så dukker kortet op på kundens låseskærm,
-              når de er i nærheden.
-            </p>
-            <div className="mt-1">
-              <AddressAutocomplete
-                value={address}
-                onChange={(next) => {
-                  setAddress(next);
-                  setAddrConfirmed(false);
-                }}
-                onSelect={() => setAddrConfirmed(true)}
-                placeholder="Begynd at skrive, og vælg din adresse"
-                className="w-full border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
-              />
-              {addrConfirmed ? (
-                <p className="mt-2 inline-flex items-center gap-1.5 text-[0.78rem] font-[400] text-terracotta">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-3.5 w-3.5"
-                    aria-hidden
+
+            {/* Trin 0: navn + login-mail */}
+            {step === 0 ? (
+              <div className="flex flex-col gap-5 animate-step">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    Firmanavn
+                  </span>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onKeyDown={onFieldEnter}
+                    autoFocus
+                    maxLength={60}
+                    className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+                  />
+                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
+                    Firmanavnet, fx Pizzeria ApS. Du vælger selv, hvad der står på
+                    kortet, når du designer det.
+                  </span>
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    E-mail (til login)
+                  </span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={onFieldEnter}
+                    autoComplete="email"
+                    inputMode="email"
+                    className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+                  />
+                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
+                    Du logger ind uden adgangskode. Vi sender et link til denne
+                    mail.
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            {/* Trin 1: praktiske detaljer */}
+            {step === 1 ? (
+              <div className="flex flex-col gap-4 animate-step">
+                <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
+                  <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    Personale-PIN
+                  </span>
+                  <input
+                    inputMode="numeric"
+                    value={pin}
+                    onChange={(e) =>
+                      setPin(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    onKeyDown={onFieldEnter}
+                    placeholder="4 til 6 cifre"
+                    className="w-40 border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] tracking-[0.3em] text-ink outline-none focus:border-terracotta"
+                  />
+                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
+                    Bruges når personalet indløser en fyldt belønning ved kassen.
+                    Du kan altid ændre den senere.
+                  </span>
+                </label>
+
+                <label className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
+                  <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    Branche (valgfri)
+                  </span>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
                   >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                  Adresse fundet og bekræftet
-                </p>
+                    <option value="">Vælg branche</option>
+                    {BUSINESS_CATEGORIES.map((c) => (
+                      <option key={c.key} value={c.key}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="text-[0.74rem] font-[300] leading-relaxed text-stone">
+                    Hjælper os med at give dig relevante skabeloner og tips.
+                  </span>
+                </label>
+
+                <div className="flex flex-col gap-1.5 rounded-lg border border-fog bg-white p-4">
+                  <div className="flex items-center gap-2">
+                    <PinIcon />
+                    <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                      Placering til låseskærm (valgfri)
+                    </span>
+                  </div>
+                  <p className="font-[300] text-[0.8rem] leading-relaxed text-stone">
+                    Skriv butikkens adresse, så dukker kortet op på kundens
+                    låseskærm, når de er i nærheden.
+                  </p>
+                  <div className="mt-1">
+                    <AddressAutocomplete
+                      value={address}
+                      onChange={(nextVal) => {
+                        setAddress(nextVal);
+                        setAddrConfirmed(false);
+                      }}
+                      onSelect={() => setAddrConfirmed(true)}
+                      placeholder="Begynd at skrive, og vælg din adresse"
+                      className="w-full border border-clay bg-parchment px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+                    />
+                    {addrConfirmed ? (
+                      <p className="mt-2 inline-flex items-center gap-1.5 text-[0.78rem] font-[400] text-terracotta">
+                        <CheckIcon className="h-3.5 w-3.5" />
+                        Adresse fundet og bekræftet
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-[0.74rem] font-[300] text-slate">
+                        Vælg din adresse fra listen, så er postnummeret altid
+                        rigtigt.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Trin 2: design + vilkaar (preview'et vises i sidepanelet) */}
+            {step === DESIGN_STEP ? (
+              <div className="flex flex-col gap-5 animate-step">
+                <CardDesigner
+                  value={design}
+                  onChange={setDesign}
+                  businessName={name}
+                  allowLogo
+                  hidePreview
+                />
+                <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-terracotta"
+                  />
+                  <span className="text-[0.78rem] font-[300] leading-relaxed text-stone">
+                    Jeg accepterer{" "}
+                    <a
+                      href="/handelsbetingelser"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-terracotta underline underline-offset-2 hover:opacity-70"
+                    >
+                      handelsbetingelserne
+                    </a>
+                    ,{" "}
+                    <a
+                      href="/privatliv"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-terracotta underline underline-offset-2 hover:opacity-70"
+                    >
+                      privatlivspolitikken
+                    </a>{" "}
+                    og{" "}
+                    <a
+                      href="/databehandleraftale"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-terracotta underline underline-offset-2 hover:opacity-70"
+                    >
+                      databehandleraftalen
+                    </a>
+                    .
+                  </span>
+                </label>
+              </div>
+            ) : null}
+
+            {error ? (
+              <p className="text-[0.85rem] font-[300] leading-relaxed text-rust">
+                {error}
+              </p>
+            ) : null}
+
+            {/* Navigation */}
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setStep((s) => Math.max(0, s - 1))}
+                className={`text-[0.72rem] font-[300] uppercase tracking-[0.12em] text-slate hover:text-ink ${
+                  step === 0 ? "invisible" : ""
+                }`}
+              >
+                Tilbage
+              </button>
+              {step < DESIGN_STEP ? (
+                <button onClick={next} className={btnClass("primary")}>
+                  Fortsæt
+                </button>
               ) : (
-                <p className="mt-2 text-[0.74rem] font-[200] text-slate">
-                  Vælg din adresse fra listen, så er postnummeret altid rigtigt.
-                </p>
+                <button
+                  onClick={submit}
+                  disabled={pending}
+                  className={`${btnClass("terracotta")} disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {pending ? "Opretter..." : "Opret min butik"}
+                </button>
               )}
             </div>
           </div>
-        </div>
-      ) : null}
 
-      {/* Trin 2: design + vilkaar */}
-      {step === DESIGN_STEP ? (
-        <div className="flex flex-col gap-5 animate-step">
-          <CardDesigner
-            value={design}
-            onChange={setDesign}
-            businessName={name}
-            allowLogo
-          />
-          <label className="flex cursor-pointer items-start gap-3 border-t border-fog pt-5">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 accent-terracotta"
-            />
-            <span className="text-[0.78rem] font-[200] leading-relaxed text-stone">
-              Jeg accepterer{" "}
-              <a
-                href="/handelsbetingelser"
-                target="_blank"
-                rel="noreferrer"
-                className="text-terracotta underline underline-offset-2 hover:opacity-70"
-              >
-                handelsbetingelserne
-              </a>
-              ,{" "}
-              <a
-                href="/privatliv"
-                target="_blank"
-                rel="noreferrer"
-                className="text-terracotta underline underline-offset-2 hover:opacity-70"
-              >
-                privatlivspolitikken
-              </a>{" "}
-              og{" "}
-              <a
-                href="/databehandleraftale"
-                target="_blank"
-                rel="noreferrer"
-                className="text-terracotta underline underline-offset-2 hover:opacity-70"
-              >
-                databehandleraftalen
-              </a>
-              .
-            </span>
-          </label>
+          {/* Preview-panel (paa mobil OEVERST) */}
+          <aside className="order-1 lg:order-none">{livePreview}</aside>
         </div>
       ) : null}
 
       {step === DONE_STEP && created ? (
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 animate-step">
+        <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-8 animate-step">
           <div className="text-center">
-            {/* Stempel-landing: brandets egen "dopamin, ikke konfetti"-bevaegelse.
-                Et stempel der presses ned og "lander" som kvittering for at
-                butikken nu er stemplet ind. Prominent, men roligt. Under
-                prefers-reduced-motion staar kun det rolige flueben-stempel. */}
+            {/* Stempel-landing: brandets "dopamin, ikke konfetti"-bevaegelse. */}
             <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center">
               <span
                 aria-hidden
@@ -423,161 +566,210 @@ export function StartWizard() {
               </span>
             </div>
             <h2 className="font-fraunces font-light italic text-[1.9rem] text-ink">
-              Du er klar
+              Dit stempelkort er klar
             </h2>
-            <p className="mx-auto mt-3 max-w-md font-[200] text-[0.9rem] leading-relaxed text-stone">
-              Sæt kortet op i butikken og del det online, så samler kunderne
-              stempler i deres Wallet.
+            <p className="mx-auto mt-3 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
+              Vis QR-koden, så en kunde kan hente kortet og få sit første
+              stempel.
             </p>
           </div>
 
-          {/* Primaer handling: kom DIREKTE ind i dashboardet (auto-login), saa
-              ejeren ikke behoever at aabne mailen. Login-mailen er backup. */}
-          <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 text-center md:p-8">
-            <h4 className="font-[400] text-[1.15rem] text-ink">
-              Kom ind i dit dashboard
-            </h4>
-            <p className="mx-auto mt-2 max-w-md font-[300] text-[0.88rem] leading-relaxed text-stone">
-              Gå direkte ind, hvor du henter QR og skilte til print, deler kortet
-              og giver det første stempel. Vi guider dig hele vejen.
-            </p>
-            {created.loginToken ? (
-              <form
-                action={loginWithOnboardingToken}
-                className="mt-5 flex justify-center"
-              >
-                <input type="hidden" name="token" value={created.loginToken} />
-                <SubmitButton
-                  variant="primary"
-                  size="lg"
-                  pendingText="Åbner dashboard..."
+          <div className="grid gap-8 md:grid-cols-[minmax(0,16rem)_1fr] md:items-start">
+            {/* Det faerdige kort */}
+            <div className="mx-auto w-full max-w-[16rem]">
+              <StampCard
+                businessName={cardName}
+                logoUrl={design.logoUrl}
+                primaryColor={design.primaryColor}
+                textColor={design.textColor}
+                stampIcon={design.stampIcon}
+                stamps={Math.min(3, design.stampsRequired)}
+                required={design.stampsRequired}
+                rewardText={design.rewardText}
+                serial={created.slug}
+                serialLabel={cardName}
+              />
+            </div>
+
+            {/* Handlinger + tjekliste */}
+            <div className="flex flex-col gap-5">
+              {/* Anbefalet primaer handling */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowBigQr(true)}
+                  className={`${btnClass("primary", "lg")} w-full`}
                 >
-                  Gå til mit dashboard
-                </SubmitButton>
-              </form>
-            ) : null}
-            <p className="mx-auto mt-4 max-w-md font-[300] text-[0.8rem] leading-relaxed text-slate">
+                  Vis din QR-kode
+                </button>
+                <p className="mt-1.5 text-center font-[300] text-[0.78rem] leading-relaxed text-stone">
+                  Anbefalet: hold koden frem, så en kunde kan scanne den med det
+                  samme.
+                </p>
+              </div>
+
+              {/* Sekundaere handlinger */}
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={created.qrDataUrl}
+                  download={`${created.slug}-stempelkort-qr.png`}
+                  className={`${btnClass("outline")} w-full`}
+                >
+                  Hent QR-kode
+                </a>
+                <a
+                  href={created.cardUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${btnClass("outline")} w-full`}
+                >
+                  Se kundens oplevelse
+                </a>
+                {created.loginToken ? (
+                  <>
+                    <form action={loginWithOnboardingToken} className="w-full">
+                      <input
+                        type="hidden"
+                        name="token"
+                        value={created.loginToken}
+                      />
+                      <input
+                        type="hidden"
+                        name="dest"
+                        value="/app/indstillinger#kasse-enheder"
+                      />
+                      <SubmitButton
+                        variant="outline"
+                        size="md"
+                        className="w-full"
+                        pendingText="Åbner..."
+                      >
+                        Tilføj medarbejder
+                      </SubmitButton>
+                    </form>
+                    <form action={loginWithOnboardingToken} className="w-full">
+                      <input
+                        type="hidden"
+                        name="token"
+                        value={created.loginToken}
+                      />
+                      <input type="hidden" name="dest" value="/app" />
+                      <SubmitButton
+                        variant="outline"
+                        size="md"
+                        className="w-full"
+                        pendingText="Åbner..."
+                      >
+                        Gå til overblik
+                      </SubmitButton>
+                    </form>
+                  </>
+                ) : null}
+              </div>
+
+              {/* Tjekliste: hvad der er gjort, og hvad der er naeste skridt */}
+              <div className="rounded-lg border border-fog bg-white p-4 shadow-card">
+                <p className="mb-3 text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
+                  Din tjekliste
+                </p>
+                <ul className="flex flex-col gap-2.5">
+                  {[
+                    { label: "Kortet er oprettet", done: true },
+                    { label: "QR-koden er klar", done: true },
+                    { label: "Første medarbejder er tilføjet", done: false },
+                    { label: "Første kunde har hentet kortet", done: false },
+                    { label: "Første stempel er givet", done: false },
+                  ].map((item) => (
+                    <li
+                      key={item.label}
+                      className="flex items-center gap-2.5 text-[0.85rem] font-[300]"
+                    >
+                      <span
+                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                          item.done
+                            ? "bg-terracotta text-parchment"
+                            : "border border-clay bg-white"
+                        }`}
+                      >
+                        {item.done ? <CheckIcon className="h-3 w-3" /> : null}
+                      </span>
+                      <span className={item.done ? "text-stone" : "text-ink"}>
+                        {item.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Login-mail som backup, nedtonet */}
+          <div className="border-t border-fog pt-6 text-center">
+            <p className="mx-auto max-w-md font-[300] text-[0.8rem] leading-relaxed text-slate">
               {created.loginSent
-                ? `Vi har også sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
-                : `Vil du hellere logge ind via mail? Så sender vi et link til ${email}.`}
+                ? `Vi har sendt et login-link til ${email}, så du kan logge ind fra andre enheder. Tjek spam-mappen, hvis mailen ikke dukker op.`
+                : `Vil du logge ind via mail? Så sender vi et link til ${email}.`}
             </p>
-            <form action={sendOnboardingLogin} className="mt-2 flex justify-center">
+            <form action={sendOnboardingLogin} className="mt-3 flex justify-center">
               <input type="hidden" name="email" value={email} />
               <SubmitButton
-                variant="outline"
+                variant="ghost"
                 size="md"
                 pendingText="Sender login-link..."
               >
                 {created.loginSent ? "Send login-link igen" : "Send login-link"}
               </SubmitButton>
             </form>
-          </div>
-
-          {/* Dit stempelkort: QR til download og deling (sekundaert) */}
-          <div className="flex flex-col items-center gap-5 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
-            <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-slate">
-              Dit stempelkort
-            </span>
-            <div className="relative p-2.5">
-              <Image
-                src={created.qrDataUrl}
-                width={190}
-                height={190}
-                alt="QR-kode til dit stempelkort"
-                unoptimized
-                className="h-[180px] w-[180px] rounded-[6px]"
-              />
-              {(
-                [
-                  "left-0 top-0 rounded-tl-[10px] border-l-[2.5px] border-t-[2.5px]",
-                  "right-0 top-0 rounded-tr-[10px] border-r-[2.5px] border-t-[2.5px]",
-                  "bottom-0 left-0 rounded-bl-[10px] border-b-[2.5px] border-l-[2.5px]",
-                  "bottom-0 right-0 rounded-br-[10px] border-b-[2.5px] border-r-[2.5px]",
-                ] as const
-              ).map((c) => (
-                <span
-                  key={c}
-                  aria-hidden
-                  className={`pointer-events-none absolute h-6 w-6 border-terracotta ${c}`}
-                />
-              ))}
-            </div>
-            <div className="flex w-full flex-wrap justify-center gap-2">
-              <a
-                href={created.qrDataUrl}
-                download={`${created.slug}-stempelkort-qr.png`}
-                className={btnClass("outline")}
-              >
-                Download QR
-              </a>
-              <button
-                type="button"
-                onClick={shareCard}
-                className={btnClass("outline")}
-              >
-                Del kort
-              </button>
-              <button
-                type="button"
-                onClick={copyLink}
-                className={btnClass("outline")}
-              >
-                {copied ? "Kopieret" : "Kopiér link"}
-              </button>
-            </div>
-            <a
-              href={created.cardUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-[0.8rem] font-[400] text-terracotta transition-opacity hover:opacity-70"
+            <button
+              type="button"
+              onClick={copyLink}
+              className="mt-1 text-[0.76rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
             >
-              Se kortet
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.8}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-3.5 w-3.5"
-                aria-hidden
-              >
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-            </a>
+              {copied ? "Link kopieret" : "Kopiér link til kortet"}
+            </button>
           </div>
         </div>
       ) : null}
 
-      {error ? (
-        <p className="text-[0.82rem] font-[200] text-rust">{error}</p>
-      ) : null}
-
-      {/* Navigation */}
-      {step < DONE_STEP ? (
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            className={`text-[0.72rem] font-[300] uppercase tracking-[0.12em] text-slate hover:text-ink ${
-              step === 0 ? "invisible" : ""
-            }`}
-          >
-            Tilbage
-          </button>
-          {step < DESIGN_STEP ? (
-            <button onClick={next} className={btnClass("primary")}>
-              Fortsæt
-            </button>
-          ) : (
-            <button
-              onClick={submit}
-              disabled={pending}
-              className={`${btnClass("terracotta")} disabled:cursor-not-allowed disabled:opacity-50`}
+      {/* Stor QR-visning: den anbefalede handling, saa en kunde kan scanne nu */}
+      {showBigQr && created ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Din QR-kode"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-parchment/98 p-6 backdrop-blur-sm"
+        >
+          <p className="max-w-xs text-center font-[300] text-[0.95rem] leading-relaxed text-ink">
+            Bed kunden scanne koden med kameraet. Så henter de dit stempelkort til
+            deres Apple Wallet.
+          </p>
+          <div className="rounded-2xl bg-white p-4 shadow-hero">
+            <Image
+              src={created.qrDataUrl}
+              width={340}
+              height={340}
+              alt="Din QR-kode"
+              unoptimized
+              className="h-[min(78vw,340px)] w-[min(78vw,340px)] rounded-[8px]"
+            />
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <a
+              href={created.qrDataUrl}
+              download={`${created.slug}-stempelkort-qr.png`}
+              className={btnClass("outline")}
             >
-              {pending ? "Opretter..." : "Opret min butik"}
+              Hent QR-kode
+            </a>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setShowBigQr(false)}
+              className={btnClass("primary")}
+            >
+              Luk
             </button>
-          )}
+          </div>
         </div>
       ) : null}
     </div>
