@@ -149,7 +149,7 @@ function pickRecommendation(
       eyebrow: "Kom i gang",
       title: "Få jeres første kunde på kortet",
       body: "Vis QR-koden ved kassen eller del den online, så en kunde kan hente kortet og få sit første stempel.",
-      action: { type: "link", href: "/app/materialer", label: "Vis din QR-kode" },
+      action: { type: "link", href: "/app/materialer", label: "Del dit kort" },
     };
   }
   if (pulse.deviceCount === 0) {
@@ -308,7 +308,7 @@ export default async function OverviewPage() {
                   variant="outline"
                   className="w-full justify-center sm:w-auto"
                 >
-                  Vis din QR-kode
+                  Del dit kort
                 </ButtonLink>
               </>
             ) : (

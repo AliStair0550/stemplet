@@ -101,8 +101,8 @@ export function GettingStarted(props: Props) {
     <div className="flex flex-col gap-8">
       {/* Kort + fremdrift: her ser man et klart kort og butik, og hvor langt
           man er. */}
-      <div className="grid gap-5 md:grid-cols-[minmax(0,17rem)_1fr] md:items-stretch">
-        <div className="flex items-center justify-center rounded-lg border border-fog bg-sand/30 p-6">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-stretch">
+        <div className="flex items-center justify-center rounded-lg border border-fog bg-sand/30 p-4">
           <StampCard
             businessName={props.businessName}
             logoUrl={props.logoUrl}
@@ -115,7 +115,7 @@ export function GettingStarted(props: Props) {
             showPoweredBy={props.showPoweredBy}
             serial="STEMPLET01"
             serialLabel={props.serialLabel}
-            className="max-w-[15rem]"
+            className="w-full max-w-[22rem]"
           />
         </div>
 

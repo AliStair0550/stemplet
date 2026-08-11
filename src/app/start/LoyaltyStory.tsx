@@ -153,7 +153,7 @@ export function LoyaltyStory(props: Props) {
       <div className="rounded-2xl border border-fog bg-sand/30 p-6 sm:p-8">
         <div className="flex min-h-[18.5rem] items-center justify-center">
           {b.scene === "card" ? (
-            <div key="card" className="w-full max-w-[15rem] animate-step">
+            <div key="card" className="w-full max-w-[20rem] animate-step">
               <StampCard
                 businessName={props.businessName}
                 logoUrl={props.logoUrl}
