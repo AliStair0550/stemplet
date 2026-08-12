@@ -75,6 +75,36 @@ function Kpi({ label, value }: { label: string; value: string }) {
   );
 }
 
+// Vandret funnel: hvert trin som en bar relativt til det foerste trin, med
+// antal og andel. Goer frafald let at se.
+function Funnel({ steps }: { steps: { label: string; count: number }[] }) {
+  const top = Math.max(1, steps[0]?.count ?? 0);
+  return (
+    <div className="flex flex-col gap-2.5 rounded-lg border border-fog bg-white p-5 shadow-card">
+      {steps.map((s) => {
+        const pct = Math.round((s.count / top) * 100);
+        return (
+          <div key={s.label} className="flex items-center gap-3">
+            <span className="w-36 shrink-0 truncate text-[0.8rem] font-[300] text-stone">
+              {s.label}
+            </span>
+            <div className="relative h-6 flex-1 overflow-hidden rounded bg-fog/60">
+              <div
+                className="h-full rounded bg-terracotta/80"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="w-24 shrink-0 text-right text-[0.82rem] tabular-nums text-ink">
+              {formatDkNumber(s.count)}
+              <span className="ml-1 font-[300] text-slate">{pct}%</span>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default async function StatistikPage() {
   const admin = await getSuperadminEmail();
   if (!admin) notFound();
@@ -104,27 +134,34 @@ export default async function StatistikPage() {
   for (const b of businesses) for (const c of b.cards) cardToBiz.set(c.id, b.id);
   const cardIds = [...cardToBiz.keys()];
 
-  const [cardCounts, stampAgg, redemptionsTotal, newCardholders30, chMonthRows] =
-    await Promise.all([
-      prisma.customerCard.groupBy({
-        by: ["cardId"],
-        where: { cardId: { in: cardIds } },
-        _count: { _all: true },
-      }),
-      prisma.stamp.groupBy({
-        by: ["businessId"],
-        where: { businessId: { in: businessIds } },
-        _sum: { multiplier: true },
-        _max: { createdAt: true },
-      }),
-      prisma.redemption.count({
-        where: { customerCard: { card: { businessId: { in: businessIds } } } },
-      }),
-      prisma.customerCard.count({
-        where: { createdAt: { gte: since30 }, cardId: { in: cardIds } },
-      }),
-      businessIds.length
-        ? prisma.$queryRaw<{ ym: string; n: number }[]>(Prisma.sql`
+  const [
+    cardCounts,
+    stampAgg,
+    redemptionsTotal,
+    newCardholders30,
+    chMonthRows,
+    onbRows,
+    deviceRows,
+  ] = await Promise.all([
+    prisma.customerCard.groupBy({
+      by: ["cardId"],
+      where: { cardId: { in: cardIds } },
+      _count: { _all: true },
+    }),
+    prisma.stamp.groupBy({
+      by: ["businessId"],
+      where: { businessId: { in: businessIds } },
+      _sum: { multiplier: true },
+      _max: { createdAt: true },
+    }),
+    prisma.redemption.count({
+      where: { customerCard: { card: { businessId: { in: businessIds } } } },
+    }),
+    prisma.customerCard.count({
+      where: { createdAt: { gte: since30 }, cardId: { in: cardIds } },
+    }),
+    businessIds.length
+      ? prisma.$queryRaw<{ ym: string; n: number }[]>(Prisma.sql`
             SELECT to_char(date_trunc('month', cc."createdAt"), 'YYYY-MM') AS ym,
                    COUNT(*)::int AS n
             FROM "CustomerCard" cc
@@ -132,8 +169,22 @@ export default async function StatistikPage() {
             WHERE c."businessId" IN (${Prisma.join(businessIds)})
             GROUP BY 1
           `)
-        : Promise.resolve([] as { ym: string; n: number }[]),
-    ]);
+      : Promise.resolve([] as { ym: string; n: number }[]),
+    // Onboarding-funnel: distinkte anonyme besoegende pr. trin, seneste 30 dage.
+    prisma.onboardingEvent.groupBy({
+      by: ["step"],
+      where: { createdAt: { gte: since30 } },
+      _count: { _all: true },
+    }),
+    // Aktivering: butikker med mindst een aktiv kasse-enhed.
+    businessIds.length
+      ? prisma.device.groupBy({
+          by: ["businessId"],
+          where: { businessId: { in: businessIds }, revokedAt: null },
+          _count: { _all: true },
+        })
+      : Promise.resolve([] as { businessId: string }[]),
+  ]);
 
   const customersByBiz = new Map<string, number>();
   for (const g of cardCounts) {
@@ -151,6 +202,25 @@ export default async function StatistikPage() {
   const totalCardholders = [...customersByBiz.values()].reduce((a, b) => a + b, 0);
   const totalStamps = [...stampsByBiz.values()].reduce((a, b) => a + b, 0);
   const newBiz30 = businesses.filter((b) => b.createdAt >= since30).length;
+
+  // Oprettelses-funnel (seneste 30 dage): hvor mange naaede hvert trin paa /start.
+  const onbByStep = new Map<number, number>();
+  for (const r of onbRows) onbByStep.set(r.step, r._count._all);
+  const onboardingFunnel = [
+    { label: "1. Din butik", count: onbByStep.get(0) ?? 0 },
+    { label: "2. Design", count: onbByStep.get(1) ?? 0 },
+    { label: "3. Opsætning", count: onbByStep.get(2) ?? 0 },
+    { label: "4. Oprettet", count: onbByStep.get(3) ?? 0 },
+  ];
+
+  // Aktivering: af alle oprettede butikker, hvor mange kom videre.
+  const bizWithDevice = new Set(deviceRows.map((d) => d.businessId));
+  const activationFunnel = [
+    { label: "Oprettet", count: businesses.length },
+    { label: "Tilføjet medarbejder", count: bizWithDevice.size },
+    { label: "Første kortholder", count: customersByBiz.size },
+    { label: "Første stempel", count: stampsByBiz.size },
+  ];
 
   // Vaekst pr. maaned (seneste 6).
   const bizByYm = new Map<string, number>();
@@ -228,6 +298,28 @@ export default async function StatistikPage() {
                 </p>
               </div>
               <BarChart data={chSeries} />
+            </div>
+          </div>
+        </section>
+
+        {/* Onboarding & aktivering */}
+        <section>
+          <SectionHead
+            title="Onboarding & aktivering"
+            desc="Hvor mange når hvert trin i oprettelsen (seneste 30 dage), og hvor mange butikker kommer videre bagefter. Vis, hvor folk falder fra."
+          />
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
+                Oprettelses-funnel (30 dage)
+              </p>
+              <Funnel steps={onboardingFunnel} />
+            </div>
+            <div>
+              <p className="mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
+                Aktivering efter oprettelse
+              </p>
+              <Funnel steps={activationFunnel} />
             </div>
           </div>
         </section>

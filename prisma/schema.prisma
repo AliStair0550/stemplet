@@ -391,3 +391,17 @@ model PinAttempt {
 
   @@unique([businessId, lockId])
 }
+
+// Onboarding-funnel: anonyme trin-visninger paa /start, saa vi kan se HVOR folk
+// falder fra, foer de opretter en butik. anonId er et tilfaeldigt id gemt i
+// browserens localStorage (ingen persondata). Een raekke pr. (anonId, step):
+// foerste gang trinet naaes. Trin: 0 Din butik, 1 Design, 2 Opsaetning, 3 Klar.
+model OnboardingEvent {
+  id        String   @id @default(cuid())
+  anonId    String
+  step      Int
+  createdAt DateTime @default(now())
+
+  @@unique([anonId, step])
+  @@index([step, createdAt])
+}

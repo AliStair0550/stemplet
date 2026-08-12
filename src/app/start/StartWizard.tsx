@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
   CardDesigner,
   DEFAULT_DESIGN,
@@ -14,6 +14,7 @@ import { LoyaltyStory } from "./LoyaltyStory";
 import {
   createBusinessAction,
   loginWithOnboardingToken,
+  recordOnboardingStep,
   type CreateResult,
 } from "./actions";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
@@ -98,6 +99,10 @@ export function StartWizard() {
   );
   const [pending, startTransition] = useTransition();
   const [hydrated, setHydrated] = useState(false);
+  // Funnel-maaling: et anonymt id (localStorage) og hvilke trin vi allerede har
+  // registreret i denne indlaesning, saa vi ikke sender dubletter.
+  const anonIdRef = useRef<string | null>(null);
+  const firedStepsRef = useRef<Set<number>>(new Set());
 
   // Auto-gem: gendan tidligere fremskridt fra localStorage, saa en
   // genindlaesning (eller et uheld) ikke starter forfra.
@@ -160,6 +165,31 @@ export function StartWizard() {
   // "Opret min butik" og gaar glip af "Du er klar"-fejringen).
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [step]);
+
+  // Anonymt funnel-id (ingen persondata), stabilt paa tvaers af genindlaesninger.
+  useEffect(() => {
+    try {
+      let id = localStorage.getItem("stemplet-onboarding-anon");
+      if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem("stemplet-onboarding-anon", id);
+      }
+      anonIdRef.current = id;
+    } catch {
+      /* privat-tilstand uden storage: saa maaler vi bare ikke */
+    }
+  }, []);
+
+  // Registrér hvert trin, der naaes (een gang pr. trin pr. indlaesning). Trin 3
+  // (Klar) naaes kun efter en fuldfoert oprettelse, saa det ER konverteringen.
+  useEffect(() => {
+    const id = anonIdRef.current;
+    if (!id || firedStepsRef.current.has(step)) return;
+    firedStepsRef.current.add(step);
+    recordOnboardingStep(id, step).catch(() => {
+      /* transport-fejl: funnel-maaling maa aldrig braekke flowet */
+    });
   }, [step]);
 
   // Navnet paa kortet: valgt kort-navn, ellers firmanavnet, ellers en pladsholder.

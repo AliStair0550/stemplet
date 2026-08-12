@@ -2,13 +2,13 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { StampCard } from "@/components/StampCard";
 import { SectionHeader } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { StampIconKey } from "@/lib/brand";
 import { AddEmployeeButton } from "./AddEmployeeButton";
 import { AddToHomeButton } from "./AddToHomeButton";
+import { TryStampDemo } from "./TryStampDemo";
 import { CtaArrow, IconDevice, IconQr, IconShare, IconStampMark } from "./icons";
 
 type Props = {
@@ -102,23 +102,18 @@ export function GettingStarted(props: Props) {
     <div className="flex flex-col gap-8">
       {/* Kort + fremdrift: her ser man et klart kort og butik, og hvor langt
           man er. */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-stretch">
-        <div className="flex items-center justify-center rounded-lg border border-fog bg-sand/30 p-4">
-          <StampCard
-            businessName={props.businessName}
-            logoUrl={props.logoUrl}
-            primaryColor={props.primaryColor}
-            textColor={props.textColor}
-            stampIcon={props.stampIcon}
-            stamps={Math.min(3, props.stampsRequired)}
-            required={props.stampsRequired}
-            rewardText={props.rewardText}
-            showPoweredBy={props.showPoweredBy}
-            serial="STEMPLET01"
-            serialLabel={props.serialLabel}
-            className="w-full max-w-[22rem]"
-          />
-        </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,24rem)_1fr] lg:items-start">
+        <TryStampDemo
+          businessName={props.businessName}
+          serialLabel={props.serialLabel}
+          primaryColor={props.primaryColor}
+          textColor={props.textColor}
+          stampIcon={props.stampIcon}
+          stampsRequired={props.stampsRequired}
+          rewardText={props.rewardText}
+          logoUrl={props.logoUrl}
+          showPoweredBy={props.showPoweredBy}
+        />
 
         <div className="flex flex-col rounded-lg border border-fog bg-white p-6 shadow-card">
           <div className="flex items-baseline justify-between gap-3">

@@ -322,3 +322,28 @@ export async function sendOnboardingLogin(formData: FormData) {
     redirect("/login?fejl=onboarding");
   }
 }
+
+// Onboarding-funnel: registrér at en anonym besoegende har naaet et trin paa
+// /start, saa vi kan se HVOR folk falder fra. Fire-and-forget: fejler stille og
+// braekker aldrig flowet. Een raekke pr. (anonId, trin) via unik-indeks, saa
+// genindlaesninger ikke taeller dobbelt. anonId er et tilfaeldigt id fra
+// browserens localStorage - ingen persondata.
+export async function recordOnboardingStep(
+  anonId: string,
+  step: number,
+): Promise<void> {
+  if (typeof anonId !== "string" || !/^[a-zA-Z0-9_-]{8,64}$/.test(anonId)) return;
+  if (!Number.isInteger(step) || step < 0 || step > 3) return;
+  try {
+    const h = await headers();
+    const ip =
+      h.get("x-real-ip")?.trim() ||
+      h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "ukendt";
+    // Rigeligt til en aegte besoegende (maks 4 trin); bremser blot spam.
+    if (!(await durableRateLimit("onboarding-event", ip, 60, 3600))) return;
+    await prisma.onboardingEvent.create({ data: { anonId, step } });
+  } catch {
+    // Dublet (P2002) eller forbigaaende fejl: uden betydning for funnel'en.
+  }
+}
