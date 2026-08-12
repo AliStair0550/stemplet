@@ -17,6 +17,7 @@ export type StampIconKey =
   | "cupcake"
   | "pizza"
   | "burger"
+  | "sandwich"
   | "icecream"
   | "beer"
   | "wine"
@@ -39,6 +40,7 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "cupcake", label: "Cupcake" },
   { key: "pizza", label: "Pizza" },
   { key: "burger", label: "Burger" },
+  { key: "sandwich", label: "Sandwich" },
   { key: "icecream", label: "Is" },
   { key: "beer", label: "Øl" },
   { key: "wine", label: "Vin" },

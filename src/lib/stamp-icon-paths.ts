@@ -17,6 +17,8 @@ export const STAMP_ICON_PATHS: Record<StampIconKey, string> = {
     '<path d="M12 3c4 0 7.5 2.2 9 5.5L12 21 3 8.5C4.5 5.2 8 3 12 3Z"/><path d="M5 9.5c4-1.5 10-1.5 14 0"/><circle cx="10" cy="10.5" r="0.7" fill="currentColor"/><circle cx="13.5" cy="12.5" r="0.7" fill="currentColor"/>',
   burger:
     '<path d="M4 9.5c0-3 3.6-5 8-5s8 2 8 5"/><path d="M4 14h16M5 11h14"/><path d="M5 14c0 2.5 3 4 7 4s7-1.5 7-4"/>',
+  sandwich:
+    '<path d="M4 9.5 12 4l8 5.5"/><path d="M4 9.5h16M4 9.5v3.5c0 .6.4 1 1 1M20 9.5v3.5c0 .6-.4 1-1 1"/><path d="M5 14c1.3 1 2.6 1 3.9 0s2.6-1 3.9 0 2.6 1 3.9 0"/><path d="M6 17h12"/>',
   icecream:
     '<path d="M8 10a4 4 0 0 1 8 0"/><path d="M7.5 11h9l-4.5 9-4.5-9Z"/><path d="M8.5 14h7"/>',
   beer:
