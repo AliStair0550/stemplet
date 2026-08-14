@@ -65,3 +65,25 @@ export async function checkRateLimit(
     return true;
   }
 }
+
+/**
+ * Let "keep-alive"-touch af Upstash, saa en gratis-plan-database ikke bliver
+ * arkiveret for inaktivitet. Vores Redis-stier (idempotens, API-rate-limit) har
+ * lav trafik i den tidlige fase, saa det daglige cron sender eet let touch.
+ * Ingen effekt hvis Redis ikke er konfigureret, og fejler stille, saa det aldrig
+ * braekker cron-jobbet.
+ */
+export async function redisKeepAlive(): Promise<{
+  redisKeepAlive: "ok" | "skipped" | "error";
+}> {
+  if (!redisConfigured()) return { redisKeepAlive: "skipped" };
+  try {
+    const redis = getRedis();
+    // TTL paa 2 doegn: noeglen overlever mellem daglige pings og rydder sig selv.
+    await redis.set("keepalive:ping", new Date().toISOString(), { ex: 172_800 });
+    await redis.get("keepalive:ping");
+    return { redisKeepAlive: "ok" };
+  } catch {
+    return { redisKeepAlive: "error" };
+  }
+}
