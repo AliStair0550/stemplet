@@ -41,7 +41,12 @@ export async function GET(req: NextRequest) {
         },
       },
     },
-    select: { id: true, name: true, users: { select: { email: true } } },
+    select: {
+      id: true,
+      name: true,
+      weeklyEmailTo: true,
+      users: { select: { email: true } },
+    },
   });
 
   // Per-butik-arbejde med begraenset samtidighed (chunks paa 5) i stedet for en
@@ -57,11 +62,19 @@ export async function GET(req: NextRequest) {
         dashboardUrl: `${APP_URL}/app`,
         unsubscribeUrl: `${APP_URL}/api/email/unsubscribe?token=${encodeURIComponent(token)}`,
       });
+      // Modtagere: er der valgt en bestemt login-mail (og den findes stadig),
+      // sendes kun til den. Ellers til alle butikkens login-mails.
+      const allEmails = b.users.map((u) => u.email).filter(Boolean);
+      const chosen = b.weeklyEmailTo?.toLowerCase();
+      const recipients =
+        chosen && allEmails.some((e) => e.toLowerCase() === chosen)
+          ? [chosen]
+          : allEmails;
+
       let count = 0;
-      for (const u of b.users) {
-        if (!u.email) continue;
+      for (const to of recipients) {
         const ok = await sendEmail({
-          to: u.email,
+          to,
           subject: mail.subject,
           html: mail.html,
           text: mail.text,

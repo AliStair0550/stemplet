@@ -15,6 +15,10 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type Result = { ok: true } | { ok: false; error: string };
 
+// Baaret ud af fjern-transaktionen som en pæn brugerfejl (ruller transaktionen
+// tilbage) i stedet for en 500.
+class RemoveError extends Error {}
+
 // Send et magisk login-link til en mail. Best-effort: en mail-fejl maa aldrig
 // vaelte selve tilfoejelsen (de kan altid selv hente et link paa /login).
 async function sendLoginLink(email: string): Promise<void> {
@@ -78,20 +82,33 @@ export async function removeLoginEmail(userId: string): Promise<Result> {
     return { ok: false, error: "Du kan ikke fjerne din egen login-adgang." };
   }
 
-  const target = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { businessId: true },
-  });
-  if (!target || target.businessId !== business.id) {
-    return { ok: false, error: "Brugeren blev ikke fundet." };
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Laas butikkens raekke, saa samtidige fjernelser serialiseres. Uden det
+      // kunne to samtidige "fjern" begge se count=2 og slette hver sin bruger,
+      // saa butikken endte med 0 login-mails (permanent laasning).
+      await tx.$executeRaw`SELECT 1 FROM "Business" WHERE "id" = ${business.id} FOR UPDATE`;
+      const target = await tx.user.findUnique({
+        where: { id: userId },
+        select: { businessId: true },
+      });
+      if (!target || target.businessId !== business.id) {
+        throw new RemoveError("Brugeren blev ikke fundet.");
+      }
+      const count = await tx.user.count({
+        where: { businessId: business.id },
+      });
+      if (count <= 1) {
+        throw new RemoveError("Butikken skal have mindst én login-mail.");
+      }
+      await tx.user.delete({ where: { id: userId } });
+    });
+  } catch (e) {
+    if (e instanceof RemoveError) return { ok: false, error: e.message };
+    captureServerError(e, { route: "settings:remove-login-email" });
+    return { ok: false, error: "Kunne ikke fjerne mailen. Prøv igen." };
   }
 
-  const count = await prisma.user.count({ where: { businessId: business.id } });
-  if (count <= 1) {
-    return { ok: false, error: "Butikken skal have mindst én login-mail." };
-  }
-
-  await prisma.user.delete({ where: { id: userId } });
   revalidatePath("/app/indstillinger");
   return { ok: true };
 }

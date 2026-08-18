@@ -30,7 +30,7 @@ export function AdminQrGrid({ items }: { items: QrItem[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Søg efter butik, slug eller email"
-          className="w-full rounded-md border border-clay bg-white px-3.5 py-2.5 font-[300] text-[0.88rem] text-ink outline-none focus:border-terracotta"
+          className="w-full rounded-md border border-fog bg-white px-3.5 py-2.5 font-[300] text-[0.88rem] text-ink outline-none focus:border-terracotta"
         />
       </div>
 

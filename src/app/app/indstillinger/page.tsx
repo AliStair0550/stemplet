@@ -5,6 +5,7 @@ import { PageHeading, Panel } from "@/components/dash";
 import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
+import { WeeklyEmailRecipient } from "./WeeklyEmailRecipient";
 import { WelcomeStampToggle } from "./WelcomeStampToggle";
 import { SelfScanToggle } from "./SelfScanToggle";
 import { KasseDevices } from "./KasseDevices";
@@ -169,6 +170,12 @@ export default async function IndstillingerPage({
               </p>
             </div>
             <WeeklyEmailToggle initial={business.weeklyEmailEnabled} />
+          </div>
+          <div className="mt-5 border-t border-fog pt-4">
+            <WeeklyEmailRecipient
+              initial={business.weeklyEmailTo}
+              emails={users.map((u) => u.email)}
+            />
           </div>
         </Panel>
       </div>

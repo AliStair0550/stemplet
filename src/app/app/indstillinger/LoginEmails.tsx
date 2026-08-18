@@ -19,7 +19,7 @@ type LoginEmail = {
 function Msg({ text, ok }: { text: string; ok: boolean }) {
   return (
     <span
-      className={`text-[0.8rem] font-[300] ${ok ? "text-terracotta" : "text-rust"}`}
+      className={`text-[0.8rem] font-[200] ${ok ? "text-terracotta" : "text-rust"}`}
     >
       {text}
     </span>
@@ -162,7 +162,8 @@ export function LoginEmails({ emails }: { emails: LoginEmail[] }) {
             onChange={(e) => setValue(e.target.value)}
             placeholder="navn@butik.dk"
             autoComplete="email"
-            className="w-full rounded-md border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.92rem] text-ink outline-none focus:border-terracotta sm:max-w-xs"
+            aria-label="Ny login-mail"
+            className="w-full border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-terracotta sm:max-w-xs"
           />
           <button
             type="submit"

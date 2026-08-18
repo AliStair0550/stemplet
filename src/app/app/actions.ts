@@ -201,6 +201,28 @@ export async function setWeeklyEmail(enabled: boolean): Promise<Result> {
   return { ok: true };
 }
 
+// Vaelg hvilken login-mail der modtager ugemailen. null = send til alle.
+export async function setWeeklyEmailTo(email: string | null): Promise<Result> {
+  const { business } = await requireBusiness();
+  let to: string | null = null;
+  if (email) {
+    const norm = email.trim().toLowerCase();
+    // Skal vaere en af butikkens egne login-mails.
+    const user = await prisma.user.findFirst({
+      where: { businessId: business.id, email: norm },
+      select: { id: true },
+    });
+    if (!user) return { ok: false, error: "Vælg en af butikkens login-mails." };
+    to = norm;
+  }
+  await prisma.business.update({
+    where: { id: business.id },
+    data: { weeklyEmailTo: to },
+  });
+  revalidatePath("/app/indstillinger");
+  return { ok: true };
+}
+
 // Til/fra for selvbetjening (kunden scanner selv en roterende QR). Standard fra:
 // kun personalet scanner kundens kort.
 export async function setSelfScan(enabled: boolean): Promise<Result> {
