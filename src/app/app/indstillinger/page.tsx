@@ -8,6 +8,7 @@ import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { WelcomeStampToggle } from "./WelcomeStampToggle";
 import { SelfScanToggle } from "./SelfScanToggle";
 import { KasseDevices } from "./KasseDevices";
+import { LoginEmails } from "./LoginEmails";
 import { LocationCard } from "./LocationCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
@@ -30,18 +31,29 @@ export default async function IndstillingerPage({
 }: {
   searchParams: Promise<{ betaling?: string; fejl?: string }>;
 }) {
-  const { business } = await requireBusiness();
+  const { business, userId } = await requireBusiness();
   const { betaling, fejl } = await searchParams;
   const stripeOn = stripeConfigured();
 
-  const [logs, devices] = await Promise.all([
+  const [logs, devices, users] = await Promise.all([
     prisma.auditLog.findMany({
       where: { businessId: business.id },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
     listDevices(business.id),
+    prisma.user.findMany({
+      where: { businessId: business.id },
+      select: { id: true, email: true, emailVerified: true },
+      orderBy: { email: "asc" },
+    }),
   ]);
+  const loginEmails = users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    isYou: u.id === userId,
+    verified: u.emailVerified != null,
+  }));
   const deviceList = devices.map((d) => ({
     id: d.id,
     name: d.name,
@@ -77,6 +89,10 @@ export default async function IndstillingerPage({
         selfScan={business.selfScanEnabled}
         hasPin={business.staffPin != null}
       />
+
+      <div className="mt-6">
+        <LoginEmails emails={loginEmails} />
+      </div>
 
       <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
         Ved kassen
