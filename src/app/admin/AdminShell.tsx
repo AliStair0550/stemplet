@@ -3,12 +3,13 @@ import { LockButton } from "./AdminControls";
 
 // Faelles ramme for admin-arbejdsomraadet: sidehoved + faner. Bruges af alle tre
 // faner (Platform-overblik, Marketing, Statistik), saa navigation og hoved er ens.
-type Tab = "overblik" | "marketing" | "statistik";
+type Tab = "overblik" | "marketing" | "statistik" | "qr";
 
 const TABS: { key: Tab; href: string; label: string }[] = [
   { key: "overblik", href: "/admin", label: "Platform-overblik" },
   { key: "marketing", href: "/admin/marketing", label: "Marketing" },
   { key: "statistik", href: "/admin/statistik", label: "Statistik" },
+  { key: "qr", href: "/admin/qr", label: "QR-koder" },
 ];
 
 export function AdminShell({
