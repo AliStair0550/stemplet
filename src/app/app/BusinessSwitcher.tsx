@@ -42,14 +42,6 @@ export function BusinessSwitcher({
     };
   }, [open]);
 
-  if (businesses.length <= 1) {
-    return (
-      <span className="mt-1 block truncate text-[0.75rem] font-[300] text-stone">
-        {active?.name}
-      </span>
-    );
-  }
-
   function choose(id: string) {
     setOpen(false);
     if (id === activeId) return;
@@ -121,7 +113,7 @@ export function BusinessSwitcher({
             })}
           </ul>
           <Link
-            href="/start"
+            href="/app/ny-butik"
             className="flex items-center gap-2 border-t border-fog px-3 py-2.5 text-[0.78rem] font-[400] text-terracotta transition-colors hover:bg-sand/50"
             onClick={() => setOpen(false)}
           >

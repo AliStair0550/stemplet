@@ -101,14 +101,9 @@ export function DashboardNav({
             </button>
           </form>
         </div>
-        {businesses.length > 1 ? (
-          <div className="px-6 pb-3">
-            <BusinessSwitcher
-              businesses={businesses}
-              activeId={activeBusinessId}
-            />
-          </div>
-        ) : null}
+        <div className="px-6 pb-3">
+          <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
+        </div>
         <div className="relative">
           <nav className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-4 pb-3">
             {/* Stempel: loeftet ud som en tydelig knap foerst i raekken */}

@@ -11,6 +11,7 @@ import { APP_URL } from "@/lib/env";
 import { hashPin } from "@/lib/security";
 import { generateApiKey } from "@/lib/integrations";
 import { isBusinessCategory } from "@/lib/categories";
+import { slugify } from "@/lib/utils";
 import { geocodeAddress, roundCoord } from "@/lib/geocode";
 import {
   cardDesignSchema,
@@ -43,6 +44,132 @@ export async function switchBusiness(businessId: string): Promise<Result> {
   });
   revalidatePath("/app", "layout");
   return { ok: true };
+}
+
+// Opret en NY butik under den nuvaerende konto (agentur: byg kundens setup foerst,
+// tilfoej deres mail senere). Ingen ny bruger/mail; den nuvaerende bruger bliver
+// medlem, og den nye butik saettes som aktiv, saa man lander direkte i den.
+export async function createBusinessForCurrentUser(input: {
+  name: string;
+  category?: string;
+  address?: string;
+  design: CardDesign;
+  acceptedTerms: boolean;
+}): Promise<
+  { ok: true; slug: string } | { ok: false; error: string; field?: "address" }
+> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, error: "Du er ikke logget ind." };
+  if (!input.acceptedTerms) {
+    return {
+      ok: false,
+      error:
+        "Sæt flueben ved handelsbetingelser, privatlivspolitik og databehandleraftale.",
+    };
+  }
+  const name = input.name.trim();
+  if (name.length < 2) {
+    return { ok: false, error: "Skriv butikkens navn (mindst 2 tegn)." };
+  }
+  const design = cardDesignSchema.safeParse(input.design);
+  if (!design.success) {
+    return {
+      ok: false,
+      error: design.error.issues[0]?.message ?? "Tjek kortdesignet.",
+    };
+  }
+
+  // Unik slug ud fra navnet.
+  const root = slugify(name) || "butik";
+  let slug = root;
+  let n = 1;
+  while (await prisma.business.findUnique({ where: { slug } })) {
+    n += 1;
+    slug = `${root}-${n}`;
+  }
+
+  const category =
+    input.category && isBusinessCategory(input.category) ? input.category : null;
+
+  let location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | null = null;
+  const addr = input.address?.trim();
+  if (addr && addr.length >= 4) {
+    const geo = await geocodeAddress(addr);
+    if (!geo) {
+      return {
+        ok: false,
+        field: "address",
+        error:
+          "Kunne ikke finde adressen. Ret den, eller lad feltet stå tomt og tilføj den senere.",
+      };
+    }
+    location = {
+      address: addr,
+      latitude: roundCoord(geo.lat),
+      longitude: roundCoord(geo.lng),
+    };
+  }
+
+  try {
+    const biz = await prisma.$transaction(async (tx) => {
+      const b = await tx.business.create({
+        data: {
+          name,
+          displayName: design.data.displayName?.trim() || null,
+          slug,
+          primaryColor: design.data.primaryColor,
+          textColor: design.data.textColor,
+          logoUrl: design.data.logoUrl ?? null,
+          termsAcceptedAt: new Date(),
+          welcomeStampEnabled: false,
+          address: location?.address ?? null,
+          latitude: location?.latitude ?? null,
+          longitude: location?.longitude ?? null,
+          category,
+          cards: {
+            create: {
+              stampsRequired: design.data.stampsRequired,
+              rewardText: design.data.rewardText,
+              stampIcon: design.data.stampIcon,
+              terms: design.data.terms || null,
+              active: true,
+            },
+          },
+        },
+        select: { id: true, slug: true },
+      });
+      await tx.membership.create({
+        data: { userId, businessId: b.id },
+      });
+      return b;
+    });
+
+    // Saet den nye butik som aktiv, saa brugeren lander direkte i den.
+    (await cookies()).set(ACTIVE_BUSINESS_COOKIE, biz.id, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+    revalidatePath("/app", "layout");
+    return { ok: true, slug: biz.slug };
+  } catch (e) {
+    if (
+      e &&
+      typeof e === "object" &&
+      "code" in e &&
+      (e as { code?: string }).code === "P2002"
+    ) {
+      return { ok: false, error: "Navnet er lige blevet taget. Prøv igen." };
+    }
+    throw e;
+  }
 }
 
 async function primaryCard(businessId: string) {
