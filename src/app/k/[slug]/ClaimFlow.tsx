@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CTA_EMPHASIS, WalletIcon } from "@/components/ui";
+import { WalletIcon } from "@/components/ui";
 import { Spinner } from "@/components/SubmitButton";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
 import { rgba } from "@/lib/brand";
@@ -44,14 +44,14 @@ function CtaLink({
       {withGlow ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute -inset-1 rounded-full blur-md animate-cta-glow"
+          className="pointer-events-none absolute -inset-1 rounded-2xl blur-md animate-cta-glow"
           style={{ background: rgba(ctaBg, 0.3) }}
         />
       ) : null}
       <a
         href={href}
         onClick={onTap}
-        className={`${CTA_EMPHASIS} inline-flex min-h-[3.25rem] items-center justify-center gap-2 px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] transition-transform duration-200 active:scale-[0.98]`}
+        className="relative flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] shadow-lift transition-transform duration-200 active:scale-[0.98]"
         style={{ backgroundColor: ctaBg, color: ctaFg }}
       >
         {children}

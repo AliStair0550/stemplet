@@ -195,7 +195,7 @@ export default async function ClaimPage({
               paa kortet og knappen, men de er der for kunden. */}
           {card.terms ? (
             <details
-              className="group w-full overflow-hidden rounded-xl"
+              className="group w-full overflow-hidden rounded-2xl"
               style={{
                 background: rgba(text, 0.06),
                 border: `1px solid ${rgba(text, 0.16)}`,
