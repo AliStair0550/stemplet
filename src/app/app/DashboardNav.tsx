@@ -12,13 +12,18 @@ import { cn } from "@/lib/utils";
 // oevrige menupunkter, saa det staar tydeligt for sig selv.
 const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
 
-const LINKS: { href: string; label: string }[] = [
-  { href: "/app/kom-i-gang", label: "Kom i gang" },
+// Dagligt overblik og det kunde-vendte (kortet, deling, kampagner).
+const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
   { href: "/app/statistik", label: "Statistik" },
-  { href: "/app/kort", label: "Design" },
   { href: "/app/materialer", label: "Del dit kort" },
   { href: "/app/kampagner", label: "Kampagner" },
+];
+
+// Det interne: opsaetning, design og drift af butikken.
+const INTERNAL_LINKS: { href: string; label: string }[] = [
+  { href: "/app/kort", label: "Design" },
+  { href: "/app/kom-i-gang", label: "Opsætning" },
   { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
@@ -38,7 +43,11 @@ export function DashboardNav({
   showAgreement?: boolean;
 }) {
   const pathname = usePathname();
-  const links = showAgreement ? [...LINKS, AGREEMENT_LINK] : LINKS;
+  // Pro-aftale hoerer til det interne (drift/konto), saa den ligger sidst i den
+  // gruppe naar butikken er varslet/har godkendt.
+  const internalLinks = showAgreement
+    ? [...INTERNAL_LINKS, AGREEMENT_LINK]
+    : INTERNAL_LINKS;
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname.startsWith(href);
@@ -65,10 +74,28 @@ export function DashboardNav({
             {STAMP_LINK.label}
           </Link>
 
-          {/* Hårfin adskillelse til de oevrige (administrations)punkter */}
+          {/* Hårfin adskillelse fra Stempel til det daglige overblik */}
           <div className="my-3 h-px bg-fog" aria-hidden />
 
-          {links.map((l) => (
+          {PRIMARY_LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={cn(
+                "rounded-lg px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
+                isActive(l.href)
+                  ? "bg-terracotta/10 text-terracotta"
+                  : "text-stone hover:text-ink",
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+
+          {/* Kant: skiller det kunde-vendte fra det interne */}
+          <div className="my-3 h-px bg-fog" aria-hidden />
+
+          {internalLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -126,7 +153,28 @@ export function DashboardNav({
               className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
             />
 
-            {links.map((l) => (
+            {PRIMARY_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={cn(
+                  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
+                  isActive(l.href)
+                    ? "bg-terracotta/10 text-terracotta"
+                    : "text-stone hover:text-ink",
+                )}
+              >
+                {l.label}
+              </Link>
+            ))}
+
+            {/* Kant: skiller det kunde-vendte fra det interne */}
+            <span
+              aria-hidden
+              className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
+            />
+
+            {internalLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}

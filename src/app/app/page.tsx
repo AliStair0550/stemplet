@@ -301,7 +301,7 @@ export default async function OverviewPage() {
                   variant="primary"
                   className="w-full justify-center sm:w-auto"
                 >
-                  Kom i gang
+                  Opsætning
                 </ButtonLink>
                 <ButtonLink
                   href="/app/materialer"

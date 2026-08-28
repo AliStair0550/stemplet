@@ -9,7 +9,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { GettingStarted } from "../GettingStarted";
 import type { StampIconKey } from "@/lib/brand";
 
-export const metadata: Metadata = { title: "Kom i gang" };
+export const metadata: Metadata = { title: "Opsætning" };
 export const dynamic = "force-dynamic";
 
 export default async function KomIGangPage() {
@@ -31,7 +31,7 @@ export default async function KomIGangPage() {
   return (
     <>
       <PageHeading
-        title="Kom i gang"
+        title="Opsætning"
         subtitle="Her gør du butikken klar: print og del QR-koden, tilføj personale, og giv det første stempel."
       />
       <GettingStarted
