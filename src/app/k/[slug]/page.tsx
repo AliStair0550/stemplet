@@ -5,9 +5,23 @@ import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
-import { cardTitle, type StampIconKey } from "@/lib/brand";
+import { cardTitle, shade, rgba, type StampIconKey } from "@/lib/brand";
+import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
+
+// Et diskret, gentaget felt af butikkens stempel-ikon som baggrunds-tekstur.
+// Tegnet i tekstfarven ved lav opacitet, saa det giver liv uden at stjaele fokus.
+function iconTileDataUri(markup: string, stroke: string): string {
+  const t = 116;
+  const g = (x: number, y: number) =>
+    `<g transform='translate(${x},${y}) scale(1.5) rotate(-8)'>${markup}</g>`;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${t}' height='${t}' viewBox='0 0 ${t} ${t}'>` +
+    `<g fill='none' stroke='${stroke}' stroke-opacity='0.06' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
+    `${g(14, 16)}${g(72, 74)}</g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
 
 // ISR: siden er ens for alle (butikkens branding + "Hent mit stempelkort"), saa
 // den caches pr. butik. Foer var den dynamisk pr. request, saa kundens FOERSTE
@@ -92,64 +106,140 @@ export default async function ClaimPage({
   const card = business.cards[0];
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
 
+  // Brand-drevet, levende baggrund: en moerkere tone af kortfarven med et varmt
+  // spotlight bag kortet, en blOd top-gloed og et diskret ikon-felt. Alt udledt
+  // af butikkens egne farver, saa siden foeles som en del af brandet.
+  const primary = business.primaryColor;
+  const text = business.textColor;
+  const bgTop = shade(primary, -0.33);
+  const bgBottom = shade(primary, -0.6);
+  const spotlight = shade(primary, 0.35);
+  const iconMarkup =
+    STAMP_ICON_PATHS[card.stampIcon as StampIconKey] ?? STAMP_ICON_PATHS.custom;
+
+  const bgStyle: React.CSSProperties = {
+    backgroundColor: bgBottom,
+    color: text,
+    backgroundImage: [
+      iconTileDataUri(iconMarkup, text),
+      `radial-gradient(ellipse 130% 55% at 50% 42%, ${rgba(spotlight, 0.5)} 0%, transparent 60%)`,
+      `radial-gradient(ellipse 100% 45% at 50% 0%, ${rgba(text, 0.1)} 0%, transparent 70%)`,
+      `linear-gradient(180deg, ${bgTop} 0%, ${bgBottom} 100%)`,
+    ].join(", "),
+    backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
+    backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
+    <main
+      className="flex min-h-screen flex-col items-center justify-center px-6 py-16"
+      style={bgStyle}
+    >
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           {business.logoUrl ? (
-            <Image
+            // Brand-logo i vilkaarligt format: <img> beholder logoets egne
+            // proportioner (ingen firkantet beskaering), stort og tydeligt i toppen.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={business.logoUrl}
               alt={business.name}
-              width={56}
-              height={56}
-              className="h-14 w-14 rounded-lg object-contain"
+              className="h-20 w-auto max-w-[70vw] object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
             />
           ) : null}
-          <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">
-            Dit stempelkort hos {cardTitle(business)}
-          </h1>
-          <p className="max-w-xs font-[200] text-[0.9rem] leading-relaxed text-stone">
-            {card.rewardText}. Ingen app. Ingen tilmelding.
-          </p>
+          <div className="flex flex-col gap-2">
+            <h1
+              className="font-[300] text-[1.5rem] leading-tight"
+              style={{ color: text }}
+            >
+              Dit stempelkort hos {cardTitle(business)}
+            </h1>
+            <p
+              className="mx-auto max-w-xs font-[300] text-[0.92rem] leading-relaxed"
+              style={{ color: rgba(text, 0.72) }}
+            >
+              {card.rewardText}. Ingen app. Ingen tilmelding.
+            </p>
+          </div>
         </div>
 
-        <StampCard
-          businessName={cardTitle(business)}
-          logoUrl={business.logoUrl}
-          logoScale={business.logoScale}
-          primaryColor={business.primaryColor}
-          textColor={business.textColor}
-          stampIcon={card.stampIcon as StampIconKey}
-          stamps={0}
-          required={card.stampsRequired}
-          rewardText={card.rewardText}
-          showPoweredBy={showPoweredBy}
-        />
+        {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
+        <div
+          className="w-full"
+          style={{
+            filter: `drop-shadow(0 26px 48px ${rgba(shade(primary, -0.72), 0.6)})`,
+          }}
+        >
+          <StampCard
+            businessName={cardTitle(business)}
+            logoUrl={business.logoUrl}
+            logoScale={business.logoScale}
+            primaryColor={business.primaryColor}
+            textColor={business.textColor}
+            stampIcon={card.stampIcon as StampIconKey}
+            stamps={0}
+            required={card.stampsRequired}
+            rewardText={card.rewardText}
+            showPoweredBy={showPoweredBy}
+          />
+        </div>
 
-        <div className="flex flex-col items-center gap-4">
-          <ClaimFlow slug={slug} walletEnabled={WALLET_ENABLED} />
-          {/* Betingelser (valgfri): diskret under "Hent mit stempelkort", saa
-              fokus bliver paa kortet og knappen, men de er der for kunden. */}
+        <div className="flex w-full flex-col items-center gap-4">
+          <ClaimFlow
+            slug={slug}
+            walletEnabled={WALLET_ENABLED}
+            ctaBg={text}
+            ctaFg={primary}
+          />
+          {/* Betingelser (valgfri): en diskret, foldbar raekke, saa fokus bliver
+              paa kortet og knappen, men de er der for kunden. */}
           {card.terms ? (
-            <div className="w-full rounded-lg border border-fog bg-sand/60 px-4 py-3 text-center">
-              <p className="text-[0.6rem] font-[500] uppercase tracking-[0.14em] text-slate">
+            <details
+              className="group w-full overflow-hidden rounded-xl"
+              style={{
+                background: rgba(text, 0.06),
+                border: `1px solid ${rgba(text, 0.16)}`,
+              }}
+            >
+              <summary
+                className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[0.66rem] font-[500] uppercase tracking-[0.14em] [&::-webkit-details-marker]:hidden"
+                style={{ color: rgba(text, 0.85) }}
+              >
                 Betingelser
-              </p>
-              <p className="mt-1 text-[0.78rem] font-[300] leading-relaxed text-stone">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4 transition-transform duration-200 group-open:rotate-180"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </summary>
+              <p
+                className="px-4 pb-4 text-[0.8rem] font-[300] leading-relaxed"
+                style={{ color: rgba(text, 0.7) }}
+              >
                 {card.terms}
               </p>
-            </div>
+            </details>
           ) : null}
           {/* GDPR-formaal: gjort klart FOER kortet hentes, at vi gemmer
               stempelhistorik og hvorfor (belOEnninger + fordele). */}
-          <p className="max-w-xs text-center text-[0.7rem] font-[300] leading-relaxed text-slate">
+          <p
+            className="max-w-xs text-center text-[0.72rem] font-[300] leading-relaxed"
+            style={{ color: rgba(text, 0.55) }}
+          >
             Når du henter kortet, gemmer {business.name} din stempelhistorik, så
             du kan optjene stempler og få belønninger og fordele. Se{" "}
             <a
               href="/privatliv"
               target="_blank"
               rel="noreferrer"
-              className="underline underline-offset-2 hover:text-ink"
+              className="underline underline-offset-2 opacity-90 transition-opacity hover:opacity-100"
+              style={{ color: rgba(text, 0.7) }}
             >
               privatlivspolitikken
             </a>
@@ -159,16 +249,23 @@ export default async function ClaimPage({
 
         {/* Deling: laeg linket videre, saa venner ogsaa faar kortet. Deles
             linket, viser previewet butikkens stempelkort (OG-billede). */}
-        <div className="flex flex-col items-center border-t border-fog pt-6">
+        <div
+          className="flex w-full flex-col items-center border-t pt-6"
+          style={{ borderColor: rgba(text, 0.15) }}
+        >
           <ShareLinkButton
             businessName={cardTitle(business)}
             url={`${APP_URL}/k/${slug}`}
             label="Del kortet"
+            tone="onDark"
           />
         </div>
 
         {showPoweredBy ? (
-          <p className="text-[0.65rem] font-[300] tracking-[0.08em] text-slate">
+          <p
+            className="text-[0.65rem] font-[300] tracking-[0.08em]"
+            style={{ color: rgba(text, 0.45) }}
+          >
             Drevet af Stemplet
           </p>
         ) : null}

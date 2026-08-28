@@ -30,11 +30,15 @@ export function ShareLinkButton({
   url,
   label = "Del kortet",
   className,
+  tone = "default",
 }: {
   businessName: string;
   url: string;
   label?: string;
   className?: string;
+  // "onDark": arver tekstfarven (currentColor) og faar en haarfin ramme, saa
+  // knappen passer paa en moerk, brandet flade (fx kortets landingsside).
+  tone?: "default" | "onDark";
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -56,6 +60,22 @@ export function ShareLinkButton({
     } catch {
       // brugeren annullerede, eller deling er ikke understoettet
     }
+  }
+
+  if (tone === "onDark") {
+    return (
+      <button
+        onClick={share}
+        style={{ borderColor: "currentColor" }}
+        className={cn(
+          "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-6 text-[0.9rem] font-medium opacity-80 transition-opacity hover:opacity-100",
+          className,
+        )}
+      >
+        <ShareIcon />
+        {copied ? "Link kopieret" : label}
+      </button>
+    );
   }
 
   return (

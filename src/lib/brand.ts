@@ -163,6 +163,12 @@ export function isCardReadable(primaryHex: string, textHex: string): boolean {
   return contrastRatio(primaryHex, textHex) >= 3.5;
 }
 
+/** Farve med alpha (rgba-streng), til gloed/lag oven paa en brand-farve. */
+export function rgba(hex: string, alpha: number): string {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /** Let variation af en farve, til gradient/skygge på kortet. */
 export function shade(hex: string, amount: number): string {
   const { r, g, b } = hexToRgb(hex);

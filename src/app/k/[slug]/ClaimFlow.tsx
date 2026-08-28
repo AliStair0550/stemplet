@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
+import { CTA_EMPHASIS, WalletIcon } from "@/components/ui";
 import { Spinner } from "@/components/SubmitButton";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
+import { rgba } from "@/lib/brand";
 
 // Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
 const ERRORS: Record<string, string> = {
@@ -21,6 +22,44 @@ const ERRORS: Record<string, string> = {
 // Fejl-koder hvor et nyt forsoeg giver mening (vis en "Prøv igen"-knap).
 const RETRYABLE = new Set(["serverfejl", "optaget"]);
 
+// Den brandede CTA: creme knap (kortets tekstfarve) med kortfarvet tekst, saa
+// den altid harmonerer med brandet. Valgfri blOd gloed bagved paa hoved-CTA'en.
+function CtaLink({
+  href,
+  onTap,
+  ctaBg,
+  ctaFg,
+  withGlow = false,
+  children,
+}: {
+  href: string;
+  onTap: (e: React.MouseEvent) => void;
+  ctaBg: string;
+  ctaFg: string;
+  withGlow?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative w-full">
+      {withGlow ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-full blur-md animate-cta-glow"
+          style={{ background: rgba(ctaBg, 0.3) }}
+        />
+      ) : null}
+      <a
+        href={href}
+        onClick={onTap}
+        className={`${CTA_EMPHASIS} inline-flex min-h-[3.25rem] items-center justify-center gap-2 px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] transition-transform duration-200 active:scale-[0.98]`}
+        style={{ backgroundColor: ctaBg, color: ctaFg }}
+      >
+        {children}
+      </a>
+    </div>
+  );
+}
+
 // "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
 // opretter kortet og returnerer .pkpass'et i samme svar, saa Safari aabner Apple
 // Wallet-arket direkte fra kundens eget tryk. Ingen skroebelig JavaScript-
@@ -35,9 +74,15 @@ const RETRYABLE = new Set(["serverfejl", "optaget"]);
 export function ClaimFlow({
   slug,
   walletEnabled,
+  // CTA-farver: passer til kortet. Standard = kortets tekstfarve som baggrund og
+  // kortfarven som tekst, saa knappen altid harmonerer med brandet.
+  ctaBg = "#F6EEE4",
+  ctaFg = "#2A1A10",
 }: {
   slug: string;
   walletEnabled: boolean;
+  ctaBg?: string;
+  ctaFg?: string;
 }) {
   const [phase, setPhase] = useState<
     "idle" | "opening" | "added" | "usikker"
@@ -86,18 +131,14 @@ export function ClaimFlow({
       <div className="flex w-full flex-col items-center gap-3">
         <p
           role="status"
-          className="w-full rounded-lg border border-rust/30 bg-rust/5 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
+          className="w-full rounded-lg border border-rust/40 bg-rust/10 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
         >
           {ERRORS[fejl]}
         </p>
         {RETRYABLE.has(fejl) ? (
-          <a
-            href={claimUrl}
-            onClick={onTap}
-            className={`${btnClass("primary", "lg")} w-full`}
-          >
+          <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg}>
             Prøv igen
-          </a>
+          </CtaLink>
         ) : null}
       </div>
     );
@@ -109,7 +150,8 @@ export function ClaimFlow({
         <WalletAddedNotice />
         <a
           href={claimUrl}
-          className="text-[0.8rem] font-[300] text-terracotta underline underline-offset-2 hover:opacity-70"
+          className="text-[0.8rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
+          style={{ color: ctaBg }}
         >
           Åbn kortet i Apple Wallet igen
         </a>
@@ -122,32 +164,42 @@ export function ClaimFlow({
       <div className="flex w-full flex-col items-center gap-3">
         <p
           role="status"
-          className="w-full rounded-lg border border-fog bg-sand/60 px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed text-stone"
+          className="w-full rounded-lg px-5 py-4 text-center text-[0.85rem] font-[300] leading-relaxed"
+          style={{
+            color: rgba(ctaBg, 0.85),
+            background: rgba(ctaBg, 0.08),
+            border: `1px solid ${rgba(ctaBg, 0.18)}`,
+          }}
         >
-          Åbnede Apple Wallet sig ikke? Første gang kan det tage et øjeblik.
-          Prøv igen.
+          Åbnede Apple Wallet sig ikke? Første gang kan det tage et øjeblik. Prøv
+          igen.
         </p>
-        <a
-          href={claimUrl}
-          onClick={onTap}
-          className={`${btnClass("primary", "lg")} w-full`}
-        >
+        <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg}>
           Prøv igen
-        </a>
+        </CtaLink>
       </div>
     );
   }
 
   if (phase === "opening") {
     return (
-      <div className="flex w-full flex-col items-center gap-2 rounded-xl border border-fog bg-white p-5 text-center">
-        <span className="inline-flex items-center gap-2 text-[0.92rem] font-[400] text-ink">
+      <div
+        className="flex w-full flex-col items-center gap-2 rounded-xl p-5 text-center"
+        style={{
+          background: rgba(ctaBg, 0.1),
+          border: `1px solid ${rgba(ctaBg, 0.18)}`,
+        }}
+      >
+        <span className="inline-flex items-center gap-2 text-[0.95rem] font-[500]">
           <Spinner />
           Åbner Apple Wallet
         </span>
-        <span className="text-[0.84rem] font-[300] leading-relaxed text-stone">
-          Tryk <span className="font-[500] text-ink">Tilføj</span> i Apple Wallet
-          for at gemme dit stempelkort.
+        <span
+          className="text-[0.84rem] font-[300] leading-relaxed"
+          style={{ color: rgba(ctaBg, 0.8) }}
+        >
+          Tryk <span className="font-[600]">Tilføj</span> i Apple Wallet for at
+          gemme dit stempelkort.
         </span>
       </div>
     );
@@ -173,14 +225,9 @@ export function ClaimFlow({
   }
 
   return (
-    <CtaGlow className="w-full">
-      <a
-        href={claimUrl}
-        onClick={onTap}
-        className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS}`}
-      >
-        Hent mit stempelkort
-      </a>
-    </CtaGlow>
+    <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
+      <WalletIcon />
+      Hent mit stempelkort
+    </CtaLink>
   );
 }
