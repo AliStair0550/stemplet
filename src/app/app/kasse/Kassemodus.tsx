@@ -429,7 +429,10 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 
 // ── Panel: scan kundens kort (personalet stempler selv) ───────────────
 function ScanPanel({ hasPin }: { hasPin: boolean }) {
-  const [scanning, setScanning] = useState(false);
+  // Scanning er den eneste funktion ved kassen, saa kameraet aabner med det
+  // samme: trykker man "Stempel", er man klar til at scanne uden et ekstra tryk.
+  // Bliver kameraet afvist/blokeret, viser Scanner en paen fejl med "Prøv igen".
+  const [scanning, setScanning] = useState(true);
   const [serial, setSerial] = useState<string | null>(null);
   // Manuel indtastning: fallback naar QR'en ikke kan scannes (glare, revnet
   // skaerm, afvist kamera, eller en desktop uden brugbart kamera).
@@ -454,7 +457,12 @@ function ScanPanel({ hasPin }: { hasPin: boolean }) {
             setSerial(null);
             setScanning(true);
           }}
-          onExit={() => setSerial(null)}
+          // Faerdig med denne kunde: aabn kameraet igen med det samme, saa naeste
+          // kort kan scannes uden et ekstra tryk (rent scan-loop ved kassen).
+          onExit={() => {
+            setSerial(null);
+            setScanning(true);
+          }}
         />
         {scanning ? (
           <Scanner
