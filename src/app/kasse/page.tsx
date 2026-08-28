@@ -5,10 +5,14 @@ import { Kassemodus, type KioskCard } from "@/app/app/kasse/Kassemodus";
 import type { StampIconKey } from "@/lib/brand";
 import { PairDevice } from "./PairDevice";
 import { UnpairButton } from "./UnpairButton";
+import { InstallHomeScreen } from "./InstallHomeScreen";
 
 export const metadata: Metadata = {
   title: "Kasse",
   robots: { index: false },
+  // Kassen har sit eget manifest, saa hjemmeskaerm-ikonet aabner direkte her.
+  manifest: "/kasse/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Kasse", statusBarStyle: "default" },
 };
 export const dynamic = "force-dynamic";
 
@@ -53,7 +57,10 @@ export default async function KasseRegisterPage({
             Kasse
           </span>
         </span>
-        {access.source === "device" ? <UnpairButton /> : null}
+        <div className="flex items-center gap-5">
+          <InstallHomeScreen />
+          {access.source === "device" ? <UnpairButton /> : null}
+        </div>
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
         <Kassemodus

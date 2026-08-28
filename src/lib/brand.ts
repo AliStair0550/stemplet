@@ -15,10 +15,17 @@ export type StampIconKey =
   | "coffee"
   | "croissant"
   | "cupcake"
+  | "donut"
+  | "cake"
+  | "bread"
   | "pizza"
   | "burger"
+  | "hotdog"
   | "sandwich"
+  | "taco"
+  | "fish"
   | "icecream"
+  | "smoothie"
   | "beer"
   | "wine"
   | "cocktail"
@@ -26,6 +33,8 @@ export type StampIconKey =
   | "sparkle"
   | "flower"
   | "leaf"
+  | "paw"
+  | "gift"
   | "heart"
   | "star"
   | "crown"
@@ -38,10 +47,17 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "coffee", label: "Kaffekop" },
   { key: "croissant", label: "Croissant" },
   { key: "cupcake", label: "Cupcake" },
+  { key: "donut", label: "Donut" },
+  { key: "cake", label: "Kage" },
+  { key: "bread", label: "Brød" },
   { key: "pizza", label: "Pizza" },
   { key: "burger", label: "Burger" },
+  { key: "hotdog", label: "Hotdog" },
   { key: "sandwich", label: "Sandwich" },
+  { key: "taco", label: "Taco" },
+  { key: "fish", label: "Fisk" },
   { key: "icecream", label: "Is" },
+  { key: "smoothie", label: "Smoothie" },
   { key: "beer", label: "Øl" },
   { key: "wine", label: "Vin" },
   { key: "cocktail", label: "Cocktail" },
@@ -49,6 +65,8 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "sparkle", label: "Glimt" },
   { key: "flower", label: "Blomst" },
   { key: "leaf", label: "Blad" },
+  { key: "paw", label: "Pote" },
+  { key: "gift", label: "Gave" },
   { key: "heart", label: "Hjerte" },
   { key: "star", label: "Stjerne" },
   { key: "crown", label: "Krone" },
