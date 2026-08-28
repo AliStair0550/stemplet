@@ -1,7 +1,12 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { getCardToken } from "./cookies";
-import { loadCardByToken, createCardholderAtomically } from "./stamp";
+import {
+  loadCardByToken,
+  createCardholderAtomically,
+  hasActivePickupStamp,
+  applyStamp,
+} from "./stamp";
 import { signupBlockReason } from "./billing";
 import { withDbRetry } from "./db-retry";
 
@@ -91,6 +96,23 @@ export async function resolveOrCreateCard(
     deviceId,
   );
   if (!created) return { ok: false, error: "fuld" };
+
+  // Stempel ved afhentning: koerer der en aktiv PICKUP_STAMP-kampagne, faar det
+  // nye kort 1 stempel med det samme (kortet lander i Wallet med 1/x). MANUAL
+  // springer cooldown over og er system-givet. En fejl her maa ikke vaelte
+  // afhentningen, saa vi sluger den (kortet er stadig oprettet).
+  if (await hasActivePickupStamp(card.id)) {
+    try {
+      await applyStamp({
+        customerCardId: created.id,
+        method: "MANUAL",
+        skipCooldown: true,
+        count: 1,
+      });
+    } catch {
+      /* stempel best-effort: kortet er hentet uanset */
+    }
+  }
 
   return {
     ok: true,

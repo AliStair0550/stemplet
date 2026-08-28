@@ -6,7 +6,7 @@ import { createCampaign, deleteCampaign } from "../actions";
 import { btnClass } from "@/components/ui";
 import { formatDkDate } from "@/lib/utils";
 
-type CampaignType = "DOUBLE_STAMP" | "WELCOME_BONUS";
+type CampaignType = "DOUBLE_STAMP" | "WELCOME_BONUS" | "PICKUP_STAMP";
 
 type Campaign = {
   id: string;
@@ -28,6 +28,11 @@ const TYPES: Record<
     label: "Velkomstbonus",
     desc: "Nye kunders allerførste stempel tæller ekstra. Godt til at få folk i gang.",
     icon: <IconGift />,
+  },
+  PICKUP_STAMP: {
+    label: "Stempel ved afhentning",
+    desc: "Kunder der henter kortet i perioden får 1 stempel med det samme. Slutdatoen er fristen: hent inden da og få stemplet.",
+    icon: <IconPickup />,
   },
 };
 
@@ -96,7 +101,7 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
           Ny kampagne
         </h2>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           {(Object.keys(TYPES) as CampaignType[]).map((key) => {
             const t = TYPES[key];
             const selected = type === key;
@@ -292,6 +297,24 @@ function IconGift() {
       style={{ height: "1.1rem", width: "1.1rem" }}
     >
       <path d="M20 12v8H4v-8M2 8h20v4H2zM12 8v12M12 8S10 3 7 5s5 3 5 3ZM12 8s2-5 5-3-5 3-5 3Z" />
+    </svg>
+  );
+}
+// Kort der hentes + et stempel oveni (plus): "stempel ved afhentning".
+function IconPickup() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ height: "1.1rem", width: "1.1rem" }}
+    >
+      <rect x="3" y="6.5" width="18" height="11" rx="2" />
+      <path d="M7 10.5h5" />
+      <path d="M16 9.5v4M14 11.5h4" />
     </svg>
   );
 }

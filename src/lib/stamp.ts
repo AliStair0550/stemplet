@@ -175,6 +175,27 @@ export function loadCardByToken(authToken: string) {
 }
 
 /**
+ * Er der en aktiv "stempel ved afhentning"-kampagne paa kortet lige nu? Bruges
+ * baade i claim-flowet og selvbetjenings-scan til at give en ny kunde 1 stempel
+ * med det samme, naar kortet hentes i perioden.
+ */
+export async function hasActivePickupStamp(
+  cardId: string,
+  now: Date = new Date(),
+): Promise<boolean> {
+  const c = await prisma.campaign.findFirst({
+    where: {
+      cardId,
+      type: "PICKUP_STAMP",
+      startsAt: { lte: now },
+      endsAt: { gte: now },
+    },
+    select: { id: true },
+  });
+  return c != null;
+}
+
+/**
  * Ren beregning af, hvor mange stempler EEN scanning giver: en aktiv
  * dobbeltstempel-kampagne fordobler, og personalet kan vaelge et antal (fx tre
  * kaffe = 3, klampet til 1..20). Uden I/O, saa multiplier-logikken kan

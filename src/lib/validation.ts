@@ -86,7 +86,7 @@ export const setPinSchema = z.object({
 // Kampagne
 export const campaignSchema = z
   .object({
-    type: z.enum(["DOUBLE_STAMP", "WELCOME_BONUS"]),
+    type: z.enum(["DOUBLE_STAMP", "WELCOME_BONUS", "PICKUP_STAMP"]),
     startsAt: z.coerce.date(),
     endsAt: z.coerce.date(),
   })

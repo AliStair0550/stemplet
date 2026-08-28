@@ -267,6 +267,12 @@ export function GuideContent({ data }: { data: GuideData }) {
                     <span className="font-[500]">Dobbeltstempel kører.</span> Hvert
                     stempel tæller dobbelt til og med {formatDkDate(c.endsAt)}.
                   </>
+                ) : c.type === "PICKUP_STAMP" ? (
+                  <>
+                    <span className="font-[500]">Stempel ved afhentning kører.</span>{" "}
+                    Kunder der henter kortet får 1 stempel med det samme, til og med{" "}
+                    {formatDkDate(c.endsAt)}.
+                  </>
                 ) : (
                   <>
                     <span className="font-[500]">Velkomstbonus kører.</span>{" "}

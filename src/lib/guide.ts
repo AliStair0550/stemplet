@@ -7,7 +7,7 @@ import { WALLET_ENABLED } from "./env";
 // guiden altid afspejler butikkens faktiske indstillinger.
 
 export type GuideCampaign = {
-  type: "DOUBLE_STAMP" | "WELCOME_BONUS";
+  type: "DOUBLE_STAMP" | "WELCOME_BONUS" | "PICKUP_STAMP";
   endsAt: Date;
 };
 

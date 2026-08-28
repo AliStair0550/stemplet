@@ -314,6 +314,9 @@ model Redemption {
 enum CampaignType {
   DOUBLE_STAMP
   WELCOME_BONUS
+  // Stempel ved afhentning: en kunde der henter kortet i perioden faar 1 stempel
+  // med det samme. "Hent inden en dato" = kampagnens slutdato.
+  PICKUP_STAMP
 }
 
 model Campaign {

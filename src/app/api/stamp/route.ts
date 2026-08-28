@@ -5,6 +5,7 @@ import {
   loadCardByToken,
   applyStamp,
   createCustomerCard,
+  hasActivePickupStamp,
   StampError,
 } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
@@ -114,10 +115,22 @@ export async function POST(req: NextRequest) {
     if (!cc) return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
 
-  // Velkomststempel slaaet fra: kundens ALLERFOERSTE scan opretter KUN kortet
-  // (0 stempler), saa de lander paa Wallet uden et stempel. Stempler gives
-  // derefter ved koeb. Standard er TIL, saa denne gren springes normalt over.
-  if (createdCard && !cc.card.business.welcomeStampEnabled) {
+  // Stempel ved afhentning: koerer der en aktiv PICKUP_STAMP-kampagne, skal en
+  // ny kunde have 1 stempel med det samme, selv hvis velkomststempel er slaaet
+  // fra. Saa faar vi kun EET velkomst-stempel (aldrig stablet oveni), fordi det
+  // blot lader det normale applyStamp nedenfor loebe i stedet for 0-stempel-grenen.
+  const givePickupStamp =
+    createdCard && (await hasActivePickupStamp(cc.card.id));
+
+  // Velkomststempel slaaet fra (og ingen afhentnings-kampagne): kundens
+  // ALLERFOERSTE scan opretter KUN kortet (0 stempler), saa de lander paa Wallet
+  // uden et stempel. Stempler gives derefter ved koeb. Standard er TIL, saa denne
+  // gren springes normalt over.
+  if (
+    createdCard &&
+    !cc.card.business.welcomeStampEnabled &&
+    !givePickupStamp
+  ) {
     const response = NextResponse.json({
       ok: true,
       created: true,
