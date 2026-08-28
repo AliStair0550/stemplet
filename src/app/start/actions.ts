@@ -134,37 +134,47 @@ export async function createBusinessAction(input: {
 
   let createdUserId: string | null = null;
   try {
-    const businessRow = await prisma.business.create({
-      select: { users: { select: { id: true } } },
-      data: {
-        name: base.data.name,
-        displayName: design.data.displayName?.trim() || null,
-        slug,
-        primaryColor: design.data.primaryColor,
-        textColor: design.data.textColor,
-        logoUrl: design.data.logoUrl ?? null,
-        staffPin,
-        termsAcceptedAt: new Date(),
-        // Standard: velkomststempel FRA, saa flowet altid er 1. kort hentes,
-        // 2. stempler gives ved kassen. Kan slaas til i indstillinger.
-        welcomeStampEnabled: false,
-        address: location?.address ?? null,
-        latitude: location?.latitude ?? null,
-        longitude: location?.longitude ?? null,
-        category,
-        users: { create: { email: base.data.email, name: base.data.name } },
-        cards: {
-          create: {
-            stampsRequired: design.data.stampsRequired,
-            rewardText: design.data.rewardText,
-            stampIcon: design.data.stampIcon,
-            terms: design.data.terms || null,
-            active: true,
+    // Butik + ejer-bruger + medlemskab i EEN transaktion, saa ejeren altid faar
+    // adgang (medlemskab) til den nyoprettede butik.
+    createdUserId = await prisma.$transaction(async (tx) => {
+      const businessRow = await tx.business.create({
+        select: { id: true, users: { select: { id: true } } },
+        data: {
+          name: base.data.name,
+          displayName: design.data.displayName?.trim() || null,
+          slug,
+          primaryColor: design.data.primaryColor,
+          textColor: design.data.textColor,
+          logoUrl: design.data.logoUrl ?? null,
+          staffPin,
+          termsAcceptedAt: new Date(),
+          // Standard: velkomststempel FRA, saa flowet altid er 1. kort hentes,
+          // 2. stempler gives ved kassen. Kan slaas til i indstillinger.
+          welcomeStampEnabled: false,
+          address: location?.address ?? null,
+          latitude: location?.latitude ?? null,
+          longitude: location?.longitude ?? null,
+          category,
+          users: { create: { email: base.data.email, name: base.data.name } },
+          cards: {
+            create: {
+              stampsRequired: design.data.stampsRequired,
+              rewardText: design.data.rewardText,
+              stampIcon: design.data.stampIcon,
+              terms: design.data.terms || null,
+              active: true,
+            },
           },
         },
-      },
+      });
+      const uid = businessRow.users[0]?.id ?? null;
+      if (uid) {
+        await tx.membership.create({
+          data: { userId: uid, businessId: businessRow.id },
+        });
+      }
+      return uid;
     });
-    createdUserId = businessRow.users[0]?.id ?? null;
   } catch (e) {
     if (
       e &&
@@ -276,13 +286,15 @@ export async function createOnboardingPairingCode(
 ): Promise<{ ok: true; code: string; qrDataUrl: string } | { ok: false }> {
   const payload = verifyOnboardingToken(token);
   if (!payload) return { ok: false };
-  const user = await prisma.user.findUnique({
-    where: { id: payload.uid },
+  // Den netop oprettede butik = brugerens foerste (og eneste) medlemskab.
+  const membership = await prisma.membership.findFirst({
+    where: { userId: payload.uid },
     select: { businessId: true },
+    orderBy: { createdAt: "asc" },
   });
-  if (!user) return { ok: false };
+  if (!membership) return { ok: false };
   try {
-    const { code, qrDataUrl } = await createPairingCode(user.businessId);
+    const { code, qrDataUrl } = await createPairingCode(membership.businessId);
     return { ok: true, code, qrDataUrl };
   } catch (e) {
     captureServerError(e, { route: "start:onboarding-pairing" });

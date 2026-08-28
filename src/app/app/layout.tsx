@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { requireBusiness, getMyBusinesses } from "@/lib/session";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
@@ -16,6 +16,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const { business } = await requireBusiness();
+  const businesses = await getMyBusinesses();
   // Vis "Pro-aftale" i menuen naar butikken er varslet (>=80) eller har godkendt.
   // Billige flags fra business, ingen ekstra query; foer varsel er den skjult.
   const showAgreement = Boolean(
@@ -25,7 +26,8 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-parchment">
       <DashboardNav
-        businessName={business.name}
+        businesses={businesses}
+        activeBusinessId={business.id}
         showAgreement={showAgreement}
       />
       <main className="md:pl-60 print:!pl-0">

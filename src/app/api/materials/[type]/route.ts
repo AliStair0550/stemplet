@@ -3,7 +3,7 @@ import path from "node:path";
 import QRCode from "qrcode";
 import sharp from "sharp";
 import { renderToBuffer, Font } from "@react-pdf/renderer";
-import { auth } from "@/lib/auth";
+import { getSessionBusinessId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { clientIp } from "@/lib/http";
@@ -76,8 +76,7 @@ export async function GET(
       include: withCard,
     });
   } else {
-    const session = await auth();
-    const businessId = session?.user?.businessId;
+    const businessId = await getSessionBusinessId();
     if (businessId) {
       business = await prisma.business.findUnique({
         where: { id: businessId },

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       id: true,
       name: true,
       weeklyEmailTo: true,
-      users: { select: { email: true } },
+      memberships: { select: { user: { select: { email: true } } } },
     },
   });
 
@@ -64,7 +64,9 @@ export async function GET(req: NextRequest) {
       });
       // Modtagere: er der valgt en bestemt login-mail (og den findes stadig),
       // sendes kun til den. Ellers til alle butikkens login-mails.
-      const allEmails = b.users.map((u) => u.email).filter(Boolean);
+      const allEmails = b.memberships
+        .map((m) => m.user.email)
+        .filter(Boolean);
       const chosen = b.weeklyEmailTo?.toLowerCase();
       const recipients =
         chosen && allEmails.some((e) => e.toLowerCase() === chosen)

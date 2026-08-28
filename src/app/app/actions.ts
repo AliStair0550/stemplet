@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { requireBusiness } from "@/lib/session";
-import { signOut } from "@/lib/auth";
+import { requireBusiness, ACTIVE_BUSINESS_COOKIE } from "@/lib/session";
+import { auth, signOut } from "@/lib/auth";
 import { getStripe, proPriceId } from "@/lib/stripe";
 import { APP_URL } from "@/lib/env";
 import { hashPin } from "@/lib/security";
@@ -20,6 +21,29 @@ import {
 import type { CardDesign } from "@/components/CardDesigner";
 
 type Result = { ok: boolean; error?: string };
+
+// Skift aktiv butik (agentur/flere ejere): saetter en cookie med den valgte
+// butik EFTER at have verificeret, at brugeren faktisk er medlem. Ingen nyt
+// login noedvendigt.
+export async function switchBusiness(businessId: string): Promise<Result> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, error: "Ikke logget ind." };
+  const m = await prisma.membership.findUnique({
+    where: { userId_businessId: { userId, businessId } },
+    select: { id: true },
+  });
+  if (!m) return { ok: false, error: "Du har ikke adgang til den butik." };
+  (await cookies()).set(ACTIVE_BUSINESS_COOKIE, businessId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+  revalidatePath("/app", "layout");
+  return { ok: true };
+}
 
 async function primaryCard(businessId: string) {
   return prisma.card.findFirst({
@@ -207,12 +231,12 @@ export async function setWeeklyEmailTo(email: string | null): Promise<Result> {
   let to: string | null = null;
   if (email) {
     const norm = email.trim().toLowerCase();
-    // Skal vaere en af butikkens egne login-mails.
-    const user = await prisma.user.findFirst({
-      where: { businessId: business.id, email: norm },
+    // Skal vaere en af butikkens egne login-mails (medlemmer).
+    const member = await prisma.membership.findFirst({
+      where: { businessId: business.id, user: { email: norm } },
       select: { id: true },
     });
-    if (!user) return { ok: false, error: "Vælg en af butikkens login-mails." };
+    if (!member) return { ok: false, error: "Vælg en af butikkens login-mails." };
     to = norm;
   }
   await prisma.business.update({

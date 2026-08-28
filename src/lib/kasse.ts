@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { auth } from "./auth";
+import { getSessionBusinessId } from "./session";
 import QRCode from "qrcode";
 import { APP_URL } from "./env";
 
@@ -65,9 +66,12 @@ export async function kasseAccess(touch = false): Promise<KasseAccess | null> {
     }
   }
   const session = await auth();
-  const businessId = session?.user?.businessId;
-  if (businessId) {
-    return { businessId, source: "owner", userId: session?.user?.id };
+  const userId = session?.user?.id;
+  if (userId) {
+    const businessId = await getSessionBusinessId();
+    if (businessId) {
+      return { businessId, source: "owner", userId };
+    }
   }
   return null;
 }

@@ -36,20 +36,23 @@ export default async function IndstillingerPage({
   const { betaling, fejl } = await searchParams;
   const stripeOn = stripeConfigured();
 
-  const [logs, devices, users] = await Promise.all([
+  const [logs, devices, memberships] = await Promise.all([
     prisma.auditLog.findMany({
       where: { businessId: business.id },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
     listDevices(business.id),
-    prisma.user.findMany({
+    prisma.membership.findMany({
       where: { businessId: business.id },
-      select: { id: true, email: true, emailVerified: true },
-      orderBy: { email: "asc" },
+      select: {
+        user: { select: { id: true, email: true, emailVerified: true } },
+      },
+      orderBy: { createdAt: "asc" },
     }),
   ]);
-  const loginEmails = users.map((u) => ({
+  const members = memberships.map((m) => m.user);
+  const loginEmails = members.map((u) => ({
     id: u.id,
     email: u.email,
     isYou: u.id === userId,
@@ -174,7 +177,7 @@ export default async function IndstillingerPage({
           <div className="mt-5 border-t border-fog pt-4">
             <WeeklyEmailRecipient
               initial={business.weeklyEmailTo}
-              emails={users.map((u) => u.email)}
+              emails={members.map((u) => u.email)}
             />
           </div>
         </Panel>

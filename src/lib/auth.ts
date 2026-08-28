@@ -121,29 +121,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return Boolean(existing);
     },
     async jwt({ token }) {
-      // Slaa virksomheden op paa token'et. Virker baade for magic-link (email)
-      // og for onboarding-auto-login (hvor vi ogsaa har bruger-id'et i token.sub).
-      if (!token.businessId && (token.email || token.sub)) {
+      // Token'et baerer kun bruger-id (uid). Den AKTIVE butik ligger i en cookie
+      // og verificeres mod Membership ved hver forespoergsel (se lib/session),
+      // saa en bruger kan skifte mellem sine butikker uden nyt login.
+      if (!token.uid && (token.email || token.sub)) {
         const u = token.email
           ? await prisma.user.findUnique({
               where: { email: token.email },
-              select: { id: true, businessId: true },
+              select: { id: true },
             })
           : await prisma.user.findUnique({
               where: { id: token.sub as string },
-              select: { id: true, businessId: true },
+              select: { id: true },
             });
-        if (u) {
-          token.uid = u.id;
-          token.businessId = u.businessId;
-        }
+        if (u) token.uid = u.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.uid as string) ?? session.user.id;
-        session.user.businessId = token.businessId as string | undefined;
       }
       return session;
     },

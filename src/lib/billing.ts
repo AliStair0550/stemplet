@@ -181,14 +181,14 @@ export async function sendCardholderWarnEmails(
       name: true,
       proPriceKr: true,
       proPriceUntil: true,
-      users: { select: { email: true } },
+      memberships: { select: { user: { select: { email: true } } } },
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;
   const cardholders = await countCardholders(businessId, db);
   const priceKr = effectiveProPriceKr(biz);
-  const ownerEmails = biz.users
-    .map((u) => u.email)
+  const ownerEmails = biz.memberships
+    .map((m) => m.user.email)
     .filter((e): e is string => Boolean(e));
 
   let allOk = true;
@@ -256,7 +256,7 @@ export async function sendInvoiceTriggerEmail(
       proPriceKr: true,
       proPriceUntil: true,
       proApprovedAt: true,
-      users: { select: { email: true } },
+      memberships: { select: { user: { select: { email: true } } } },
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;
@@ -276,8 +276,8 @@ export async function sendInvoiceTriggerEmail(
         ? dkDateTime.format(biz.proApprovedAt)
         : "Ikke godkendt endnu",
       ownerEmails:
-        biz.users
-          .map((u) => u.email)
+        biz.memberships
+          .map((m) => m.user.email)
           .filter((e): e is string => Boolean(e))
           .join(", ") || "(ingen)",
       adminUrl: `${APP_URL}/admin`,

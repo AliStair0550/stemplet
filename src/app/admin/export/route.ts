@@ -23,7 +23,11 @@ export async function GET() {
     where: { slug: { not: DEMO_SLUG } },
     orderBy: { createdAt: "desc" },
     include: {
-      users: { select: { email: true, name: true, emailVerified: true } },
+      memberships: {
+        select: {
+          user: { select: { email: true, name: true, emailVerified: true } },
+        },
+      },
       cards: { select: { id: true } },
     },
   });
@@ -50,7 +54,8 @@ export async function GET() {
       where: { cardId: { in: b.cards.map((c) => c.id) } },
     });
     // En raekke pr. ejer-email, saa hver kontakt staar for sig.
-    const owners = b.users.length ? b.users : [null];
+    const memberUsers = b.memberships.map((m) => m.user);
+    const owners = memberUsers.length ? memberUsers : [null];
     for (const o of owners) {
       lines.push(
         [

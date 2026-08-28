@@ -7,16 +7,16 @@ import { signIn } from "@/lib/auth";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureServerError } from "@/lib/sentry";
 
-// Login-adgang: en butik kan have flere login-mails (samme Business, flere User).
-// Alle logger ind med magisk link, saa der er ingen adgangskoder. Alle med
-// login-adgang har fuld adgang til butikken (delt ejerskab).
-const MAX_LOGIN_EMAILS = 5;
+// Login-adgang: en butik kan have flere login-mails (medlemskaber). Alle logger
+// ind med magisk link, ingen adgangskoder. En mail kan vaere medlem af FLERE
+// butikker, saa den samme person kan hjaelpe/skifte mellem butikker. Alle
+// medlemmer har fuld adgang til butikken (delt ejerskab).
+const MAX_MEMBERS = 8;
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type Result = { ok: true } | { ok: false; error: string };
 
-// Baaret ud af fjern-transaktionen som en pæn brugerfejl (ruller transaktionen
-// tilbage) i stedet for en 500.
+// Baaret ud af fjern-transaktionen som en pæn brugerfejl (ruller tilbage).
 class RemoveError extends Error {}
 
 // Send et magisk login-link til en mail. Best-effort: en mail-fejl maa aldrig
@@ -27,8 +27,6 @@ async function sendLoginLink(email: string): Promise<void> {
     await signIn("resend", { email, redirect: false, redirectTo: "/app" });
   } catch (e) {
     const digest = (e as { digest?: string })?.digest;
-    // redirect:false boer forhindre NEXT_REDIRECT; sker det alligevel, ER mailen
-    // afsendt foer redirecten, saa vi behandler det som sendt.
     if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) return;
     captureServerError(e, { route: "settings:send-login-link" });
   }
@@ -41,31 +39,49 @@ export async function addLoginEmail(emailRaw: string): Promise<Result> {
     return { ok: false, error: "Skriv en gyldig e-mail, fx navn@butik.dk." };
   }
 
-  const count = await prisma.user.count({ where: { businessId: business.id } });
-  if (count >= MAX_LOGIN_EMAILS) {
+  const count = await prisma.membership.count({
+    where: { businessId: business.id },
+  });
+  if (count >= MAX_MEMBERS) {
     return {
       ok: false,
-      error: `Du kan tilføje op til ${MAX_LOGIN_EMAILS} login-mails.`,
+      error: `Du kan give op til ${MAX_MEMBERS} mails login-adgang.`,
     };
   }
 
   const existing = await prisma.user.findUnique({
     where: { email },
-    select: { businessId: true },
+    select: { id: true },
   });
-  if (existing) {
-    return existing.businessId === business.id
-      ? { ok: false, error: "Denne mail har allerede login-adgang." }
-      : {
-          ok: false,
-          error: "Denne mail er allerede tilknyttet en anden konto.",
-        };
-  }
 
   try {
-    await prisma.user.create({
-      data: { email, businessId: business.id, name: business.name },
-    });
+    if (existing) {
+      // Findes brugeren allerede (evt. paa en anden butik): giv blot adgang til
+      // DENNE butik via et nyt medlemskab.
+      const already = await prisma.membership.findUnique({
+        where: {
+          userId_businessId: { userId: existing.id, businessId: business.id },
+        },
+        select: { id: true },
+      });
+      if (already) {
+        return { ok: false, error: "Denne mail har allerede login-adgang." };
+      }
+      await prisma.membership.create({
+        data: { userId: existing.id, businessId: business.id },
+      });
+    } else {
+      // Ny person: opret bruger (primaer butik = denne) + medlemskab atomisk.
+      await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: { email, businessId: business.id, name: business.name },
+          select: { id: true },
+        });
+        await tx.membership.create({
+          data: { userId: user.id, businessId: business.id },
+        });
+      });
+    }
   } catch (e) {
     captureServerError(e, { route: "settings:add-login-email" });
     return { ok: false, error: "Kunne ikke tilføje mailen. Prøv igen." };
@@ -84,24 +100,23 @@ export async function removeLoginEmail(userId: string): Promise<Result> {
 
   try {
     await prisma.$transaction(async (tx) => {
-      // Laas butikkens raekke, saa samtidige fjernelser serialiseres. Uden det
-      // kunne to samtidige "fjern" begge se count=2 og slette hver sin bruger,
-      // saa butikken endte med 0 login-mails (permanent laasning).
+      // Laas butik-raekken, saa samtidige fjernelser serialiseres og butikken
+      // aldrig kan ende med 0 medlemmer (permanent laasning).
       await tx.$executeRaw`SELECT 1 FROM "Business" WHERE "id" = ${business.id} FOR UPDATE`;
-      const target = await tx.user.findUnique({
-        where: { id: userId },
-        select: { businessId: true },
+      const membership = await tx.membership.findUnique({
+        where: { userId_businessId: { userId, businessId: business.id } },
+        select: { id: true },
       });
-      if (!target || target.businessId !== business.id) {
-        throw new RemoveError("Brugeren blev ikke fundet.");
+      if (!membership) {
+        throw new RemoveError("Adgangen blev ikke fundet.");
       }
-      const count = await tx.user.count({
+      const count = await tx.membership.count({
         where: { businessId: business.id },
       });
       if (count <= 1) {
         throw new RemoveError("Butikken skal have mindst én login-mail.");
       }
-      await tx.user.delete({ where: { id: userId } });
+      await tx.membership.delete({ where: { id: membership.id } });
     });
   } catch (e) {
     if (e instanceof RemoveError) return { ok: false, error: e.message };
@@ -115,13 +130,14 @@ export async function removeLoginEmail(userId: string): Promise<Result> {
 
 export async function resendLoginLink(userId: string): Promise<Result> {
   const { business } = await requireBusiness();
-  const target = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true, businessId: true },
+  // Verificér at brugeren rent faktisk er medlem af denne butik.
+  const membership = await prisma.membership.findUnique({
+    where: { userId_businessId: { userId, businessId: business.id } },
+    select: { user: { select: { email: true } } },
   });
-  if (!target || target.businessId !== business.id) {
-    return { ok: false, error: "Brugeren blev ikke fundet." };
+  if (!membership) {
+    return { ok: false, error: "Adgangen blev ikke fundet." };
   }
-  await sendLoginLink(target.email);
+  await sendLoginLink(membership.user.email);
   return { ok: true };
 }

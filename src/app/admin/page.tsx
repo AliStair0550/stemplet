@@ -55,11 +55,13 @@ function buildRow(
     lastInvoicedAt: Date | null;
     newSignupsPaused: boolean;
     stopped: boolean;
-    users: {
-      id: string;
-      email: string;
-      name: string | null;
-      emailVerified: Date | null;
+    memberships: {
+      user: {
+        id: string;
+        email: string;
+        name: string | null;
+        emailVerified: Date | null;
+      };
     }[];
   },
   m: RowMetrics,
@@ -76,11 +78,11 @@ function buildRow(
     selfScan: b.selfScanEnabled,
     welcomeStamp: b.welcomeStampEnabled,
     weeklyEmail: b.weeklyEmailEnabled,
-    owners: b.users.map((u) => ({
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      verified: u.emailVerified != null,
+    owners: b.memberships.map((m) => ({
+      id: m.user.id,
+      email: m.user.email,
+      name: m.user.name,
+      verified: m.user.emailVerified != null,
     })),
     customers: m.customers,
     newCustomers7d: m.newCustomers7d,
@@ -186,8 +188,12 @@ export default async function AdminPage() {
   const businesses = await prisma.business.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      users: {
-        select: { id: true, email: true, name: true, emailVerified: true },
+      memberships: {
+        select: {
+          user: {
+            select: { id: true, email: true, name: true, emailVerified: true },
+          },
+        },
       },
       cards: { select: { id: true } },
     },

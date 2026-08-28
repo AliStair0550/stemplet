@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wordmark } from "@/components/Wordmark";
 import { signOutAction } from "./actions";
+import { BusinessSwitcher } from "./BusinessSwitcher";
 import { IconStampMark } from "./icons";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +29,12 @@ const LINKS: { href: string; label: string }[] = [
 const AGREEMENT_LINK = { href: "/app/aftale", label: "Pro-aftale" };
 
 export function DashboardNav({
-  businessName,
+  businesses,
+  activeBusinessId,
   showAgreement = false,
 }: {
-  businessName: string;
+  businesses: { id: string; name: string }[];
+  activeBusinessId: string;
   showAgreement?: boolean;
 }) {
   const pathname = usePathname();
@@ -45,9 +48,7 @@ export function DashboardNav({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex print:hidden">
         <Wordmark />
-        <span className="mt-1 block truncate text-[0.75rem] font-[300] text-stone">
-          {businessName}
-        </span>
+        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
 
         <nav className="mt-9 flex flex-col gap-1">
           {/* Stempel: dagens primaere handling, som en tydelig knap for sig selv */}
@@ -100,6 +101,14 @@ export function DashboardNav({
             </button>
           </form>
         </div>
+        {businesses.length > 1 ? (
+          <div className="px-6 pb-3">
+            <BusinessSwitcher
+              businesses={businesses}
+              activeId={activeBusinessId}
+            />
+          </div>
+        ) : null}
         <div className="relative">
           <nav className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-4 pb-3">
             {/* Stempel: loeftet ud som en tydelig knap foerst i raekken */}

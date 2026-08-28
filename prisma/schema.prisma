@@ -71,12 +71,30 @@ model Business {
   lastInvoicedAt     DateTime? // sidste faktureringsdato, superadmin vedligeholder manuelt
   newSignupsPaused   Boolean   @default(false) // afvis nye kortholdere paent (kun superadmin)
   stopped            Boolean   @default(false) // superadmin har stoppet butikken (kun superadmin)
-  users            User[]
+  users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
+  memberships      Membership[]
   cards            Card[]
   auditLogs        AuditLog[]
   devices          Device[]
   pairingCodes     DevicePairingCode[]
   createdAt        DateTime   @default(now())
+}
+
+// Medlemskab: hvilke butikker en bruger (mail) har adgang til. Een mail kan
+// vaere medlem af FLERE butikker (agentur/flere ejere), og en butik kan have
+// flere medlemmer. Kilde til sandhed for adgang; den aktive butik ligger i
+// sessionen og kan skiftes uden nyt login.
+model Membership {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, businessId])
+  @@index([userId])
+  @@index([businessId])
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -125,8 +143,9 @@ model User {
   name          String?
   emailVerified DateTime?
   image         String?
-  businessId    String
+  businessId    String // legacy/primaer butik; adgang styres nu af Membership
   business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  memberships   Membership[]
   accounts      Account[]
   sessions      Session[]
   stampsGiven   Stamp[]   @relation("StaffStamps")

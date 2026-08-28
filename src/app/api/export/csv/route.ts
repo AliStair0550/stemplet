@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getSessionBusinessId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -16,8 +16,7 @@ function cell(v: string | number | null): string {
 const BATCH = 1000;
 
 export async function GET() {
-  const session = await auth();
-  const businessId = session?.user?.businessId;
+  const businessId = await getSessionBusinessId();
   if (!businessId) return new Response("Ikke logget ind.", { status: 401 });
 
   const cards = await prisma.card.findMany({

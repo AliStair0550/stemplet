@@ -35,7 +35,10 @@ export default async function AdminQrPage() {
       id: true,
       name: true,
       slug: true,
-      users: { select: { email: true }, take: 1 },
+      memberships: {
+        select: { user: { select: { email: true } } },
+        take: 1,
+      },
     },
   });
 
@@ -53,7 +56,7 @@ export default async function AdminQrPage() {
         slug: b.slug,
         cardUrl,
         qrDataUrl,
-        owner: b.users[0]?.email ?? null,
+        owner: b.memberships[0]?.user.email ?? null,
       };
     }),
   );

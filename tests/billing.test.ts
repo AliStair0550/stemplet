@@ -33,7 +33,7 @@ type BizRow = {
   proApprovedAt: Date | null;
   proPriceKr: number;
   proPriceUntil: Date | null;
-  users: { email: string | null }[];
+  memberships: { user: { email: string | null } }[];
   cards: { id: string }[];
 };
 
@@ -151,7 +151,7 @@ function baseRow(
     proApprovedAt: null,
     proPriceKr: 99,
     proPriceUntil: null,
-    users: [{ email: "ejer@butik.dk" }],
+    memberships: [{ user: { email: "ejer@butik.dk" } }],
     cardholderCount: 0,
     ...over,
   };
