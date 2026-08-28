@@ -22,6 +22,8 @@ export type CardDesign = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  // Logo-stoerrelse: 1 = standard. Valgfrit, saa preview-byggere kan udelade det.
+  logoScale?: number;
   // Navn vist paa kundens kort. Tomt = brug firmanavnet. Valgfrit, saa
   // preview-byggere (kasse, kampagner) ikke behoever saette det.
   displayName?: string | null;
@@ -40,6 +42,7 @@ export const DEFAULT_DESIGN: CardDesign = {
   primaryColor: "#2A1A10",
   textColor: "#F6EEE4",
   logoUrl: null,
+  logoScale: 1,
   terms: null,
 };
 
@@ -528,6 +531,38 @@ export function CardDesigner({
               {logoError ? (
                 <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
               ) : null}
+
+              {/* Logo-stoerrelse: kun relevant naar der ER et logo. */}
+              {value.logoUrl ? (
+                <label className="mt-2 flex flex-col gap-1.5 border-t border-fog pt-4">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                      Logo-størrelse
+                    </span>
+                    {Math.abs((value.logoScale ?? 1) - 1) > 0.001 ? (
+                      <button
+                        type="button"
+                        onClick={() => set("logoScale", 1)}
+                        className="text-[0.7rem] font-[400] text-terracotta transition-opacity hover:opacity-70"
+                      >
+                        Nulstil
+                      </button>
+                    ) : null}
+                  </span>
+                  <input
+                    type="range"
+                    min={0.6}
+                    max={2.2}
+                    step={0.05}
+                    value={value.logoScale ?? 1}
+                    onChange={(e) => set("logoScale", Number(e.target.value))}
+                    className="accent-terracotta"
+                  />
+                  <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+                    Træk for at gøre logoet større eller mindre på kortet.
+                  </span>
+                </label>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -597,6 +632,7 @@ export function CardDesigner({
           <StampCard
             businessName={value.displayName?.trim() || businessName}
             logoUrl={value.logoUrl}
+            logoScale={value.logoScale ?? 1}
             primaryColor={value.primaryColor}
             textColor={value.textColor}
             stampIcon={value.stampIcon}

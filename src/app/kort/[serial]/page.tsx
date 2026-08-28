@@ -56,6 +56,7 @@ export default async function WebCardPage({
         <StampCard
           businessName={cardTitle(business)}
           logoUrl={business.logoUrl}
+          logoScale={business.logoScale}
           primaryColor={business.primaryColor}
           textColor={business.textColor}
           stampIcon={cc.card.stampIcon as StampIconKey}

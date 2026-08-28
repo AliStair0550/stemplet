@@ -14,6 +14,7 @@ type Props = {
   stampsRequired: number;
   rewardText: string;
   logoUrl: string | null;
+  logoScale?: number;
   showPoweredBy: boolean;
 };
 
@@ -40,6 +41,7 @@ export function TryStampDemo(props: Props) {
           stamps={stamps}
           required={required}
           rewardText={props.rewardText}
+          logoScale={props.logoScale ?? 1}
           showPoweredBy={props.showPoweredBy}
           serial="STEMPLET01"
           serialLabel={props.serialLabel}

@@ -23,6 +23,7 @@ type PassInput = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  logoScale?: number;
   stampIcon: string;
   rewardText: string;
   // Valgfrie betingelser. Vises paa BAGSIDEN af passet (kunden trykker "..."-info
@@ -86,18 +87,23 @@ export function passColors(
 const logoCache = new Map<string, Buffer>();
 const LOGO_CACHE_MAX = 50;
 
-async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
+async function loadLogo(
+  logoUrl: string | null,
+  scale = 1,
+): Promise<Buffer | null> {
   if (!logoUrl) return null;
-  const cached = logoCache.get(logoUrl);
+  // Cache pr. (logo, stoerrelse): samme logo i to stoerrelser er to buffere.
+  const key = `${logoUrl}|${scale}`;
+  const cached = logoCache.get(key);
   if (cached) return cached;
   const raw = await fetchLogo(logoUrl);
-  const buf = raw ? await padLogo(raw) : null;
+  const buf = raw ? await padLogo(raw, scale) : null;
   if (buf) {
     if (logoCache.size >= LOGO_CACHE_MAX) {
       const oldest = logoCache.keys().next().value;
       if (oldest !== undefined) logoCache.delete(oldest);
     }
-    logoCache.set(logoUrl, buf);
+    logoCache.set(key, buf);
   }
   return buf;
 }
@@ -109,13 +115,16 @@ async function loadLogo(logoUrl: string | null): Promise<Buffer | null> {
 // kvadrat og skrumpede dermed til ~30% af hoejden. Nu fylder det hele den plads
 // Apple giver. Luften er ~8% af hoejden, nok til at det ikke roerer kanten, uden
 // at aede stoerrelsen. Fejler den (fx ugyldigt billede), bruger vi logoet som det er.
-async function padLogo(buf: Buffer): Promise<Buffer> {
+async function padLogo(buf: Buffer, scale = 1): Promise<Buffer> {
   try {
     const meta = await sharp(buf).metadata();
     const w = meta.width ?? 0;
     const h = meta.height ?? 0;
     if (!w || !h) return buf;
-    const pad = Math.max(1, Math.round(h * 0.08));
+    // Standard 8% luft. Ejerens logo-stoerrelse styrer luften: stoerre valg =
+    // mindre luft = logoet fylder mere af Apples faste plads (og omvendt).
+    const padFrac = Math.max(0.02, Math.min(0.3, 0.08 + (1 - scale) * 0.12));
+    const pad = Math.max(1, Math.round(h * padFrac));
     const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
     return await sharp(buf)
       .extend({ top: pad, bottom: pad, left: pad, right: pad, background: transparent })
@@ -177,7 +186,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   // (strip) overlapper med logo-hentningen.
   const [iconBuf, logoBuf, strip] = await Promise.all([
     loadIcon(),
-    loadLogo(input.logoUrl),
+    loadLogo(input.logoUrl, input.logoScale ?? 1),
     buildStripImages({
       stamps: input.stamps,
       required: input.required,

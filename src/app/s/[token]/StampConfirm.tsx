@@ -67,6 +67,7 @@ export function StampConfirm({
   primaryColor,
   textColor,
   logoUrl,
+  logoScale,
   stampIcon,
   rewardText,
   walletEnabled,
@@ -77,6 +78,7 @@ export function StampConfirm({
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  logoScale?: number;
   stampIcon: string;
   rewardText: string;
   walletEnabled: boolean;
@@ -252,6 +254,7 @@ export function StampConfirm({
               <StampCard
                 businessName={businessName}
                 logoUrl={logoUrl}
+                logoScale={logoScale ?? 1}
                 primaryColor={primaryColor}
                 textColor={textColor}
                 stampIcon={icon}

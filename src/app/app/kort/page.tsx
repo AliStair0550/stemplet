@@ -25,6 +25,7 @@ export default async function KortPage() {
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     logoUrl: business.logoUrl,
+    logoScale: business.logoScale,
     terms: card?.terms ?? null,
     displayName: business.displayName,
   };

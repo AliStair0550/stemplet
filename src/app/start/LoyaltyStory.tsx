@@ -14,6 +14,7 @@ type Props = {
   stampsRequired: number;
   rewardText: string;
   logoUrl: string | null;
+  logoScale?: number;
 };
 
 // Loyalitets-loopet fortalt fra A til Z, til butiksejeren. Historien starter hos
@@ -157,6 +158,7 @@ export function LoyaltyStory(props: Props) {
               <StampCard
                 businessName={props.businessName}
                 logoUrl={props.logoUrl}
+                logoScale={props.logoScale ?? 1}
                 primaryColor={props.primaryColor}
                 textColor={props.textColor}
                 stampIcon={props.stampIcon}

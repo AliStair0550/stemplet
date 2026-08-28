@@ -121,6 +121,7 @@ export function ShareCardSection({
           <StampCard
             businessName={businessName}
             logoUrl={design.logoUrl}
+            logoScale={design.logoScale ?? 1}
             primaryColor={design.primaryColor}
             textColor={design.textColor}
             stampIcon={design.stampIcon as StampIconKey}

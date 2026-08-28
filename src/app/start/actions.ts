@@ -146,6 +146,7 @@ export async function createBusinessAction(input: {
           primaryColor: design.data.primaryColor,
           textColor: design.data.textColor,
           logoUrl: design.data.logoUrl ?? null,
+          logoScale: design.data.logoScale,
           staffPin,
           termsAcceptedAt: new Date(),
           // Standard: velkomststempel FRA, saa flowet altid er 1. kort hentes,

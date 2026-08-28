@@ -261,6 +261,7 @@ export function StartWizard() {
       <StampCard
         businessName={cardName}
         logoUrl={design.logoUrl}
+        logoScale={design.logoScale ?? 1}
         primaryColor={design.primaryColor}
         textColor={design.textColor}
         stampIcon={design.stampIcon}
@@ -572,6 +573,7 @@ export function StartWizard() {
             stampsRequired={design.stampsRequired}
             rewardText={design.rewardText}
             logoUrl={design.logoUrl}
+            logoScale={design.logoScale ?? 1}
           />
         </div>
       ) : null}

@@ -28,6 +28,7 @@ export default async function StampPage({
     primaryColor: string;
     textColor: string;
     logoUrl: string | null;
+    logoScale: number;
     stampIcon: string;
     rewardText: string;
   } | null = null;
@@ -42,6 +43,7 @@ export default async function StampPage({
         primaryColor: true,
         textColor: true,
         logoUrl: true,
+        logoScale: true,
         cards: {
           where: { active: true },
           take: 1,
@@ -56,6 +58,7 @@ export default async function StampPage({
         primaryColor: business.primaryColor,
         textColor: business.textColor,
         logoUrl: business.logoUrl,
+        logoScale: business.logoScale,
         stampIcon: business.cards[0]?.stampIcon ?? "coffee",
         rewardText: business.cards[0]?.rewardText ?? "din belønning",
       };
@@ -117,6 +120,7 @@ export default async function StampPage({
       primaryColor={brand.primaryColor}
       textColor={brand.textColor}
       logoUrl={brand.logoUrl}
+      logoScale={brand.logoScale}
       stampIcon={brand.stampIcon}
       rewardText={brand.rewardText}
       walletEnabled={WALLET_ENABLED}

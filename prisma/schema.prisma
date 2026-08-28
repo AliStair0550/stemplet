@@ -38,6 +38,9 @@ model Business {
   weeklyEmailEnabled Boolean  @default(true) // ugentlig statistik-mail
   // Modtager af ugemailen: en valgt login-mail. NULL = send til alle login-mails.
   weeklyEmailTo      String?
+  // Logo-stoerrelse paa kortet: 1 = standard. Ejeren kan skrue op/ned, saa smaa
+  // eller kvadratiske logoer kan fylde mere. Gaelder kort, webkort og Wallet-pas.
+  logoScale          Float     @default(1)
   // Giv et velkomststempel ved kundens ALLERFOERSTE scan (opretter kort + 1
   // stempel). Standard FRA: foerste scan opretter KUN kortet, og stempler gives
   // derefter ved koeb. Saa er strukturen altid den samme: 1. kortet hentes,

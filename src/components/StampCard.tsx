@@ -27,6 +27,8 @@ export type StampCardProps = {
   landscape?: boolean;
   /** Ekstra klasser paa logoet (fx invert til lyst logo paa moerkt kort). */
   logoClassName?: string;
+  /** Logo-stoerrelse: 1 = standard. Skruer logoets hoejde (og maks-bredde) op/ned. */
+  logoScale?: number;
   /** Skjul virksomhedsnavnet (fx naar logoet allerede er et ordmaerke). */
   hideName?: boolean;
   /** Vis en pæn etiket under stregkoden i stedet for det raa serienummer. */
@@ -80,6 +82,7 @@ export function StampCard({
   shine = false,
   landscape = false,
   logoClassName,
+  logoScale = 1,
   hideName = false,
   serialLabel,
   className,
@@ -142,9 +145,13 @@ export function StampCard({
                 width={609}
                 height={177}
                 className={cn(
-                  "h-8 w-auto max-w-[62%] object-contain object-left",
+                  "w-auto object-contain object-left",
                   logoClassName,
                 )}
+                style={{
+                  height: `${2 * logoScale}rem`,
+                  maxWidth: `${Math.min(90, 62 * logoScale)}%`,
+                }}
                 unoptimized
               />
             ) : !hideName && businessName ? (

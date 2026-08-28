@@ -40,6 +40,7 @@ export default async function KomIGangPage() {
         primaryColor={business.primaryColor}
         textColor={business.textColor}
         logoUrl={business.logoUrl}
+        logoScale={business.logoScale}
         stampIcon={(card?.stampIcon as StampIconKey) ?? "coffee"}
         stampsRequired={card?.stampsRequired ?? 10}
         rewardText={card?.rewardText ?? "10. kop er gratis"}

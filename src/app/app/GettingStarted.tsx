@@ -17,6 +17,7 @@ type Props = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  logoScale?: number;
   stampIcon: StampIconKey;
   stampsRequired: number;
   rewardText: string;
@@ -112,6 +113,7 @@ export function GettingStarted(props: Props) {
           stampsRequired={props.stampsRequired}
           rewardText={props.rewardText}
           logoUrl={props.logoUrl}
+          logoScale={props.logoScale ?? 1}
           showPoweredBy={props.showPoweredBy}
         />
 
