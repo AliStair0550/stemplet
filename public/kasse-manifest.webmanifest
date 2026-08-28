@@ -1,0 +1,16 @@
+{
+  "id": "/kasse",
+  "name": "Stemplet Kasse",
+  "short_name": "Kasse",
+  "description": "Scan kundens kort og giv stempler.",
+  "start_url": "/kasse",
+  "display": "standalone",
+  "background_color": "#FAF8F4",
+  "theme_color": "#2A1A10",
+  "lang": "da",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

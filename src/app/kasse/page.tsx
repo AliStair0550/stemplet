@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Kasse",
   robots: { index: false },
   // Kassen har sit eget manifest, saa hjemmeskaerm-ikonet aabner direkte her.
-  manifest: "/kasse/manifest.webmanifest",
+  manifest: "/kasse-manifest.webmanifest",
   appleWebApp: { capable: true, title: "Kasse", statusBarStyle: "default" },
 };
 export const dynamic = "force-dynamic";
