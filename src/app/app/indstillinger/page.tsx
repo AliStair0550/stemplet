@@ -8,8 +8,7 @@ import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { WeeklyEmailRecipient } from "./WeeklyEmailRecipient";
 import { WelcomeStampToggle } from "./WelcomeStampToggle";
 import { SelfScanToggle } from "./SelfScanToggle";
-import { KasseDevices } from "./KasseDevices";
-import { LoginEmails } from "./LoginEmails";
+import { AccessManager } from "./AccessManager";
 import { LocationCard } from "./LocationCard";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
@@ -94,20 +93,21 @@ export default async function IndstillingerPage({
         hasPin={business.staffPin != null}
       />
 
-      <div className="mt-6">
-        <LoginEmails emails={loginEmails} />
+      <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+        Adgang
+      </h2>
+      {/* Login-mails (fuld adgang) og kasse-enheder (kun stempel) samlet: vaelg
+          type naar du tilfoejer adgang. */}
+      <div>
+        <AccessManager emails={loginEmails} devices={deviceList} />
       </div>
 
       <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
         Ved kassen
       </h2>
-      {/* Kasse-enheder: giv personalet adgang uden dit login */}
-      <div>
-        <KasseDevices devices={deviceList} />
-      </div>
 
       {/* Selvbetjening (kunden scanner selv) - standard fra */}
-      <div className="mt-6">
+      <div>
         <Panel>
           <div className="flex items-center justify-between gap-6">
             <div>
