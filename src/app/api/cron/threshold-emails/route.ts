@@ -4,6 +4,7 @@ import {
   checkStampInvariant,
 } from "@/lib/billing";
 import { redisKeepAlive } from "@/lib/redis";
+import { checkWalletCertExpiry } from "@/lib/wallet/cert-monitor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,16 +18,19 @@ export const maxDuration = 60;
 //     og rapportér til Sentry (data-drift-vagt).
 //  3) Redis keep-alive: eet let touch, saa den gratis Upstash-DB ikke arkiveres
 //     for inaktivitet (vores Redis-stier har lav trafik i opstarten).
+//  4) Wallet-certifikater: varsler i god tid (mail + Sentry) inden Pass Type ID-
+//     eller WWDR-certifikatet udloeber, saa pas-signeringen ikke pludselig doer.
 // Beskyttet med CRON_SECRET som de oevrige cron-ruter.
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const [emails, invariant, keepalive] = await Promise.all([
+  const [emails, invariant, keepalive, certs] = await Promise.all([
     sweepPendingThresholdEmails(),
     checkStampInvariant(),
     redisKeepAlive(),
+    checkWalletCertExpiry(),
   ]);
-  return Response.json({ ...emails, ...invariant, ...keepalive });
+  return Response.json({ ...emails, ...invariant, ...keepalive, ...certs });
 }
