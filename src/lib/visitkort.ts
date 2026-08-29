@@ -4,13 +4,14 @@ import { z } from "zod";
 // (validering) og PDF-eksporten. Alt gemmes som EN JSON paa butikken, saa
 // designeren kan vokse uden en migration pr. felt. ────────────────────────────
 
-export type VkTemplate = "venstre" | "centreret" | "sidebjaelke";
+export type VkTemplate = "split" | "venstre" | "centreret" | "sidebjaelke";
 export type VkFont = "sans" | "serif" | "mono";
 export type VkCorners = "skarpe" | "afrundede";
-export type VkBackContent = "stempelkort" | "qr";
+export type VkBackContent = "qr" | "stempelkort";
 export type VkOrient = "landscape" | "portrait";
 
-export type VkColors = { bg: string; text: string };
+// bg = baggrund, text = broedtekst, accent = fremhaevet ord (fx "Få belønninger.").
+export type VkColors = { bg: string; text: string; accent: string };
 
 export type VisitkortDesign = {
   template: VkTemplate;
@@ -22,18 +23,26 @@ export type VisitkortDesign = {
   orientation: VkOrient;
   front: VkColors;
   back: VkColors;
-  backContent: VkBackContent;
-  // Kontaktinfo paa forsiden. Tomme felter skjules automatisk.
+  // Forside: fri tekst. Tomme felter skjules automatisk.
+  name: string; // person/kontakt, fx "Ali Al-farhan"
   tagline: string;
+  taglineAccent: string; // valgfri hale i accent-farven
   phone: string;
   email: string;
   web: string;
   address: string;
   showLogo: boolean;
+  // Bagside: fri tekst.
+  backContent: VkBackContent;
+  backHeadline: string; // "Saml stempler."
+  backHeadlineAccent: string; // "Få belønninger." (accent-farve)
+  backLine1: string; // "Direkte i Apple Wallet"
+  backLine2: string; // "Ingen app. Ingen tilmelding."
 };
 
 export const VK_TEMPLATES: { key: VkTemplate; label: string; note: string }[] = [
-  { key: "venstre", label: "Venstre", note: "Logo og info venstrestillet" },
+  { key: "split", label: "Split", note: "Brand øverst, navn og kontakt nederst" },
+  { key: "venstre", label: "Venstre", note: "Alt venstrestillet, samlet" },
   { key: "centreret", label: "Centreret", note: "Alt centreret, roligt udtryk" },
   { key: "sidebjaelke", label: "Sidebjælke", note: "Farvet bjælke med logo" },
 ];
@@ -42,6 +51,15 @@ export const VK_FONTS: { key: VkFont; label: string }[] = [
   { key: "sans", label: "Moderne (sans)" },
   { key: "serif", label: "Elegant (serif)" },
   { key: "mono", label: "Teknisk (mono)" },
+];
+
+// Hurtige farvetemaer i designeren. Saetter bg/text/accent paa EN side ad gangen.
+export const VK_COLOR_THEMES: { name: string; bg: string; text: string; accentFromBrand?: boolean; accent?: string }[] = [
+  { name: "Lys", bg: "#FFFFFF", text: "#1A1A1A", accentFromBrand: true },
+  { name: "Sand", bg: "#F4F1EA", text: "#2A1A10", accentFromBrand: true },
+  { name: "Mørk", bg: "#1C1917", text: "#F6EEE4", accent: "#E0A56B" },
+  { name: "Bordeaux", bg: "#5E2438", text: "#F7E7EE", accent: "#E7B7C6" },
+  { name: "Skov", bg: "#1F3A2E", text: "#F3F7F4", accent: "#A8CBB6" },
 ];
 
 // PDF-familier (react-pdf). "Instrument Sans" indlejres i ruten; serif/mono er
@@ -70,21 +88,28 @@ export function defaultDesign(b: {
   textColor: string;
   slug: string;
 }): VisitkortDesign {
+  const light: VkColors = { bg: "#FFFFFF", text: "#1A1A1A", accent: b.primaryColor };
   return {
-    template: "venstre",
+    template: "split",
     font: "sans",
     corners: "afrundede",
-    dieCut: false,
+    dieCut: true,
     orientation: "landscape",
-    front: { bg: b.primaryColor, text: b.textColor },
-    back: { bg: b.primaryColor, text: b.textColor },
-    backContent: "stempelkort",
+    front: { ...light },
+    back: { ...light },
+    name: "",
     tagline: "",
+    taglineAccent: "",
     phone: "",
     email: "",
     web: `stemplet.alius.dk/k/${b.slug}`,
     address: "",
     showLogo: true,
+    backContent: "qr",
+    backHeadline: "Saml stempler.",
+    backHeadlineAccent: "Få belønninger.",
+    backLine1: "Direkte i Apple Wallet",
+    backLine2: "Ingen app. Ingen tilmelding.",
   };
 }
 
@@ -107,21 +132,28 @@ export function mergeDesign(
 const hex = z
   .string()
   .regex(/^#[0-9a-fA-F]{6}$/)
-  .catch("#2A1A10");
+  .catch("#1A1A1A");
+const colors = z.object({ bg: hex, text: hex, accent: hex });
 
 export const visitkortSchema = z.object({
-  template: z.enum(["venstre", "centreret", "sidebjaelke"]),
+  template: z.enum(["split", "venstre", "centreret", "sidebjaelke"]),
   font: z.enum(["sans", "serif", "mono"]),
   corners: z.enum(["skarpe", "afrundede"]),
   dieCut: z.boolean(),
   orientation: z.enum(["landscape", "portrait"]),
-  front: z.object({ bg: hex, text: hex }),
-  back: z.object({ bg: hex, text: hex }),
-  backContent: z.enum(["stempelkort", "qr"]),
+  front: colors,
+  back: colors,
+  name: z.string().max(60),
   tagline: z.string().max(80),
+  taglineAccent: z.string().max(60),
   phone: z.string().max(40),
   email: z.string().max(80),
   web: z.string().max(80),
   address: z.string().max(120),
   showLogo: z.boolean(),
+  backContent: z.enum(["qr", "stempelkort"]),
+  backHeadline: z.string().max(60),
+  backHeadlineAccent: z.string().max(60),
+  backLine1: z.string().max(60),
+  backLine2: z.string().max(60),
 });

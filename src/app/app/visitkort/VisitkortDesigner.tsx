@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { CARD_THEMES } from "@/lib/brand";
 import {
   VK_TEMPLATES,
   VK_FONTS,
+  VK_COLOR_THEMES,
   type VisitkortDesign,
   type VkTemplate,
   type VkFont,
+  type VkColors,
 } from "@/lib/visitkort";
 import { VkPreview } from "./VkPreview";
 import { saveVisitkortDesign } from "./actions";
@@ -75,13 +76,15 @@ function Segmented<T extends string>({
   options,
   value,
   onChange,
+  cols,
 }: {
   options: { key: T; label: string; note?: string }[];
   value: T;
   onChange: (v: T) => void;
+  cols?: number;
 }) {
   return (
-    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0,1fr))` }}>
+    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols ?? options.length}, minmax(0,1fr))` }}>
       {options.map((o) => {
         const active = value === o.key;
         return (
@@ -129,8 +132,8 @@ export function VisitkortDesigner({
     setDesign((d) => ({ ...d, ...patch }));
   }
 
-  function applyTheme(bg: string, text: string) {
-    setDesign((d) => ({ ...d, front: { bg, text }, back: { bg, text } }));
+  function applyTheme(colors: VkColors) {
+    setDesign((d) => ({ ...d, front: { ...colors }, back: { ...colors } }));
   }
 
   function save() {
@@ -189,6 +192,7 @@ export function VisitkortDesigner({
                 options={VK_TEMPLATES.map((t) => ({ key: t.key, label: t.label, note: t.note }))}
                 value={design.template}
                 onChange={(template: VkTemplate) => set({ template })}
+                cols={2}
               />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -217,38 +221,58 @@ export function VisitkortDesigner({
           <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
             Farver
           </h2>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-5">
             <div>
               <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
-                Hurtige temaer
+                Hurtige temaer (sætter begge sider)
               </span>
               <div className="flex flex-wrap gap-2">
-                {CARD_THEMES.map((t) => (
-                  <button
-                    key={t.name}
-                    type="button"
-                    onClick={() => applyTheme(t.primary, t.text)}
-                    title={t.name}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-clay"
-                    style={{ background: t.primary }}
-                  >
-                    <span className="h-3 w-3 rounded-full" style={{ background: t.text }} />
-                  </button>
-                ))}
+                {VK_COLOR_THEMES.map((t) => {
+                  const accent = t.accentFromBrand ? brand.primary : (t.accent ?? t.text);
+                  return (
+                    <button
+                      key={t.name}
+                      type="button"
+                      onClick={() => applyTheme({ bg: t.bg, text: t.text, accent })}
+                      title={t.name}
+                      className="flex items-center gap-1.5 rounded-full border border-clay py-1 pl-1.5 pr-3"
+                    >
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: t.bg, border: "1px solid rgba(0,0,0,0.1)" }}>
+                        <span className="h-2 w-2 rounded-full" style={{ background: accent }} />
+                      </span>
+                      <span className="text-[0.74rem] font-[400] text-stone">{t.name}</span>
+                    </button>
+                  );
+                })}
                 <button
                   type="button"
-                  onClick={() => applyTheme(brand.primary, brand.text)}
-                  className="rounded-full border border-clay px-3 text-[0.72rem] font-[400] text-stone hover:text-ink"
+                  onClick={() => applyTheme({ bg: brand.primary, text: brand.text, accent: brand.text })}
+                  className="rounded-full border border-clay px-3 text-[0.74rem] font-[400] text-stone hover:text-ink"
                 >
                   Brand
                 </button>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <ColorField label="Forside baggrund" value={design.front.bg} onChange={(bg) => set({ front: { ...design.front, bg } })} />
-              <ColorField label="Forside tekst" value={design.front.text} onChange={(text) => set({ front: { ...design.front, text } })} />
-              <ColorField label="Bagside baggrund" value={design.back.bg} onChange={(bg) => set({ back: { ...design.back, bg } })} />
-              <ColorField label="Bagside tekst" value={design.back.text} onChange={(text) => set({ back: { ...design.back, text } })} />
+
+            <div>
+              <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+                Forside
+              </span>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <ColorField label="Baggrund" value={design.front.bg} onChange={(bg) => set({ front: { ...design.front, bg } })} />
+                <ColorField label="Tekst" value={design.front.text} onChange={(text) => set({ front: { ...design.front, text } })} />
+                <ColorField label="Accent" value={design.front.accent} onChange={(accent) => set({ front: { ...design.front, accent } })} />
+              </div>
+            </div>
+            <div>
+              <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+                Bagside
+              </span>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <ColorField label="Baggrund" value={design.back.bg} onChange={(bg) => set({ back: { ...design.back, bg } })} />
+                <ColorField label="Tekst" value={design.back.text} onChange={(text) => set({ back: { ...design.back, text } })} />
+                <ColorField label="Accent" value={design.back.accent} onChange={(accent) => set({ back: { ...design.back, accent } })} />
+              </div>
             </div>
           </div>
         </section>
@@ -295,11 +319,21 @@ export function VisitkortDesigner({
                 onChange={(e) => set({ showLogo: e.target.checked })}
                 className="h-4 w-4 accent-terracotta"
               />
-              <span className="text-[0.82rem] font-[300] text-stone">Vis logo</span>
+              <span className="text-[0.82rem] font-[300] text-stone">
+                Vis logo øverst (ellers butiksnavn)
+              </span>
             </label>
-            <Field label="Tagline">
-              <input className={inputCls} value={design.tagline} maxLength={80} onChange={(e) => set({ tagline: e.target.value })} placeholder="Fx: Håndlavede burgere i hjertet af byen" />
+            <Field label="Navn / kontaktperson">
+              <input className={inputCls} value={design.name} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder="Fx: Ali Al-farhan" />
             </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Tagline">
+                <input className={inputCls} value={design.tagline} maxLength={80} onChange={(e) => set({ tagline: e.target.value })} placeholder="Stempelkortet, der skaber" />
+              </Field>
+              <Field label="Tagline (accent-farve)">
+                <input className={inputCls} value={design.taglineAccent} maxLength={60} onChange={(e) => set({ taglineAccent: e.target.value })} placeholder="flere stamkunder." />
+              </Field>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Telefon">
                 <input className={inputCls} value={design.phone} maxLength={40} onChange={(e) => set({ phone: e.target.value })} placeholder="+45 12 34 56 78" />
@@ -321,14 +355,39 @@ export function VisitkortDesigner({
           <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
             Bagside
           </h2>
-          <Segmented
-            options={[
-              { key: "stempelkort" as const, label: "Stempelkort", note: "Belønning + QR til at hente kortet" },
-              { key: "qr" as const, label: "Kun QR", note: "Ren QR-side" },
-            ]}
-            value={design.backContent}
-            onChange={(backContent) => set({ backContent })}
-          />
+          <div className="flex flex-col gap-4">
+            <Segmented
+              options={[
+                { key: "qr" as const, label: "QR med tekst", note: "Overskrift + QR + to linjer" },
+                { key: "stempelkort" as const, label: "Stempelkort", note: "Belønning + felter + QR" },
+              ]}
+              value={design.backContent}
+              onChange={(backContent) => set({ backContent })}
+            />
+            {design.backContent === "qr" ? (
+              <div className="flex flex-col gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Overskrift">
+                    <input className={inputCls} value={design.backHeadline} maxLength={60} onChange={(e) => set({ backHeadline: e.target.value })} placeholder="Saml stempler." />
+                  </Field>
+                  <Field label="Overskrift (accent-farve)">
+                    <input className={inputCls} value={design.backHeadlineAccent} maxLength={60} onChange={(e) => set({ backHeadlineAccent: e.target.value })} placeholder="Få belønninger." />
+                  </Field>
+                  <Field label="Linje 1 (fremhævet)">
+                    <input className={inputCls} value={design.backLine1} maxLength={60} onChange={(e) => set({ backLine1: e.target.value })} placeholder="Direkte i Apple Wallet" />
+                  </Field>
+                  <Field label="Linje 2">
+                    <input className={inputCls} value={design.backLine2} maxLength={60} onChange={(e) => set({ backLine2: e.target.value })} placeholder="Ingen app. Ingen tilmelding." />
+                  </Field>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[0.78rem] font-[300] leading-relaxed text-slate">
+                Stempelkort-siden bruger butikkens belønningstekst fra Design-siden
+                og viser tomme stempel-felter samt QR-koden.
+              </p>
+            )}
+          </div>
         </section>
       </div>
 

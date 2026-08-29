@@ -28,7 +28,6 @@ type DocProps = {
   qr: QrMatrix;
 };
 
-// QR som vektor (moerk paa hvid), saa koden er knivskarp og altid scanbar.
 function QrVector({ matrix, size }: { matrix: QrMatrix; size: number }) {
   const n = matrix.size;
   const data = matrix.data;
@@ -40,9 +39,7 @@ function QrVector({ matrix, size }: { matrix: QrMatrix; size: number }) {
       const dark = c < n && !!data[r * n + c];
       if (dark && run < 0) run = c;
       if (!dark && run >= 0) {
-        rects.push(
-          <Rect key={`${r}-${run}`} x={run * cell} y={r * cell} width={(c - run) * cell} height={cell} fill="#111111" />,
-        );
+        rects.push(<Rect key={`${r}-${run}`} x={run * cell} y={r * cell} width={(c - run) * cell} height={cell} fill="#111111" />);
         run = -1;
       }
     }
@@ -67,71 +64,49 @@ function cropMarks(pageW: number, pageH: number) {
   ];
   const bars: React.ReactNode[] = [];
   corners.forEach((c, i) => {
-    bars.push(
-      <View key={`h${i}`} style={{ position: "absolute", top: c.y - w / 2, left: c.sx < 0 ? c.x - L : c.x, width: L, height: w, backgroundColor: "#000" }} />,
-    );
-    bars.push(
-      <View key={`v${i}`} style={{ position: "absolute", left: c.x - w / 2, top: c.sy < 0 ? c.y - L : c.y, width: w, height: L, backgroundColor: "#000" }} />,
-    );
+    bars.push(<View key={`h${i}`} style={{ position: "absolute", top: c.y - w / 2, left: c.sx < 0 ? c.x - L : c.x, width: L, height: w, backgroundColor: "#000" }} />);
+    bars.push(<View key={`v${i}`} style={{ position: "absolute", left: c.x - w / 2, top: c.sy < 0 ? c.y - L : c.y, width: w, height: L, backgroundColor: "#000" }} />);
   });
   return bars;
-}
-
-function Brandmark({
-  design,
-  businessName,
-  logoUrl,
-  logoH,
-  nameSize,
-}: {
-  design: VisitkortDesign;
-  businessName: string;
-  logoUrl: string | null;
-  logoH: number;
-  nameSize: number;
-}) {
-  if (design.showLogo && logoUrl) {
-    return <Image src={logoUrl} style={{ height: logoH, maxWidth: logoH * 4.2, objectFit: "contain" }} />;
-  }
-  return (
-    <Text style={{ fontFamily: pdfFamily(design.font, true), fontWeight: 700, fontSize: nameSize, color: colorOf(design, "front") }}>
-      {businessName}
-    </Text>
-  );
-}
-
-function colorOf(design: VisitkortDesign, side: "front" | "back"): string {
-  return side === "front" ? design.front.text : design.back.text;
 }
 
 function contactLines(d: VisitkortDesign): string[] {
   return [d.phone, d.email, d.web, d.address].map((s) => s.trim()).filter(Boolean);
 }
 
-// ── Forside: butikkens oplysninger ────────────────────────────────────────
+// ── Forside ───────────────────────────────────────────────────────────────
 function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number; pageH: number; pad: number }) {
   const { design, businessName, logoUrl } = props;
-  const text = design.front.text;
-  const lines = contactLines(design);
+  const c = design.front;
   const fam = (bold: boolean) => pdfFamily(design.font, bold);
+  const lines = contactLines(design);
   const center = design.template === "centreret";
+  const alignItems = center ? "center" : "flex-start";
+  const textAlign = center ? ("center" as const) : ("left" as const);
 
-  const nameEl = (
-    <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 13, lineHeight: 1.1, color: text }}>
-      {businessName}
-    </Text>
+  const brand = design.showLogo && logoUrl ? (
+    <Image src={logoUrl} style={{ height: 11 * MM, maxWidth: 40 * MM, objectFit: "contain" }} />
+  ) : (
+    <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 15, color: c.text }}>{businessName}</Text>
   );
-  const taglineEl = design.tagline.trim() ? (
-    <Text style={{ fontFamily: fam(false), fontSize: 8, color: text, opacity: 0.85, marginTop: 2 * MM }}>
+
+  const tagline = (design.tagline.trim() || design.taglineAccent.trim()) ? (
+    <Text style={{ fontFamily: fam(false), fontSize: 8, color: c.text, opacity: 0.9, textAlign }}>
       {design.tagline}
+      {design.taglineAccent.trim() ? design.tagline.trim() ? " " : "" : ""}
+      {design.taglineAccent.trim() ? <Text style={{ color: c.accent, opacity: 1 }}>{design.taglineAccent}</Text> : null}
     </Text>
   ) : null;
-  const contactEl = lines.length ? (
-    <View style={{ marginTop: 3 * MM, flexDirection: "column", gap: 1.4 * MM }}>
-      {lines.map((l, i) => (
-        <Text key={i} style={{ fontFamily: fam(false), fontSize: 7.5, color: text, opacity: 0.9 }}>
-          {l}
+
+  const contact = (design.name.trim() || lines.length) ? (
+    <View style={{ flexDirection: "column", gap: 1.2 * MM, alignItems }}>
+      {design.name.trim() ? (
+        <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 11, color: c.text, marginBottom: 0.6 * MM }}>
+          {design.name}
         </Text>
+      ) : null}
+      {lines.map((l, i) => (
+        <Text key={i} style={{ fontFamily: fam(false), fontSize: 7.5, color: c.text, opacity: 0.82 }}>{l}</Text>
       ))}
     </View>
   ) : null;
@@ -140,35 +115,93 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
   if (design.template === "sidebjaelke") {
     body = (
       <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, flexDirection: "row" }}>
-        <View style={{ width: pageW * 0.36, backgroundColor: shade(design.front.bg, -0.16), alignItems: "center", justifyContent: "center", padding: 6 * MM }}>
-          <Brandmark design={design} businessName={businessName} logoUrl={logoUrl} logoH={12 * MM} nameSize={12} />
+        <View style={{ width: pageW * 0.36, backgroundColor: shade(c.bg, -0.12), alignItems: "center", justifyContent: "center", padding: 6 * MM }}>
+          {brand}
         </View>
-        <View style={{ flex: 1, justifyContent: "center", paddingVertical: BLEED + 5 * MM, paddingHorizontal: 6 * MM }}>
-          {nameEl}
-          {taglineEl}
-          {contactEl}
+        <View style={{ flex: 1, justifyContent: "center", paddingVertical: BLEED + 5 * MM, paddingHorizontal: 6 * MM, gap: 2 * MM }}>
+          <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 13, color: c.text }}>{businessName}</Text>
+          {tagline}
+          <View style={{ marginTop: 1.5 * MM }}>{contact}</View>
+        </View>
+      </View>
+    );
+  } else if (design.template === "split") {
+    body = (
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", justifyContent: "space-between" }}>
+        <View style={{ flexDirection: "column", gap: 2 * MM, alignItems: "flex-start" }}>
+          {brand}
+          {tagline}
+        </View>
+        {contact}
+      </View>
+    );
+  } else {
+    body = (
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", justifyContent: "center", alignItems, gap: 2 * MM }}>
+        {brand}
+        {tagline}
+        <View style={{ marginTop: 1.5 * MM, alignItems }}>{contact}</View>
+      </View>
+    );
+  }
+
+  return (
+    <Page size={[pageW, pageH]}>
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: c.bg }} />
+      {body}
+      {cropMarks(pageW, pageH)}
+    </Page>
+  );
+}
+
+// ── Bagside ───────────────────────────────────────────────────────────────
+function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number; pageH: number; pad: number }) {
+  const { design, businessName, rewardText, stampsRequired, qr } = props;
+  const c = design.back;
+  const fam = (bold: boolean) => pdfFamily(design.font, bold);
+  const elR = cornerRadiusMm(design.corners) * MM;
+  const qrTile = (size: number) => (
+    <View style={{ backgroundColor: "#FFFFFF", borderRadius: elR, padding: 2 * MM }}>
+      <QrVector matrix={qr} size={size} />
+    </View>
+  );
+
+  let body: React.ReactNode;
+  if (design.backContent === "stempelkort") {
+    const rings = Math.min(10, Math.max(1, stampsRequired));
+    const ringSize = 5.5 * MM;
+    body = (
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "row", alignItems: "center", gap: 5 * MM }}>
+        <View style={{ flex: 1, flexDirection: "column", gap: 2.4 * MM }}>
+          <Text style={{ fontFamily: fam(false), fontSize: 6.5, color: c.text, opacity: 0.7, letterSpacing: 0.6 }}>{businessName.toUpperCase()}</Text>
+          <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 12, color: c.text, lineHeight: 1.12 }}>{rewardText}</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 * MM, marginTop: 1 * MM }}>
+            {Array.from({ length: rings }).map((_, i) => (
+              <View key={i} style={{ width: ringSize, height: ringSize, borderRadius: ringSize / 2, borderWidth: 0.7, borderColor: c.text, opacity: 0.55 }} />
+            ))}
+          </View>
+        </View>
+        <View style={{ alignItems: "center" }}>
+          {qrTile(22 * MM)}
+          <Text style={{ fontFamily: fam(false), fontSize: 6.5, color: c.text, opacity: 0.82, marginTop: 1.6 * MM, textAlign: "center", maxWidth: 24 * MM }}>Scan og hent kortet</Text>
         </View>
       </View>
     );
   } else {
     body = (
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, alignItems: center ? "center" : "flex-start", justifyContent: "center" }}>
-        {design.showLogo && logoUrl ? (
-          <View style={{ marginBottom: 2.5 * MM, alignItems: center ? "center" : "flex-start" }}>
-            <Brandmark design={design} businessName={businessName} logoUrl={logoUrl} logoH={11 * MM} nameSize={13} />
-          </View>
-        ) : null}
-        <View style={{ alignItems: center ? "center" : "flex-start" }}>{nameEl}</View>
-        <View style={{ alignItems: center ? "center" : "flex-start" }}>{taglineEl}</View>
-        <View style={{ alignItems: center ? "center" : "flex-start", width: "100%" }}>
-          {lines.length ? (
-            <View style={{ marginTop: 3 * MM, flexDirection: "column", gap: 1.4 * MM, alignItems: center ? "center" : "flex-start" }}>
-              {lines.map((l, i) => (
-                <Text key={i} style={{ fontFamily: fam(false), fontSize: 7.5, color: text, opacity: 0.9 }}>
-                  {l}
-                </Text>
-              ))}
-            </View>
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 13, color: c.text, textAlign: "center", lineHeight: 1.18 }}>
+          {design.backHeadline}
+          {design.backHeadlineAccent.trim() ? (design.backHeadline.trim() ? " " : "") : ""}
+          {design.backHeadlineAccent.trim() ? <Text style={{ color: c.accent }}>{design.backHeadlineAccent}</Text> : null}
+        </Text>
+        {qrTile(26 * MM)}
+        <View style={{ alignItems: "center", gap: 1 * MM }}>
+          {design.backLine1.trim() ? (
+            <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 9, color: c.text, textAlign: "center" }}>{design.backLine1}</Text>
+          ) : null}
+          {design.backLine2.trim() ? (
+            <Text style={{ fontFamily: fam(false), fontSize: 7.5, color: c.text, opacity: 0.7, textAlign: "center" }}>{design.backLine2}</Text>
           ) : null}
         </View>
       </View>
@@ -177,72 +210,7 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
 
   return (
     <Page size={[pageW, pageH]}>
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: design.front.bg }} />
-      {body}
-      {cropMarks(pageW, pageH)}
-    </Page>
-  );
-}
-
-// ── Bagside: stempelkort eller ren QR ─────────────────────────────────────
-function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number; pageH: number; pad: number }) {
-  const { design, businessName, logoUrl, rewardText, stampsRequired, qr } = props;
-  const text = design.back.text;
-  const fam = (bold: boolean) => pdfFamily(design.font, bold);
-  const elR = cornerRadiusMm(design.corners) * MM;
-  const qrTile = (size: number) => (
-    <View style={{ backgroundColor: "#FFFFFF", borderRadius: elR, padding: 1.8 * MM }}>
-      <QrVector matrix={qr} size={size} />
-    </View>
-  );
-
-  let body: React.ReactNode;
-  if (design.backContent === "qr") {
-    body = (
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, alignItems: "center", justifyContent: "center" }}>
-        <View style={{ marginBottom: 3 * MM, alignItems: "center" }}>
-          <Brandmark design={design} businessName={businessName} logoUrl={logoUrl} logoH={9 * MM} nameSize={11} />
-        </View>
-        <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 12, color: text, textAlign: "center", marginBottom: 3 * MM }}>
-          Hent dit stempelkort
-        </Text>
-        {qrTile(26 * MM)}
-        <Text style={{ fontFamily: fam(false), fontSize: 7.5, color: text, opacity: 0.82, marginTop: 3 * MM, textAlign: "center" }}>
-          Ingen app. Ingen tilmelding.
-        </Text>
-      </View>
-    );
-  } else {
-    const rings = Math.min(10, Math.max(1, stampsRequired));
-    const ringSize = 5.5 * MM;
-    body = (
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "row", alignItems: "center", gap: 5 * MM }}>
-        <View style={{ flex: 1, flexDirection: "column", gap: 2.4 * MM }}>
-          <Text style={{ fontFamily: fam(false), fontSize: 6.5, color: text, opacity: 0.7, letterSpacing: 0.6 }}>
-            {businessName.toUpperCase()}
-          </Text>
-          <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 12, color: text, lineHeight: 1.12 }}>
-            {rewardText}
-          </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 * MM, marginTop: 1 * MM }}>
-            {Array.from({ length: rings }).map((_, i) => (
-              <View key={i} style={{ width: ringSize, height: ringSize, borderRadius: ringSize / 2, borderWidth: 0.7, borderColor: text, opacity: 0.55 }} />
-            ))}
-          </View>
-        </View>
-        <View style={{ alignItems: "center" }}>
-          {qrTile(22 * MM)}
-          <Text style={{ fontFamily: fam(false), fontSize: 6.5, color: text, opacity: 0.82, marginTop: 1.6 * MM, textAlign: "center", maxWidth: 24 * MM }}>
-            Scan og hent kortet
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <Page size={[pageW, pageH]}>
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: design.back.bg }} />
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: c.bg }} />
       {body}
       {cropMarks(pageW, pageH)}
     </Page>
