@@ -4,7 +4,7 @@ import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
-import { cardTitle } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { defaultDesign, mergeDesign } from "@/lib/visitkort";
 import { VisitkortDesigner } from "./VisitkortDesigner";
 
@@ -46,6 +46,7 @@ export default async function VisitkortPage() {
         qrDataUrl={qr}
         stampsRequired={card?.stampsRequired ?? 10}
         rewardText={card?.rewardText ?? "10. på huset"}
+        stampIcon={(card?.stampIcon as StampIconKey) ?? "coffee"}
       />
     </>
   );

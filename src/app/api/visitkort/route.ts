@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import path from "node:path";
 import QRCode from "qrcode";
+import sharp from "sharp";
 import { renderToBuffer, Font } from "@react-pdf/renderer";
 import { getSessionBusinessId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
@@ -8,12 +9,42 @@ import { APP_URL } from "@/lib/env";
 import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureServerError } from "@/lib/sentry";
-import { cardTitle } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { visitkortSchema } from "@/lib/visitkort";
+import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { VisitkortDoc } from "./VisitkortDoc";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const MM = 72 / 25.4;
+const BLEED = 3 * MM;
+
+// Rasteriserer en fuld-bleed baggrund (farve + fliselagte stempel-ikoner) til en
+// PNG-data-URL, saa PDF'en faar samme brandede look som kortets landingsside.
+async function iconBackground(
+  bg: string,
+  text: string,
+  markup: string,
+  wPt: number,
+  hPt: number,
+): Promise<string> {
+  const scale = 4; // ~288 dpi
+  const W = Math.round(wPt * scale);
+  const H = Math.round(hPt * scale);
+  const tile = 112;
+  const iconScale = (tile / 24) * 0.42;
+  let tiles = "";
+  for (let y = -tile; y < H + tile; y += tile) {
+    for (let x = -tile; x < W + tile; x += tile) {
+      const ox = (Math.floor(y / tile) % 2) * (tile / 2);
+      tiles += `<g transform="translate(${x + ox},${y}) scale(${iconScale}) rotate(-8)"><g fill="none" stroke="${text}" stroke-opacity="0.08" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${markup}</g></g>`;
+    }
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${bg}"/>${tiles}</svg>`;
+  const png = await sharp(Buffer.from(svg)).png().toBuffer();
+  return `data:image/png;base64,${png.toString("base64")}`;
+}
 
 // Instrument Sans indlejres (samme react-pdf-instans). Serif/mono i designet
 // bruger PDF'ens indbyggede standardfonts (Times/Courier) og kraever ingen fil.
@@ -56,6 +87,22 @@ export async function POST(req: NextRequest) {
   const cardUrl = `${APP_URL}/k/${business.slug}`;
   try {
     const qr = QRCode.create(cardUrl, { errorCorrectionLevel: "M" });
+
+    // Ikon-baggrund (samme look som landingssiden), rasteriseret pr. side.
+    let frontBgImage: string | null = null;
+    let backBgImage: string | null = null;
+    if (design.background === "ikoner") {
+      const land = design.orientation === "landscape";
+      const pageW = ((land ? 85 : 55) * MM) + BLEED * 2;
+      const pageH = ((land ? 55 : 85) * MM) + BLEED * 2;
+      const icon = (business.cards[0]?.stampIcon as StampIconKey) ?? "coffee";
+      const markup = STAMP_ICON_PATHS[icon] ?? STAMP_ICON_PATHS.custom;
+      [frontBgImage, backBgImage] = await Promise.all([
+        iconBackground(design.front.bg, design.front.text, markup, pageW, pageH),
+        iconBackground(design.back.bg, design.back.text, markup, pageW, pageH),
+      ]);
+    }
+
     const element = VisitkortDoc({
       design,
       businessName: cardTitle(business),
@@ -63,6 +110,8 @@ export async function POST(req: NextRequest) {
       rewardText: business.cards[0]?.rewardText ?? "10. på huset",
       stampsRequired: business.cards[0]?.stampsRequired ?? 10,
       qr: { size: qr.modules.size, data: qr.modules.data },
+      frontBgImage,
+      backBgImage,
     });
     const buffer = await renderToBuffer(element);
     return new Response(new Uint8Array(buffer), {

@@ -13,6 +13,7 @@ import {
   type VkFont,
   type VkColors,
 } from "@/lib/visitkort";
+import type { StampIconKey } from "@/lib/brand";
 import { VkPreview } from "./VkPreview";
 import { saveVisitkortDesign, setBusinessLogo } from "./actions";
 
@@ -57,6 +58,7 @@ type Props = {
   qrDataUrl: string;
   stampsRequired: number;
   rewardText: string;
+  stampIcon: StampIconKey;
 };
 
 function Field({
@@ -207,6 +209,7 @@ export function VisitkortDesigner({
   qrDataUrl,
   stampsRequired,
   rewardText,
+  stampIcon,
 }: Props) {
   const router = useRouter();
   const [design, setDesign] = useState<VisitkortDesign>(initial);
@@ -337,6 +340,16 @@ export function VisitkortDesigner({
             ]}
             value={design.corners}
             onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
+          />
+        </Field>
+        <Field label="Baggrund">
+          <Segmented
+            options={[
+              { key: "flad" as const, label: "Flad", note: "Ren farve" },
+              { key: "ikoner" as const, label: "Ikoner", note: "Farve + stempel-ikoner" },
+            ]}
+            value={design.background}
+            onChange={(background) => set({ background })}
           />
         </Field>
         <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
@@ -563,7 +576,7 @@ export function VisitkortDesigner({
             </span>
           </div>
 
-          <VkPreview side={view} design={design} businessName={businessName} logoUrl={logo} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} />
+          <VkPreview side={view} design={design} businessName={businessName} logoUrl={logo} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} stampIcon={stampIcon} />
 
           <div className="flex flex-col gap-2 border-t border-fog pt-3">
           <button type="button" onClick={download} disabled={busy} className={cn(btnClass("primary", "lg"), "w-full disabled:opacity-60")}>

@@ -15,6 +15,9 @@ export type VkFont = "sans" | "serif" | "mono";
 export type VkCorners = "skarpe" | "afrundede";
 export type VkBackContent = "qr" | "stempelkort";
 export type VkOrient = "landscape" | "portrait";
+// Baggrund: flad farve, eller farve + fliselagte stempel-ikoner (samme
+// brandede look som kortets landingsside).
+export type VkBackground = "flad" | "ikoner";
 
 // bg = baggrund, text = broedtekst, accent = fremhaevet ord (fx "Få belønninger.").
 export type VkColors = { bg: string; text: string; accent: string };
@@ -27,6 +30,8 @@ export type VisitkortDesign = {
   // preview og noteres i eksporten; selve PDF'en er stadig et almindeligt rektangel.
   dieCut: boolean;
   orientation: VkOrient;
+  // Baggrundsstil, gaelder begge sider (farve tages fra hver sides bg/text).
+  background: VkBackground;
   front: VkColors;
   back: VkColors;
   // Forside: fri tekst. Tomme felter skjules automatisk.
@@ -99,6 +104,20 @@ export function cornerRadiusMm(corners: VkCorners): number {
   return corners === "afrundede" ? 3 : 0;
 }
 
+// Enkelt "flise" med stempel-ikonet til baggrundsteksturen (samme look som
+// kortets landingsside). Bruges som CSS background-image i preview; PDF'en
+// rasteriserer en tilsvarende baggrund. markup = STAMP_ICON_PATHS[icon].
+export function iconTileDataUri(markup: string, stroke: string): string {
+  const t = 118;
+  const g = (x: number, y: number) =>
+    `<g transform='translate(${x},${y}) scale(1.5) rotate(-8)'>${markup}</g>`;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${t}' height='${t}' viewBox='0 0 ${t} ${t}'>` +
+    `<g fill='none' stroke='${stroke}' stroke-opacity='0.08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
+    `${g(16, 18)}${g(75, 78)}</g></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
 export function defaultDesign(b: {
   primaryColor: string;
   textColor: string;
@@ -113,6 +132,7 @@ export function defaultDesign(b: {
     corners: "skarpe",
     dieCut: false,
     orientation: "landscape",
+    background: "flad",
     front: { ...light },
     back: { ...light },
     name: "",
@@ -173,6 +193,7 @@ export const visitkortSchema = z.object({
   corners: z.enum(["skarpe", "afrundede"]),
   dieCut: z.boolean(),
   orientation: z.enum(["landscape", "portrait"]),
+  background: z.enum(["flad", "ikoner"]),
   front: colors,
   back: colors,
   name: z.string().max(60),

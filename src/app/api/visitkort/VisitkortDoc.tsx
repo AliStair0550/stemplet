@@ -26,6 +26,10 @@ type DocProps = {
   rewardText: string;
   stampsRequired: number;
   qr: QrMatrix;
+  // Fuld-bleed baggrundsbilleder (farve + fliselagte ikoner) naar
+  // background = "ikoner". Rasteriseres i ruten (sharp). Null = flad farve.
+  frontBgImage?: string | null;
+  backBgImage?: string | null;
 };
 
 function QrVector({ matrix, size }: { matrix: QrMatrix; size: number }) {
@@ -163,6 +167,9 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
   return (
     <Page size={[pageW, pageH]}>
       <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: c.bg }} />
+      {props.frontBgImage ? (
+        <Image fixed src={props.frontBgImage} style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH }} />
+      ) : null}
       {body}
       {cropMarks(pageW, pageH)}
     </Page>
@@ -228,6 +235,9 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
   return (
     <Page size={[pageW, pageH]}>
       <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, backgroundColor: c.bg }} />
+      {props.backBgImage ? (
+        <Image fixed src={props.backBgImage} style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH }} />
+      ) : null}
       {body}
       {cropMarks(pageW, pageH)}
     </Page>

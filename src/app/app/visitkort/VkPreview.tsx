@@ -3,8 +3,9 @@
 /* eslint-disable @next/next/no-img-element -- logo/QR er data-URIs i praecise
    maal (mm-baseret visitkort), som ikke skal optimeres af next/image. */
 
-import { VK_FONT_CSS, type VisitkortDesign } from "@/lib/visitkort";
-import { shade } from "@/lib/brand";
+import { VK_FONT_CSS, iconTileDataUri, type VisitkortDesign } from "@/lib/visitkort";
+import { shade, type StampIconKey } from "@/lib/brand";
+import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 
 // Live-preview af EEN side af visitkortet. Alt maales i cqmax (procent af kortets
 // bredde), saa det ser ens ud i enhver stoerrelse og spejler PDF-eksporten.
@@ -17,6 +18,7 @@ type Props = {
   qrDataUrl: string;
   stampsRequired: number;
   rewardText: string;
+  stampIcon: StampIconKey;
 };
 
 function contactLines(d: VisitkortDesign): string[] {
@@ -31,9 +33,12 @@ export function VkPreview({
   qrDataUrl,
   stampsRequired,
   rewardText,
+  stampIcon,
 }: Props) {
   const land = design.orientation === "landscape";
   const colors = side === "front" ? design.front : design.back;
+  const iconMarkup = STAMP_ICON_PATHS[stampIcon] ?? STAMP_ICON_PATHS.custom;
+  const iconBg = design.background === "ikoner";
 
   return (
     <div className="flex w-full justify-center">
@@ -43,7 +48,10 @@ export function VkPreview({
           width: "100%",
           maxWidth: land ? 380 : 250,
           aspectRatio: land ? "85 / 55" : "55 / 85",
-          background: colors.bg,
+          backgroundColor: colors.bg,
+          backgroundImage: iconBg ? iconTileDataUri(iconMarkup, colors.text) : undefined,
+          backgroundRepeat: "repeat",
+          backgroundSize: "104px 104px",
           color: colors.text,
           fontFamily: VK_FONT_CSS[design.font],
           borderRadius: design.dieCut ? "5cqmax" : "0.5cqmax",
