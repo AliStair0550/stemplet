@@ -90,7 +90,7 @@ function Tagline({ design }: { design: VisitkortDesign }) {
   const a = design.taglineAccent.trim();
   if (!t && !a) return null;
   return (
-    <span style={{ fontSize: "3.3cqw", opacity: 0.9, lineHeight: 1.3 }}>
+    <span style={{ fontSize: "3.3cqw", fontWeight: design.taglineBold ? 700 : 400, opacity: 0.9, lineHeight: 1.3 }}>
       {t}
       {a ? (
         <>
@@ -109,7 +109,7 @@ function Contact({ design, align }: { design: VisitkortDesign; align: "flex-star
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1cqw", alignItems: align }}>
       {hasName ? (
-        <span style={{ fontSize: "4.6cqw", fontWeight: 700, lineHeight: 1.1, marginBottom: "0.6cqw" }}>
+        <span style={{ fontSize: "4.6cqw", fontWeight: design.nameBold ? 700 : 400, lineHeight: 1.1, marginBottom: "0.6cqw" }}>
           {design.name}
         </span>
       ) : null}
@@ -147,7 +147,7 @@ function FrontSide({
             padding: "4cqw",
           }}
         >
-          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h="15cqw" />
+          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${15 * design.logoScale}cqw`} />
         </div>
         <div
           style={{
@@ -183,7 +183,7 @@ function FrontSide({
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", gap: "2.2cqw", alignItems: "flex-start" }}>
-          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h="12cqw" />
+          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${12 * design.logoScale}cqw`} />
           <Tagline design={design} />
         </div>
         <Contact design={design} align="flex-start" />
@@ -206,7 +206,7 @@ function FrontSide({
         gap: "2.4cqw",
       }}
     >
-      <Brand design={design} businessName={businessName} logoUrl={logoUrl} h="12cqw" />
+      <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${12 * design.logoScale}cqw`} />
       <Tagline design={design} />
       <div style={{ marginTop: "1cqw" }}>
         <Contact design={design} align={align} />
@@ -292,7 +292,7 @@ function BackSide({
         textAlign: "center",
       }}
     >
-      <span style={{ fontSize: "4.6cqw", fontWeight: 700, lineHeight: 1.16 }}>
+      <span style={{ fontSize: "4.6cqw", fontWeight: design.headlineBold ? 700 : 400, lineHeight: 1.16 }}>
         {design.backHeadline}
         {design.backHeadlineAccent.trim() ? (
           <>
@@ -304,10 +304,10 @@ function BackSide({
       {qrTile("31cqw")}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.6cqw" }}>
         {design.backLine1.trim() ? (
-          <span style={{ fontSize: "3.4cqw", fontWeight: 700 }}>{design.backLine1}</span>
+          <span style={{ fontSize: "3.4cqw", fontWeight: design.line1Bold ? 700 : 400 }}>{design.backLine1}</span>
         ) : null}
         {design.backLine2.trim() ? (
-          <span style={{ fontSize: "3cqw", opacity: 0.7 }}>{design.backLine2}</span>
+          <span style={{ fontSize: "3cqw", fontWeight: design.line2Bold ? 700 : 400, opacity: 0.7 }}>{design.backLine2}</span>
         ) : null}
       </div>
     </div>

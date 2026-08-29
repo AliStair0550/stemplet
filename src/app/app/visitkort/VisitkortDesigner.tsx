@@ -14,7 +14,40 @@ import {
   type VkColors,
 } from "@/lib/visitkort";
 import { VkPreview } from "./VkPreview";
-import { saveVisitkortDesign } from "./actions";
+import { saveVisitkortDesign, setBusinessLogo } from "./actions";
+
+// Skalerer logoet ned til en komprimeret data-URL i browseren (samme princip som
+// kort-designeren), saa det gemmes direkte uden en ekstern tjeneste.
+function processLogo(file: File, maxDim = 512): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        const s = Math.min(1, maxDim / Math.max(img.width || 1, img.height || 1));
+        const w = Math.max(1, Math.round((img.width || maxDim) * s));
+        const h = Math.max(1, Math.round((img.height || maxDim) * s));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("canvas");
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/png");
+        URL.revokeObjectURL(url);
+        resolve(dataUrl);
+      } catch (e) {
+        URL.revokeObjectURL(url);
+        reject(e);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("load"));
+    };
+    img.src = url;
+  });
+}
 
 type Props = {
   initial: VisitkortDesign;
@@ -55,19 +88,72 @@ function ColorField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const valid = /^#[0-9a-fA-F]{6}$/.test(value);
   return (
-    <label className="flex items-center justify-between gap-3 rounded-lg border border-fog px-3 py-2">
-      <span className="text-[0.78rem] font-[300] text-stone">{label}</span>
-      <span className="flex items-center gap-2">
-        <span className="font-mono text-[0.72rem] uppercase text-slate">{value}</span>
+    <div className="flex items-center justify-between gap-2 rounded-lg border border-fog px-3 py-2">
+      <span className="text-[0.76rem] font-[300] text-stone">{label}</span>
+      <span className="flex items-center gap-1.5">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            let v = e.target.value.trim();
+            if (v && !v.startsWith("#")) v = `#${v}`;
+            onChange(v);
+          }}
+          spellCheck={false}
+          aria-label={`${label} hex`}
+          className="w-[4.8rem] border-b border-clay bg-transparent font-mono text-[0.72rem] uppercase text-slate outline-none focus:border-terracotta"
+        />
         <input
           type="color"
-          value={value}
+          value={valid ? value : "#000000"}
           onChange={(e) => onChange(e.target.value)}
           className="h-7 w-9 cursor-pointer rounded border border-clay bg-transparent p-0.5"
           aria-label={label}
         />
       </span>
+    </div>
+  );
+}
+
+function BoldToggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-1.5 text-[0.68rem] font-[400] text-slate">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-3.5 w-3.5 accent-terracotta" />
+      Fed
+    </label>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  maxLength,
+  bold,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  maxLength?: number;
+  bold?: { value: boolean; onChange: (v: boolean) => void };
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="flex items-center justify-between">
+        <span className="text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">{label}</span>
+        {bold ? <BoldToggle checked={bold.value} onChange={bold.onChange} /> : null}
+      </span>
+      <input
+        className={inputCls}
+        value={value}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </label>
   );
 }
@@ -117,19 +203,53 @@ export function VisitkortDesigner({
   initial,
   brand,
   businessName,
-  logoUrl,
+  logoUrl: initialLogo,
   qrDataUrl,
   stampsRequired,
   rewardText,
 }: Props) {
   const router = useRouter();
   const [design, setDesign] = useState<VisitkortDesign>(initial);
+  const [logo, setLogo] = useState<string | null>(initialLogo);
+  const [uploading, setUploading] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const [view, setView] = useState<"front" | "back">("front");
   const [pending, startSave] = useTransition();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   function set(patch: Partial<VisitkortDesign>) {
     setDesign((d) => ({ ...d, ...patch }));
+  }
+
+  async function handleLogo(file: File) {
+    setLogoError(null);
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Vælg en billedfil (PNG, JPG eller SVG).");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setLogoError("Filen er for stor. Vælg en under 8 MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const dataUrl = await processLogo(file);
+      setLogo(dataUrl); // live i preview med det samme
+      const res = await setBusinessLogo(dataUrl); // gem, saa PDF'en ogsaa faar det
+      if (!res.ok) setLogoError(res.error ?? "Kunne ikke gemme logoet.");
+      else set({ showLogo: true });
+    } catch {
+      setLogoError("Kunne ikke læse billedet. Prøv et andet.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeLogo() {
+    setLogo(null);
+    setLogoError(null);
+    setBusinessLogo(null).catch(() => {});
   }
 
   function applyTheme(colors: VkColors) {
@@ -311,28 +431,63 @@ export function VisitkortDesigner({
           <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
             Forside: oplysninger
           </h2>
-          <div className="flex flex-col gap-3">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={design.showLogo}
-                onChange={(e) => set({ showLogo: e.target.checked })}
-                className="h-4 w-4 accent-terracotta"
-              />
-              <span className="text-[0.82rem] font-[300] text-stone">
-                Vis logo øverst (ellers butiksnavn)
-              </span>
-            </label>
-            <Field label="Navn / kontaktperson">
-              <input className={inputCls} value={design.name} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder="Fx: Ali Al-farhan" />
-            </Field>
+          <div className="flex flex-col gap-4">
+            {/* Logo: upload + vis/skjul + stoerrelse */}
+            <div className="flex flex-col gap-2 rounded-lg border border-fog bg-parchment/40 p-3">
+              <span className="text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">Logo</span>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className={`${btnClass("outline")} cursor-pointer`}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleLogo(f);
+                      e.target.value = "";
+                    }}
+                  />
+                  {uploading ? "Uploader..." : logo ? "Skift logo" : "Upload logo"}
+                </label>
+                {logo ? (
+                  <button type="button" onClick={removeLogo} className="text-[0.75rem] font-[400] text-slate transition-colors hover:text-rust">
+                    Fjern logo
+                  </button>
+                ) : null}
+              </div>
+              {logoError ? <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p> : null}
+              {logo ? (
+                <>
+                  <label className="mt-1 flex items-center gap-3">
+                    <input type="checkbox" checked={design.showLogo} onChange={(e) => set({ showLogo: e.target.checked })} className="h-4 w-4 accent-terracotta" />
+                    <span className="text-[0.82rem] font-[300] text-stone">Vis logo på visitkortet</span>
+                  </label>
+                  {design.showLogo ? (
+                    <div className="mt-1 flex flex-col gap-1.5">
+                      <span className="flex items-center justify-between text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+                        Logo-størrelse
+                        {Math.abs(design.logoScale - 1) > 0.001 ? (
+                          <button type="button" onClick={() => set({ logoScale: 1 })} className="font-[400] normal-case tracking-normal text-terracotta hover:opacity-70">
+                            Nulstil
+                          </button>
+                        ) : null}
+                      </span>
+                      <input type="range" min={0.5} max={2.2} step={0.05} value={design.logoScale} onChange={(e) => set({ logoScale: Number(e.target.value) })} className="w-full accent-terracotta" />
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
+                  Uden logo vises butiksnavnet som tekst øverst. Logoet deles med
+                  dit digitale kort.
+                </p>
+              )}
+            </div>
+
+            <TextField label="Navn / kontaktperson" value={design.name} maxLength={60} onChange={(v) => set({ name: v })} placeholder="Fx: Ali Al-farhan" bold={{ value: design.nameBold, onChange: (v) => set({ nameBold: v }) }} />
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Tagline">
-                <input className={inputCls} value={design.tagline} maxLength={80} onChange={(e) => set({ tagline: e.target.value })} placeholder="Stempelkortet, der skaber" />
-              </Field>
-              <Field label="Tagline (accent-farve)">
-                <input className={inputCls} value={design.taglineAccent} maxLength={60} onChange={(e) => set({ taglineAccent: e.target.value })} placeholder="flere stamkunder." />
-              </Field>
+              <TextField label="Tagline" value={design.tagline} maxLength={80} onChange={(v) => set({ tagline: v })} placeholder="Stempelkortet, der skaber" bold={{ value: design.taglineBold, onChange: (v) => set({ taglineBold: v }) }} />
+              <TextField label="Tagline (accent-farve)" value={design.taglineAccent} maxLength={60} onChange={(v) => set({ taglineAccent: v })} placeholder="flere stamkunder." />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Telefon">
@@ -365,21 +520,11 @@ export function VisitkortDesigner({
               onChange={(backContent) => set({ backContent })}
             />
             {design.backContent === "qr" ? (
-              <div className="flex flex-col gap-3">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Overskrift">
-                    <input className={inputCls} value={design.backHeadline} maxLength={60} onChange={(e) => set({ backHeadline: e.target.value })} placeholder="Saml stempler." />
-                  </Field>
-                  <Field label="Overskrift (accent-farve)">
-                    <input className={inputCls} value={design.backHeadlineAccent} maxLength={60} onChange={(e) => set({ backHeadlineAccent: e.target.value })} placeholder="Få belønninger." />
-                  </Field>
-                  <Field label="Linje 1 (fremhævet)">
-                    <input className={inputCls} value={design.backLine1} maxLength={60} onChange={(e) => set({ backLine1: e.target.value })} placeholder="Direkte i Apple Wallet" />
-                  </Field>
-                  <Field label="Linje 2">
-                    <input className={inputCls} value={design.backLine2} maxLength={60} onChange={(e) => set({ backLine2: e.target.value })} placeholder="Ingen app. Ingen tilmelding." />
-                  </Field>
-                </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TextField label="Overskrift" value={design.backHeadline} maxLength={60} onChange={(v) => set({ backHeadline: v })} placeholder="Saml stempler." bold={{ value: design.headlineBold, onChange: (v) => set({ headlineBold: v }) }} />
+                <TextField label="Overskrift (accent-farve)" value={design.backHeadlineAccent} maxLength={60} onChange={(v) => set({ backHeadlineAccent: v })} placeholder="Få belønninger." />
+                <TextField label="Linje 1" value={design.backLine1} maxLength={60} onChange={(v) => set({ backLine1: v })} placeholder="Direkte i Apple Wallet" bold={{ value: design.line1Bold, onChange: (v) => set({ line1Bold: v }) }} />
+                <TextField label="Linje 2" value={design.backLine2} maxLength={60} onChange={(v) => set({ backLine2: v })} placeholder="Ingen app. Ingen tilmelding." bold={{ value: design.line2Bold, onChange: (v) => set({ line2Bold: v }) }} />
               </div>
             ) : (
               <p className="text-[0.78rem] font-[300] leading-relaxed text-slate">
@@ -391,20 +536,37 @@ export function VisitkortDesigner({
         </section>
       </div>
 
-      {/* Preview + handlinger (sticky paa desktop) */}
-      <div className="order-1 flex flex-col gap-5 lg:order-2 lg:sticky lg:top-6">
-        <div className="rounded-lg border border-fog bg-sand/40 p-5">
-          <span className="mb-2 block text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Forside
-          </span>
-          <VkPreview side="front" design={design} businessName={businessName} logoUrl={logoUrl} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} />
-          <span className="mb-2 mt-5 block text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Bagside
-          </span>
-          <VkPreview side="back" design={design} businessName={businessName} logoUrl={logoUrl} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} />
-        </div>
+      {/* Preview + handlinger. Sticky, saa aendringer altid ses live. */}
+      <div className="order-1 lg:order-2">
+        <div className="sticky top-4 flex flex-col gap-4 rounded-lg border border-fog bg-sand/40 p-4 md:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="inline-flex rounded-full border border-clay p-0.5">
+              {[
+                { v: "front" as const, label: "Forside" },
+                { v: "back" as const, label: "Bagside" },
+              ].map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  aria-pressed={view === o.v}
+                  onClick={() => setView(o.v)}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-[0.8rem] transition-colors",
+                    view === o.v ? "bg-terracotta text-parchment" : "text-stone hover:text-ink",
+                  )}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <span className="flex items-center gap-1.5 text-[0.62rem] font-[500] uppercase tracking-[0.12em] text-terracotta">
+              <span className="h-1.5 w-1.5 rounded-full bg-terracotta" /> Live
+            </span>
+          </div>
 
-        <div className="flex flex-col gap-2">
+          <VkPreview side={view} design={design} businessName={businessName} logoUrl={logo} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} />
+
+          <div className="flex flex-col gap-2 border-t border-fog pt-3">
           <button type="button" onClick={download} disabled={busy} className={cn(btnClass("primary", "lg"), "w-full disabled:opacity-60")}>
             {busy ? "Laver PDF..." : "Hent tryk-klar PDF"}
           </button>
@@ -422,6 +584,7 @@ export function VisitkortDesigner({
             PDF&apos;en er 85 × 55 mm med 3 mm beskæring og skæremærker: side 1
             forside, side 2 bagside. Upload den direkte til Vistaprint.
           </p>
+          </div>
         </div>
       </div>
     </div>

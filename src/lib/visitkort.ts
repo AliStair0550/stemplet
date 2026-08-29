@@ -32,12 +32,19 @@ export type VisitkortDesign = {
   web: string;
   address: string;
   showLogo: boolean;
+  logoScale: number; // 1 = standard; styrer logoets stoerrelse paa kortet
+  // Fed/normal pr. tekstelement.
+  nameBold: boolean;
+  taglineBold: boolean;
   // Bagside: fri tekst.
   backContent: VkBackContent;
   backHeadline: string; // "Saml stempler."
   backHeadlineAccent: string; // "Få belønninger." (accent-farve)
   backLine1: string; // "Direkte i Apple Wallet"
   backLine2: string; // "Ingen app. Ingen tilmelding."
+  headlineBold: boolean;
+  line1Bold: boolean;
+  line2Bold: boolean;
 };
 
 export const VK_TEMPLATES: { key: VkTemplate; label: string; note: string }[] = [
@@ -105,11 +112,17 @@ export function defaultDesign(b: {
     web: `stemplet.alius.dk/k/${b.slug}`,
     address: "",
     showLogo: true,
+    logoScale: 1,
+    nameBold: true,
+    taglineBold: false,
     backContent: "qr",
     backHeadline: "Saml stempler.",
     backHeadlineAccent: "Få belønninger.",
     backLine1: "Direkte i Apple Wallet",
     backLine2: "Ingen app. Ingen tilmelding.",
+    headlineBold: true,
+    line1Bold: true,
+    line2Bold: false,
   };
 }
 
@@ -151,9 +164,15 @@ export const visitkortSchema = z.object({
   web: z.string().max(80),
   address: z.string().max(120),
   showLogo: z.boolean(),
+  logoScale: z.coerce.number().min(0.4).max(2.5).catch(1),
+  nameBold: z.boolean(),
+  taglineBold: z.boolean(),
   backContent: z.enum(["qr", "stempelkort"]),
   backHeadline: z.string().max(60),
   backHeadlineAccent: z.string().max(60),
   backLine1: z.string().max(60),
   backLine2: z.string().max(60),
+  headlineBold: z.boolean(),
+  line1Bold: z.boolean(),
+  line2Bold: z.boolean(),
 });

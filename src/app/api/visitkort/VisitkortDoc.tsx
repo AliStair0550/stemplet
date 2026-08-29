@@ -85,13 +85,13 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
   const textAlign = center ? ("center" as const) : ("left" as const);
 
   const brand = design.showLogo && logoUrl ? (
-    <Image src={logoUrl} style={{ height: 11 * MM, maxWidth: 40 * MM, objectFit: "contain" }} />
+    <Image src={logoUrl} style={{ height: 11 * MM * design.logoScale, maxWidth: 46 * MM, objectFit: "contain" }} />
   ) : (
     <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 15, color: c.text }}>{businessName}</Text>
   );
 
   const tagline = (design.tagline.trim() || design.taglineAccent.trim()) ? (
-    <Text style={{ fontFamily: fam(false), fontSize: 8, color: c.text, opacity: 0.9, textAlign }}>
+    <Text style={{ fontFamily: fam(design.taglineBold), fontWeight: design.taglineBold ? 700 : 400, fontSize: 8, color: c.text, opacity: 0.9, textAlign }}>
       {design.tagline}
       {design.taglineAccent.trim() ? design.tagline.trim() ? " " : "" : ""}
       {design.taglineAccent.trim() ? <Text style={{ color: c.accent, opacity: 1 }}>{design.taglineAccent}</Text> : null}
@@ -101,7 +101,7 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
   const contact = (design.name.trim() || lines.length) ? (
     <View style={{ flexDirection: "column", gap: 1.2 * MM, alignItems }}>
       {design.name.trim() ? (
-        <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 11, color: c.text, marginBottom: 0.6 * MM }}>
+        <Text style={{ fontFamily: fam(design.nameBold), fontWeight: design.nameBold ? 700 : 400, fontSize: 11, color: c.text, marginBottom: 0.6 * MM }}>
           {design.name}
         </Text>
       ) : null}
@@ -190,7 +190,7 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
   } else {
     body = (
       <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
-        <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 13, color: c.text, textAlign: "center", lineHeight: 1.18 }}>
+        <Text style={{ fontFamily: fam(design.headlineBold), fontWeight: design.headlineBold ? 700 : 400, fontSize: 13, color: c.text, textAlign: "center", lineHeight: 1.18 }}>
           {design.backHeadline}
           {design.backHeadlineAccent.trim() ? (design.backHeadline.trim() ? " " : "") : ""}
           {design.backHeadlineAccent.trim() ? <Text style={{ color: c.accent }}>{design.backHeadlineAccent}</Text> : null}
@@ -198,10 +198,10 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
         {qrTile(26 * MM)}
         <View style={{ alignItems: "center", gap: 1 * MM }}>
           {design.backLine1.trim() ? (
-            <Text style={{ fontFamily: fam(true), fontWeight: 700, fontSize: 9, color: c.text, textAlign: "center" }}>{design.backLine1}</Text>
+            <Text style={{ fontFamily: fam(design.line1Bold), fontWeight: design.line1Bold ? 700 : 400, fontSize: 9, color: c.text, textAlign: "center" }}>{design.backLine1}</Text>
           ) : null}
           {design.backLine2.trim() ? (
-            <Text style={{ fontFamily: fam(false), fontSize: 7.5, color: c.text, opacity: 0.7, textAlign: "center" }}>{design.backLine2}</Text>
+            <Text style={{ fontFamily: fam(design.line2Bold), fontWeight: design.line2Bold ? 700 : 400, fontSize: 7.5, color: c.text, opacity: 0.7, textAlign: "center" }}>{design.backLine2}</Text>
           ) : null}
         </View>
       </View>
