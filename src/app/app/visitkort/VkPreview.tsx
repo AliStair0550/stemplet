@@ -102,7 +102,7 @@ function Tagline({ design }: { design: VisitkortDesign }) {
   );
 }
 
-function Contact({ design, align }: { design: VisitkortDesign; align: "flex-start" | "center" }) {
+function Contact({ design, align }: { design: VisitkortDesign; align: "flex-start" | "center" | "flex-end" }) {
   const lines = contactLines(design);
   const hasName = design.name.trim().length > 0;
   if (!hasName && !lines.length) return null;
@@ -131,10 +131,20 @@ function FrontSide({
   businessName: string;
   logoUrl: string | null;
 }) {
-  const center = design.template === "centreret";
-  const align = center ? "center" : "flex-start";
+  const t = design.template;
+  const center = t === "centreret";
+  const right = t === "hoejre";
+  const align: "flex-start" | "center" | "flex-end" = center
+    ? "center"
+    : right
+      ? "flex-end"
+      : "flex-start";
+  const logoH = `${12 * design.logoScale}cqmax`;
+  // Fleksibel afstand der fylder ledig plads, men skrumper til 0 hvis indholdet
+  // er stort, saa tekst aldrig lander oven paa hinanden (kun klippes i kanten).
+  const spacer = <div style={{ flex: "1 1 0", minHeight: 0 }} />;
 
-  if (design.template === "sidebjaelke") {
+  if (t === "sidebjaelke") {
     return (
       <div style={{ display: "flex", width: "100%", height: "100%" }}>
         <div
@@ -158,6 +168,7 @@ function FrontSide({
             justifyContent: "center",
             gap: "2.4cqmax",
             minWidth: 0,
+            overflow: "hidden",
           }}
         >
           <span style={{ fontSize: "5.2cqmax", fontWeight: 700, lineHeight: 1.1 }}>{businessName}</span>
@@ -170,28 +181,49 @@ function FrontSide({
     );
   }
 
-  if (design.template === "split") {
+  if (t === "topbaand") {
     return (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          padding: "8cqmax",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "2.2cqmax", alignItems: "flex-start" }}>
-          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${12 * design.logoScale}cqmax`} />
-          <Tagline design={design} />
+      <div style={{ display: "flex", flexDirection: "column", width: "100%", height: "100%" }}>
+        <div
+          style={{
+            background: shade(design.front.bg, -0.1),
+            padding: "5cqmax 8cqmax",
+            display: "flex",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${9 * design.logoScale}cqmax`} />
         </div>
-        <Contact design={design} align="flex-start" />
+        <div style={{ flex: 1, minHeight: 0, overflow: "hidden", padding: "7cqmax 8cqmax", display: "flex", flexDirection: "column" }}>
+          <div style={{ flexShrink: 0 }}>
+            <Tagline design={design} />
+          </div>
+          {spacer}
+          <div style={{ flexShrink: 0 }}>
+            <Contact design={design} align="flex-start" />
+          </div>
+        </div>
       </div>
     );
   }
 
-  // venstre / centreret: alt samlet, lodret centreret
+  if (t === "split") {
+    return (
+      <div style={{ width: "100%", height: "100%", padding: "8cqmax", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: "2.2cqmax", alignItems: "flex-start" }}>
+          <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={logoH} />
+          <Tagline design={design} />
+        </div>
+        {spacer}
+        <div style={{ flexShrink: 0 }}>
+          <Contact design={design} align="flex-start" />
+        </div>
+      </div>
+    );
+  }
+
+  // venstre / hoejre / centreret: alt samlet, lodret centreret
   return (
     <div
       style={{
@@ -202,11 +234,12 @@ function FrontSide({
         flexDirection: "column",
         justifyContent: "center",
         alignItems: align,
-        textAlign: center ? "center" : "left",
+        textAlign: center ? "center" : right ? "right" : "left",
         gap: "2.4cqmax",
+        overflow: "hidden",
       }}
     >
-      <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={`${12 * design.logoScale}cqmax`} />
+      <Brand design={design} businessName={businessName} logoUrl={logoUrl} h={logoH} />
       <Tagline design={design} />
       <div style={{ marginTop: "1cqmax" }}>
         <Contact design={design} align={align} />
@@ -278,7 +311,8 @@ function BackSide({
     );
   }
 
-  // qr: overskrift + QR + to linjer (som dit eget kort)
+  // qr: overskrift + QR + to linjer (som dit eget kort). Fleksible afstande
+  // (flex-spacers) i stedet for space-between, saa intet lander oven paa hinanden.
   return (
     <div
       style={{
@@ -288,11 +322,12 @@ function BackSide({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "center",
         textAlign: "center",
+        overflow: "hidden",
       }}
     >
-      <span style={{ fontSize: "4.6cqmax", fontWeight: design.headlineBold ? 700 : 400, lineHeight: 1.16 }}>
+      <span style={{ flexShrink: 0, fontSize: "4.6cqmax", fontWeight: design.headlineBold ? 700 : 400, lineHeight: 1.16 }}>
         {design.backHeadline}
         {design.backHeadlineAccent.trim() ? (
           <>
@@ -301,8 +336,10 @@ function BackSide({
           </>
         ) : null}
       </span>
-      {qrTile(`${31 * design.qrScale}cqmax`)}
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.6cqmax" }}>
+      <div style={{ flex: "1 1 0", minHeight: "3cqmax" }} />
+      <div style={{ flexShrink: 0 }}>{qrTile(`${31 * design.qrScale}cqmax`)}</div>
+      <div style={{ flex: "1 1 0", minHeight: "3cqmax" }} />
+      <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.6cqmax" }}>
         {design.backLine1.trim() ? (
           <span style={{ fontSize: "3.4cqmax", fontWeight: design.line1Bold ? 700 : 400 }}>{design.backLine1}</span>
         ) : null}

@@ -4,7 +4,13 @@ import { z } from "zod";
 // (validering) og PDF-eksporten. Alt gemmes som EN JSON paa butikken, saa
 // designeren kan vokse uden en migration pr. felt. ────────────────────────────
 
-export type VkTemplate = "split" | "venstre" | "centreret" | "sidebjaelke";
+export type VkTemplate =
+  | "split"
+  | "venstre"
+  | "hoejre"
+  | "centreret"
+  | "topbaand"
+  | "sidebjaelke";
 export type VkFont = "sans" | "serif" | "mono";
 export type VkCorners = "skarpe" | "afrundede";
 export type VkBackContent = "qr" | "stempelkort";
@@ -49,9 +55,11 @@ export type VisitkortDesign = {
 };
 
 export const VK_TEMPLATES: { key: VkTemplate; label: string; note: string }[] = [
-  { key: "split", label: "Split", note: "Brand øverst, navn og kontakt nederst" },
+  { key: "split", label: "Split", note: "Brand øverst, kontakt nederst" },
   { key: "venstre", label: "Venstre", note: "Alt venstrestillet, samlet" },
+  { key: "hoejre", label: "Højre", note: "Alt højrestillet, samlet" },
   { key: "centreret", label: "Centreret", note: "Alt centreret, roligt udtryk" },
+  { key: "topbaand", label: "Topbånd", note: "Farvet bånd med brand øverst" },
   { key: "sidebjaelke", label: "Sidebjælke", note: "Farvet bjælke med logo" },
 ];
 
@@ -153,7 +161,14 @@ const hex = z
 const colors = z.object({ bg: hex, text: hex, accent: hex });
 
 export const visitkortSchema = z.object({
-  template: z.enum(["split", "venstre", "centreret", "sidebjaelke"]),
+  template: z.enum([
+    "split",
+    "venstre",
+    "hoejre",
+    "centreret",
+    "topbaand",
+    "sidebjaelke",
+  ]),
   font: z.enum(["sans", "serif", "mono"]),
   corners: z.enum(["skarpe", "afrundede"]),
   dieCut: z.boolean(),

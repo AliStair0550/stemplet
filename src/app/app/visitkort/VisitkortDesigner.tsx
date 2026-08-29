@@ -535,8 +535,9 @@ export function VisitkortDesigner({
           </div>
         </section>
 
-        {/* Preview + handlinger. Sticky, saa aendringer altid ses live. */}
-        <div className="sticky top-4 z-10 flex flex-col gap-4 rounded-lg border border-fog bg-parchment p-4 shadow-[0_10px_30px_-20px_rgba(28,25,23,0.5)] md:p-5">
+        {/* Preview + handlinger, oeverst (order-first). Ikke sticky, saa den ikke
+            haenger fast under scroll. */}
+        <div className="order-first flex flex-col gap-4 rounded-lg border border-fog bg-sand/40 p-4 md:p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex rounded-full border border-clay p-0.5">
               {[

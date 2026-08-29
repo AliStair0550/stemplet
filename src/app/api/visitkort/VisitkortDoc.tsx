@@ -81,8 +81,9 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
   const fam = (bold: boolean) => pdfFamily(design.font, bold);
   const lines = contactLines(design);
   const center = design.template === "centreret";
-  const alignItems = center ? "center" : "flex-start";
-  const textAlign = center ? ("center" as const) : ("left" as const);
+  const right = design.template === "hoejre";
+  const alignItems = center ? "center" : right ? "flex-end" : "flex-start";
+  const textAlign = center ? ("center" as const) : right ? ("right" as const) : ("left" as const);
 
   const brand = design.showLogo && logoUrl ? (
     <Image src={logoUrl} style={{ height: 11 * MM * design.logoScale, maxWidth: 46 * MM, objectFit: "contain" }} />
@@ -125,13 +126,27 @@ function FrontPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: numbe
         </View>
       </View>
     );
+  } else if (design.template === "topbaand") {
+    body = (
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, flexDirection: "column" }}>
+        <View style={{ backgroundColor: shade(c.bg, -0.1), paddingVertical: 5 * MM, paddingHorizontal: pad, justifyContent: "center" }}>
+          {brand}
+        </View>
+        <View style={{ flex: 1, paddingHorizontal: pad, paddingVertical: 5 * MM, flexDirection: "column" }}>
+          {tagline}
+          <View style={{ flexGrow: 1 }} />
+          {contact}
+        </View>
+      </View>
+    );
   } else if (design.template === "split") {
     body = (
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", justifyContent: "space-between" }}>
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column" }}>
         <View style={{ flexDirection: "column", gap: 2 * MM, alignItems: "flex-start" }}>
           {brand}
           {tagline}
         </View>
+        <View style={{ flexGrow: 1 }} />
         {contact}
       </View>
     );
@@ -189,13 +204,15 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
     );
   } else {
     body = (
-      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
+      <View style={{ position: "absolute", top: 0, left: 0, width: pageW, height: pageH, padding: pad, flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <Text style={{ fontFamily: fam(design.headlineBold), fontWeight: design.headlineBold ? 700 : 400, fontSize: 13, color: c.text, textAlign: "center", lineHeight: 1.18 }}>
           {design.backHeadline}
           {design.backHeadlineAccent.trim() ? (design.backHeadline.trim() ? " " : "") : ""}
           {design.backHeadlineAccent.trim() ? <Text style={{ color: c.accent }}>{design.backHeadlineAccent}</Text> : null}
         </Text>
+        <View style={{ flexGrow: 1, minHeight: 3 * MM }} />
         {qrTile(26 * MM * design.qrScale)}
+        <View style={{ flexGrow: 1, minHeight: 3 * MM }} />
         <View style={{ alignItems: "center", gap: 1 * MM }}>
           {design.backLine1.trim() ? (
             <Text style={{ fontFamily: fam(design.line1Bold), fontWeight: design.line1Bold ? 700 : 400, fontSize: 9, color: c.text, textAlign: "center" }}>{design.backLine1}</Text>
