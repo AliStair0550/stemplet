@@ -41,6 +41,10 @@ model Business {
   // Logo-stoerrelse paa kortet: 1 = standard. Ejeren kan skrue op/ned, saa smaa
   // eller kvadratiske logoer kan fylde mere. Gaelder kort, webkort og Wallet-pas.
   logoScale          Float     @default(1)
+  // Visitkort-design (skabelon, farver, fonts, hjoerner, kontaktfelter). JSON,
+  // saa designeren kan udvikle sig uden en migration pr. felt. Null = ikke
+  // designet endnu (bruger brand-standard).
+  businessCardDesign Json?
   // Giv et velkomststempel ved kundens ALLERFOERSTE scan (opretter kort + 1
   // stempel). Standard FRA: foerste scan opretter KUN kortet, og stempler gives
   // derefter ved koeb. Saa er strukturen altid den samme: 1. kortet hentes,

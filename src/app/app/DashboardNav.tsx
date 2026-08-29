@@ -23,6 +23,7 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
 // Det interne: opsaetning, design og drift af butikken.
 const INTERNAL_LINKS: { href: string; label: string }[] = [
   { href: "/app/kort", label: "Design" },
+  { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/kom-i-gang", label: "Opsætning" },
   { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },

@@ -20,6 +20,8 @@ type Props = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  // Kun A4-plakat (visitkortet har nu sin egen designer paa /app/visitkort).
+  a4Only?: boolean;
 };
 
 // Forhaandsvisning der skalerer rent: artboardet er en container, og alt indeni
@@ -186,9 +188,12 @@ export function QrPrintPanel({
   primaryColor,
   textColor,
   logoUrl,
+  a4Only = false,
 }: Props) {
-  const [format, setFormat] = useState<QrFormat>("visitkort");
-  const [orient, setOrient] = useState<QrOrient>("landscape");
+  const [format, setFormat] = useState<QrFormat>(a4Only ? "a4" : "visitkort");
+  const [orient, setOrient] = useState<QrOrient>(
+    a4Only ? "portrait" : "landscape",
+  );
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<"idle" | "done" | "error">("idle");
 
@@ -245,32 +250,34 @@ export function QrPrintPanel({
       <div className="mt-6 grid gap-8 md:grid-cols-[1fr_minmax(0,20rem)] md:items-start">
         {/* Venstre: valg + handlinger */}
         <div className="order-2 flex flex-col gap-5 md:order-1">
-          <div className="grid grid-cols-2 gap-2">
-            {FORMATS.map((f) => {
-              const active = format === f.key;
-              return (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => chooseFormat(f.key)}
-                  aria-pressed={active}
-                  className={cn(
-                    "rounded-lg border p-3 text-left transition-colors",
-                    active
-                      ? "border-terracotta bg-terracotta/[0.06]"
-                      : "border-fog bg-white hover:border-clay",
-                  )}
-                >
-                  <span className="block font-[400] text-[0.92rem] text-ink">
-                    {f.title}
-                  </span>
-                  <span className="mt-0.5 block font-[300] text-[0.74rem] leading-snug text-stone">
-                    {f.note}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {!a4Only ? (
+            <div className="grid grid-cols-2 gap-2">
+              {FORMATS.map((f) => {
+                const active = format === f.key;
+                return (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() => chooseFormat(f.key)}
+                    aria-pressed={active}
+                    className={cn(
+                      "rounded-lg border p-3 text-left transition-colors",
+                      active
+                        ? "border-terracotta bg-terracotta/[0.06]"
+                        : "border-fog bg-white hover:border-clay",
+                    )}
+                  >
+                    <span className="block font-[400] text-[0.92rem] text-ink">
+                      {f.title}
+                    </span>
+                    <span className="mt-0.5 block font-[300] text-[0.74rem] leading-snug text-stone">
+                      {f.note}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">

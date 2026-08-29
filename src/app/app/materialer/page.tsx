@@ -84,26 +84,43 @@ export default async function MaterialerPage() {
           </Panel>
         </section>
 
-        {/* 2. Print QR-koden: den faerdige, previewede QR i dit design
-            (visitkort + A4-plakat). Den staerke print-oplevelse. */}
+        {/* 2. Visitkort: den prioriterede designer med for- og bagside, klar til
+            Vistaprint. */}
         <section>
-          <SectionHeader title="Print QR-koden" />
-          <QrPrintPanel
-            slug={business.slug}
-            cardUrl={cardUrl}
-            qrDataUrl={qr}
-            businessName={cardTitle(business)}
-            primaryColor={business.primaryColor}
-            textColor={business.textColor}
-            logoUrl={business.logoUrl}
-          />
+          <SectionHeader title="Visitkort" />
+          <Panel>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
+                Design et visitkort med for- og bagside i dit eget udtryk: farver,
+                fonts, hjørner og logo. Forsiden er dine oplysninger, bagsiden er
+                stempelkortet. Hent en tryk-klar PDF til Vistaprint.
+              </p>
+              <Link
+                href="/app/visitkort"
+                className={`${btnClass("primary")} shrink-0`}
+              >
+                Åbn visitkort-designer
+              </Link>
+            </div>
+          </Panel>
         </section>
 
-        {/* 3. Flere skilte: mellemstoerrelser med tomt stempel-gitter, tilpasses
-            eet sted. */}
+        {/* 3. Skilte til disk og vaeg: mellemstoerrelser + A4-plakat samlet. */}
         <section>
           <SectionHeader title="Skilte til disk og væg" />
-          <MaterialsPrint />
+          <div className="flex flex-col gap-6">
+            <MaterialsPrint />
+            <QrPrintPanel
+              slug={business.slug}
+              cardUrl={cardUrl}
+              qrDataUrl={qr}
+              businessName={cardTitle(business)}
+              primaryColor={business.primaryColor}
+              textColor={business.textColor}
+              logoUrl={business.logoUrl}
+              a4Only
+            />
+          </div>
         </section>
 
         {/* 4. Del online: kortet som kunderne ser det, med et delelink til
