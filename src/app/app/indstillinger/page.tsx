@@ -6,7 +6,6 @@ import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { WeeklyEmailRecipient } from "./WeeklyEmailRecipient";
-import { WelcomeStampToggle } from "./WelcomeStampToggle";
 import { SelfScanToggle } from "./SelfScanToggle";
 import { AccessManager } from "./AccessManager";
 import { LocationCard } from "./LocationCard";
@@ -121,26 +120,6 @@ export default async function IndstillingerPage({
               </p>
             </div>
             <SelfScanToggle initial={business.selfScanEnabled} />
-          </div>
-        </Panel>
-      </div>
-
-      {/* Velkomststempel ved foerste scan */}
-      <div className="mt-6">
-        <Panel>
-          <div className="flex items-center justify-between gap-6">
-            <div>
-              <h2 className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-slate">
-                Velkomststempel
-              </h2>
-              <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
-                Stemplingen sker altid på samme måde: 1. kunden henter kortet ved
-                første scan, 2. I giver stempler ved kassen. Slår du
-                velkomststempel til, får kunden også ét stempel med det samme ved
-                allerførste scan. Standard er fra, så flowet er ens hver gang.
-              </p>
-            </div>
-            <WelcomeStampToggle initial={business.welcomeStampEnabled} />
           </div>
         </Panel>
       </div>
