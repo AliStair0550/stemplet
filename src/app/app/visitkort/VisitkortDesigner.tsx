@@ -90,9 +90,16 @@ function ColorField({
 }) {
   const valid = /^#[0-9a-fA-F]{6}$/.test(value);
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border border-fog px-3 py-2">
-      <span className="text-[0.76rem] font-[300] text-stone">{label}</span>
-      <span className="flex items-center gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5 rounded-lg border border-fog p-2.5">
+      <span className="truncate text-[0.7rem] font-[400] text-stone">{label}</span>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={valid ? value : "#000000"}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-7 w-8 shrink-0 cursor-pointer rounded border border-clay bg-transparent p-0.5"
+          aria-label={label}
+        />
         <input
           type="text"
           value={value}
@@ -103,16 +110,9 @@ function ColorField({
           }}
           spellCheck={false}
           aria-label={`${label} hex`}
-          className="w-[4.8rem] border-b border-clay bg-transparent font-mono text-[0.72rem] uppercase text-slate outline-none focus:border-terracotta"
+          className="w-full min-w-0 flex-1 border-b border-clay bg-transparent font-mono text-[0.72rem] uppercase text-slate outline-none focus:border-terracotta"
         />
-        <input
-          type="color"
-          value={valid ? value : "#000000"}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-7 w-9 cursor-pointer rounded border border-clay bg-transparent p-0.5"
-          aria-label={label}
-        />
-      </span>
+      </div>
     </div>
   );
 }
@@ -315,25 +315,38 @@ export function VisitkortDesigner({
                 cols={2}
               />
             </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Retning">
-                <Segmented
-                  options={[
-                    { key: "landscape" as const, label: "Liggende" },
-                    { key: "portrait" as const, label: "Stående" },
-                  ]}
-                  value={design.orientation}
-                  onChange={(orientation) => set({ orientation })}
-                />
-              </Field>
-              <Field label="Font">
-                <Segmented
-                  options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
-                  value={design.font}
-                  onChange={(font: VkFont) => set({ font })}
-                />
-              </Field>
-            </div>
+            <Field label="Retning">
+              <Segmented
+                options={[
+                  { key: "landscape" as const, label: "Liggende" },
+                  { key: "portrait" as const, label: "Stående" },
+                ]}
+                value={design.orientation}
+                onChange={(orientation) => set({ orientation })}
+              />
+            </Field>
+            <Field label="Font">
+              <Segmented
+                options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
+                value={design.font}
+                onChange={(font: VkFont) => set({ font })}
+              />
+            </Field>
+            <Field label="Hjørner">
+              <Segmented
+                options={[
+                  { key: "skarpe" as const, label: "Kantede", note: "Standard, skarpe hjørner" },
+                  { key: "afrundede" as const, label: "Afrundede", note: "Runde hjørner og felter" },
+                ]}
+                value={design.corners}
+                onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
+              />
+            </Field>
+            <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
+              {design.corners === "afrundede"
+                ? "Afrunder både kortets hjørner og design-elementer. Runde kort-hjørner bestilles som die-cut hos Vistaprint."
+                : "Kantede hjørner er standard. Vælg Afrundede for runde hjørner og felter."}
+            </p>
           </div>
         </section>
 
@@ -394,36 +407,6 @@ export function VisitkortDesigner({
                 <ColorField label="Accent" value={design.back.accent} onChange={(accent) => set({ back: { ...design.back, accent } })} />
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
-          <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Hjørner
-          </h2>
-          <div className="flex flex-col gap-4">
-            <Field label="Design-elementer">
-              <Segmented
-                options={[
-                  { key: "afrundede" as const, label: "Afrundede" },
-                  { key: "skarpe" as const, label: "Skarpe" },
-                ]}
-                value={design.corners}
-                onChange={(corners) => set({ corners })}
-              />
-            </Field>
-            <label className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={design.dieCut}
-                onChange={(e) => set({ dieCut: e.target.checked })}
-                className="mt-0.5 h-4 w-4 accent-terracotta"
-              />
-              <span className="text-[0.82rem] font-[300] leading-relaxed text-stone">
-                Fysiske runde hjørner (die-cut). Vises i preview og noteres til
-                trykken. Bestilles som en mulighed hos Vistaprint.
-              </span>
-            </label>
           </div>
         </section>
 

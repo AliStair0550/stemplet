@@ -99,8 +99,10 @@ export function defaultDesign(b: {
   return {
     template: "split",
     font: "sans",
-    corners: "afrundede",
-    dieCut: true,
+    // Standard: kantede hjoerner. Kan afrundes (baade design-elementer og fysiske
+    // hjoerner) via een kontrol; slaar igennem i live-preview og PDF.
+    corners: "skarpe",
+    dieCut: false,
     orientation: "landscape",
     front: { ...light },
     back: { ...light },
