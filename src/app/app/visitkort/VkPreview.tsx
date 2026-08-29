@@ -269,7 +269,7 @@ function BackSide({
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.6cqw" }}>
-          {qrTile("26cqw")}
+          {qrTile(`${26 * design.qrScale}cqw`)}
           <span style={{ fontSize: "2.6cqw", opacity: 0.82, textAlign: "center", maxWidth: "30cqw" }}>
             Scan og hent kortet
           </span>
@@ -301,7 +301,7 @@ function BackSide({
           </>
         ) : null}
       </span>
-      {qrTile("31cqw")}
+      {qrTile(`${31 * design.qrScale}cqw`)}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.6cqw" }}>
         {design.backLine1.trim() ? (
           <span style={{ fontSize: "3.4cqw", fontWeight: design.line1Bold ? 700 : 400 }}>{design.backLine1}</span>

@@ -182,7 +182,7 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
           </View>
         </View>
         <View style={{ alignItems: "center" }}>
-          {qrTile(22 * MM)}
+          {qrTile(22 * MM * design.qrScale)}
           <Text style={{ fontFamily: fam(false), fontSize: 6.5, color: c.text, opacity: 0.82, marginTop: 1.6 * MM, textAlign: "center", maxWidth: 24 * MM }}>Scan og hent kortet</Text>
         </View>
       </View>
@@ -195,7 +195,7 @@ function BackPage({ props, pageW, pageH, pad }: { props: DocProps; pageW: number
           {design.backHeadlineAccent.trim() ? (design.backHeadline.trim() ? " " : "") : ""}
           {design.backHeadlineAccent.trim() ? <Text style={{ color: c.accent }}>{design.backHeadlineAccent}</Text> : null}
         </Text>
-        {qrTile(26 * MM)}
+        {qrTile(26 * MM * design.qrScale)}
         <View style={{ alignItems: "center", gap: 1 * MM }}>
           {design.backLine1.trim() ? (
             <Text style={{ fontFamily: fam(design.line1Bold), fontWeight: design.line1Bold ? 700 : 400, fontSize: 9, color: c.text, textAlign: "center" }}>{design.backLine1}</Text>

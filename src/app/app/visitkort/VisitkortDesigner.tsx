@@ -143,8 +143,8 @@ function TextField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="flex items-center justify-between">
-        <span className="text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">{label}</span>
+      <span className="flex items-center justify-between gap-2">
+        <span className="truncate whitespace-nowrap text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">{label}</span>
         {bold ? <BoldToggle checked={bold.value} onChange={bold.onChange} /> : null}
       </span>
       <input
@@ -298,118 +298,120 @@ export function VisitkortDesigner({
     }
   }
 
-  return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start">
-      {/* Kontroller */}
-      <div className="order-2 flex flex-col gap-6 lg:order-1">
-        <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
-          <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Skabelon og format
-          </h2>
-          <div className="flex flex-col gap-4">
-            <Field label="Skabelon">
-              <Segmented
-                options={VK_TEMPLATES.map((t) => ({ key: t.key, label: t.label, note: t.note }))}
-                value={design.template}
-                onChange={(template: VkTemplate) => set({ template })}
-                cols={2}
-              />
-            </Field>
-            <Field label="Retning">
-              <Segmented
-                options={[
-                  { key: "landscape" as const, label: "Liggende" },
-                  { key: "portrait" as const, label: "Stående" },
-                ]}
-                value={design.orientation}
-                onChange={(orientation) => set({ orientation })}
-              />
-            </Field>
-            <Field label="Font">
-              <Segmented
-                options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
-                value={design.font}
-                onChange={(font: VkFont) => set({ font })}
-              />
-            </Field>
-            <Field label="Hjørner">
-              <Segmented
-                options={[
-                  { key: "skarpe" as const, label: "Kantede", note: "Standard, skarpe hjørner" },
-                  { key: "afrundede" as const, label: "Afrundede", note: "Runde hjørner og felter" },
-                ]}
-                value={design.corners}
-                onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
-              />
-            </Field>
-            <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
-              {design.corners === "afrundede"
-                ? "Afrunder både kortets hjørner og design-elementer. Runde kort-hjørner bestilles som die-cut hos Vistaprint."
-                : "Kantede hjørner er standard. Vælg Afrundede for runde hjørner og felter."}
-            </p>
-          </div>
-        </section>
+  const templateSection = (
+    <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
+      <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
+        Skabelon og format
+      </h2>
+      <div className="flex flex-col gap-4">
+        <Field label="Skabelon">
+          <Segmented
+            options={VK_TEMPLATES.map((t) => ({ key: t.key, label: t.label, note: t.note }))}
+            value={design.template}
+            onChange={(template: VkTemplate) => set({ template })}
+            cols={2}
+          />
+        </Field>
+        <Field label="Retning">
+          <Segmented
+            options={[
+              { key: "landscape" as const, label: "Liggende" },
+              { key: "portrait" as const, label: "Stående" },
+            ]}
+            value={design.orientation}
+            onChange={(orientation) => set({ orientation })}
+          />
+        </Field>
+        <Field label="Font">
+          <Segmented
+            options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
+            value={design.font}
+            onChange={(font: VkFont) => set({ font })}
+          />
+        </Field>
+        <Field label="Hjørner">
+          <Segmented
+            options={[
+              { key: "skarpe" as const, label: "Kantede", note: "Standard, skarpe hjørner" },
+              { key: "afrundede" as const, label: "Afrundede", note: "Runde hjørner og felter" },
+            ]}
+            value={design.corners}
+            onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
+          />
+        </Field>
+        <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
+          {design.corners === "afrundede"
+            ? "Afrunder både kortets hjørner og design-elementer. Runde kort-hjørner bestilles som die-cut hos Vistaprint."
+            : "Kantede hjørner er standard. Vælg Afrundede for runde hjørner og felter."}
+        </p>
+      </div>
+    </section>
+  );
 
-        <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
-          <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Farver
-          </h2>
-          <div className="flex flex-col gap-5">
-            <div>
-              <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
-                Hurtige temaer (sætter begge sider)
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {VK_COLOR_THEMES.map((t) => {
-                  const accent = t.accentFromBrand ? brand.primary : (t.accent ?? t.text);
-                  return (
-                    <button
-                      key={t.name}
-                      type="button"
-                      onClick={() => applyTheme({ bg: t.bg, text: t.text, accent })}
-                      title={t.name}
-                      className="flex items-center gap-1.5 rounded-full border border-clay py-1 pl-1.5 pr-3"
-                    >
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: t.bg, border: "1px solid rgba(0,0,0,0.1)" }}>
-                        <span className="h-2 w-2 rounded-full" style={{ background: accent }} />
-                      </span>
-                      <span className="text-[0.74rem] font-[400] text-stone">{t.name}</span>
-                    </button>
-                  );
-                })}
+  const colorSection = (
+    <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
+      <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
+        Farver
+      </h2>
+      <div className="flex flex-col gap-5">
+        <div>
+          <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+            Hurtige temaer (sætter begge sider)
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {VK_COLOR_THEMES.map((t) => {
+              const accent = t.accentFromBrand ? brand.primary : (t.accent ?? t.text);
+              return (
                 <button
+                  key={t.name}
                   type="button"
-                  onClick={() => applyTheme({ bg: brand.primary, text: brand.text, accent: brand.text })}
-                  className="rounded-full border border-clay px-3 text-[0.74rem] font-[400] text-stone hover:text-ink"
+                  onClick={() => applyTheme({ bg: t.bg, text: t.text, accent })}
+                  title={t.name}
+                  className="flex items-center gap-1.5 rounded-full border border-clay py-1 pl-1.5 pr-3"
                 >
-                  Brand
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: t.bg, border: "1px solid rgba(0,0,0,0.1)" }}>
+                    <span className="h-2 w-2 rounded-full" style={{ background: accent }} />
+                  </span>
+                  <span className="text-[0.74rem] font-[400] text-stone">{t.name}</span>
                 </button>
-              </div>
-            </div>
-
-            <div>
-              <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
-                Forside
-              </span>
-              <div className="grid gap-2 sm:grid-cols-3">
-                <ColorField label="Baggrund" value={design.front.bg} onChange={(bg) => set({ front: { ...design.front, bg } })} />
-                <ColorField label="Tekst" value={design.front.text} onChange={(text) => set({ front: { ...design.front, text } })} />
-                <ColorField label="Accent" value={design.front.accent} onChange={(accent) => set({ front: { ...design.front, accent } })} />
-              </div>
-            </div>
-            <div>
-              <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
-                Bagside
-              </span>
-              <div className="grid gap-2 sm:grid-cols-3">
-                <ColorField label="Baggrund" value={design.back.bg} onChange={(bg) => set({ back: { ...design.back, bg } })} />
-                <ColorField label="Tekst" value={design.back.text} onChange={(text) => set({ back: { ...design.back, text } })} />
-                <ColorField label="Accent" value={design.back.accent} onChange={(accent) => set({ back: { ...design.back, accent } })} />
-              </div>
-            </div>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => applyTheme({ bg: brand.primary, text: brand.text, accent: brand.text })}
+              className="rounded-full border border-clay px-3 text-[0.74rem] font-[400] text-stone hover:text-ink"
+            >
+              Brand
+            </button>
           </div>
-        </section>
+        </div>
 
+        <div>
+          <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+            Forside
+          </span>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <ColorField label="Baggrund" value={design.front.bg} onChange={(bg) => set({ front: { ...design.front, bg } })} />
+            <ColorField label="Tekst" value={design.front.text} onChange={(text) => set({ front: { ...design.front, text } })} />
+            <ColorField label="Accent" value={design.front.accent} onChange={(accent) => set({ front: { ...design.front, accent } })} />
+          </div>
+        </div>
+        <div>
+          <span className="mb-2 block text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+            Bagside
+          </span>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <ColorField label="Baggrund" value={design.back.bg} onChange={(bg) => set({ back: { ...design.back, bg } })} />
+            <ColorField label="Tekst" value={design.back.text} onChange={(text) => set({ back: { ...design.back, text } })} />
+            <ColorField label="Accent" value={design.back.accent} onChange={(accent) => set({ back: { ...design.back, accent } })} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
         <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
           <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
             Forside: oplysninger
@@ -470,7 +472,7 @@ export function VisitkortDesigner({
             <TextField label="Navn / kontaktperson" value={design.name} maxLength={60} onChange={(v) => set({ name: v })} placeholder="Fx: Ali Al-farhan" bold={{ value: design.nameBold, onChange: (v) => set({ nameBold: v }) }} />
             <div className="grid gap-3 sm:grid-cols-2">
               <TextField label="Tagline" value={design.tagline} maxLength={80} onChange={(v) => set({ tagline: v })} placeholder="Stempelkortet, der skaber" bold={{ value: design.taglineBold, onChange: (v) => set({ taglineBold: v }) }} />
-              <TextField label="Tagline (accent-farve)" value={design.taglineAccent} maxLength={60} onChange={(v) => set({ taglineAccent: v })} placeholder="flere stamkunder." />
+              <TextField label="Tagline, accent" value={design.taglineAccent} maxLength={60} onChange={(v) => set({ taglineAccent: v })} placeholder="flere stamkunder." />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Telefon">
@@ -505,7 +507,7 @@ export function VisitkortDesigner({
             {design.backContent === "qr" ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <TextField label="Overskrift" value={design.backHeadline} maxLength={60} onChange={(v) => set({ backHeadline: v })} placeholder="Saml stempler." bold={{ value: design.headlineBold, onChange: (v) => set({ headlineBold: v }) }} />
-                <TextField label="Overskrift (accent-farve)" value={design.backHeadlineAccent} maxLength={60} onChange={(v) => set({ backHeadlineAccent: v })} placeholder="Få belønninger." />
+                <TextField label="Overskrift, accent" value={design.backHeadlineAccent} maxLength={60} onChange={(v) => set({ backHeadlineAccent: v })} placeholder="Få belønninger." />
                 <TextField label="Linje 1" value={design.backLine1} maxLength={60} onChange={(v) => set({ backLine1: v })} placeholder="Direkte i Apple Wallet" bold={{ value: design.line1Bold, onChange: (v) => set({ line1Bold: v }) }} />
                 <TextField label="Linje 2" value={design.backLine2} maxLength={60} onChange={(v) => set({ backLine2: v })} placeholder="Ingen app. Ingen tilmelding." bold={{ value: design.line2Bold, onChange: (v) => set({ line2Bold: v }) }} />
               </div>
@@ -515,13 +517,26 @@ export function VisitkortDesigner({
                 og viser tomme stempel-felter samt QR-koden.
               </p>
             )}
+            <div className="flex flex-col gap-1.5 border-t border-fog pt-4">
+              <span className="flex items-center justify-between text-[0.66rem] font-[500] uppercase tracking-[0.1em] text-slate">
+                QR-størrelse
+                {Math.abs(design.qrScale - 1) > 0.001 ? (
+                  <button type="button" onClick={() => set({ qrScale: 1 })} className="font-[400] normal-case tracking-normal text-terracotta hover:opacity-70">
+                    Nulstil
+                  </button>
+                ) : null}
+              </span>
+              <input type="range" min={0.8} max={1.4} step={0.05} value={design.qrScale} onChange={(e) => set({ qrScale: Number(e.target.value) })} className="w-full accent-terracotta" />
+              <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+                Hold den stor nok til at et kamera kan fange den. Der er sikret et
+                minimum, så koden altid kan scannes.
+              </span>
+            </div>
           </div>
         </section>
-      </div>
 
-      {/* Preview + handlinger. Sticky, saa aendringer altid ses live. */}
-      <div className="order-1 lg:order-2">
-        <div className="sticky top-4 flex flex-col gap-4 rounded-lg border border-fog bg-sand/40 p-4 md:p-5">
+        {/* Preview + handlinger. Sticky, saa aendringer altid ses live. */}
+        <div className="sticky top-4 z-10 flex flex-col gap-4 rounded-lg border border-fog bg-parchment p-4 shadow-[0_10px_30px_-20px_rgba(28,25,23,0.5)] md:p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="inline-flex rounded-full border border-clay p-0.5">
               {[
@@ -569,7 +584,9 @@ export function VisitkortDesigner({
           </p>
           </div>
         </div>
-      </div>
+
+        {templateSection}
+        {colorSection}
     </div>
   );
 }

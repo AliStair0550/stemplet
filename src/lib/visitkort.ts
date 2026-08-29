@@ -33,6 +33,7 @@ export type VisitkortDesign = {
   address: string;
   showLogo: boolean;
   logoScale: number; // 1 = standard; styrer logoets stoerrelse paa kortet
+  qrScale: number; // 1 = standard; klampet til et sikkert, scanbart interval
   // Fed/normal pr. tekstelement.
   nameBold: boolean;
   taglineBold: boolean;
@@ -115,6 +116,7 @@ export function defaultDesign(b: {
     address: "",
     showLogo: true,
     logoScale: 1,
+    qrScale: 1,
     nameBold: true,
     taglineBold: false,
     backContent: "qr",
@@ -167,6 +169,8 @@ export const visitkortSchema = z.object({
   address: z.string().max(120),
   showLogo: z.boolean(),
   logoScale: z.coerce.number().min(0.4).max(2.5).catch(1),
+  // Sikkert interval, saa QR'en aldrig bliver for lille til at scanne.
+  qrScale: z.coerce.number().min(0.8).max(1.4).catch(1),
   nameBold: z.boolean(),
   taglineBold: z.boolean(),
   backContent: z.enum(["qr", "stempelkort"]),
