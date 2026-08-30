@@ -8,6 +8,7 @@ import { WebCardActions } from "./WebCardActions";
 import { WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
+import { optimizedLogoDataUri } from "@/lib/logo";
 
 // Dedup pr. request: metadata, viewport OG selve siden bruger kortet. Uden dette
 // koerte samme DB-opslag 3 gange pr. sideindlaesning.
@@ -48,8 +49,8 @@ export default async function WebCardPage({
   const business = cc.card.business;
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
-  // Logo fra cachet URL, ikke inlinet data-URI (mindre HTML paa mobil).
-  const logoSrc = business.logoUrl ? `/api/logo/${business.slug}` : null;
+  // Lille, cachet webp-logo bages ind i siden (ingen ekstra hentning).
+  const logoSrc = await optimizedLogoDataUri(business.logoUrl);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-parchment px-6 py-12">

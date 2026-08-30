@@ -9,6 +9,7 @@ import { cardTitle, shade, rgba, type StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
+import { optimizedLogoDataUri } from "@/lib/logo";
 
 // Et diskret, gentaget felt af butikkens stempel-ikon som baggrunds-tekstur.
 // Tegnet i tekstfarven ved lav opacitet, saa det giver liv uden at stjaele fokus.
@@ -76,9 +77,9 @@ export default async function ClaimPage({
     },
   });
   if (!business) notFound();
-  // Logoet serveres fra en cachet URL (ikke inlinet data-URI), saa HTML'en ikke
-  // bloates med ~5 kopier af logoet paa mobil.
-  const logoSrc = business.logoUrl ? `/api/logo/${slug}` : null;
+  // Lille webp-logo bages ind i den (CDN-cachede) side, saa der ikke er en ekstra
+  // netvaerkshentning: konsistent, oejeblikkelig LCP paa mobil.
+  const logoSrc = await optimizedLogoDataUri(business.logoUrl);
   // Ukendt butik = aegte 404. Men findes butikken uden et AKTIVT kort (sat paa
   // pause/slettet), er en plakat-scanning ikke en fejl: vis en rolig besked i
   // stedet for den generiske 404, hvis eneste udvej er B2B-forsiden.
@@ -139,12 +140,6 @@ export default async function ClaimPage({
       className="flex min-h-screen flex-col items-center justify-center px-6 py-16"
       style={bgStyle}
     >
-      {/* Start logo-hentningen med det samme (LCP-elementet), parallelt med at
-          HTML'en streamer, saa det males hurtigt paa mobil. React loefter det op
-          i <head>. */}
-      {logoSrc ? (
-        <link rel="preload" as="image" href={logoSrc} fetchPriority="high" />
-      ) : null}
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           {logoSrc ? (
