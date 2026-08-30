@@ -139,6 +139,12 @@ export default async function ClaimPage({
       className="flex min-h-screen flex-col items-center justify-center px-6 py-16"
       style={bgStyle}
     >
+      {/* Start logo-hentningen med det samme (LCP-elementet), parallelt med at
+          HTML'en streamer, saa det males hurtigt paa mobil. React loefter det op
+          i <head>. */}
+      {logoSrc ? (
+        <link rel="preload" as="image" href={logoSrc} fetchPriority="high" />
+      ) : null}
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           {logoSrc ? (
