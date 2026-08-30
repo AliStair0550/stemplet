@@ -174,6 +174,7 @@ export default async function ClaimPage({
             businessName={cardTitle(business)}
             logoUrl={business.logoUrl}
             logoScale={business.logoScale}
+            priority
             primaryColor={business.primaryColor}
             textColor={business.textColor}
             stampIcon={card.stampIcon as StampIconKey}

@@ -33,6 +33,8 @@ export type StampCardProps = {
   hideName?: boolean;
   /** Vis en pæn etiket under stregkoden i stedet for det raa serienummer. */
   serialLabel?: string;
+  /** Logoet er sidens LCP (fx paa /k og /kort): loader ivrigt i stedet for lazy. */
+  priority?: boolean;
   className?: string;
 };
 
@@ -85,6 +87,7 @@ export function StampCard({
   logoScale = 1,
   hideName = false,
   serialLabel,
+  priority = false,
   className,
 }: StampCardProps) {
   // Samme laesbarheds-fallback som Wallet-passet (passColors): er den valgte
@@ -153,6 +156,7 @@ export function StampCard({
                   maxWidth: `${Math.min(90, 62 * logoScale)}%`,
                 }}
                 unoptimized
+                priority={priority}
               />
             ) : !hideName && businessName ? (
               <span className="truncate text-[0.9rem] font-[500] tracking-[0.01em]">
