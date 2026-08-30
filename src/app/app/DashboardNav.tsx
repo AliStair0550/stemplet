@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Wordmark } from "@/components/Wordmark";
@@ -52,6 +53,19 @@ export function DashboardNav({
 
   const isActive = (href: string) =>
     href === "/app" ? pathname === "/app" : pathname.startsWith(href);
+
+  // Mobil: rul det aktive punkt ind i midten af den vandrette menu, saa man
+  // altid kan se hvor man er (ellers kan det ligge uden for skaermen). Ruller kun
+  // selve menu-baaren (ikke siden), saa der er ingen uoenskede side-hop.
+  const mobileNavRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = mobileNavRef.current;
+    if (!nav) return;
+    const active = nav.querySelector<HTMLElement>('[data-active="true"]');
+    if (!active) return;
+    const target = active.offsetLeft - nav.clientWidth / 2 + active.offsetWidth / 2;
+    nav.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+  }, [pathname]);
 
   return (
     <>
@@ -133,10 +147,14 @@ export function DashboardNav({
           <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
         </div>
         <div className="relative">
-          <nav className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-4 pb-3">
+          <nav
+            ref={mobileNavRef}
+            className="no-scrollbar flex items-center gap-1.5 overflow-x-auto scroll-smooth px-4 pb-3"
+          >
             {/* Stempel: loeftet ud som en tydelig knap foerst i raekken */}
             <Link
               href={STAMP_LINK.href}
+              data-active={isActive(STAMP_LINK.href)}
               className={cn(
                 "flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.8rem] font-[400] transition-colors",
                 isActive(STAMP_LINK.href)
@@ -158,6 +176,7 @@ export function DashboardNav({
               <Link
                 key={l.href}
                 href={l.href}
+                data-active={isActive(l.href)}
                 className={cn(
                   "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
                   isActive(l.href)
@@ -179,6 +198,7 @@ export function DashboardNav({
               <Link
                 key={l.href}
                 href={l.href}
+                data-active={isActive(l.href)}
                 className={cn(
                   "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
                   isActive(l.href)
