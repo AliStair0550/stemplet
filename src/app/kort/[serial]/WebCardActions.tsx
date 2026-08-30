@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import QRCode from "qrcode";
 import {
   btnClass,
   CtaGlow,
@@ -40,24 +39,23 @@ export function WebCardActions({
     setIsIos(/iPhone|iPad|iPod/i.test(ua));
 
     let alive = true;
-    QRCode.toDataURL(serial, {
-      width: 420,
-      margin: 1,
-      color: { dark: "#1A1A1A", light: "#FFFFFF" },
-    })
-      .then((d) => {
-        if (alive) setQr(d);
-      })
-      .catch(() => {});
-    QRCode.toDataURL(window.location.href, {
-      width: 360,
-      margin: 1,
-      color: { dark: "#1A1A1A", light: "#FFFFFF" },
-    })
-      .then((d) => {
-        if (alive) setPhoneQr(d);
-      })
-      .catch(() => {});
+    // qrcode-libet loades foerst HER (dynamisk import), saa det ikke ligger i
+    // sidens initiale JS-bundle. QR'en genereres een gang paa klienten (serienr.
+    // aendrer sig aldrig), og libet hentes som en lille async-chunk efter render.
+    const href = window.location.href;
+    void import("qrcode").then(({ default: QRCode }) => {
+      if (!alive) return;
+      const opts = {
+        margin: 1,
+        color: { dark: "#1A1A1A", light: "#FFFFFF" },
+      } as const;
+      QRCode.toDataURL(serial, { ...opts, width: 420 })
+        .then((d) => alive && setQr(d))
+        .catch(() => {});
+      QRCode.toDataURL(href, { ...opts, width: 360 })
+        .then((d) => alive && setPhoneQr(d))
+        .catch(() => {});
+    });
     return () => {
       alive = false;
     };

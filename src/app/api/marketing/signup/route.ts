@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clientIp, apiError } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
-import { marketingSignupSchema, marketingSourceLabel } from "@/lib/marketing";
+import { marketingSignupSchema } from "@/lib/marketing-schema";
+import { marketingSourceLabel } from "@/lib/marketing";
 import { sendEmail } from "@/lib/send-email";
 import {
   marketingWelcomeEmail,

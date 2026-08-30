@@ -1,10 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  marketingSignupSchema,
-  marketingSourceLabel,
-} from "../src/lib/marketing";
+import { marketingSignupSchema } from "../src/lib/marketing-schema";
+import { marketingSourceLabel } from "../src/lib/marketing";
 import {
   marketingWelcomeEmail,
   superadminMarketingSignupEmail,

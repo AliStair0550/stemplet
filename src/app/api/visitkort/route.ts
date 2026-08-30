@@ -10,7 +10,7 @@ import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureServerError } from "@/lib/sentry";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
-import { visitkortSchema } from "@/lib/visitkort";
+import { visitkortSchema } from "@/lib/visitkort-schema";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { VisitkortDoc } from "./VisitkortDoc";
 

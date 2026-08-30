@@ -45,4 +45,13 @@ export default withSentryConfig(nextConfig, {
   silent: !process.env.CI,
   sourcemaps: { deleteSourcemapsAfterUpload: true },
   telemetry: false,
+  // Tree-shake Sentry-kode vi ikke bruger, saa klient-bundlen bliver mindre paa
+  // hver side: Session Replay er slaaet fra (ingen grund til at bundle dens
+  // shadow-DOM/iframe/worker-kode), og debug-log-statements droppes i prod.
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeReplayShadowDom: true,
+    excludeReplayIframe: true,
+    excludeReplayWorker: true,
+  },
 });

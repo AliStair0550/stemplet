@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { visitkortSchema } from "@/lib/visitkort";
+import { visitkortSchema } from "@/lib/visitkort-schema";
 import { captureServerError } from "@/lib/sentry";
 
 type Result = { ok: true } | { ok: false; error: string };
