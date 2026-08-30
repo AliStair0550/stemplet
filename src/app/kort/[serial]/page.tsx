@@ -48,6 +48,8 @@ export default async function WebCardPage({
   const business = cc.card.business;
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
+  // Logo fra cachet URL, ikke inlinet data-URI (mindre HTML paa mobil).
+  const logoSrc = business.logoUrl ? `/api/logo/${business.slug}` : null;
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-parchment px-6 py-12">
@@ -55,7 +57,7 @@ export default async function WebCardPage({
       <div className="flex w-full max-w-sm flex-col items-center gap-6">
         <StampCard
           businessName={cardTitle(business)}
-          logoUrl={business.logoUrl}
+          logoUrl={logoSrc}
           logoScale={business.logoScale}
           priority
           primaryColor={business.primaryColor}

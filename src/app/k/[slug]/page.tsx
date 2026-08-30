@@ -76,6 +76,9 @@ export default async function ClaimPage({
     },
   });
   if (!business) notFound();
+  // Logoet serveres fra en cachet URL (ikke inlinet data-URI), saa HTML'en ikke
+  // bloates med ~5 kopier af logoet paa mobil.
+  const logoSrc = business.logoUrl ? `/api/logo/${slug}` : null;
   // Ukendt butik = aegte 404. Men findes butikken uden et AKTIVT kort (sat paa
   // pause/slettet), er en plakat-scanning ikke en fejl: vis en rolig besked i
   // stedet for den generiske 404, hvis eneste udvej er B2B-forsiden.
@@ -83,13 +86,14 @@ export default async function ClaimPage({
     return (
       <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
         <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
-          {business.logoUrl ? (
+          {logoSrc ? (
             <Image
-              src={business.logoUrl}
+              src={logoSrc}
               alt={business.name}
               width={56}
               height={56}
               className="h-14 w-14 rounded-lg object-contain"
+              unoptimized
             />
           ) : null}
           <h1 className="font-[300] text-[1.4rem] leading-tight text-ink">
@@ -137,13 +141,15 @@ export default async function ClaimPage({
     >
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          {business.logoUrl ? (
+          {logoSrc ? (
             // Brand-logo i vilkaarligt format: <img> beholder logoets egne
             // proportioner (ingen firkantet beskaering), stort og tydeligt i toppen.
+            // Cachet URL (ikke inlinet), og eager + hoej prioritet da det er LCP.
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={business.logoUrl}
+              src={logoSrc}
               alt={business.name}
+              fetchPriority="high"
               className="h-20 w-auto max-w-[70vw] object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
             />
           ) : null}
@@ -172,7 +178,7 @@ export default async function ClaimPage({
         >
           <StampCard
             businessName={cardTitle(business)}
-            logoUrl={business.logoUrl}
+            logoUrl={logoSrc}
             logoScale={business.logoScale}
             priority
             primaryColor={business.primaryColor}
