@@ -23,13 +23,19 @@ export function ShareCardSection({
   qrDataUrl: string;
 }) {
   const shareRef = useRef<HTMLDivElement>(null);
-  const [busy, setBusy] = useState<null | "download" | "share" | "copy">(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState<
+    null | "post" | "card" | "share"
+  >(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Renderer delekortet til en PNG. Venter paa skrifttyper + billeder, ellers
-  // bliver billedet tomt (samme moenster som kortdesigneren).
-  async function makePng(): Promise<string> {
-    const node = shareRef.current;
+  // Renderer en node til en PNG. Venter paa skrifttyper + billeder, ellers
+  // bliver billedet tomt (samme moenster som kortdesigneren). backgroundColor
+  // udelades for kortet alene, saa de runde hjoerner bliver gennemsigtige.
+  async function makePng(
+    node: HTMLElement | null,
+    backgroundColor?: string,
+  ): Promise<string> {
     if (!node) throw new Error("no node");
     const { toPng } = await import("html-to-image");
     if (document.fonts?.ready) await document.fonts.ready;
@@ -48,7 +54,7 @@ export function ShareCardSection({
     const opts = {
       pixelRatio: 2,
       cacheBust: true,
-      backgroundColor: "#FAF8F4",
+      backgroundColor,
       width: node.offsetWidth,
       height: node.offsetHeight,
     };
@@ -56,15 +62,20 @@ export function ShareCardSection({
     return toPng(node, opts);
   }
 
-  async function download() {
+  function saveDataUrl(dataUrl: string, filename: string) {
+    const a = document.createElement("a");
+    a.download = filename;
+    a.href = dataUrl;
+    a.click();
+  }
+
+  // Kortet alene, med butikkens design og ingen anden tekst.
+  async function downloadCard() {
     setMsg(null);
-    setBusy("download");
+    setBusy("card");
     try {
-      const dataUrl = await makePng();
-      const a = document.createElement("a");
-      a.download = `stempelkort-${slug}.png`;
-      a.href = dataUrl;
-      a.click();
+      const dataUrl = await makePng(cardRef.current);
+      saveDataUrl(dataUrl, `stempelkort-${slug}.png`);
     } catch {
       setMsg({ ok: false, text: "Kunne ikke lave billedet. Prøv igen." });
     } finally {
@@ -72,17 +83,24 @@ export function ShareCardSection({
     }
   }
 
-  async function copyLink() {
+  // Det social-klare opslagsbillede (kort + QR + tekst).
+  async function downloadPost() {
     setMsg(null);
-    setBusy("copy");
+    setBusy("post");
     try {
-      await navigator.clipboard.writeText(cardUrl);
-      setMsg({ ok: true, text: "Link kopieret" });
+      const dataUrl = await makePng(shareRef.current, "#FAF8F4");
+      saveDataUrl(dataUrl, `stempelkort-til-opslag-${slug}.png`);
     } catch {
-      setMsg({ ok: false, text: "Kunne ikke kopiere. Marker linket i stedet." });
+      setMsg({ ok: false, text: "Kunne ikke lave billedet. Prøv igen." });
     } finally {
       setBusy(null);
     }
+  }
+
+  // QR-koden alene som PNG.
+  function downloadQr() {
+    setMsg(null);
+    saveDataUrl(qrDataUrl, `stemplet-qr-${slug}.png`);
   }
 
   async function share() {
@@ -90,7 +108,7 @@ export function ShareCardSection({
     setBusy("share");
     try {
       const text = `Hent dit digitale stempelkort hos ${businessName}: ${cardUrl}`;
-      const dataUrl = await makePng();
+      const dataUrl = await makePng(shareRef.current, "#FAF8F4");
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `stempelkort-${slug}.png`, {
         type: "image/png",
@@ -151,27 +169,34 @@ export function ShareCardSection({
             >
               {busy === "share" ? "Klargør..." : "Del"}
             </button>
-            <button
-              onClick={download}
-              disabled={busy !== null}
-              className={btnClass("outline")}
-            >
-              {busy === "download" ? "Laver billede..." : "Download billede til opslag"}
-            </button>
             <a
               href={cardUrl}
               target="_blank"
               rel="noreferrer"
               className={btnClass("outline")}
             >
-              Se kundens side
+              Se kort
             </a>
             <button
-              onClick={copyLink}
+              onClick={downloadCard}
               disabled={busy !== null}
-              className="text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70 disabled:opacity-50"
+              className={btnClass("outline")}
             >
-              Kopier link
+              {busy === "card" ? "Laver billede..." : "Download kort"}
+            </button>
+            <button
+              onClick={downloadPost}
+              disabled={busy !== null}
+              className={btnClass("outline")}
+            >
+              {busy === "post" ? "Laver billede..." : "Download billede til opslag"}
+            </button>
+            <button
+              onClick={downloadQr}
+              disabled={busy !== null}
+              className={btnClass("outline")}
+            >
+              Download QR-kode
             </button>
             {msg ? (
               <span
@@ -186,7 +211,8 @@ export function ShareCardSection({
         </div>
       </div>
 
-      {/* Skjult capture-node til PNG (fuld 560px bredde, usynlig via foraelder). */}
+      {/* Skjulte capture-noder til PNG (fuld bredde, usynlige via foraelder).
+          shareRef = opslagsbilledet; cardRef = kortet alene, uden anden tekst. */}
       <div
         aria-hidden
         className="pointer-events-none fixed left-0 top-0 -z-50 opacity-0"
@@ -196,6 +222,19 @@ export function ShareCardSection({
             design={design}
             businessName={businessName}
             qrDataUrl={qrDataUrl}
+          />
+        </div>
+        <div ref={cardRef} className="w-[440px]">
+          <StampCard
+            businessName={businessName}
+            logoUrl={design.logoUrl}
+            logoScale={design.logoScale ?? 1}
+            primaryColor={design.primaryColor}
+            textColor={design.textColor}
+            stampIcon={design.stampIcon as StampIconKey}
+            stamps={Math.min(3, design.stampsRequired)}
+            required={design.stampsRequired}
+            rewardText={design.rewardText}
           />
         </div>
       </div>

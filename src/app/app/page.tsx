@@ -164,9 +164,9 @@ type Action = {
 
 const ACTIONS: Action[] = [
   {
-    href: "/app/materialer",
+    href: "/app/kampagner",
     label: "Del dit kort",
-    sub: "QR-kode og link til kunderne",
+    sub: "Kort, billede, link og QR-kode",
     icon: <IconQr />,
   },
   {

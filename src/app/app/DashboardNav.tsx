@@ -17,7 +17,6 @@ const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
 const PRIMARY_LINKS: { href: string; label: string }[] = [
   { href: "/app", label: "Overblik" },
   { href: "/app/statistik", label: "Statistik" },
-  { href: "/app/materialer", label: "Del dit kort" },
   { href: "/app/kampagner", label: "Kampagner" },
 ];
 

@@ -165,14 +165,14 @@ export function GettingStarted(props: Props) {
         <div className="grid gap-3 sm:grid-cols-2">
           <ActionCard
             icon={<IconQr />}
-            title="Print og del QR-koden"
-            body="Sæt QR-koden op ved kassen, og del kortet online."
+            title="Del dit kort"
+            body="Del kortet online, og hent QR-koden så kunderne kan scanne den."
             cta={
               <Link
-                href="/app/materialer"
+                href="/app/kampagner"
                 className={`${btnClass("outline")} w-full`}
               >
-                Print og del
+                Del dit kort
               </Link>
             }
           />
