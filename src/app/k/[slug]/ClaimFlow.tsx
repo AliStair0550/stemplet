@@ -142,30 +142,77 @@ export function ClaimFlow({
     }
   }
 
-  // Vejledning naar man er i en in-app-browser der ikke kan aabne Apple Wallet.
+  // Brugervenlig vejledning naar man er i en in-app-browser (fx Messenger/
+  // Instagram), der ikke kan lægge kort i Apple Wallet. Et klart 2-trins-forloeb
+  // med "Kopiér link" som den primaere handling.
+  const stepBadge = (n: string) => (
+    <span
+      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.78rem] font-[600]"
+      style={{ backgroundColor: ctaBg, color: ctaFg }}
+    >
+      {n}
+    </span>
+  );
   const inAppNotice =
     inApp && walletEnabled ? (
       <div
-        className="w-full rounded-2xl px-5 py-4 text-center text-[0.86rem] font-[300] leading-relaxed"
+        className="w-full rounded-2xl p-5"
         style={{
           color: ctaBg,
           background: rgba(ctaBg, 0.12),
           border: `1px solid ${rgba(ctaBg, 0.28)}`,
         }}
       >
-        <p className="font-[600]">Åbn i Safari for at hente kortet</p>
-        <p className="mt-1.5" style={{ color: rgba(ctaBg, 0.82) }}>
-          {inApp} kan ikke lægge kort i Apple Wallet. Tryk på menuen (de tre
-          prikker) og vælg &quot;Åbn i Safari&quot;, og hent så kortet.
+        <p className="text-center text-[0.98rem] font-[600]">
+          Gem kortet i Apple Wallet
         </p>
-        <button
-          type="button"
-          onClick={copyLink}
-          className="mt-3 inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.8rem] font-[500]"
-          style={{ backgroundColor: ctaBg, color: ctaFg }}
+        <p
+          className="mx-auto mt-1.5 max-w-[19rem] text-center text-[0.84rem] font-[300] leading-relaxed"
+          style={{ color: rgba(ctaBg, 0.82) }}
         >
-          {copied ? "Link kopieret" : "Kopiér link"}
-        </button>
+          {inApp} kan ikke gemme kort i Apple Wallet. Det tager to hurtige trin i
+          Safari:
+        </p>
+
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            {stepBadge("1")}
+            <button
+              type="button"
+              onClick={copyLink}
+              className="flex min-h-[2.9rem] flex-1 items-center justify-center gap-2 rounded-xl px-4 text-[0.9rem] font-[600] transition-transform active:scale-[0.98]"
+              style={{ backgroundColor: ctaBg, color: ctaFg }}
+            >
+              {copied ? (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Link kopieret
+                </>
+              ) : (
+                "Kopiér link"
+              )}
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            {stepBadge("2")}
+            <p
+              className="flex-1 text-[0.86rem] font-[300] leading-relaxed"
+              style={{ color: rgba(ctaBg, 0.9) }}
+            >
+              Åbn <span className="font-[600]">Safari</span>, tryk i adresselinjen
+              og indsæt linket.
+            </p>
+          </div>
+        </div>
+
+        <p
+          className="mt-4 border-t pt-3 text-center text-[0.78rem] font-[300] leading-relaxed"
+          style={{ borderColor: rgba(ctaBg, 0.2), color: rgba(ctaBg, 0.72) }}
+        >
+          Eller tryk på menu-ikonet i {inApp} og vælg &quot;Åbn i Safari&quot;.
+        </p>
       </div>
     ) : null;
 
@@ -291,13 +338,13 @@ export function ClaimFlow({
     if (ios && walletEnabled) setPhase("opening");
   }
 
+  // In-app-browser: vis KUN vejledningen (Wallet-knappen ville alligevel fejle).
+  if (inAppNotice) return inAppNotice;
+
   return (
-    <div className="flex w-full flex-col items-center gap-3">
-      {inAppNotice}
-      <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
-        <WalletIcon />
-        Hent mit stempelkort
-      </CtaLink>
-    </div>
+    <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
+      <WalletIcon />
+      Hent mit stempelkort
+    </CtaLink>
   );
 }
