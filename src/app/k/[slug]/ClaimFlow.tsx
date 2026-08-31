@@ -88,6 +88,11 @@ export function ClaimFlow({
     "idle" | "opening" | "added" | "usikker"
   >("idle");
   const [fejl, setFejl] = useState<string | null>(null);
+  // In-app-browser (fx Messenger/Facebook/Instagram) paa iPhone: deres indbyggede
+  // browser (WKWebView) kan IKKE overdrage et .pkpass til Apple Wallet, saa
+  // "Hent mit stempelkort" aabner ingenting. Vi opdager det og guider til Safari.
+  const [inApp, setInApp] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   // Blev siden skjult, mens vi ventede? Saa AABNEDE Wallet-arket sig, og
   // kvitteringen er aegte. Skete det aldrig, ved vi ikke, om det lykkedes.
   const wasHiddenRef = useRef(false);
@@ -101,6 +106,68 @@ export function ClaimFlow({
     const code = new URLSearchParams(window.location.search).get("fejl");
     if (code && ERRORS[code]) setFejl(code);
   }, []);
+
+  // Opdag kendte in-app-browsere paa iPhone (kun iOS, for det er dér Wallet-
+  // overdragelsen fejler). Holder os til de KENDTE apps for ikke at overvarsle
+  // rigtige browsere.
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    if (!/iPhone|iPad|iPod/i.test(ua)) return;
+    const apps: [RegExp, string][] = [
+      [/FBAN|FBAV|FB_IAB|FBIOS|Messenger/i, "Messenger"],
+      [/Instagram/i, "Instagram"],
+      [/Line\//i, "LINE"],
+      [/Snapchat/i, "Snapchat"],
+      [/TikTok|musical_ly|BytedanceWebview/i, "TikTok"],
+      [/Twitter/i, "X"],
+      [/LinkedInApp/i, "LinkedIn"],
+      [/Pinterest/i, "Pinterest"],
+    ];
+    for (const [re, name] of apps) {
+      if (re.test(ua)) {
+        setInApp(name);
+        return;
+      }
+    }
+  }, []);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Kunne ikke kopiere (fx afvist clipboard): brugeren kan stadig laese/laenge-
+      // trykke paa linket i menuen.
+    }
+  }
+
+  // Vejledning naar man er i en in-app-browser der ikke kan aabne Apple Wallet.
+  const inAppNotice =
+    inApp && walletEnabled ? (
+      <div
+        className="w-full rounded-2xl px-5 py-4 text-center text-[0.86rem] font-[300] leading-relaxed"
+        style={{
+          color: ctaBg,
+          background: rgba(ctaBg, 0.12),
+          border: `1px solid ${rgba(ctaBg, 0.28)}`,
+        }}
+      >
+        <p className="font-[600]">Åbn i Safari for at hente kortet</p>
+        <p className="mt-1.5" style={{ color: rgba(ctaBg, 0.82) }}>
+          {inApp} kan ikke lægge kort i Apple Wallet. Tryk på menuen (de tre
+          prikker) og vælg &quot;Åbn i Safari&quot;, og hent så kortet.
+        </p>
+        <button
+          type="button"
+          onClick={copyLink}
+          className="mt-3 inline-flex items-center justify-center rounded-full px-4 py-1.5 text-[0.8rem] font-[500]"
+          style={{ backgroundColor: ctaBg, color: ctaFg }}
+        >
+          {copied ? "Link kopieret" : "Kopiér link"}
+        </button>
+      </div>
+    ) : null;
 
   // Naar Wallet-arket er aabnet ("opening"): viser vi kvitteringen, naar kunden
   // vender TILBAGE fra arket (siden blev skjult og saa synlig igen). Aabnede
@@ -225,9 +292,12 @@ export function ClaimFlow({
   }
 
   return (
-    <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
-      <WalletIcon />
-      Hent mit stempelkort
-    </CtaLink>
+    <div className="flex w-full flex-col items-center gap-3">
+      {inAppNotice}
+      <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
+        <WalletIcon />
+        Hent mit stempelkort
+      </CtaLink>
+    </div>
   );
 }
