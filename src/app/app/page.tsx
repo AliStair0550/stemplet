@@ -10,7 +10,7 @@ import { Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
 import { contrastText, rgba, shade } from "@/lib/brand";
-import { AddToHomeHint } from "./AddToHomeHint";
+import { AddToHomeButton } from "./AddToHomeButton";
 import {
   CtaArrow,
   IconCard,
@@ -160,15 +160,11 @@ type Action = {
   label: string;
   sub: string;
   icon: ReactNode;
+  // Aabner i en ny fane (fx kundesiden, der ligger uden for dashboardet).
+  external?: boolean;
 };
 
 const ACTIONS: Action[] = [
-  {
-    href: "/app/kampagner",
-    label: "Del dit kort",
-    sub: "Kort, billede, link og QR-kode",
-    icon: <IconQr />,
-  },
   {
     href: "/app/indstillinger#adgang",
     label: "Adgang",
@@ -248,12 +244,12 @@ function StampAction({ primaryColor }: { primaryColor: string }) {
 }
 
 // De sekundaere genveje som et rent, luftigt kort-grid.
+const tileClass =
+  "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift";
+
 function ActionTile({ action }: { action: Action }) {
-  return (
-    <Link
-      href={action.href}
-      className="group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift"
-    >
+  const inner = (
+    <>
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
         {action.icon}
       </span>
@@ -268,16 +264,47 @@ function ActionTile({ action }: { action: Action }) {
           {action.sub}
         </span>
       </span>
+    </>
+  );
+  // Kundesiden ligger uden for dashboardet: aabn i ny fane, saa ejeren beholder
+  // Overblik. De interne genveje bruger Next-Link.
+  if (action.external) {
+    return (
+      <a href={action.href} target="_blank" rel="noreferrer" className={tileClass}>
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <Link href={action.href} className={tileClass}>
+      {inner}
     </Link>
   );
 }
 
-function ActionGrid({ primaryColor }: { primaryColor: string }) {
+function ActionGrid({
+  primaryColor,
+  customerUrl,
+}: {
+  primaryColor: string;
+  customerUrl: string;
+}) {
+  // "Se kundekort" foerst: den viser kortet, som kunderne ser det (kundesiden).
+  const actions: Action[] = [
+    {
+      href: customerUrl,
+      label: "Se kundekort",
+      sub: "Kortet, som kunderne ser det",
+      icon: <IconQr />,
+      external: true,
+    },
+    ...ACTIONS,
+  ];
   return (
     <section className="animate-step">
       <StampAction primaryColor={primaryColor} />
       <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        {ACTIONS.map((a) => (
+        {actions.map((a) => (
           <ActionTile key={a.href} action={a} />
         ))}
       </div>
@@ -343,8 +370,11 @@ export default async function OverviewPage() {
       </section>
 
       {/* Hjertet i Overblik: flotte genveje til de vigtigste handlinger, saa
-          ejeren med det samme kan stemple, dele kortet, styre adgang m.m. */}
-      <ActionGrid primaryColor={business.primaryColor} />
+          ejeren med det samme kan stemple, se kundekortet, styre adgang m.m. */}
+      <ActionGrid
+        primaryColor={business.primaryColor}
+        customerUrl={`/k/${business.slug}`}
+      />
 
       {isNew ? null : (
         <div className="mt-10 flex flex-col gap-9">
@@ -447,10 +477,14 @@ export default async function OverviewPage() {
               )}
             </Panel>
           </div>
-
-          <AddToHomeHint />
         </div>
       )}
+
+      {/* Foej dashboardet til hjemmeskaermen. Knappen skjuler sig selv, naar
+          appen allerede koerer fra hjemmeskaermen. */}
+      <div className="mt-10">
+        <AddToHomeButton />
+      </div>
     </>
   );
 }
