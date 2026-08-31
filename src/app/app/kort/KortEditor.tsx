@@ -124,6 +124,15 @@ export function KortEditor({
           >
             {downloading ? "Laver billede..." : "Download som billede"}
           </button>
+          {/* Se hvordan kortet ser ud for kunden (aabner /k i ny fane). */}
+          <a
+            href={`/k/${slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className={btnClass("outline")}
+          >
+            Se kundeside
+          </a>
           {dirty ? (
             <span className="text-[0.82rem] font-[300] text-slate">
               Ikke gemt endnu
