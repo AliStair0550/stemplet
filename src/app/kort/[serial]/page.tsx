@@ -51,6 +51,8 @@ export default async function WebCardPage({
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
   // Lille, cachet webp-logo bages ind i siden (ingen ekstra hentning).
   const logoSrc = await optimizedLogoDataUri(business.logoUrl);
+  // Klamp logo-stoerrelsen paa kunde-siden, saa et stort logoScale ikke dominerer.
+  const capScale = Math.min(business.logoScale, 1.35);
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-parchment px-6 py-12">
@@ -59,7 +61,7 @@ export default async function WebCardPage({
         <StampCard
           businessName={cardTitle(business)}
           logoUrl={logoSrc}
-          logoScale={business.logoScale}
+          logoScale={capScale}
           priority
           primaryColor={business.primaryColor}
           textColor={business.textColor}

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
-import { cardTitle, shade, rgba, type StampIconKey } from "@/lib/brand";
+import { cardTitle, shade, rgba, hexToRgb, type StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
@@ -111,29 +111,59 @@ export default async function ClaimPage({
   const card = business.cards[0];
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
 
-  // Brand-drevet, levende baggrund: en moerkere tone af kortfarven med et varmt
-  // spotlight bag kortet, en blOd top-gloed og et diskret ikon-felt. Alt udledt
-  // af butikkens egne farver, saa siden foeles som en del af brandet.
+  // Brand-drevet, levende baggrund udledt af butikkens egne farver. LYSE farver
+  // (fx Sand) faar en varm, luftig behandling (mod cremet i toppen, en blOd
+  // varm gloed bag kortet), i stedet for at blive moerknet til mudder. MOERKE
+  // farver faar den dybe tone med spotlight. Saa foeles siden altid flot.
   const primary = business.primaryColor;
   const text = business.textColor;
-  const bgTop = shade(primary, -0.33);
-  const bgBottom = shade(primary, -0.6);
-  const spotlight = shade(primary, 0.35);
+  const { r, g, b } = hexToRgb(primary);
+  const isLight = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62;
   const iconMarkup =
     STAMP_ICON_PATHS[card.stampIcon as StampIconKey] ?? STAMP_ICON_PATHS.custom;
 
-  const bgStyle: React.CSSProperties = {
-    backgroundColor: bgBottom,
-    color: text,
-    backgroundImage: [
-      iconTileDataUri(iconMarkup, text),
-      `radial-gradient(ellipse 130% 55% at 50% 42%, ${rgba(spotlight, 0.5)} 0%, transparent 60%)`,
-      `radial-gradient(ellipse 100% 45% at 50% 0%, ${rgba(text, 0.1)} 0%, transparent 70%)`,
-      `linear-gradient(180deg, ${bgTop} 0%, ${bgBottom} 100%)`,
-    ].join(", "),
-    backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
-    backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
-  };
+  // Logo-stoerrelsen paa kunde-siden klampes, saa en butik der har skruet logoet
+  // stort op (til Wallet-pas/kort) ikke faar et logo der dominerer /k-siden.
+  const capScale = Math.min(business.logoScale, 1.35);
+
+  let bgStyle: React.CSSProperties;
+  let cardShadow: string;
+  if (isLight) {
+    const bgTop = shade(primary, 0.34); // cremet top
+    const bgMid = primary; // selve sandfarven
+    const bgBottom = shade(primary, -0.12); // en anelse dybere i bunden
+    const warm = shade(primary, 0.5); // naesten-creme varm gloed
+    bgStyle = {
+      backgroundColor: bgBottom,
+      color: text,
+      backgroundImage: [
+        iconTileDataUri(iconMarkup, text),
+        `radial-gradient(ellipse 130% 60% at 50% 40%, ${rgba(warm, 0.6)} 0%, transparent 62%)`,
+        `radial-gradient(ellipse 110% 50% at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 66%)`,
+        `linear-gradient(180deg, ${bgTop} 0%, ${bgMid} 48%, ${bgBottom} 100%)`,
+      ].join(", "),
+      backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
+      backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
+    };
+    cardShadow = `drop-shadow(0 24px 44px ${rgba(shade(primary, -0.5), 0.32)})`;
+  } else {
+    const bgTop = shade(primary, -0.33);
+    const bgBottom = shade(primary, -0.6);
+    const spotlight = shade(primary, 0.35);
+    bgStyle = {
+      backgroundColor: bgBottom,
+      color: text,
+      backgroundImage: [
+        iconTileDataUri(iconMarkup, text),
+        `radial-gradient(ellipse 130% 55% at 50% 42%, ${rgba(spotlight, 0.5)} 0%, transparent 60%)`,
+        `radial-gradient(ellipse 100% 45% at 50% 0%, ${rgba(text, 0.1)} 0%, transparent 70%)`,
+        `linear-gradient(180deg, ${bgTop} 0%, ${bgBottom} 100%)`,
+      ].join(", "),
+      backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
+      backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
+    };
+    cardShadow = `drop-shadow(0 26px 48px ${rgba(shade(primary, -0.72), 0.6)})`;
+  }
 
   return (
     <main
@@ -151,7 +181,8 @@ export default async function ClaimPage({
               src={logoSrc}
               alt={business.name}
               fetchPriority="high"
-              className="h-20 w-auto max-w-[70vw] object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
+              className="w-auto object-contain drop-shadow-[0_6px_18px_rgba(0,0,0,0.28)]"
+              style={{ height: `${4 * capScale}rem`, maxWidth: "min(60vw, 14rem)" }}
             />
           ) : null}
           <div className="flex flex-col gap-2">
@@ -171,16 +202,11 @@ export default async function ClaimPage({
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
-        <div
-          className="w-full"
-          style={{
-            filter: `drop-shadow(0 26px 48px ${rgba(shade(primary, -0.72), 0.6)})`,
-          }}
-        >
+        <div className="w-full" style={{ filter: cardShadow }}>
           <StampCard
             businessName={cardTitle(business)}
             logoUrl={logoSrc}
-            logoScale={business.logoScale}
+            logoScale={capScale}
             priority
             primaryColor={business.primaryColor}
             textColor={business.textColor}
