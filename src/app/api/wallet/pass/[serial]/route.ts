@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { WALLET_ENABLED } from "@/lib/env";
+import { WALLET_ENABLED, APP_URL } from "@/lib/env";
 import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
 import { getCardToken } from "@/lib/cookies";
 import { captureWalletError } from "@/lib/sentry";
@@ -21,11 +21,17 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ serial: string }> },
 ) {
-  if (!WALLET_ENABLED) return new Response("Wallet er ikke aktiveret.", { status: 404 });
   const { serial } = await params;
+  // Trykket er en fuld <a>-navigation, saa ved fejl sender vi kunden til
+  // webkortet (/kort/serial) i stedet for en bar tekstside. Webkortet virker
+  // uden cookie og uden wallet-cert og har QR'en, personalet kan scanne.
+  const toCard = () =>
+    NextResponse.redirect(new URL(`/kort/${serial}`, APP_URL));
+
+  if (!WALLET_ENABLED) return toCard();
 
   const cc = await loadCCForWallet(serial);
-  if (!cc) return new Response("Kortet blev ikke fundet.", { status: 404 });
+  if (!cc) return toCard();
 
   // Ejerskabs-tjek: passet indeholder kortets hemmelige authToken, saa kun den
   // enhed kortet er bundet til (device-cookien) maa hente det. Ellers kunne
@@ -34,7 +40,7 @@ export async function GET(
   // via web-servicen (ApplePass-token), ikke dette endpoint, og paavirkes ikke.
   const cookieToken = await getCardToken(cc.card.businessId);
   if (!tokenMatches(cookieToken, cc.authToken)) {
-    return new Response("Kortet blev ikke fundet.", { status: 404 });
+    return toCard();
   }
 
   let buffer: Buffer;
@@ -47,7 +53,7 @@ export async function GET(
       serial,
     });
     console.error("pkpass-bygning fejlede", e);
-    return new Response("Kunne ikke bygge passet.", { status: 500 });
+    return toCard();
   }
 
   return new Response(new Uint8Array(buffer), {

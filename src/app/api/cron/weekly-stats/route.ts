@@ -5,6 +5,7 @@ import { weeklyStatsEmail } from "@/lib/emails";
 import { sendEmail } from "@/lib/send-email";
 import { signUnsubscribeToken } from "@/lib/tokens";
 import { APP_URL } from "@/lib/env";
+import { bearerAuthorized } from "@/lib/secret";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,8 +15,7 @@ export const maxDuration = 60;
 // CRON_SECRET: Vercel sender "Authorization: Bearer <CRON_SECRET>", hvis env-
 // varen er sat.
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
 

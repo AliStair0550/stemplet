@@ -285,6 +285,11 @@ export function ClaimFlow({
     );
   }
 
+  // In-app-browser vinder over alle faser: er vi i Messenger/Instagram m.fl.,
+  // kan Wallet aldrig aabne, saa vis KUN Safari-vejledningen. Ellers kunne et
+  // tryk (fOr detektionen naaede at koere) laase kunden i "opening"/"usikker".
+  if (inAppNotice) return inAppNotice;
+
   if (phase === "usikker") {
     return (
       <div className="flex w-full flex-col items-center gap-3">
@@ -347,11 +352,8 @@ export function ClaimFlow({
     // "opening" og venter med kvitteringen til kunden kommer tilbage. Android/
     // desktop sendes videre af ruten (ingen kvittering her).
     const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
-    if (ios && walletEnabled) setPhase("opening");
+    if (ios && walletEnabled && !inApp) setPhase("opening");
   }
-
-  // In-app-browser: vis KUN vejledningen (Wallet-knappen ville alligevel fejle).
-  if (inAppNotice) return inAppNotice;
 
   return (
     <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>

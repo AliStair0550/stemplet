@@ -99,7 +99,7 @@ export default async function TryItYourself() {
             </div>
           </div>
           <p className="inline-flex items-center gap-2 text-[0.85rem] font-[300] text-stone">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[#22C55E]" />
+            <span className="h-2 w-2 animate-pulse rounded-full bg-moss" />
             Scan prøvekort
           </p>
         </div>

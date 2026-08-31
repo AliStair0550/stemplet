@@ -20,10 +20,13 @@ export async function POST(req: NextRequest) {
     return new Response("Mangler webhook-signatur.", { status: 400 });
   }
 
-  const stripe = getStripe();
   const body = await req.text();
   let event: Stripe.Event;
   try {
+    // getStripe() kan kaste, hvis STRIPE_SECRET_KEY ikke er sat (kun webhook-
+    // secret). Hold det inde i try, saa det giver en pæn 400 i stedet for en
+    // uhaandteret 500.
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(body, sig, secret);
   } catch {
     return new Response("Ugyldig signatur.", { status: 400 });

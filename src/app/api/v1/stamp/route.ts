@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { businessByApiKey } from "@/lib/integrations";
 import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
-import { checkRateLimit } from "@/lib/redis";
+import { apiWriteRateLimit } from "@/lib/rate-limit";
 import { runOnce, IdempotencyInFlight } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
   if (!business) return apiError("UNAUTHORIZED", "Ugyldig API-nøgle.", 401);
 
   // Rate limit pr. virksomhed: rigeligt til travle kasser, men stopper løbske
-  // scripts. Fail-open hvis Redis ikke svarer.
-  if (!(await checkRateLimit("api-v1-stamp", 300, "1 m", business.id))) {
+  // scripts. Fail-CLOSED (DB-backstop), hvis Redis ikke kan konsulteres.
+  if (!(await apiWriteRateLimit("api-v1-stamp", business.id, 300, "1 m", 60))) {
     return apiError("RATE_LIMIT", "For mange kald. Prøv igen om lidt.", 429);
   }
 

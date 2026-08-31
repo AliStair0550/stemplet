@@ -142,11 +142,11 @@ export function AccessManager({
         : "text-slate hover:text-ink"
     }`;
 
+    // Ankeret #adgang sidder paa "Adgang"-overskriften i page.tsx (saa den
+    // vises ved scroll). Denne sektion har derfor ikke laengere sit eget id,
+    // for at undgaa to elementer med samme id.
   return (
-    <section
-      id="adgang"
-      className="scroll-mt-24 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8"
-    >
+    <section className="scroll-mt-24 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
       <div className="flex flex-col gap-1">
         <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
           Adgang

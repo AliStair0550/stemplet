@@ -118,7 +118,7 @@ function PulseTile({
   return (
     <div className="group relative overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift">
       <div className="flex items-start justify-between gap-2">
-        <span className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
+        <span className="text-label font-[400] uppercase tracking-[0.14em] text-stone">
           {label}
         </span>
         <span className="text-terracotta/60 transition-colors group-hover:text-terracotta">
@@ -228,7 +228,7 @@ function StampAction({ primaryColor }: { primaryColor: string }) {
         </span>
         <span
           className="mt-0.5 block font-[300] text-[0.85rem] leading-relaxed"
-          style={{ color: rgba(fg, 0.82) }}
+          style={{ color: rgba(fg, 0.9) }}
         >
           Åbn kassen og stempel en kunde
         </span>

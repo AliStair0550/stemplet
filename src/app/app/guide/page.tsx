@@ -6,7 +6,7 @@ import { GuideContent } from "@/components/guide/GuideContent";
 import { GuideActions } from "@/components/guide/GuideActions";
 import { APP_URL } from "@/lib/env";
 
-export const metadata: Metadata = { title: "Sådan virker det" };
+export const metadata: Metadata = { title: "Guide til personalet" };
 export const dynamic = "force-dynamic";
 
 export default async function GuidePage() {
@@ -16,7 +16,7 @@ export default async function GuidePage() {
   if (!data) {
     return (
       <>
-        <PageHeading title="Sådan virker det" />
+        <PageHeading title="Guide til personalet" />
         <p className="font-[200] text-[0.95rem] text-stone">
           Opret dit kort først, så bygger vi guiden til dit personale.
         </p>
@@ -29,7 +29,7 @@ export default async function GuidePage() {
   return (
     <>
       <PageHeading
-        title="Sådan virker det"
+        title="Guide til personalet"
         subtitle="Guiden til dit personale. Den opdaterer sig selv efter dine indstillinger."
         action={<GuideActions publicUrl={publicUrl} />}
       />

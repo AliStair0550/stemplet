@@ -81,6 +81,11 @@ function Field({
 const inputCls =
   "w-full border border-clay bg-parchment px-3 py-2.5 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta";
 
+// Maks data-URL-laengde for logoet. Matcher server-graensen i actions.ts, saa
+// klienten afviser et for stort logo FOER preview i stedet for at vise noget,
+// der ikke kan gemmes.
+const LOGO_MAX = 1_500_000;
+
 function ColorField({
   label,
   value,
@@ -238,10 +243,22 @@ export function VisitkortDesigner({
     setUploading(true);
     try {
       const dataUrl = await processLogo(file);
-      setLogo(dataUrl); // live i preview med det samme
+      // Server-grænsen er 1,5 MB paa data-URL'en. Tjek den FOER preview, saa vi
+      // ikke viser et logo, der bagefter afvises ved gemning (misvisende
+      // tilstand). LOGO_MAX matcher setBusinessLogo i actions.ts.
+      if (dataUrl.length > LOGO_MAX) {
+        setLogoError(
+          "Logoet fylder for meget. Vælg et enklere billede eller en mindre fil.",
+        );
+        return;
+      }
       const res = await setBusinessLogo(dataUrl); // gem, saa PDF'en ogsaa faar det
-      if (!res.ok) setLogoError(res.error ?? "Kunne ikke gemme logoet.");
-      else set({ showLogo: true });
+      if (!res.ok) {
+        setLogoError(res.error ?? "Kunne ikke gemme logoet.");
+        return;
+      }
+      setLogo(dataUrl); // vis foerst i preview, naar det er gemt
+      set({ showLogo: true });
     } catch {
       setLogoError("Kunne ikke læse billedet. Prøv et andet.");
     } finally {
@@ -249,10 +266,24 @@ export function VisitkortDesigner({
     }
   }
 
-  function removeLogo() {
-    setLogo(null);
+  async function removeLogo() {
+    // Logoet er DELT med stempelkortet og Apple Wallet, saa en sletning her
+    // rammer hele brandet. Bekraeft, saa det ikke sker ved et uheld fra
+    // visitkort-siden.
+    const ok = window.confirm(
+      "Fjern logoet? Det bruges også på stempelkortet og i Apple Wallet, så det fjernes alle steder.",
+    );
+    if (!ok) return;
     setLogoError(null);
-    setBusinessLogo(null).catch(() => {});
+    const prev = logo;
+    setLogo(null);
+    const res = await setBusinessLogo(null);
+    if (!res.ok) {
+      setLogo(prev); // fortryd, saa UI'en ikke viser det som fjernet
+      setLogoError(res.error ?? "Kunne ikke fjerne logoet. Prøv igen.");
+    } else {
+      set({ showLogo: false });
+    }
   }
 
   function applyTheme(colors: VkColors) {
@@ -385,7 +416,7 @@ export function VisitkortDesigner({
                   type="button"
                   onClick={() => applyTheme({ bg: t.bg, text: t.text, accent })}
                   title={t.name}
-                  className="flex items-center gap-1.5 rounded-full border border-clay py-1 pl-1.5 pr-3"
+                  className="flex min-h-9 items-center gap-1.5 rounded-full border border-clay py-1 pl-1.5 pr-3"
                 >
                   <span className="flex h-5 w-5 items-center justify-center rounded-full" style={{ background: t.bg, border: "1px solid rgba(0,0,0,0.1)" }}>
                     <span className="h-2 w-2 rounded-full" style={{ background: accent }} />
@@ -397,7 +428,7 @@ export function VisitkortDesigner({
             <button
               type="button"
               onClick={() => applyTheme({ bg: brand.primary, text: brand.text, accent: brand.text })}
-              className="rounded-full border border-clay px-3 text-[0.74rem] font-[400] text-stone hover:text-ink"
+              className="min-h-9 rounded-full border border-clay px-3 text-[0.74rem] font-[400] text-stone hover:text-ink"
             >
               Brand
             </button>

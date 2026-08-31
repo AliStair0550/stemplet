@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { redisConfigured, getRatelimit } from "./redis";
 
 /**
  * DB-backet rate limit (fail-closed): virker ogsaa hvis Redis er nede, saa
@@ -31,4 +32,29 @@ export async function durableRateLimit(
   });
 
   return row.count <= limit;
+}
+
+/**
+ * Rate limit til de offentlige v1-SKRIVE-ruter (stamp/redeem). Fail-CLOSED: kan
+ * Redis ikke konsulteres (ikke konfigureret ELLER en forbigaaende fejl), falder
+ * vi tilbage til en DB-backet taeller i stedet for at ophaeve loftet helt, saa en
+ * (evt. laekket) API-noegle ikke kan hamre skrivninger under et Redis-nedbrud.
+ * Naar Redis er oppe (normal drift), rammes DB'en slet ikke - ingen ekstra last.
+ */
+export async function apiWriteRateLimit(
+  prefix: string,
+  id: string,
+  tokens: number,
+  window: Parameters<typeof getRatelimit>[2],
+  dbWindowSeconds: number,
+): Promise<boolean> {
+  if (redisConfigured()) {
+    try {
+      const { success } = await getRatelimit(prefix, tokens, window).limit(id);
+      return success;
+    } catch {
+      // Redis-fejl: fald igennem til DB-backstoppet nedenfor (fail-closed).
+    }
+  }
+  return durableRateLimit(prefix, id, tokens, dbWindowSeconds);
 }

@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
     required: number;
     cardToken: string;
   };
-  let newCookieToken: string | null = null;
 
   if (cc) {
     payload = {
@@ -73,7 +72,6 @@ export async function POST(req: NextRequest) {
         { unavailable: true },
       );
     }
-    newCookieToken = created.authToken;
     payload = {
       serial: created.serial,
       stamps: 0,
@@ -82,13 +80,11 @@ export async function POST(req: NextRequest) {
     };
   }
 
+  // Saet ALTID kort-cookien (ogsaa naar kortet blev genfundet via localStorage-
+  // token). Ellers mangler cookien ved den efterfoelgende fulde navigation til
+  // /api/wallet/pass/[serial], som ejerskabstjekker paa cookien, og en
+  // returnerende demo-bruger faar en 404 paa "Hent mit stempelkort".
   const res = NextResponse.json({ ok: true, ...payload });
-  if (newCookieToken) {
-    res.cookies.set(
-      cardCookieName(biz.id),
-      newCookieToken,
-      cardCookieOptions(),
-    );
-  }
+  res.cookies.set(cardCookieName(biz.id), payload.cardToken, cardCookieOptions());
   return res;
 }

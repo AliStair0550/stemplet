@@ -99,8 +99,8 @@ export function ShareCardSection({
 
   // QR-koden alene som PNG.
   function downloadQr() {
-    setMsg(null);
     saveDataUrl(qrDataUrl, `stemplet-qr-${slug}.png`);
+    setMsg({ ok: true, text: "QR-kode hentet." });
   }
 
   async function share() {
@@ -124,8 +124,13 @@ export function ShareCardSection({
         await navigator.clipboard.writeText(cardUrl);
         setMsg({ ok: true, text: "Deling understøttes ikke her. Link kopieret." });
       }
-    } catch {
-      // bruger annullerede deling eller ikke understoettet: ingen fejlbesked
+    } catch (e) {
+      // AbortError = brugeren annullerede delingen: ingen fejlbesked. Alt andet
+      // (fx billedet kunne ikke bygges) er en aegte fejl, som vi viser, saa
+      // knappen ikke bare "forsvinder" uden forklaring.
+      if (!(e instanceof DOMException && e.name === "AbortError")) {
+        setMsg({ ok: false, text: "Kunne ikke dele lige nu. Prøv igen." });
+      }
     } finally {
       setBusy(null);
     }

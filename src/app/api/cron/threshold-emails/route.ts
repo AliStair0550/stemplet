@@ -5,6 +5,7 @@ import {
 } from "@/lib/billing";
 import { redisKeepAlive } from "@/lib/redis";
 import { checkWalletCertExpiry } from "@/lib/wallet/cert-monitor";
+import { bearerAuthorized } from "@/lib/secret";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,8 +23,7 @@ export const maxDuration = 60;
 //     eller WWDR-certifikatet udloeber, saa pas-signeringen ikke pludselig doer.
 // Beskyttet med CRON_SECRET som de oevrige cron-ruter.
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
   const [emails, invariant, keepalive, certs] = await Promise.all([

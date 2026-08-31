@@ -1,12 +1,14 @@
 import { getSessionBusinessId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { csvCell } from "@/lib/csv";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Formel-injektions-vaern (se @/lib/csv). contactEmail skrives i dag ikke fra
+// brugerinput, men vaernet holder hullet lukket, hvis det aendrer sig.
 function cell(v: string | number | null): string {
-  const s = String(v ?? "");
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return csvCell(v);
 }
 
 // Streamer eksporten i batches i stedet for at hente ALLE kortholdere i

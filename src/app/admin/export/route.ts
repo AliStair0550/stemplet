@@ -1,14 +1,15 @@
 import { getSuperadminEmail, isAdminUnlocked } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { DEMO_SLUG } from "@/lib/demo";
+import { csvCell } from "@/lib/csv";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// CSV-celle: pak ind i anfoerselstegn og fordoble evt. anfoerselstegn indeni.
+// CSV-celle: altid quotet, med formel-injektions-vaern (se @/lib/csv). Vigtigt
+// her, fordi eksporten indeholder frit butiksnavn og aabnes i superadmins Excel.
 function cell(v: string | number | null | undefined): string {
-  const s = v == null ? "" : String(v);
-  return `"${s.replace(/"/g, '""')}"`;
+  return csvCell(v, { alwaysQuote: true });
 }
 
 // Kontaktliste som CSV til at skrive til opretterne. Samme gating som /admin:

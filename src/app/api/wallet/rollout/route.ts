@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { WALLET_ENABLED } from "@/lib/env";
 import { pushAllWalletPasses } from "@/lib/wallet/build";
+import { bearerAuthorized } from "@/lib/secret";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,8 +12,7 @@ export const maxDuration = 60;
 // at vente paa en stempling. Beskyttet med CRON_SECRET (kun superadmin kan koere
 // den). POST, fordi den udloeser en bunke pushes.
 export async function POST(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
   if (!WALLET_ENABLED) {
