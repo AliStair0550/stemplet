@@ -316,7 +316,7 @@ export default async function OverviewPage() {
         <div className="relative flex flex-col gap-6 p-6 md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0">
-              <p className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
+              <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
                 {dateLabel}
               </p>
               <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
