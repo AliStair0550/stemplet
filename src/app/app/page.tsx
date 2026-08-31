@@ -61,10 +61,22 @@ function summaryLine(p: {
     return "Velkommen. I er klar til at tage imod jeres første kunde.";
   }
   if (p.visitorsToday === 0) {
-    const base = p.activeCustomers > 0 ? p.activeCustomers : p.totalCustomers;
-    return `Ingen stempler endnu i dag. I har ${formatDkNumber(base)} ${
-      base === 1 ? "aktiv kortholder" : "aktive kortholdere"
-    }, klar til et genbesøg.`;
+    // "Aktiv" bruges KUN om kortholdere der faktisk har faaet et stempel for
+    // nylig (activeCustomers = stemplet inden for 60 dage). Har ingen et stempel
+    // endnu, siger vi neutralt "kortholdere, klar til det foerste stempel", saa
+    // et tomt kort ikke fremstaar som en engageret kunde.
+    if (p.activeCustomers > 0) {
+      return `Ingen stempler endnu i dag. I har ${formatDkNumber(
+        p.activeCustomers,
+      )} ${
+        p.activeCustomers === 1 ? "aktiv kortholder" : "aktive kortholdere"
+      }, klar til et genbesøg.`;
+    }
+    return `Ingen stempler endnu i dag. I har ${formatDkNumber(
+      p.totalCustomers,
+    )} ${
+      p.totalCustomers === 1 ? "kortholder" : "kortholdere"
+    }, klar til det første stempel.`;
   }
   if (p.returningToday === 0) {
     return `${formatDkNumber(p.visitorsToday)} ${
