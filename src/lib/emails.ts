@@ -621,3 +621,79 @@ export function superadminMarketingSignupEmail(
   };
 }
 
+export type SuperadminSignupRequestData = {
+  businessName: string;
+  reward: string;
+  contactName: string; // navn eller "(ingen)"
+  email: string;
+  phone: string; // nummer eller "(ingen)"
+  createUrl: string; // /app/ny-butik
+};
+
+// HTML-escape af brugerindtastet tekst, saa fri tekst i mailen ikke kan bryde
+// layoutet eller injicere markup.
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Notifikation til superadmin (Ali): en butik vil gerne oprettes. Ingen konto er
+// lavet, saa naeste skridt er at lave et udkast og gaa i dialog.
+export function superadminSignupRequestEmail(
+  d: SuperadminSignupRequestData,
+): Email {
+  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+    <td style="border-radius:8px;background:${C.ink};">
+      <a href="${d.createUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Lav et udkast</a>
+    </td></tr></table>`;
+
+  const detailRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
+    </tr>`;
+
+  const inner = `
+    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+      Ny oprettelsesanmodning.
+    </p>
+    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+      En butik vil gerne have et stempelkort. Lav et udkast og tag fat i dem.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:16px 18px;">
+        <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.slate};">Virksomhed</p>
+        <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:700;color:${C.ink};">${esc(d.businessName)}</p>
+        <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.slate};">Ønsket belønning</p>
+        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:${C.ink};">${esc(d.reward)}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid ${C.fog};">
+          ${detailRow("Kontakt", d.contactName)}
+          ${detailRow("Mail", d.email)}
+          ${detailRow("Telefon", d.phone)}
+        </table>
+      </td></tr>
+    </table>
+    ${button}`;
+
+  const text = [
+    "Ny oprettelsesanmodning.",
+    "",
+    `Virksomhed: ${d.businessName}`,
+    `Ønsket belønning: ${d.reward}`,
+    `Kontakt: ${d.contactName}`,
+    `Mail: ${d.email}`,
+    `Telefon: ${d.phone}`,
+    "",
+    `Lav et udkast: ${d.createUrl}`,
+  ].join("\n");
+
+  return {
+    subject: `[Stemplet] Oprettelsesanmodning: ${d.businessName}`,
+    html: shell("En butik vil gerne oprettes hos Stemplet.", inner),
+    text,
+  };
+}
+

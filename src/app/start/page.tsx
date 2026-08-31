@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Wordmark } from "@/components/Wordmark";
-import { StartWizard } from "./StartWizard";
+import { StartRequestForm } from "./StartRequestForm";
 
 export const metadata: Metadata = {
   title: "Kom gratis i gang",
-  description: "Opret dit digitale stempelkort på ti minutter. Intet kreditkort.",
+  description:
+    "Fortæl kort om din butik, så laver vi et udkast til dit stempelkort og tager fat i dig. Ingen konto eller kreditkort.",
 };
 
 export default function StartPage() {
@@ -19,7 +20,7 @@ export default function StartPage() {
         </div>
       </header>
       <div className="px-6 py-14 md:px-8 md:py-20">
-        <StartWizard />
+        <StartRequestForm />
       </div>
     </main>
   );

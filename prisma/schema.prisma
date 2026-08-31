@@ -383,6 +383,24 @@ model MarketingSignup {
   @@index([source])
 }
 
+// Oprettelsesanmodning: en butik der gerne vil have et stempelkort. I stedet for
+// selvbetjent oprettelse udfylder de en kort formular (virksomhed, oensket
+// beloenning i fri tekst, kontakt), superadmin faar en mail og laver et udkast +
+// gaar i dialog. Ingen konto oprettes her.
+model SignupRequest {
+  id           String   @id @default(cuid())
+  businessName String
+  reward       String // oensket beloenning, fri tekst
+  contactName  String? // valgfrit
+  email        String
+  phone        String? // valgfrit
+  note         String? // frit notefelt (admin, senere)
+  createdIp    String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model AuditLog {
   id         String   @id @default(cuid())
   businessId String
