@@ -122,7 +122,14 @@ export function defaultDesign(b: {
   textColor: string;
   slug: string;
 }): VisitkortDesign {
-  const light: VkColors = { bg: "#FFFFFF", text: "#1A1A1A", accent: b.primaryColor };
+  // Standard: butikkens EGNE brandfarver, saa kortet aabner med butikkens
+  // identitet (ikke et neutralt hvidt kort). textColor er valgt til at vaere
+  // laesbar paa primaryColor, saa den bruges baade som tekst og accent.
+  const brandColors: VkColors = {
+    bg: b.primaryColor,
+    text: b.textColor,
+    accent: b.textColor,
+  };
   return {
     template: "split",
     font: "sans",
@@ -132,14 +139,14 @@ export function defaultDesign(b: {
     dieCut: false,
     orientation: "landscape",
     background: "flad",
-    front: { ...light },
-    back: { ...light },
+    front: { ...brandColors },
+    back: { ...brandColors },
     name: "",
     tagline: "",
     taglineAccent: "",
     phone: "",
     email: "",
-    web: `stemplet.alius.dk/k/${b.slug}`,
+    web: "",
     address: "",
     showLogo: true,
     logoScale: 1,

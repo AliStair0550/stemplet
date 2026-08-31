@@ -306,7 +306,8 @@ export function VisitkortDesigner({
       <h2 className="mb-4 text-[0.7rem] font-[500] uppercase tracking-[0.14em] text-slate">
         Skabelon og format
       </h2>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
+        {/* Hovedvalget: selve opstillingen. Faar plads for sig selv. */}
         <Field label="Skabelon">
           <Segmented
             options={VK_TEMPLATES.map((t) => ({ key: t.key, label: t.label, note: t.note }))}
@@ -315,47 +316,51 @@ export function VisitkortDesigner({
             cols={2}
           />
         </Field>
-        <Field label="Retning">
-          <Segmented
-            options={[
-              { key: "landscape" as const, label: "Liggende" },
-              { key: "portrait" as const, label: "Stående" },
-            ]}
-            value={design.orientation}
-            onChange={(orientation) => set({ orientation })}
-          />
-        </Field>
-        <Field label="Font">
-          <Segmented
-            options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
-            value={design.font}
-            onChange={(font: VkFont) => set({ font })}
-          />
-        </Field>
-        <Field label="Hjørner">
-          <Segmented
-            options={[
-              { key: "skarpe" as const, label: "Kantede", note: "Standard, skarpe hjørner" },
-              { key: "afrundede" as const, label: "Afrundede", note: "Runde hjørner og felter" },
-            ]}
-            value={design.corners}
-            onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
-          />
-        </Field>
-        <Field label="Baggrund">
-          <Segmented
-            options={[
-              { key: "flad" as const, label: "Flad", note: "Ren farve" },
-              { key: "ikoner" as const, label: "Ikoner", note: "Farve + stempel-ikoner" },
-            ]}
-            value={design.background}
-            onChange={(background) => set({ background })}
-          />
-        </Field>
+        {/* De faa format-valg samlet i et roligt 2-kolonners gitter, saa boksen
+            er let at overskue i stedet for en lang lodret stribe. */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Retning">
+            <Segmented
+              options={[
+                { key: "landscape" as const, label: "Liggende" },
+                { key: "portrait" as const, label: "Stående" },
+              ]}
+              value={design.orientation}
+              onChange={(orientation) => set({ orientation })}
+            />
+          </Field>
+          <Field label="Hjørner">
+            <Segmented
+              options={[
+                { key: "skarpe" as const, label: "Kantede" },
+                { key: "afrundede" as const, label: "Afrundede" },
+              ]}
+              value={design.corners}
+              onChange={(corners) => set({ corners, dieCut: corners === "afrundede" })}
+            />
+          </Field>
+          <Field label="Font">
+            <Segmented
+              options={VK_FONTS.map((f) => ({ key: f.key, label: f.label }))}
+              value={design.font}
+              onChange={(font: VkFont) => set({ font })}
+            />
+          </Field>
+          <Field label="Baggrund">
+            <Segmented
+              options={[
+                { key: "flad" as const, label: "Flad" },
+                { key: "ikoner" as const, label: "Ikoner" },
+              ]}
+              value={design.background}
+              onChange={(background) => set({ background })}
+            />
+          </Field>
+        </div>
         <p className="text-[0.76rem] font-[300] leading-relaxed text-slate">
           {design.corners === "afrundede"
-            ? "Afrunder både kortets hjørner og design-elementer. Runde kort-hjørner bestilles som die-cut hos Vistaprint."
-            : "Kantede hjørner er standard. Vælg Afrundede for runde hjørner og felter."}
+            ? "Afrundede runder både kortets hjørner og felterne. Runde kort-hjørner bestilles som die-cut hos Vistaprint."
+            : "Baggrund Ikoner lægger et diskret mønster af stempel-ikoner bag farven. Afrundede giver runde hjørner og felter."}
         </p>
       </div>
     </section>
@@ -482,23 +487,23 @@ export function VisitkortDesigner({
               )}
             </div>
 
-            <TextField label="Navn / kontaktperson" value={design.name} maxLength={60} onChange={(v) => set({ name: v })} placeholder="Fx: Ali Al-farhan" bold={{ value: design.nameBold, onChange: (v) => set({ nameBold: v }) }} />
+            <TextField label="Navn / kontaktperson" value={design.name} maxLength={60} onChange={(v) => set({ name: v })} bold={{ value: design.nameBold, onChange: (v) => set({ nameBold: v }) }} />
             <div className="grid gap-3 sm:grid-cols-2">
-              <TextField label="Tagline" value={design.tagline} maxLength={80} onChange={(v) => set({ tagline: v })} placeholder="Stempelkortet, der skaber" bold={{ value: design.taglineBold, onChange: (v) => set({ taglineBold: v }) }} />
-              <TextField label="Tagline, accent" value={design.taglineAccent} maxLength={60} onChange={(v) => set({ taglineAccent: v })} placeholder="flere stamkunder." />
+              <TextField label="Tagline" value={design.tagline} maxLength={80} onChange={(v) => set({ tagline: v })} bold={{ value: design.taglineBold, onChange: (v) => set({ taglineBold: v }) }} />
+              <TextField label="Tagline, accent" value={design.taglineAccent} maxLength={60} onChange={(v) => set({ taglineAccent: v })} />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Telefon">
-                <input className={inputCls} value={design.phone} maxLength={40} onChange={(e) => set({ phone: e.target.value })} placeholder="+45 12 34 56 78" />
+                <input className={inputCls} value={design.phone} maxLength={40} onChange={(e) => set({ phone: e.target.value })} />
               </Field>
               <Field label="E-mail">
-                <input className={inputCls} value={design.email} maxLength={80} onChange={(e) => set({ email: e.target.value })} placeholder="hej@butik.dk" />
+                <input className={inputCls} value={design.email} maxLength={80} onChange={(e) => set({ email: e.target.value })} />
               </Field>
               <Field label="Web">
-                <input className={inputCls} value={design.web} maxLength={80} onChange={(e) => set({ web: e.target.value })} placeholder="butik.dk" />
+                <input className={inputCls} value={design.web} maxLength={80} onChange={(e) => set({ web: e.target.value })} />
               </Field>
               <Field label="Adresse">
-                <input className={inputCls} value={design.address} maxLength={120} onChange={(e) => set({ address: e.target.value })} placeholder="Gadenavn 1, 8000 Aarhus" />
+                <input className={inputCls} value={design.address} maxLength={120} onChange={(e) => set({ address: e.target.value })} />
               </Field>
             </div>
           </div>
