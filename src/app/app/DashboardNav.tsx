@@ -24,7 +24,8 @@ const PRIMARY_LINKS: { href: string; label: string }[] = [
 const INTERNAL_LINKS: { href: string; label: string }[] = [
   { href: "/app/kort", label: "Design" },
   { href: "/app/visitkort", label: "Visitkort" },
-  { href: "/app/kom-i-gang", label: "Opsætning" },
+  // "Opsætning" (/app/kom-i-gang) er skjult fra menuen for nu. Siden findes
+  // stadig paa adressen for den, der kender den.
   { href: "/app/guide", label: "Guide til personalet" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
