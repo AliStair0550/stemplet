@@ -92,7 +92,10 @@ export default async function IndstillingerPage({
         hasPin={business.staffPin != null}
       />
 
-      <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
+      <h2
+        id="adgang"
+        className="mb-4 mt-12 scroll-mt-24 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink"
+      >
         Adgang
       </h2>
       {/* Login-mails (fuld adgang) og kasse-enheder (kun stempel) samlet: vaelg

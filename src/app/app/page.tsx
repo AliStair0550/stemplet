@@ -8,11 +8,21 @@ import {
 } from "@/lib/stats";
 import { Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import { ButtonLink, btnClass } from "@/components/ui";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
 import { AddToHomeHint } from "./AddToHomeHint";
-import { AddEmployeeButton } from "./AddEmployeeButton";
-import { CtaArrow, IconGift, IconSpark, IconStamp, IconUsers } from "./icons";
+import {
+  CtaArrow,
+  IconCard,
+  IconChart,
+  IconDesign,
+  IconGift,
+  IconKey,
+  IconQr,
+  IconSpark,
+  IconStamp,
+  IconStampMark,
+  IconUsers,
+} from "./icons";
 
 export const dynamic = "force-dynamic";
 
@@ -129,112 +139,120 @@ function PulseTile({
   );
 }
 
-type Rec = {
-  eyebrow: string;
-  title: string;
-  body: string;
-  action:
-    | { type: "link"; href: string; label: string }
-    | { type: "employee"; label: string };
+// Genvejene i Overblik. EEN kilde til titel, undertekst, maal og ikon, saa
+// gridet er let at pleje. "Adgang" sender ind til adgang-sektionen i
+// indstillinger (login-mails + kasse-enheder).
+type Action = {
+  href: string;
+  label: string;
+  sub: string;
+  icon: ReactNode;
 };
 
-// Den ENE kontekstuelle anbefaling. Vaelger det mest presserende signal, saa
-// ejeren altid ved, hvad naeste skridt er, uden at drukne i valg.
-function pickRecommendation(
-  stats: { stampsTotal: number; totalCustomers: number },
-  pulse: { deviceCount: number; nearReward: number },
-): Rec {
-  if (stats.stampsTotal === 0) {
-    return {
-      eyebrow: "Kom i gang",
-      title: "Få jeres første kunde på kortet",
-      body: "Vis QR-koden ved kassen eller del den online, så en kunde kan hente kortet og få sit første stempel.",
-      action: { type: "link", href: "/app/materialer", label: "Del dit kort" },
-    };
-  }
-  if (pulse.deviceCount === 0) {
-    return {
-      eyebrow: "Anbefalet nu",
-      title: "Lad personalet stemple",
-      body: "Par en telefon eller iPad som fast kasse. Det tager under et minut, og enheden ser aldrig dine indstillinger.",
-      action: { type: "employee", label: "Tilføj en medarbejder" },
-    };
-  }
-  if (stats.totalCustomers >= 80 && stats.totalCustomers < 100) {
-    return {
-      eyebrow: "Godt gået",
-      title: "I nærmer jer 100 kortholdere",
-      body: `I har ${formatDkNumber(
-        stats.totalCustomers,
-      )} kortholdere. Den gratis plan rummer op til 100, så det er værd at kigge på abonnementet i god tid.`,
-      action: {
-        type: "link",
-        href: "/app/indstillinger#abonnement",
-        label: "Se abonnement",
-      },
-    };
-  }
-  if (pulse.nearReward >= 3) {
-    return {
-      eyebrow: "Anbefalet nu",
-      title: `${formatDkNumber(pulse.nearReward)} kunder er tæt på en belønning`,
-      body: "De mangler kun ét stempel. Et godt tidspunkt at minde om kortet, så de kommer forbi.",
-      action: {
-        type: "link",
-        href: "/app/kampagner",
-        label: "Del en påmindelse",
-      },
-    };
-  }
-  return {
-    eyebrow: "Voks videre",
-    title: "Få flere kortholdere",
-    body: "Del dit kort på Instagram og Facebook, så kunderne kan hente det hjemmefra.",
-    action: {
-      type: "link",
-      href: "/app/kampagner",
-      label: "Del på sociale medier",
-    },
-  };
-}
+const ACTIONS: Action[] = [
+  {
+    href: "/app/materialer",
+    label: "Del dit kort",
+    sub: "QR-kode og link til kunderne",
+    icon: <IconQr />,
+  },
+  {
+    href: "/app/indstillinger#adgang",
+    label: "Adgang",
+    sub: "Medarbejdere og kasse-enheder",
+    icon: <IconKey />,
+  },
+  {
+    href: "/app/kort",
+    label: "Design",
+    sub: "Farver, logo og belønning",
+    icon: <IconDesign />,
+  },
+  {
+    href: "/app/kampagner",
+    label: "Kampagner",
+    sub: "Påmindelser og tilbud",
+    icon: <IconGift />,
+  },
+  {
+    href: "/app/statistik",
+    label: "Statistik",
+    sub: "Besøg, genbesøg og belønninger",
+    icon: <IconChart />,
+  },
+  {
+    href: "/app/visitkort",
+    label: "Visitkort",
+    sub: "Tryk-klare kort til disken",
+    icon: <IconCard />,
+  },
+];
 
-function RecommendationCard({ rec }: { rec: Rec }) {
+// Den store, primaere genvej: giv et stempel. Fyldt i brand-accenten, saa det
+// er det oeje foerst falder paa.
+function StampAction() {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6 shadow-card md:p-8">
+    <Link
+      href="/app/kasse"
+      className="group relative flex items-center gap-4 overflow-hidden rounded-lg bg-gradient-to-br from-terracotta to-terracotta-dark p-5 text-parchment shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift md:p-6"
+    >
       <span
         aria-hidden
-        className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-terracotta/10 blur-3xl"
+        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl"
       />
-      <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <p className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
-            {rec.eyebrow}
-          </p>
-          <h3 className="mt-1.5 font-[400] text-[1.15rem] text-ink">
-            {rec.title}
-          </h3>
-          <p className="mt-1 max-w-md font-[300] text-[0.88rem] leading-relaxed text-stone">
-            {rec.body}
-          </p>
-        </div>
-        <div className="shrink-0">
-          {rec.action.type === "employee" ? (
-            <AddEmployeeButton
-              label={rec.action.label}
-              className={`${btnClass("primary")} w-full justify-center md:w-auto`}
-            />
-          ) : (
-            <ButtonLink
-              href={rec.action.href}
-              variant="primary"
-              className="w-full justify-center md:w-auto"
-            >
-              {rec.action.label}
-            </ButtonLink>
-          )}
-        </div>
+      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-parchment">
+        <IconStampMark className="h-6 w-6" />
+      </span>
+      <span className="relative min-w-0 flex-1">
+        <span className="block font-[400] text-[1.15rem] leading-tight">
+          Giv et stempel
+        </span>
+        <span className="mt-0.5 block font-[300] text-[0.85rem] leading-relaxed text-parchment/80">
+          Åbn kassen og stempel en kunde
+        </span>
+      </span>
+      <span className="relative shrink-0 text-parchment/80 transition-transform duration-200 group-hover:translate-x-0.5">
+        <CtaArrow />
+      </span>
+    </Link>
+  );
+}
+
+// De sekundaere genveje som et rent, luftigt kort-grid.
+function ActionTile({ action }: { action: Action }) {
+  return (
+    <Link
+      href={action.href}
+      className="group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift"
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
+        {action.icon}
+      </span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-1.5 font-[400] text-[1rem] text-ink">
+          {action.label}
+          <span className="text-terracotta/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-terracotta">
+            <CtaArrow />
+          </span>
+        </span>
+        <span className="mt-0.5 block font-[300] text-[0.8rem] leading-relaxed text-stone">
+          {action.sub}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+function ActionGrid() {
+  return (
+    <section className="animate-step">
+      <StampAction />
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        {ACTIONS.map((a) => (
+          <ActionTile key={a.href} action={a} />
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -262,7 +280,6 @@ export default async function OverviewPage() {
   });
 
   const isNew = stats.stampsTotal === 0;
-  const rec = pickRecommendation(stats, pulse);
 
   const stampsToday = stats.perDay.at(-1)?.count ?? 0;
   const stampsYesterday = stats.perDay.at(-2)?.count ?? 0;
@@ -293,64 +310,15 @@ export default async function OverviewPage() {
               </p>
             </div>
           </div>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            {isNew ? (
-              <>
-                <ButtonLink
-                  href="/app/kom-i-gang"
-                  variant="primary"
-                  className="w-full justify-center sm:w-auto"
-                >
-                  Opsætning
-                </ButtonLink>
-                <ButtonLink
-                  href="/app/materialer"
-                  variant="outline"
-                  className="w-full justify-center sm:w-auto"
-                >
-                  Del dit kort
-                </ButtonLink>
-              </>
-            ) : (
-              <>
-                <ButtonLink
-                  href="/app/kasse"
-                  variant="primary"
-                  className="w-full justify-center sm:w-auto"
-                >
-                  Giv et stempel
-                </ButtonLink>
-                <AddEmployeeButton
-                  className={`${btnClass("outline")} w-full justify-center sm:w-auto`}
-                />
-              </>
-            )}
-          </div>
         </div>
       </section>
 
-      {isNew ? (
-        <div className="flex flex-col gap-6">
-          {/* Tom tilstand for en helt ny butik: forklar hvad der kommer, i
-              stedet for at vise fire nul-tal. */}
-          <Panel>
-            <div className="mx-auto flex max-w-md flex-col items-center gap-3 py-4 text-center">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-                <IconStamp />
-              </span>
-              <h2 className="font-[300] text-[1.25rem] text-ink">
-                Jeres overblik fyldes af sig selv
-              </h2>
-              <p className="max-w-sm font-[300] text-[0.88rem] leading-relaxed text-stone">
-                Så snart den første kunde henter kortet og får et stempel, ser I
-                besøg, genbesøg og indløste belønninger her.
-              </p>
-            </div>
-          </Panel>
-          <RecommendationCard rec={rec} />
-        </div>
-      ) : (
-        <div className="flex flex-col gap-9">
+      {/* Hjertet i Overblik: flotte genveje til de vigtigste handlinger, saa
+          ejeren med det samme kan stemple, dele kortet, styre adgang m.m. */}
+      <ActionGrid />
+
+      {isNew ? null : (
+        <div className="mt-10 flex flex-col gap-9">
           {/* Dernaest: faa centrale noegletal, hver med sammenligning til i gaar */}
           <div>
             <SectionHeader
@@ -450,9 +418,6 @@ export default async function OverviewPage() {
               )}
             </Panel>
           </div>
-
-          {/* Til sidst: den ene kontekstuelle anbefaling */}
-          <RecommendationCard rec={rec} />
 
           <AddToHomeHint />
         </div>

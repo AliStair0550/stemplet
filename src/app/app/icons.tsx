@@ -100,6 +100,31 @@ export function IconDevice() {
   );
 }
 
+export function IconChart() {
+  return (
+    <svg {...svgProps} className={ICON_LG}>
+      <path d="M4 4v15a1 1 0 0 0 1 1h15" />
+      <path d="M8 15l3.5-4 3 2.5L20 7" />
+    </svg>
+  );
+}
+export function IconKey() {
+  return (
+    <svg {...svgProps} className={ICON_LG}>
+      <circle cx="8" cy="12" r="3.5" />
+      <path d="M11.5 12H20M17 12v3M14 12v2.5" />
+    </svg>
+  );
+}
+export function IconCard() {
+  return (
+    <svg {...svgProps} className={ICON_LG}>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M3 10h18M6.5 14.5h4" />
+    </svg>
+  );
+}
+
 export const CTA =
   "inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70";
 
