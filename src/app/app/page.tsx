@@ -9,6 +9,7 @@ import {
 import { Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
+import { contrastText, rgba, shade } from "@/lib/brand";
 import { AddToHomeHint } from "./AddToHomeHint";
 import {
   CtaArrow,
@@ -188,30 +189,46 @@ const ACTIONS: Action[] = [
   },
 ];
 
-// Den store, primaere genvej: giv et stempel. Fyldt i brand-accenten, saa det
-// er det oeje foerst falder paa.
-function StampAction() {
+// Den store, primaere genvej: giv et stempel. Fyldt i butikkens EGEN brandfarve
+// med en let gradient, og tekstfarven vaelges automatisk (lys eller moerk), saa
+// den altid er laesbar, ogsaa paa en lys brandfarve.
+function StampAction({ primaryColor }: { primaryColor: string }) {
+  const fg = contrastText(primaryColor);
   return (
     <Link
       href="/app/kasse"
-      className="group relative flex items-center gap-4 overflow-hidden rounded-lg bg-gradient-to-br from-terracotta to-terracotta-dark p-5 text-parchment shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift md:p-6"
+      className="group relative flex items-center gap-4 overflow-hidden rounded-lg p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift md:p-6"
+      style={{
+        color: fg,
+        background: `linear-gradient(135deg, ${primaryColor}, ${shade(primaryColor, -0.18)})`,
+      }}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl"
+        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full blur-2xl"
+        style={{ background: rgba(fg, 0.12) }}
       />
-      <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-parchment">
+      <span
+        className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+        style={{ background: rgba(fg, 0.16) }}
+      >
         <IconStampMark className="h-6 w-6" />
       </span>
       <span className="relative min-w-0 flex-1">
         <span className="block font-[400] text-[1.15rem] leading-tight">
           Giv et stempel
         </span>
-        <span className="mt-0.5 block font-[300] text-[0.85rem] leading-relaxed text-parchment/80">
+        <span
+          className="mt-0.5 block font-[300] text-[0.85rem] leading-relaxed"
+          style={{ color: rgba(fg, 0.82) }}
+        >
           Åbn kassen og stempel en kunde
         </span>
       </span>
-      <span className="relative shrink-0 text-parchment/80 transition-transform duration-200 group-hover:translate-x-0.5">
+      <span
+        className="relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+        style={{ color: rgba(fg, 0.82) }}
+      >
         <CtaArrow />
       </span>
     </Link>
@@ -243,10 +260,10 @@ function ActionTile({ action }: { action: Action }) {
   );
 }
 
-function ActionGrid() {
+function ActionGrid({ primaryColor }: { primaryColor: string }) {
   return (
     <section className="animate-step">
-      <StampAction />
+      <StampAction primaryColor={primaryColor} />
       <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {ACTIONS.map((a) => (
           <ActionTile key={a.href} action={a} />
@@ -315,7 +332,7 @@ export default async function OverviewPage() {
 
       {/* Hjertet i Overblik: flotte genveje til de vigtigste handlinger, saa
           ejeren med det samme kan stemple, dele kortet, styre adgang m.m. */}
-      <ActionGrid />
+      <ActionGrid primaryColor={business.primaryColor} />
 
       {isNew ? null : (
         <div className="mt-10 flex flex-col gap-9">
