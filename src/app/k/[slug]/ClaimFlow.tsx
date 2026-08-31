@@ -201,17 +201,29 @@ export function ClaimFlow({
               className="flex-1 text-[0.86rem] font-[300] leading-relaxed"
               style={{ color: rgba(ctaBg, 0.9) }}
             >
-              Åbn <span className="font-[600]">Safari</span>, tryk i adresselinjen
-              og indsæt linket.
+              Åbn <span className="font-[600]">Safari</span>, indsæt linket og
+              hent dit stempelkort.
             </p>
           </div>
         </div>
 
         <p
-          className="mt-4 border-t pt-3 text-center text-[0.78rem] font-[300] leading-relaxed"
+          className="mt-4 flex flex-wrap items-center justify-center gap-x-1 gap-y-0.5 border-t pt-3 text-center text-[0.78rem] font-[300] leading-relaxed"
           style={{ borderColor: rgba(ctaBg, 0.2), color: rgba(ctaBg, 0.72) }}
         >
-          Eller tryk på menu-ikonet i {inApp} og vælg &quot;Åbn i Safari&quot;.
+          <span>Eller tryk på</span>
+          <span
+            aria-hidden
+            className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5"
+            style={{ background: rgba(ctaBg, 0.14) }}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">
+              <circle cx="5" cy="12" r="1.7" />
+              <circle cx="12" cy="12" r="1.7" />
+              <circle cx="19" cy="12" r="1.7" />
+            </svg>
+          </span>
+          <span>øverst i {inApp}, og vælg &quot;Åbn i ekstern browser&quot;.</span>
         </p>
       </div>
     ) : null;
