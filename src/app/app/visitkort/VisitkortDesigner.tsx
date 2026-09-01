@@ -225,7 +225,6 @@ export function VisitkortDesigner({
   const [pending, startSave] = useTransition();
   const [busy, setBusy] = useState(false);
   const [imgBusy, setImgBusy] = useState(false);
-  const [imgFormat, setImgFormat] = useState<"png" | "jpg">("png");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // Skjulte, hOj-oploeste eksport-noder (for- og bagside) til billed-download
@@ -340,15 +339,16 @@ export function VisitkortDesigner({
     }
   }
 
-  // Hent den VISTE side som PNG/JPG uden skaeremaerker (i modsaetning til tryk-
-  // PDF'en). Fanger den skjulte hOj-oploeste eksport-node med html-to-image.
+  // Hent den VISTE side som PNG uden skaeremaerker (i modsaetning til tryk-PDF'en).
+  // PNG er bedst til et visitkort: skarpt, tabsfrit og med gennemsigtige hjOrner
+  // ved die-cut. Fanger den skjulte hOj-oploeste eksport-node med html-to-image.
   async function downloadImage() {
     setImgBusy(true);
     setMsg(null);
     try {
       const node = view === "front" ? frontRef.current : backRef.current;
       if (!node) throw new Error("no node");
-      const mod = await import("html-to-image");
+      const { toPng } = await import("html-to-image");
       if (document.fonts?.ready) await document.fonts.ready;
       // Vent paa at logo/QR (img) er indlaest, ellers bliver billedet tomt.
       await Promise.all(
@@ -363,19 +363,12 @@ export function VisitkortDesigner({
               }),
         ),
       );
-      const isJpg = imgFormat === "jpg";
-      const opts = {
-        pixelRatio: 2,
-        cacheBust: true,
-        // JPG kan ikke vaere gennemsigtig: fyld evt. die-cut-hjOrner med hvid.
-        ...(isJpg ? { backgroundColor: "#FFFFFF", quality: 0.95 } : {}),
-      };
-      const render = isJpg ? mod.toJpeg : mod.toPng;
-      await render(node, opts); // foerste kald varmer op
-      const dataUrl = await render(node, opts);
+      const opts = { pixelRatio: 2, cacheBust: true };
+      await toPng(node, opts); // foerste kald varmer op
+      const dataUrl = await toPng(node, opts);
       const sideLabel = view === "front" ? "forside" : "bagside";
       const a = document.createElement("a");
-      a.download = `visitkort-${sideLabel}.${isJpg ? "jpg" : "png"}`;
+      a.download = `visitkort-${sideLabel}.png`;
       a.href = dataUrl;
       a.click();
       setMsg({ ok: true, text: `Billede hentet (${sideLabel}).` });
@@ -675,33 +668,15 @@ export function VisitkortDesigner({
           <button type="button" onClick={save} disabled={pending} className={cn(btnClass("outline"), "w-full")}>
             {pending ? "Gemmer..." : "Gem design"}
           </button>
-          {/* Billed-eksport uden skaeremaerker: den viste side som PNG/JPG. */}
-          <div className="flex items-stretch gap-2">
-            <div className="inline-flex shrink-0 rounded-lg border border-clay p-0.5">
-              {(["png", "jpg"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  aria-pressed={imgFormat === f}
-                  onClick={() => setImgFormat(f)}
-                  className={cn(
-                    "rounded-md px-3 text-[0.72rem] font-[500] uppercase tracking-[0.06em] transition-colors",
-                    imgFormat === f ? "bg-terracotta text-parchment" : "text-stone hover:text-ink",
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={downloadImage}
-              disabled={imgBusy}
-              className={cn(btnClass("outline"), "flex-1 justify-center disabled:opacity-60")}
-            >
-              {imgBusy ? "Laver billede..." : "Hent som billede"}
-            </button>
-          </div>
+          {/* Billed-eksport uden skaeremaerker: den viste side som PNG. */}
+          <button
+            type="button"
+            onClick={downloadImage}
+            disabled={imgBusy}
+            className={cn(btnClass("outline"), "w-full disabled:opacity-60")}
+          >
+            {imgBusy ? "Laver billede..." : "Hent som billede (PNG)"}
+          </button>
           <div aria-live="polite" className="min-h-[1.1rem]">
             {msg ? (
               <p className={cn("text-[0.8rem] font-[300]", msg.ok ? "text-terracotta" : "text-rust")}>
