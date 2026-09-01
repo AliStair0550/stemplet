@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { btnClass } from "@/components/ui";
 import { pairDeviceAction } from "./actions";
 
 export function PairDevice({ presetCode }: { presetCode: string }) {
-  const router = useRouter();
   const [code, setCode] = useState(presetCode.toUpperCase().slice(0, 6));
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +15,10 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
     start(async () => {
       const res = await pairDeviceAction({ code, name });
       if (res.ok) {
-        // Enheden er nu parret: hent register-siden ind.
-        router.refresh();
+        // Enheden er nu parret. Haard navigation (ikke blOd refresh), saa den
+        // nysatte kasse-cookie helt sikkert er med paa den friske top-niveau-
+        // request og enheden lander rent i kasse-mode (mest paalideligt paa iOS).
+        window.location.assign("/kasse");
       } else {
         setError(res.error);
       }
