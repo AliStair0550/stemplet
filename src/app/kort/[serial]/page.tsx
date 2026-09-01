@@ -5,7 +5,7 @@ import { loadCardBySerial } from "@/lib/stamp";
 import { StampCard } from "@/components/StampCard";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { WebCardActions } from "./WebCardActions";
-import { WALLET_ENABLED } from "@/lib/env";
+import { WALLET_ENABLED, APP_URL } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { optimizedLogoDataUri } from "@/lib/logo";
@@ -84,12 +84,11 @@ export default async function WebCardPage({
           </div>
         ) : null}
 
-        <WebCardActions serial={cc.serial} walletEnabled={WALLET_ENABLED} />
-
-        <p className="max-w-xs text-center text-[0.72rem] font-[200] leading-relaxed text-slate">
-          Bruger du Android? Vis QR-koden til personalet. Du kan også føje kortet
-          til hjemmeskærmen, så har du det altid ved hånden.
-        </p>
+        <WebCardActions
+          serial={cc.serial}
+          walletEnabled={WALLET_ENABLED}
+          claimUrl={`${APP_URL}/k/${business.slug}`}
+        />
       </div>
     </main>
   );
