@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -224,7 +224,15 @@ export function VisitkortDesigner({
   const [view, setView] = useState<"front" | "back">("front");
   const [pending, startSave] = useTransition();
   const [busy, setBusy] = useState(false);
+  const [imgBusy, setImgBusy] = useState(false);
+  const [imgFormat, setImgFormat] = useState<"png" | "jpg">("png");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Skjulte, hOj-oploeste eksport-noder (for- og bagside) til billed-download
+  // uden skaeremaerker. VkPreview skalerer med container-bredden, saa en fast
+  // exportWidth giver et skarpt billede.
+  const frontRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
 
   function set(patch: Partial<VisitkortDesign>) {
     setDesign((d) => ({ ...d, ...patch }));
@@ -329,6 +337,52 @@ export function VisitkortDesigner({
       setMsg({ ok: false, text: "Kunne ikke lave PDF'en lige nu. Prøv igen." });
     } finally {
       setBusy(false);
+    }
+  }
+
+  // Hent den VISTE side som PNG/JPG uden skaeremaerker (i modsaetning til tryk-
+  // PDF'en). Fanger den skjulte hOj-oploeste eksport-node med html-to-image.
+  async function downloadImage() {
+    setImgBusy(true);
+    setMsg(null);
+    try {
+      const node = view === "front" ? frontRef.current : backRef.current;
+      if (!node) throw new Error("no node");
+      const mod = await import("html-to-image");
+      if (document.fonts?.ready) await document.fonts.ready;
+      // Vent paa at logo/QR (img) er indlaest, ellers bliver billedet tomt.
+      await Promise.all(
+        Array.from(node.querySelectorAll("img")).map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((res) => {
+                const done = () => res();
+                img.onload = done;
+                img.onerror = done;
+                setTimeout(done, 1500);
+              }),
+        ),
+      );
+      const isJpg = imgFormat === "jpg";
+      const opts = {
+        pixelRatio: 2,
+        cacheBust: true,
+        // JPG kan ikke vaere gennemsigtig: fyld evt. die-cut-hjOrner med hvid.
+        ...(isJpg ? { backgroundColor: "#FFFFFF", quality: 0.95 } : {}),
+      };
+      const render = isJpg ? mod.toJpeg : mod.toPng;
+      await render(node, opts); // foerste kald varmer op
+      const dataUrl = await render(node, opts);
+      const sideLabel = view === "front" ? "forside" : "bagside";
+      const a = document.createElement("a");
+      a.download = `visitkort-${sideLabel}.${isJpg ? "jpg" : "png"}`;
+      a.href = dataUrl;
+      a.click();
+      setMsg({ ok: true, text: `Billede hentet (${sideLabel}).` });
+    } catch {
+      setMsg({ ok: false, text: "Kunne ikke lave billedet lige nu. Prøv igen." });
+    } finally {
+      setImgBusy(false);
     }
   }
 
@@ -621,6 +675,33 @@ export function VisitkortDesigner({
           <button type="button" onClick={save} disabled={pending} className={cn(btnClass("outline"), "w-full")}>
             {pending ? "Gemmer..." : "Gem design"}
           </button>
+          {/* Billed-eksport uden skaeremaerker: den viste side som PNG/JPG. */}
+          <div className="flex items-stretch gap-2">
+            <div className="inline-flex shrink-0 rounded-lg border border-clay p-0.5">
+              {(["png", "jpg"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={imgFormat === f}
+                  onClick={() => setImgFormat(f)}
+                  className={cn(
+                    "rounded-md px-3 text-[0.72rem] font-[500] uppercase tracking-[0.06em] transition-colors",
+                    imgFormat === f ? "bg-terracotta text-parchment" : "text-stone hover:text-ink",
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={downloadImage}
+              disabled={imgBusy}
+              className={cn(btnClass("outline"), "flex-1 justify-center disabled:opacity-60")}
+            >
+              {imgBusy ? "Laver billede..." : "Hent som billede"}
+            </button>
+          </div>
           <div aria-live="polite" className="min-h-[1.1rem]">
             {msg ? (
               <p className={cn("text-[0.8rem] font-[300]", msg.ok ? "text-terracotta" : "text-rust")}>
@@ -630,8 +711,21 @@ export function VisitkortDesigner({
           </div>
           <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
             PDF&apos;en er 85 × 55 mm med 3 mm beskæring og skæremærker: side 1
-            forside, side 2 bagside. Upload den direkte til Vistaprint.
+            forside, side 2 bagside. Upload den direkte til Vistaprint. &quot;Hent
+            som billede&quot; henter den viste side uden skæremærker, til fx web
+            eller sociale medier.
           </p>
+          </div>
+        </div>
+
+        {/* Skjulte hOj-oploeste eksport-noder til billed-download (uden skygge,
+            fast bredde). Fanges af downloadImage() via frontRef/backRef. */}
+        <div aria-hidden className="pointer-events-none fixed left-0 top-0 -z-50 opacity-0">
+          <div ref={frontRef}>
+            <VkPreview side="front" design={design} businessName={businessName} logoUrl={logo} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} stampIcon={stampIcon} exportWidth={design.orientation === "landscape" ? 1050 : 680} />
+          </div>
+          <div ref={backRef}>
+            <VkPreview side="back" design={design} businessName={businessName} logoUrl={logo} qrDataUrl={qrDataUrl} stampsRequired={stampsRequired} rewardText={rewardText} stampIcon={stampIcon} exportWidth={design.orientation === "landscape" ? 1050 : 680} />
           </div>
         </div>
 

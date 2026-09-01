@@ -19,6 +19,9 @@ type Props = {
   stampsRequired: number;
   rewardText: string;
   stampIcon: StampIconKey;
+  // Sat -> render i en fast pixel-bredde (til billed-eksport i hOj oplOsning) og
+  // uden preview-skyggen. Udeladt -> normal, responsiv live-preview.
+  exportWidth?: number;
 };
 
 function contactLines(d: VisitkortDesign): string[] {
@@ -34,19 +37,21 @@ export function VkPreview({
   stampsRequired,
   rewardText,
   stampIcon,
+  exportWidth,
 }: Props) {
   const land = design.orientation === "landscape";
   const colors = side === "front" ? design.front : design.back;
   const iconMarkup = STAMP_ICON_PATHS[stampIcon] ?? STAMP_ICON_PATHS.custom;
   const iconBg = design.background === "ikoner";
+  const isExport = exportWidth != null;
 
   return (
     <div className="flex w-full justify-center">
       <div
         style={{
           containerType: "size",
-          width: "100%",
-          maxWidth: land ? 380 : 250,
+          width: isExport ? exportWidth : "100%",
+          maxWidth: isExport ? exportWidth : land ? 380 : 250,
           aspectRatio: land ? "85 / 55" : "55 / 85",
           backgroundColor: colors.bg,
           backgroundImage: iconBg ? iconTileDataUri(iconMarkup, colors.text) : undefined,
@@ -56,8 +61,10 @@ export function VkPreview({
           fontFamily: VK_FONT_CSS[design.font],
           borderRadius: design.dieCut ? "5cqmax" : "0.5cqmax",
           overflow: "hidden",
-          boxShadow:
-            "0 20px 44px -20px rgba(28,25,23,0.4), 0 2px 6px rgba(28,25,23,0.08)",
+          // Ingen preview-skygge i eksporten (skal ikke bages ind i billedet).
+          boxShadow: isExport
+            ? "none"
+            : "0 20px 44px -20px rgba(28,25,23,0.4), 0 2px 6px rgba(28,25,23,0.08)",
         }}
       >
         {side === "front" ? (
