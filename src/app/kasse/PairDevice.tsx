@@ -1,33 +1,29 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { btnClass } from "@/components/ui";
-import { pairDeviceAction } from "./actions";
 
-export function PairDevice({ presetCode }: { presetCode: string }) {
+export function PairDevice({
+  presetCode,
+  error,
+}: {
+  presetCode: string;
+  error?: string | null;
+}) {
   const [code, setCode] = useState(presetCode.toUpperCase().slice(0, 6));
   const [name, setName] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-
-  function submit() {
-    setError(null);
-    start(async () => {
-      const res = await pairDeviceAction({ code, name });
-      if (res.ok) {
-        // Enheden er nu parret. Haard navigation (ikke blOd refresh), saa den
-        // nysatte kasse-cookie helt sikkert er med paa den friske top-niveau-
-        // request og enheden lander rent i kasse-mode (mest paalideligt paa iOS).
-        window.location.assign("/kasse");
-      } else {
-        setError(res.error);
-      }
-    });
-  }
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
-      <div className="flex w-full max-w-sm flex-col gap-6">
+      {/* RIGTIG form-POST (top-niveau-navigation) til /kasse/par, saa kasse-
+          cookien gemmes paalideligt paa iOS. Ingen server-action-fetch her. */}
+      <form
+        method="POST"
+        action="/kasse/par"
+        onSubmit={() => setSubmitting(true)}
+        className="flex w-full max-w-sm flex-col gap-6"
+      >
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink/5 text-ink">
             <svg
@@ -57,6 +53,7 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
             Parringskode
           </span>
           <input
+            name="code"
             value={code}
             onChange={(e) =>
               setCode(
@@ -66,6 +63,7 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
             placeholder="ABC123"
             autoCapitalize="characters"
             autoComplete="off"
+            inputMode="text"
             className="border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-terracotta"
           />
         </label>
@@ -75,6 +73,7 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
             Navn på enheden (valgfrit)
           </span>
           <input
+            name="name"
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 40))}
             placeholder="iPad ved disken"
@@ -89,13 +88,13 @@ export function PairDevice({ presetCode }: { presetCode: string }) {
         ) : null}
 
         <button
-          onClick={submit}
-          disabled={pending || code.length < 6}
+          type="submit"
+          disabled={submitting || code.length < 6}
           className={`${btnClass("primary", "lg")} disabled:cursor-not-allowed disabled:opacity-50`}
         >
-          {pending ? "Parrer..." : "Par enhed"}
+          {submitting ? "Parrer..." : "Par enhed"}
         </button>
-      </div>
+      </form>
     </main>
   );
 }

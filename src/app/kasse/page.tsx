@@ -16,16 +16,26 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
+const PAIR_ERRORS: Record<string, string> = {
+  ugyldig: "Koden er ugyldig, brugt eller udløbet. Bed ejeren om en ny.",
+  optaget: "For mange forsøg. Prøv igen om lidt.",
+};
+
 export default async function KasseRegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kode?: string }>;
+  searchParams: Promise<{ kode?: string; fejl?: string }>;
 }) {
-  const { kode } = await searchParams;
+  const { kode, fejl } = await searchParams;
   const access = await kasseAccess(false);
 
   if (!access) {
-    return <PairDevice presetCode={typeof kode === "string" ? kode : ""} />;
+    return (
+      <PairDevice
+        presetCode={typeof kode === "string" ? kode : ""}
+        error={typeof fejl === "string" ? (PAIR_ERRORS[fejl] ?? null) : null}
+      />
+    );
   }
 
   const business = await prisma.business.findUnique({
@@ -35,7 +45,7 @@ export default async function KasseRegisterPage({
     },
   });
   if (!business) {
-    return <PairDevice presetCode={typeof kode === "string" ? kode : ""} />;
+    return <PairDevice presetCode={typeof kode === "string" ? kode : ""} error={null} />;
   }
   const card = business.cards[0];
   const kioskCard: KioskCard = {

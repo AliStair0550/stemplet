@@ -13,8 +13,21 @@ import { APP_URL } from "./env";
 // (indstillinger/priser/fakturering) kraever ALTID ejer-login, aldrig et
 // enheds-token.
 
-const KASSE_COOKIE = "stemplet_kasse";
+export const KASSE_COOKIE = "stemplet_kasse";
 const secure = process.env.NODE_ENV === "production";
+
+// Delt cookie-opsaetning, saa parringen kan saette kasse-cookien paa et
+// top-niveau-navigations-svar (paalideligt paa iOS), ikke via en server-action-
+// fetch (som Safari ikke altid gemmer Set-Cookie fra).
+export function kasseCookieOptions() {
+  return {
+    httpOnly: true,
+    secure,
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: DEVICE_TTL_SEC,
+  };
+}
 // Uden let forvekslelige tegn (ingen 0/O/1/I), saa koden er nem at taste.
 const PAIR_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const PAIR_TTL_MIN = 10;
@@ -105,11 +118,15 @@ export async function createPairingCode(
   return { code, qrDataUrl, url };
 }
 
-/** Enheden bytter koden til et langtids-token (cookie). Engangsbrug. */
+/**
+ * Enheden bytter koden til et langtids-token. Engangsbrug. RETURNERER tokenet;
+ * kalderen (parrings-ruten) saetter selv kasse-cookien paa svaret, saa den kan
+ * saettes via en top-niveau-navigation (paalideligt paa iOS).
+ */
 export async function pairDevice(
   code: string,
   name: string,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
   const clean = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (clean.length < 6) {
     return { ok: false, error: "Indtast den 6-tegns kode fra dashboardet." };
@@ -141,15 +158,7 @@ export async function pairDevice(
       lastSeenAt: new Date(),
     },
   });
-  const c = await cookies();
-  c.set(KASSE_COOKIE, token, {
-    httpOnly: true,
-    secure,
-    sameSite: "lax",
-    path: "/",
-    maxAge: DEVICE_TTL_SEC,
-  });
-  return { ok: true };
+  return { ok: true, token };
 }
 
 /** Fjern enheds-token fra denne enhed (fx "log ud af kassen"). */
