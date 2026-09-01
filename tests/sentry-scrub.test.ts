@@ -1,12 +1,25 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { ErrorEvent } from "@sentry/nextjs";
-import { isExternalNoise } from "../src/lib/sentry-scrub";
+import {
+  isExternalNoise,
+  isServerActionNetworkNoise,
+} from "../src/lib/sentry-scrub";
 
 // Byg et minimalt ErrorEvent med en enkelt exception og de givne frames.
 function evt(frames: { filename?: string; in_app?: boolean }[]): ErrorEvent {
   return {
     exception: { values: [{ type: "Error", stacktrace: { frames } }] },
+  } as unknown as ErrorEvent;
+}
+
+// Exception med en besked + frame-funktionsnavne (til server-action-stOj).
+function exc(
+  value: string,
+  frames: { function?: string; filename?: string }[],
+): ErrorEvent {
+  return {
+    exception: { values: [{ type: "TypeError", value, stacktrace: { frames } }] },
   } as unknown as ErrorEvent;
 }
 
@@ -58,4 +71,32 @@ test("event uden exception beholdes (ikke en exception)", () => {
 test("exception uden stak beholdes (kan vaere aegte)", () => {
   const e = { exception: { values: [{ type: "Error" }] } } as unknown as ErrorEvent;
   assert.equal(isExternalNoise(e), false);
+});
+
+test("afbrudt server-action-fetch ('Load failed') er netvaerksstoej", () => {
+  const e = exc("Load failed", [
+    { function: "fetchServerAction", filename: "server-action-reducer.ts" },
+  ]);
+  assert.equal(isServerActionNetworkNoise(e), true);
+});
+
+test("'Failed to fetch' fra server-action-reducer er netvaerksstoej", () => {
+  const e = exc("Failed to fetch", [
+    { function: "eval", filename: ".../router-reducer/reducers/server-action-reducer.ts" },
+  ]);
+  assert.equal(isServerActionNetworkNoise(e), true);
+});
+
+test("aegte 'Failed to fetch' udenfor server-action beholdes", () => {
+  const e = exc("Failed to fetch", [
+    { function: "loadThing", filename: "https://stemplet.alius.dk/_next/x.js" },
+  ]);
+  assert.equal(isServerActionNetworkNoise(e), false);
+});
+
+test("ikke-netvaerksfejl i server-action-reducer beholdes", () => {
+  const e = exc("Cannot read properties of undefined", [
+    { function: "fetchServerAction", filename: "server-action-reducer.ts" },
+  ]);
+  assert.equal(isServerActionNetworkNoise(e), false);
 });

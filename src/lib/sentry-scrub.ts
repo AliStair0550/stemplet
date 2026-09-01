@@ -37,10 +37,35 @@ export function isExternalNoise(event: ErrorEvent): boolean {
   return !touchesApp;
 }
 
+// Transport-fejl paa en Next server-action-fetch (afbrudt forbindelse, brugeren
+// navigerede vaek, baggrundet fane paa mobil). Next's router-reducer rapporterer
+// det som en TypeError ("Load failed" i WebKit / "Failed to fetch" i Chrome),
+// men vores server-actions try/catcher det allerede og viser en paen "prOv igen".
+// Det er klient-netvaerksstoej, ikke en app-fejl. Vi dropper KUN, naar baade
+// beskeden er en transport-fejl OG stakken peger paa selve server-action-fetchen,
+// saa en aegte "Failed to fetch" andre steder stadig rapporteres.
+const NETWORK_FAIL_RE =
+  /load failed|failed to fetch|networkerror when attempting to fetch|network connection was lost|the request timed out|cancell?ed/i;
+
+export function isServerActionNetworkNoise(event: ErrorEvent): boolean {
+  const values = event.exception?.values;
+  if (!values || values.length === 0) return false;
+  const msg = values.map((v) => v.value ?? "").join(" ");
+  if (!NETWORK_FAIL_RE.test(msg)) return false;
+  const frames = values.flatMap((v) => v.stacktrace?.frames ?? []);
+  return frames.some((f) =>
+    /fetchServerAction|server-action-reducer/i.test(
+      `${f.function ?? ""} ${f.filename ?? ""}`,
+    ),
+  );
+}
+
 export function scrubPii(event: ErrorEvent): ErrorEvent | null {
   try {
     // Drop ren ekstern browser-stoej, foer noget andet.
     if (isExternalNoise(event)) return null;
+    // Drop afbrudte server-action-fetches (klient-netvaerksstoej, ikke app-fejl).
+    if (isServerActionNetworkNoise(event)) return null;
 
     // Ingen bruger-PII (navn, mail, IP).
     delete event.user;
