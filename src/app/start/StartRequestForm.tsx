@@ -77,8 +77,8 @@ export function StartRequestForm() {
           Kom gratis i gang
         </h1>
         <p className="mx-auto mt-3 max-w-sm font-[300] text-[0.95rem] leading-relaxed text-stone">
-          Fortæl kort om din butik, så laver vi et udkast til dit stempelkort og
-          tager fat i dig. Ingen konto eller kreditkort, bare en hurtig snak.
+          Fortæl kort om din butik, så laver vi et udkast til dig. Ingen konto
+          eller kreditkort, bare en snak om dine behov.
         </p>
       </div>
 
