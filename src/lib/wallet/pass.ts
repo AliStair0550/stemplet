@@ -125,9 +125,13 @@ async function padLogo(buf: Buffer, scale = 1): Promise<Buffer> {
     // mindre luft = logoet fylder mere af Apples faste plads (og omvendt).
     const padFrac = Math.max(0.02, Math.min(0.3, 0.08 + (1 - scale) * 0.12));
     const pad = Math.max(1, Math.round(h * padFrac));
+    // Lidt ekstra luft i TOPPEN, saa logoet ikke klistrer op mod passets kant.
+    // Apple tilpasser det padded billede til den faste logo-plads (bevarer
+    // forhold), saa mere top-luft skubber logoet en anelse ned og giver ro.
+    const topPad = pad + Math.max(1, Math.round(h * 0.06));
     const transparent = { r: 0, g: 0, b: 0, alpha: 0 };
     return await sharp(buf)
-      .extend({ top: pad, bottom: pad, left: pad, right: pad, background: transparent })
+      .extend({ top: topPad, bottom: pad, left: pad, right: pad, background: transparent })
       .png()
       .toBuffer();
   } catch {
