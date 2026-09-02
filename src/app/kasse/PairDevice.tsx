@@ -55,14 +55,48 @@ export function PairDevice({
             Par denne enhed
           </h1>
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
-            Indtast parringskoden fra dashboardet (under Stempel), så bliver den
-            her enhed en fast kasse. Ingen login nødvendig bagefter.
+            {standalone === true
+              ? "Du er inde i kasse-appen. Indtast koden herunder, så er kassen klar og husker sig selv."
+              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Stempel). Ingen login bagefter."}
           </p>
         </div>
 
+        {/* TYDELIG anbefalet raekkefoelge FOER kode-indtastningen (kun i
+            browseren): en hjemmeskaerm-app har sit eget cookie-lager, saa
+            parringen skal laves INDE i appen for at holde. */}
+        {standalone === false ? (
+          <div className="flex flex-col gap-3 rounded-xl border-2 border-terracotta/35 bg-terracotta/[0.06] p-5 text-left">
+            <p className="text-[0.92rem] font-[600] text-ink">
+              Skal enheden være en fast kasse? Start her
+            </p>
+            <ol className="flex flex-col gap-2.5">
+              {[
+                "Føj kassen til hjemmeskærmen",
+                "Åbn kassen fra det nye ikon",
+                "Indtast koden inde i appen",
+              ].map((step, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-terracotta text-[0.72rem] font-[600] text-parchment">
+                    {i + 1}
+                  </span>
+                  <span className="text-[0.84rem] font-[300] leading-snug text-stone">
+                    {step}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="flex items-center gap-3 border-t border-terracotta/20 pt-3">
+              <InstallHomeScreen />
+              <span className="text-[0.72rem] font-[300] leading-snug text-slate">
+                Koden virker i ca. 30 min, så der er tid til at åbne appen.
+              </span>
+            </div>
+          </div>
+        ) : null}
+
         <label className="flex flex-col gap-1.5">
           <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Parringskode
+            {standalone === false ? "Eller indtast koden her nu" : "Parringskode"}
           </span>
           <input
             name="code"
@@ -78,6 +112,12 @@ export function PairDevice({
             inputMode="text"
             className="border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-terracotta"
           />
+          {standalone === false ? (
+            <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Parrer kassen i denne browser. Vil du have et app-ikon, så følg de
+              tre trin ovenfor i stedet.
+            </span>
+          ) : null}
         </label>
 
         <label className="flex flex-col gap-1.5">
@@ -106,32 +146,6 @@ export function PairDevice({
         >
           {submitting ? "Parrer..." : "Par enhed"}
         </button>
-
-        {/* Kun i browseren (ikke naar vi allerede koerer som hjemmeskaerm-app):
-            vejled til den rigtige raekkefoelge, saa parringen ikke gaar tabt.
-            En hjemmeskaerm-app har sit eget lager, saa parringen skal ske DER. */}
-        {standalone === false ? (
-          <div className="flex flex-col gap-2 rounded-lg border border-fog bg-white/70 p-4 text-left">
-            <p className="text-[0.8rem] font-[500] text-ink">
-              Fast enhed? Gør kassen til et app-ikon
-            </p>
-            <ol className="flex flex-col gap-1 text-[0.78rem] font-[300] leading-relaxed text-stone">
-              <li>1. Føj til hjemmeskærm (herunder).</li>
-              <li>2. Åbn kassen fra det nye ikon.</li>
-              <li>
-                3. Indtast koden dér. Så husker kassen sig selv og beder ikke om
-                den igen.
-              </li>
-            </ol>
-            <div className="pt-0.5">
-              <InstallHomeScreen />
-            </div>
-            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Koden virker i ca. 30 minutter, så du kan nå at åbne appen og
-              indtaste den. Behold den fremme, til kassen er klar.
-            </p>
-          </div>
-        ) : null}
       </form>
     </main>
   );
