@@ -244,10 +244,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
 
   pass.type = "storeCard";
 
-  // Dopamin: naar passet opdateres (efter en stempling), viser iOS denne besked
-  // som en notifikation paa laaseskaermen - saa kunden faar et lille "ping" hver
-  // gang. %@ erstattes af den nye vaerdi. Beskeden er kontekstuel: et ekstra kick
-  // naar kortet bliver fuldt, og en venlig hilsen naar en ny omgang begynder.
+  // Synlige laaseskaerm-beskeder ved stempling ("ping") er SLAAET FRA for nu,
+  // indtil vi har en gennemtaenkt notifikations-strategi. Passet opdateres stadig
+  // TAVST via APNs, saa stempeltallet altid er korrekt i Wallet, der kommer bare
+  // ingen notifikation. Saet til true for at faa "ping" tilbage.
+  const WALLET_PUSH_MESSAGES = false;
   const changeMessage = rewardReady
     ? "Kortet er fuldt. Din belønning er klar."
     : input.stamps === 0
@@ -260,7 +261,8 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     // men kortet skal aldrig vise "11/10".
     label: "STEMPLER",
     value: `${Math.min(input.stamps, input.required)}/${input.required}`,
-    changeMessage,
+    // changeMessage udelades naar beskeder er slaaet fra -> ingen notifikation.
+    ...(WALLET_PUSH_MESSAGES ? { changeMessage } : {}),
   });
 
   // Forsiden under strippen: EEN ren raekke. Beloenningen til venstre, og kundens
