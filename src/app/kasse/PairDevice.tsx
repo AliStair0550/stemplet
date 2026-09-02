@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { btnClass } from "@/components/ui";
+import { InstallHomeScreen } from "./InstallHomeScreen";
 
 export function PairDevice({
   presetCode,
@@ -13,6 +14,17 @@ export function PairDevice({
   const [code, setCode] = useState(presetCode.toUpperCase().slice(0, 6));
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Koerer vi allerede som hjemmeskaerm-app? Saa er DETTE det rigtige sted at
+  // parre (appen har sit eget cookie-lager), og "foej til hjemmeskaerm"-tippet
+  // skal IKKE vises. I Safari viser vi tippet, saa man goer det i rigtig orden.
+  const [standalone, setStandalone] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const sa =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    setStandalone(!!sa);
+  }, []);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
@@ -94,6 +106,32 @@ export function PairDevice({
         >
           {submitting ? "Parrer..." : "Par enhed"}
         </button>
+
+        {/* Kun i browseren (ikke naar vi allerede koerer som hjemmeskaerm-app):
+            vejled til den rigtige raekkefoelge, saa parringen ikke gaar tabt.
+            En hjemmeskaerm-app har sit eget lager, saa parringen skal ske DER. */}
+        {standalone === false ? (
+          <div className="flex flex-col gap-2 rounded-lg border border-fog bg-white/70 p-4 text-left">
+            <p className="text-[0.8rem] font-[500] text-ink">
+              Fast enhed? Gør kassen til et app-ikon
+            </p>
+            <ol className="flex flex-col gap-1 text-[0.78rem] font-[300] leading-relaxed text-stone">
+              <li>1. Føj til hjemmeskærm (herunder).</li>
+              <li>2. Åbn kassen fra det nye ikon.</li>
+              <li>
+                3. Indtast koden dér. Så husker kassen sig selv og beder ikke om
+                den igen.
+              </li>
+            </ol>
+            <div className="pt-0.5">
+              <InstallHomeScreen />
+            </div>
+            <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
+              Koden virker i ca. 30 minutter, så du kan nå at åbne appen og
+              indtaste den. Behold den fremme, til kassen er klar.
+            </p>
+          </div>
+        ) : null}
       </form>
     </main>
   );

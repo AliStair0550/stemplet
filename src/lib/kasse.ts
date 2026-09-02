@@ -30,7 +30,11 @@ export function kasseCookieOptions() {
 }
 // Uden let forvekslelige tegn (ingen 0/O/1/I), saa koden er nem at taste.
 const PAIR_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-const PAIR_TTL_MIN = 10;
+// Genbrugelig inden for TTL (ikke Éngangs): paa iOS har en hjemmeskaerm-app sit
+// EGET cookie-lager, saa parringen skal ske INDE i appen. Foerst-i-Safari-saa-
+// hjemmeskaerm betyder, at koden skal kunne indtastes igen i appen. Derfor et
+// rummeligt vindue og genbrug, saa man ikke lander i "allerede brugt/udloebet".
+const PAIR_TTL_MIN = 30;
 const DEVICE_TTL_SEC = 60 * 60 * 24 * 365 * 2; // 2 aar
 const TOUCH_EVERY_MS = 5 * 60_000; // opdater "sidst set" hoejst hvert 5. min
 
@@ -134,20 +138,18 @@ export async function pairDevice(
   const row = await prisma.devicePairingCode.findUnique({
     where: { codeHash: sha256(clean) },
   });
-  if (!row || row.usedAt || row.expiresAt < new Date()) {
+  if (!row || row.expiresAt < new Date()) {
     return {
       ok: false,
       error: "Koden er ugyldig eller udløbet. Bed ejeren om en ny.",
     };
   }
-  // Engangsbrug: markér brugt atomisk, saa den samme kode ikke kan parre to.
-  const claimed = await prisma.devicePairingCode.updateMany({
-    where: { id: row.id, usedAt: null },
-    data: { usedAt: new Date() },
-  });
-  if (claimed.count === 0) {
-    return { ok: false, error: "Koden er allerede brugt. Bed ejeren om en ny." };
-  }
+  // Genbrugelig inden for TTL: vi blokerer IKKE paa usedAt (saa koden kan
+  // indtastes igen inde i hjemmeskaerm-appen), men noterer sidste brug. Hver
+  // parring opretter sin egen enhed, som ejeren kan se og tilbagekalde.
+  await prisma.devicePairingCode
+    .update({ where: { id: row.id }, data: { usedAt: new Date() } })
+    .catch(() => {});
 
   const token = randomBytes(32).toString("hex");
   await prisma.device.create({
