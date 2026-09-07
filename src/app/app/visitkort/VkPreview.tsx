@@ -76,6 +76,7 @@ export function VkPreview({
             qrDataUrl={qrDataUrl}
             stampsRequired={stampsRequired}
             rewardText={rewardText}
+            isExport={isExport}
           />
         )}
       </div>
@@ -269,12 +270,14 @@ function BackSide({
   qrDataUrl,
   stampsRequired,
   rewardText,
+  isExport,
 }: {
   design: VisitkortDesign;
   businessName: string;
   qrDataUrl: string;
   stampsRequired: number;
   rewardText: string;
+  isExport?: boolean;
 }) {
   const elR = design.corners === "afrundede" ? "3cqmax" : "0";
   const qrTile = (size: string) => (
@@ -284,7 +287,9 @@ function BackSide({
         borderRadius: elR,
         padding: "2.6cqmax",
         lineHeight: 0,
-        boxShadow: "0 4cqmax 10cqmax -6cqmax rgba(0,0,0,0.35)",
+        // Ingen skygge i eksporten - ellers bages en stor bloed skygge ind i
+        // billedet (fremstaar som en moerk skygge langs kanten).
+        boxShadow: isExport ? "none" : "0 4cqmax 10cqmax -6cqmax rgba(0,0,0,0.35)",
       }}
     >
       <img src={qrDataUrl} alt="" style={{ display: "block", width: size, height: size }} />
