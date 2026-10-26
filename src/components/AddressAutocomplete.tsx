@@ -2,11 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Adresse-autocomplete mod DAWA (Danmarks Adressers Web API, dataforsyningen.dk).
-// Officielt, gratis og uden noegle. Brugeren vaelger en rigtig adresse fra listen,
-// saa vej, husnummer og postnummer altid er korrekte, i stedet for at gaette paa
-// et frit indtastet felt. Kraever ingen server-kald: DAWA har aaben CORS.
+// Adresse-autocomplete mod Photon (komoot, OpenStreetMap-data). DAWA lukkede i
+// 2026 (svarer 410 Gone), og afloeseren GSearch kraever en token. Photon er
+// gratis, uden noegle og har aaben CORS, saa der stadig ikke skal et server-kald
+// til. Brugeren vaelger en rigtig adresse fra listen, saa vej, husnummer og
+// postnummer er korrekte, i stedet for at gaette paa et frit indtastet felt.
 type Suggestion = { tekst: string; id: string };
+
+// Danmark inkl. Bornholm (minLon, minLat, maxLon, maxLat).
+const DK_BBOX = "7.9,54.5,15.3,57.8";
+
+type PhotonFeature = {
+  properties?: {
+    osm_id?: number;
+    countrycode?: string;
+    name?: string;
+    street?: string;
+    housenumber?: string;
+    postcode?: string;
+    city?: string;
+  };
+};
+
+// "Vej 12, 8000 By". Uden vej (fx et stednavn) bruges navnet i stedet.
+function formatAddress(p: NonNullable<PhotonFeature["properties"]>): string | null {
+  const road = p.street ?? p.name;
+  if (!road) return null;
+  const line1 = p.housenumber ? `${road} ${p.housenumber}` : road;
+  const line2 = [p.postcode, p.city].filter(Boolean).join(" ");
+  return line2 ? `${line1}, ${line2}` : line1;
+}
 
 export function AddressAutocomplete({
   value,
@@ -53,18 +78,26 @@ export function AddressAutocomplete({
     const t = setTimeout(async () => {
       try {
         const res = await fetch(
-          "https://api.dataforsyningen.dk/adgangsadresser/autocomplete?per_side=6&fuzzy&q=" +
+          `https://photon.komoot.io/api/?limit=10&lang=default&bbox=${DK_BBOX}&q=` +
             encodeURIComponent(q),
           { signal: ctrl.signal },
         );
         if (!res.ok) return;
-        const data = (await res.json()) as {
-          tekst?: string;
-          adgangsadresse?: { id?: string };
-        }[];
-        const list: Suggestion[] = (Array.isArray(data) ? data : [])
-          .filter((d) => d.tekst)
-          .map((d) => ({ tekst: d.tekst as string, id: d.adgangsadresse?.id ?? (d.tekst as string) }));
+        const data = (await res.json()) as { features?: PhotonFeature[] };
+        // Kun danske hits, rigtige adresser (med husnummer) foerst, og ingen
+        // dubletter (samme adresse kan baade vaere en bygning og en butik).
+        const seen = new Set<string>();
+        const list: Suggestion[] = (data.features ?? [])
+          .map((f) => f.properties)
+          .filter((p): p is NonNullable<PhotonFeature["properties"]> => p?.countrycode === "DK")
+          .sort((a, b) => Number(!!b.housenumber) - Number(!!a.housenumber))
+          .flatMap((p) => {
+            const tekst = formatAddress(p);
+            if (!tekst || seen.has(tekst)) return [];
+            seen.add(tekst);
+            return [{ tekst, id: String(p.osm_id ?? tekst) }];
+          })
+          .slice(0, 6);
         setItems(list);
         setOpen(list.length > 0);
         setActive(-1);

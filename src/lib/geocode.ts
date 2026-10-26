@@ -1,34 +1,38 @@
 import "server-only";
 
-// Geokod en dansk adresse til lat/lng via DAWA (Danmarks Adressers Web API,
-// dataforsyningen.dk). Officielt, gratis, ingen noegle, og altid korrekt
-// postnummer. Adressen er en fast query-param mod et fast host (ingen SSRF).
-// Samme datakilde som autocomplete paa klienten, saa en valgt adresse altid
-// kan slaas op.
+// Geokod en dansk adresse til lat/lng via Photon (komoot, OpenStreetMap-data).
+// DAWA lukkede i 2026 (svarer 410 Gone), og afloeseren GSearch kraever en token.
+// Photon er gratis og uden noegle. Adressen er en fast query-param mod et fast
+// host (ingen SSRF). Samme datakilde som autocomplete paa klienten, saa en valgt
+// adresse altid kan slaas op. Mangler OSM husnummeret, rammer vi vejen, hvilket
+// er rigeligt praecist til en Wallet-geofence.
 export type GeoHit = { lat: number; lng: number; label: string };
+
+// Danmark inkl. Bornholm (minLon, minLat, maxLon, maxLat).
+const DK_BBOX = "7.9,54.5,15.3,57.8";
 
 export async function geocodeAddress(address: string): Promise<GeoHit | null> {
   try {
-    // struktur=mini giver et fladt svar med x (laengdegrad) og y (breddegrad)
-    // i WGS84 samt betegnelse (den fulde, formaterede adresse).
     const url =
-      "https://api.dataforsyningen.dk/adgangsadresser?struktur=mini&per_side=1&q=" +
+      `https://photon.komoot.io/api/?limit=1&lang=default&bbox=${DK_BBOX}&q=` +
       encodeURIComponent(address);
     const res = await fetch(url, {
       headers: { "User-Agent": "Stemplet/1.0 (+https://stemplet.alius.dk)" },
+      signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return null;
     const data = (await res.json()) as {
-      x?: number;
-      y?: number;
-      betegnelse?: string;
-    }[];
-    const hit = Array.isArray(data) ? data[0] : null;
-    if (!hit || typeof hit.x !== "number" || typeof hit.y !== "number") {
-      return null;
-    }
-    if (!Number.isFinite(hit.x) || !Number.isFinite(hit.y)) return null;
-    return { lat: hit.y, lng: hit.x, label: hit.betegnelse ?? address };
+      features?: {
+        geometry?: { coordinates?: [number, number] };
+        properties?: { countrycode?: string };
+      }[];
+    };
+    const hit = data.features?.[0];
+    if (!hit || hit.properties?.countrycode !== "DK") return null;
+    // GeoJSON-raekkefoelge: [laengdegrad, breddegrad].
+    const [lng, lat] = hit.geometry?.coordinates ?? [];
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat: lat as number, lng: lng as number, label: address };
   } catch {
     return null;
   }
