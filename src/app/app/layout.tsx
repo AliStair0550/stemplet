@@ -24,15 +24,17 @@ export default async function AppLayout({
   );
 
   return (
-    <div className="min-h-screen bg-parchment">
+    // dash-theme: sorte knapper i hele dashboardet (se globals.css).
+    <div className="dash-theme min-h-screen bg-parchment">
       <DashboardNav
         businesses={businesses}
         activeBusinessId={business.id}
         showAgreement={showAgreement}
         showReferrals={business.referralsEnabled}
       />
-      <main className="md:pl-60 print:!pl-0">
-        <div className="mx-auto max-w-[920px] px-6 py-10 md:px-10 md:py-12">
+      {/* pb-24 paa mobil: plads til fanerne i bunden. */}
+      <main className="pb-24 md:pb-0 md:pl-60 print:!pl-0 print:!pb-0">
+        <div className="mx-auto max-w-[960px] px-5 py-8 md:px-10 md:py-12">
           {children}
         </div>
       </main>

@@ -7,14 +7,16 @@ type Variant = "primary" | "ink" | "outline" | "terracotta" | "ghost" | "light";
 type Size = "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  // DEN CTA: rust. Brugt sparsomt.
-  primary: "bg-terracotta text-parchment hover:bg-terracotta-dark",
+  // DEN CTA: rust. Brugt sparsomt. Farven kommer fra --btn-primary (globals.css):
+  // terracotta overalt, men sort inde i dashboardet (.dash-theme), saa Stemplet
+  // og Henvisninger deler een rolig knapfarve.
+  primary: "bg-[var(--btn-primary)] text-parchment hover:bg-[var(--btn-primary-hover)]",
   // Staerk, neutral handling paa lys flade.
   ink: "bg-ink text-parchment hover:bg-ink/90",
   // Sekundaer: haarfin border, ingen skygge.
   outline: "border border-ink/15 text-ink hover:border-ink/30 hover:bg-ink/[0.03]",
   // Bevaret til dashboard/admin (fase 2).
-  terracotta: "bg-terracotta text-parchment hover:bg-terracotta-dark",
+  terracotta: "bg-[var(--btn-primary)] text-parchment hover:bg-[var(--btn-primary-hover)]",
   ghost: "text-taupe hover:text-ink",
   // Lys knap til moerke sektioner (#1C1917-baggrund).
   light: "bg-parchment text-ink hover:bg-sand",

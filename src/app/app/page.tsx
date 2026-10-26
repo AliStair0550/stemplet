@@ -1,256 +1,81 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireBusiness } from "@/lib/session";
-import {
-  getBusinessStats,
-  getRecentActivity,
-  getOverviewPulse,
-} from "@/lib/stats";
+import { getBusinessStats, getRecentActivity, getOverviewPulse } from "@/lib/stats";
+import { getReferralOverview, type ReferralRow } from "@/lib/referral-desk";
+import { greetingFor, summaryLine } from "@/lib/overview-text";
+import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { Panel, SectionHeader } from "@/components/dash";
-import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
-import { AddToHomeTile } from "./AddToHomeButton";
-import {
-  CtaArrow,
-  IconChart,
-  IconGift,
-  IconKey,
-  IconQr,
-  IconSpark,
-  IconStamp,
-  IconStampMark,
-  IconUsers,
-} from "./icons";
 
 export const dynamic = "force-dynamic";
 
-const ACTION_LABEL: Record<string, string> = {
+// Hjem: det faelles overblik over butikken. Et kort pr. produkt med dagens tal
+// (klik ind for detaljer) og een aktivitetsliste paa tvaers, hvor prikken viser
+// produktet (Stemplet terracotta, Henvisninger sort).
+
+const STAMP_LABEL: Record<string, string> = {
   STAMP: "Stempel givet",
   REDEEM: "Belønning indløst",
   PIN_FAIL: "Forkert PIN",
   FLAGGED: "Mistænkelig aktivitet",
 };
 
-// Hilsen efter tid paa dagen (dansk tid). en-GB giver 00-23 uden lokale-quirks.
-function greetingFor(now: Date): string {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/Copenhagen",
-      hour: "2-digit",
-      hour12: false,
-    }).format(now),
-  );
-  if (hour < 10) return "Godmorgen";
-  if (hour < 12) return "God formiddag";
-  if (hour < 18) return "God eftermiddag";
-  return "Godaften";
-}
-
-// Én sætning i almindeligt dansk: hvordan går dagen? Bygget af dagens tal, saa
-// ejeren forstaar situationen paa faa sekunder uden at laese noegletal.
-function summaryLine(p: {
-  totalCustomers: number;
-  activeCustomers: number;
-  visitorsToday: number;
-  returningToday: number;
-}): string {
-  if (p.totalCustomers === 0) {
-    return "Velkommen. I er klar til at tage imod jeres første kunde.";
-  }
-  if (p.visitorsToday === 0) {
-    // "Aktiv" bruges KUN om kortholdere der faktisk har faaet et stempel for
-    // nylig (activeCustomers = stemplet inden for 60 dage). Har ingen et stempel
-    // endnu, siger vi neutralt "kortholdere, klar til det foerste stempel", saa
-    // et tomt kort ikke fremstaar som en engageret kunde.
-    if (p.activeCustomers > 0) {
-      return `Ingen stempler endnu i dag. I har ${formatDkNumber(
-        p.activeCustomers,
-      )} ${
-        p.activeCustomers === 1 ? "aktiv kortholder" : "aktive kortholdere"
-      }, klar til et genbesøg.`;
-    }
-    return `Ingen stempler endnu i dag. I har ${formatDkNumber(
-      p.totalCustomers,
-    )} ${
-      p.totalCustomers === 1 ? "kortholder" : "kortholdere"
-    }, klar til det første stempel.`;
-  }
-  if (p.returningToday === 0) {
-    return `${formatDkNumber(p.visitorsToday)} ${
-      p.visitorsToday === 1 ? "ny kunde har" : "nye kunder har"
-    } besøgt jer i dag.`;
-  }
-  return `${formatDkNumber(p.visitorsToday)} ${
-    p.visitorsToday === 1 ? "kunde har" : "kunder har"
-  } besøgt jer i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
-}
-
-// Sammenligning med i gaar, skrevet ud, saa ejeren slipper for at regne.
-function deltaLabel(
-  today: number,
-  yesterday: number,
-): { text: string; dir: "up" | "down" | "flat" } {
-  const d = today - yesterday;
-  if (d > 0) return { text: `${d} flere end i går`, dir: "up" };
-  if (d < 0) return { text: `${Math.abs(d)} færre end i går`, dir: "down" };
-  return { text: "som i går", dir: "flat" };
-}
-
-// Ét noegletal med dagens tal, sammenligning til i gaar og en kort forklaring.
-function PulseTile({
-  label,
-  value,
-  yesterday,
-  icon,
-}: {
-  label: string;
-  value: number;
-  yesterday: number;
-  icon: ReactNode;
-}) {
-  const d = deltaLabel(value, yesterday);
-  const showDelta = value !== 0 || yesterday !== 0;
-  return (
-    <div className="group relative overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-label font-[400] uppercase tracking-[0.14em] text-stone">
-          {label}
-        </span>
-        <span className="text-terracotta/60 transition-colors group-hover:text-terracotta">
-          {icon}
-        </span>
-      </div>
-      <div className="mt-3 font-[300] text-[2rem] leading-none text-ink tabular-nums">
-        <AnimatedNumber value={value} />
-      </div>
-      {showDelta ? (
-        <div className="mt-2">
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.68rem] font-[400]",
-              d.dir === "up"
-                ? "bg-terracotta/10 text-terracotta"
-                : "bg-fog/70 text-slate",
-            )}
-          >
-            <span aria-hidden>
-              {d.dir === "up" ? "↑" : d.dir === "down" ? "↓" : "•"}
-            </span>
-            {d.text}
-          </span>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-// Genvejene i Overblik. EEN kilde til titel, undertekst, maal og ikon, saa
-// gridet er let at pleje. "Adgang" sender ind til adgang-sektionen i
-// indstillinger (login-mails + kasse-enheder).
-type Action = {
-  href: string;
-  label: string;
-  sub: string;
-  icon: ReactNode;
-  // Aabner i en ny fane (fx kundesiden, der ligger uden for dashboardet).
-  external?: boolean;
+type Activity = {
+  id: string;
+  at: Date;
+  text: string;
+  product: "stemplet" | "henvisninger";
+  alert?: boolean;
 };
 
-const ACTIONS: Action[] = [
-  {
-    href: "/app/indstillinger#adgang",
-    label: "Adgang",
-    sub: "Medarbejdere og kasse-enheder",
-    icon: <IconKey />,
-  },
-  {
-    href: "/app/kampagner",
-    label: "Kampagner",
-    sub: "Påmindelser og tilbud",
-    icon: <IconGift />,
-  },
-  {
-    href: "/app/statistik",
-    label: "Statistik",
-    sub: "Besøg, genbesøg og belønninger",
-    icon: <IconChart />,
-  },
-];
-
-// Alle genveje som et rent, luftigt kort-grid i samme boks-stil.
-const tileClass =
-  "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift";
-
-function ActionTile({ action }: { action: Action }) {
-  const inner = (
-    <>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
-        {action.icon}
-      </span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-1.5 font-[400] text-[1rem] text-ink">
-          {action.label}
-          <span className="text-terracotta/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-terracotta">
-            <CtaArrow />
-          </span>
-        </span>
-        <span className="mt-0.5 block font-[300] text-[0.8rem] leading-relaxed text-stone">
-          {action.sub}
-        </span>
-      </span>
-    </>
-  );
-  // Kundesiden ligger uden for dashboardet: aabn i ny fane, saa ejeren beholder
-  // Overblik. De interne genveje bruger Next-Link.
-  if (action.external) {
-    return (
-      <a href={action.href} target="_blank" rel="noreferrer" className={tileClass}>
-        {inner}
-      </a>
-    );
+function referralText(r: ReferralRow): string {
+  const referrer = r.referrer.name ?? r.referrer.code ?? "En kunde";
+  const referred = r.referred.name ?? "en ny kunde";
+  switch (r.status) {
+    case "REWARDED":
+      return `${referred} kom via ${referrer}. Første besøg registreret.`;
+    case "CREATED":
+    case "VISITED":
+      return `${referrer} har henvist ${referred}.`;
+    case "EXPIRED":
+      return `Henvisningen af ${referred} er udløbet.`;
+    default:
+      return `Henvisningen af ${referred} er annulleret.`;
   }
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <Link href={action.href} className={tileClass}>
-      {inner}
+    <span>
+      <span className="block font-[400] text-[1.75rem] leading-none tabular-nums text-ink">{value}</span>
+      <span className="mt-1.5 block text-[0.78rem] text-slate">{label}</span>
+    </span>
+  );
+}
+
+function ProductCard({ href, logo, children }: { href: string; logo: ReactNode; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col gap-6 rounded-xl border border-fog bg-white p-6 shadow-card transition-colors hover:border-clay"
+    >
+      <span className="flex items-center justify-between">
+        {logo}
+        <span className="text-[0.8rem] text-slate transition-colors group-hover:text-ink">Åbn →</span>
+      </span>
+      <span className="grid grid-cols-3 gap-3">{children}</span>
     </Link>
   );
 }
 
-function ActionGrid({ customerUrl }: { customerUrl: string }) {
-  // "Giv et stempel" foerst (det man goer oftest), saa kundekortet, som
-  // kunderne ser det. Hjemmeskaerm-boksen skjuler sig selv i den installerede app.
-  const actions: Action[] = [
-    {
-      href: "/app/kasse",
-      label: "Giv et stempel",
-      sub: "Åbn kassen og stempel en kunde",
-      icon: <IconStampMark />,
-    },
-    {
-      href: customerUrl,
-      label: "Se kundekort",
-      sub: "Kortet, som kunderne ser det",
-      icon: <IconQr />,
-      external: true,
-    },
-    ...ACTIONS,
-  ];
-  return (
-    <section className="grid grid-cols-2 gap-3 animate-step sm:gap-4 lg:grid-cols-3">
-      {actions.map((a) => (
-        <ActionTile key={a.href} action={a} />
-      ))}
-      <AddToHomeTile className={tileClass} />
-    </section>
-  );
-}
-
-export default async function OverviewPage() {
+export default async function HomePage() {
   const { business } = await requireBusiness();
-  const [stats, activity, pulse] = await Promise.all([
+  const [stats, pulse, stampActivity, referrals] = await Promise.all([
     getBusinessStats(business.id),
-    getRecentActivity(business.id, 6),
     getOverviewPulse(business.id),
+    getRecentActivity(business.id, 6),
+    business.referralsEnabled ? getReferralOverview(business.id) : Promise.resolve(null),
   ]);
 
   const now = new Date();
@@ -260,139 +85,92 @@ export default async function OverviewPage() {
     day: "numeric",
     month: "long",
   }).format(now);
-  const greeting = greetingFor(now);
-  const summary = summaryLine({
-    totalCustomers: stats.totalCustomers,
-    activeCustomers: stats.activeCustomers,
-    visitorsToday: pulse.visitorsToday,
-    returningToday: pulse.returningToday,
-  });
 
-  const isNew = stats.stampsTotal === 0;
-
-  const stampsToday = stats.perDay.at(-1)?.count ?? 0;
-  const stampsYesterday = stats.perDay.at(-2)?.count ?? 0;
-  const newToday = stats.newPerDay.at(-1)?.count ?? 0;
-  const newYesterday = stats.newPerDay.at(-2)?.count ?? 0;
+  const activity: Activity[] = [
+    ...stampActivity.map((a) => ({
+      id: a.id,
+      at: a.createdAt,
+      text: STAMP_LABEL[a.action] ?? a.action,
+      product: "stemplet" as const,
+      alert: a.action === "FLAGGED" || a.action === "PIN_FAIL",
+    })),
+    ...(referrals?.recent ?? []).slice(0, 6).map((r) => ({
+      id: r.id,
+      at: new Date(r.createdAt),
+      text: referralText(r),
+      product: "henvisninger" as const,
+    })),
+  ]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, 6);
 
   return (
     <>
-      {/* Øverst: personlig hilsen og dagens status i klar tekst. */}
-      <header className="mb-6 animate-step">
-        <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-          {dateLabel}
-        </p>
-        <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
-          {greeting}, {business.name}
+      <header className="mb-8 animate-step">
+        <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">{dateLabel}</p>
+        <h1 className="mt-2 font-[400] text-[1.9rem] leading-tight tracking-[-0.01em] text-ink">
+          {greetingFor(now)}, {business.name}
         </h1>
-        <p className="mt-1.5 max-w-lg font-[300] text-[0.95rem] leading-relaxed text-stone">
-          {summary}
+        <p className="mt-1.5 max-w-xl font-[300] text-[0.95rem] leading-relaxed text-stone">
+          {summaryLine({
+            totalCustomers: stats.totalCustomers,
+            activeCustomers: stats.activeCustomers,
+            visitorsToday: pulse.visitorsToday,
+            returningToday: pulse.returningToday,
+          })}
         </p>
       </header>
 
-      {/* Hjertet i Overblik: genveje til de vigtigste handlinger. */}
-      <ActionGrid customerUrl={`/k/${business.slug}`} />
-
-      {isNew ? null : (
-        <div className="mt-10 flex flex-col gap-9">
-          {/* Dernaest: faa centrale noegletal, hver med sammenligning til i gaar */}
-          <div>
-            <SectionHeader
-              title="I dag"
-              action={
-                <Link
-                  href="/app/statistik"
-                  className="inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
-                >
-                  Se al statistik
-                  <CtaArrow />
-                </Link>
+      <div className={cn("mb-10 grid gap-4", referrals ? "md:grid-cols-2" : "")}>
+        <ProductCard href="/app/stemplet" logo={<StempletLogo className="text-[1.35rem]" />}>
+          <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
+          <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
+          <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
+        </ProductCard>
+        {referrals ? (
+          <ProductCard href="/app/henvisninger" logo={<HenvisningerLogo className="h-[1.9rem]" />}>
+            <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
+            <Stat value={formatDkNumber(referrals.doneThisMonth)} label="nye kunder i måneden" />
+            <Stat
+              value={
+                referrals.pendingAmountKr > 0
+                  ? `${formatDkNumber(referrals.pendingAmountKr)} kr.`
+                  : formatDkNumber(referrals.pendingRewards)
               }
+              label="til gode"
             />
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              <PulseTile
-                label="Stempler i dag"
-                value={stampsToday}
-                yesterday={stampsYesterday}
-                icon={<IconStamp />}
-              />
-              <PulseTile
-                label="Nye kortholdere"
-                value={newToday}
-                yesterday={newYesterday}
-                icon={<IconSpark />}
-              />
-              <PulseTile
-                label="Genbesøg"
-                value={pulse.returningToday}
-                yesterday={pulse.returningYesterday}
-                icon={<IconUsers />}
-              />
-              <PulseTile
-                label="Indløst i dag"
-                value={pulse.redemptionsToday}
-                yesterday={pulse.redemptionsYesterday}
-                icon={<IconGift />}
-              />
-            </div>
-          </div>
+          </ProductCard>
+        ) : null}
+      </div>
 
-          {/* Dernaest: seneste aktivitet som en let laesbar tidslinje */}
-          <div>
-            <SectionHeader title="Seneste aktivitet" />
-            <Panel>
-              {activity.length === 0 ? (
-                <p className="py-2 font-[300] text-[0.86rem] text-slate">
-                  Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder
-                  dagen at tælle.
-                </p>
-              ) : (
-                <ol className="flex flex-col">
-                  {activity.map((a, i) => {
-                    const isAlert =
-                      a.action === "FLAGGED" || a.action === "PIN_FAIL";
-                    const isLast = i === activity.length - 1;
-                    return (
-                      <li
-                        key={a.id}
-                        className="relative flex items-start gap-3 pl-5 pb-4 last:pb-0"
-                      >
-                        {!isLast ? (
-                          <span
-                            aria-hidden
-                            className="absolute left-[3px] top-3 h-full w-px bg-fog"
-                          />
-                        ) : null}
-                        <span
-                          aria-hidden
-                          className={cn(
-                            "absolute left-0 top-[7px] h-[7px] w-[7px] rounded-full",
-                            isAlert ? "bg-rust" : "bg-terracotta",
-                          )}
-                        />
-                        <div className="flex flex-1 items-baseline justify-between gap-3">
-                          <span
-                            className={cn(
-                              "text-[0.86rem] font-[300]",
-                              isAlert ? "text-rust" : "text-ink",
-                            )}
-                          >
-                            {ACTION_LABEL[a.action] ?? a.action}
-                          </span>
-                          <span className="shrink-0 text-[0.72rem] font-[300] text-slate">
-                            {relativeDk(a.createdAt)}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
-            </Panel>
-          </div>
-        </div>
-      )}
-
+      <section>
+        <SectionHeader title="Seneste aktivitet" />
+        <Panel>
+          {activity.length === 0 ? (
+            <p className="py-1 text-[0.88rem] text-stone">
+              Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder dagen at tælle.
+            </p>
+          ) : (
+            <ol className="flex flex-col divide-y divide-fog">
+              {activity.map((a) => (
+                <li key={`${a.product}-${a.id}`} className="flex items-baseline justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <span className="flex items-baseline gap-3">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "inline-block h-[7px] w-[7px] shrink-0 rounded-full",
+                        a.alert ? "bg-rust" : a.product === "stemplet" ? "bg-terracotta" : "bg-ink",
+                      )}
+                    />
+                    <span className={cn("text-[0.9rem]", a.alert ? "text-rust" : "text-ink")}>{a.text}</span>
+                  </span>
+                  <span className="shrink-0 text-[0.75rem] text-slate">{relativeDk(a.at)}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
+      </section>
     </>
   );
 }

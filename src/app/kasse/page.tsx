@@ -66,7 +66,7 @@ export default async function KasseRegisterPage({
   };
 
   return (
-    <main className="min-h-screen bg-parchment">
+    <main className="dash-theme min-h-screen bg-parchment">
       <header className="flex items-center justify-between border-b border-fog px-6 py-4">
         <span className="font-[400] text-[1.05rem] tracking-[0.02em] text-ink">
           {business.name}
