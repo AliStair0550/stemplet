@@ -29,6 +29,8 @@ export function ReferralFlow(props: {
   walletEnabled: boolean;
   referrer: { code: string; firstName: string | null } | null;
   source: "LINK" | "CODE_ENTERED";
+  /** Kunden aabnede sit eget link eller tastede sin egen kode. */
+  ownLink?: boolean;
   invalidCode: boolean;
   initial: Done | null;
 }) {
@@ -53,6 +55,15 @@ export function ReferralFlow(props: {
           <span className="text-[17px] font-semibold tracking-[-0.01em]">{props.shopName}</span>
         )}
       </header>
+      {done && props.ownLink ? (
+        <p
+          role="status"
+          className="mb-6 rounded-[12px] px-4 py-3 text-center text-[15px]"
+          style={{ backgroundColor: SURFACE, color: INK }}
+        >
+          Det er din egen kode. Send den til en ven, så får vennen {props.newCustomerReward}.
+        </p>
+      ) : null}
       {done ? <DoneView {...props} done={done} /> : <SignupView {...props} onDone={setDone} />}
     </div>
   );

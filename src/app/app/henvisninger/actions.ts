@@ -9,19 +9,24 @@ import { saveReferralRule, ReferralError } from "@/lib/referral";
 type Result = { ok: true } | { ok: false; error: string };
 
 const rewardType = z.enum(["AMOUNT", "STAMPS", "SERVICE"]);
-const optionalInt = z
-  .union([z.literal(""), z.coerce.number().int().min(0).max(100_000)])
-  .transform((v) => (v === "" ? null : v));
+const optionalInt = (msg: string) =>
+  z
+    .union([z.literal(""), z.coerce.number({ message: msg }).int(msg).min(0, msg).max(100_000, msg)])
+    .transform((v) => (v === "" ? null : v));
 
 const ruleSchema = z.object({
   newCustomerRewardType: rewardType,
-  newCustomerRewardValue: z.string().trim().min(1).max(80),
+  newCustomerRewardValue: z.string().trim().min(1, "Skriv hvad den nye kunde får.").max(80),
   referrerRewardType: rewardType,
-  referrerRewardValue: z.string().trim().min(1).max(80),
-  minPurchaseKr: optionalInt,
-  maxReferralsPerMonth: optionalInt,
-  rewardExpiryDays: z.coerce.number().int().min(1).max(3650),
-  termsLine: z.string().trim().max(120),
+  referrerRewardValue: z.string().trim().min(1, "Skriv hvad ambassadøren får.").max(80),
+  minPurchaseKr: optionalInt("Minimumskøb skal være et helt beløb i kr."),
+  maxReferralsPerMonth: optionalInt("Grænsen skal være et helt tal."),
+  rewardExpiryDays: z.coerce
+    .number({ message: "Skriv hvor mange dage belønninger gælder." })
+    .int("Skriv hvor mange dage belønninger gælder.")
+    .min(1, "Belønninger skal gælde i mindst 1 dag.")
+    .max(3650, "Belønninger kan højst gælde i 10 år."),
+  termsLine: z.string().trim().max(120, "Betingelserne må højst være 120 tegn."),
   bookingUrl: z
     .string()
     .trim()
@@ -62,6 +67,7 @@ export async function saveReferralSettings(input: RuleInput): Promise<Result> {
     data: { bookingUrl: d.bookingUrl || null },
   });
   revalidatePath("/app/henvisninger");
+  revalidatePath("/app/henvisninger/indstillinger");
   revalidatePath(`/henvisninger/${business.slug}`);
   return { ok: true };
 }
