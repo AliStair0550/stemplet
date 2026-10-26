@@ -81,6 +81,9 @@ model Business {
   // Henvisninger (modul): slaar henvisningskoder og -beloenninger til for butikken.
   // Standard FRA; uden flaget kan der hverken oprettes eller gennemfoeres henvisninger.
   referralsEnabled   Boolean   @default(false)
+  // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
+  // henvisningssiden efter tilmelding. Null = knappen skjules.
+  bookingUrl         String?
   users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
   memberships      Membership[]
   cards            Card[]
@@ -284,7 +287,8 @@ model CustomerCard {
   @@index([cardId, lifetimeStamps])
   @@unique([businessId, referralCode])
   @@index([referredByCardId])
-  @@index([businessId, phone])
+  // Eet mobilnummer = eet kort pr. butik (henvisningssiden). NULL er distinkt.
+  @@unique([businessId, phone])
 }
 
 enum StampMethod {
