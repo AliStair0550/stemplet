@@ -26,7 +26,7 @@ export default function DpaPage() {
   return (
     <LegalLayout
       title="Databehandleraftale"
-      updated="12. juli 2026"
+      updated="26. oktober 2026"
       intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Alius (Stemplet) er databehandler."
     >
       <LegalSection title="1. Rammen">
@@ -41,8 +41,12 @@ export default function DpaPage() {
       <LegalSection title="2. Behandlingens formål og varighed">
         <p>
           Formålet er at drive butikkens digitale stempelkort: at udstede kort,
-          registrere stempler, indløse belønninger og vise statistik.
-          Behandlingen løber, så længe butikken bruger Stemplet.
+          registrere stempler, indløse belønninger og vise statistik. Har
+          butikken slået Henvisninger til, er formålet også at drive butikkens
+          henvisninger: at give kunderne en personlig kode, registrere hvem der
+          har henvist hvem, give og indløse belønninger og vise statistik over
+          henvisningerne. Behandlingen løber, så længe butikken bruger
+          Stemplet.
         </p>
       </LegalSection>
 
@@ -62,9 +66,17 @@ export default function DpaPage() {
           <Li>en valgfri e-mail, hvis kunden selv oplyser den,</Li>
           <Li>IP-adresse og en hændelseslog til sikkerhed.</Li>
         </ul>
+        <p>Har butikken slået Henvisninger til, behandler vi desuden:</p>
+        <ul className="flex flex-col gap-2.5">
+          <Li>kundens navn og mobilnummer, som kunden selv oplyser,</Li>
+          <Li>kundens henvisningskode,</Li>
+          <Li>hvem der har henvist hvem, og henvisningens status og tidspunkter,</Li>
+          <Li>belønninger, deres værdi, udløb og indløsning,</Li>
+          <Li>hvilken kasse eller bruger der registrerede besøg og indløsninger.</Li>
+        </ul>
         <p>
-          Der behandles ingen følsomme oplysninger. En kunde kan bruge kortet
-          anonymt.
+          Der behandles ingen følsomme oplysninger. En kunde kan bruge
+          stempelkortet anonymt. Henvisninger kræver navn og mobilnummer.
         </p>
       </LegalSection>
 
