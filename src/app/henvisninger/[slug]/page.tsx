@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { cardTitle, contrastRatio, contrastText } from "@/lib/brand";
-import { APP_URL, WALLET_ENABLED } from "@/lib/env";
+import { APP_URL } from "@/lib/env";
 import { cardCookieName, DEVICE_ID_COOKIE } from "@/lib/cookies";
 import { optimizedLogoDataUri } from "@/lib/logo";
 import {
@@ -90,7 +90,9 @@ export default async function ReferralPage({
         referrerReward={rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}
         termsLine={rule.termsLine}
         bookingUrl={bookingUrl}
-        walletEnabled={WALLET_ENABLED}
+        // Skjult indtil fase 4: Wallet giver i dag det rene stempelkort uden kode
+        // og beloenninger, hvilket forvirrer en kunde der kom for henvisningen.
+        walletEnabled={false}
         referrer={
           referrer && !ownLink
             ? { code: referrer.referralCode!, firstName: firstName(referrer.name) }
