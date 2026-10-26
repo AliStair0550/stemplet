@@ -30,8 +30,20 @@ export type StampIconKey =
   | "wine"
   | "cocktail"
   | "scissors"
+  | "comb"
+  | "mirror"
+  | "lipstick"
+  | "nailpolish"
+  | "lashes"
+  | "brush"
+  | "perfume"
   | "sparkle"
   | "flower"
+  | "lotus"
+  | "stones"
+  | "hand"
+  | "drop"
+  | "candle"
   | "leaf"
   | "paw"
   | "gift"
@@ -41,7 +53,7 @@ export type StampIconKey =
   | "custom";
 
 // Raekkefoelgen styrer designerens ikon-gitter: foerst mad og drikke, saa
-// skoenhed og butik, til sidst de generelle. Bredt nok til alle vores brancher,
+// skoenhed, massage/spa og butik, til sidst de generelle. Bredt nok til alle vores brancher,
 // saa hver forretning kan finde et ikon der passer.
 export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "coffee", label: "Kaffekop" },
@@ -62,8 +74,20 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "wine", label: "Vin" },
   { key: "cocktail", label: "Cocktail" },
   { key: "scissors", label: "Saks" },
+  { key: "comb", label: "Kam" },
+  { key: "mirror", label: "Spejl" },
+  { key: "lipstick", label: "Læbestift" },
+  { key: "nailpolish", label: "Neglelak" },
+  { key: "lashes", label: "Vipper" },
+  { key: "brush", label: "Makeup-pensel" },
+  { key: "perfume", label: "Parfume" },
   { key: "sparkle", label: "Glimt" },
   { key: "flower", label: "Blomst" },
+  { key: "lotus", label: "Lotus" },
+  { key: "stones", label: "Varme sten" },
+  { key: "hand", label: "Hånd" },
+  { key: "drop", label: "Oliedråbe" },
+  { key: "candle", label: "Stearinlys" },
   { key: "leaf", label: "Blad" },
   { key: "paw", label: "Pote" },
   { key: "gift", label: "Gave" },

@@ -14,6 +14,7 @@ export const CATEGORY_KEYS = [
   "icecream",
   "barber",
   "salon",
+  "massage",
   "other",
 ] as const;
 
@@ -31,6 +32,7 @@ export const CATEGORY_LABELS: Record<BusinessCategory, string> = {
   icecream: "Isbar",
   barber: "Frisør",
   salon: "Skønhed og velvære",
+  massage: "Massage og spa",
   other: "Andet",
 };
 
