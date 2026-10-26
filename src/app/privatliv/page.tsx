@@ -6,7 +6,7 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
-  description: "Sådan behandler Stemplet personoplysninger.",
+  description: "Sådan behandler Stemplet og Henvisninger personoplysninger.",
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
@@ -26,8 +26,8 @@ export default function PrivatlivPage() {
   return (
     <LegalLayout
       title="Privatlivspolitik"
-      updated="12. juli 2026"
-      intro="Stemplet er et digitalt stempelkort fra Alius. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
+      updated="26. oktober 2026"
+      intro="Stemplet er et digitalt stempelkort fra Alius, og Henvisninger er en tilføjelse, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
     >
       <LegalSection title="1. Hvem er ansvarlig">
         <p>
@@ -66,6 +66,18 @@ export default function PrivatlivPage() {
             kunde kan bruge kortet helt anonymt.
           </Li>
           <Li>
+            <strong>Henvisninger (på butikkens vegne, kun hvis butikken har
+            slået det til):</strong> dit navn og mobilnummer, din personlige
+            henvisningskode, hvem der har henvist dig, og hvem du har henvist,
+            hvornår henvisningen blev oprettet og gennemført, og de
+            belønninger, du har optjent og indløst. Navn og mobilnummer
+            oplyser du selv, når du tilmelder dig. Navnet bruges til din kode
+            og til, at personalet kan finde dig ved kassen. Mobilnummeret
+            bruges til at finde dig ved kassen og til at sikre, at hver kunde
+            kun tilmeldes én gang og ikke kan henvise sig selv. Når du deler
+            din kode, vises dit fornavn for den, der åbner dit link.
+          </Li>
+          <Li>
             <strong>Teknisk og sikkerhed:</strong> IP-adresse og en hændelseslog
             over stempler og indløsninger. Det bruges kun til at forebygge
             snyd og misbrug.
@@ -83,6 +95,11 @@ export default function PrivatlivPage() {
             At levere tjenesten, herunder at give og indløse stempler
             (opfyldelse af aftale, databeskyttelsesforordningens art. 6, stk. 1,
             litra b).
+          </Li>
+          <Li>
+            At registrere henvisninger og give de belønninger, du har tilmeldt
+            dig, når du deltager i en butiks henvisninger (opfyldelse af aftale,
+            art. 6, stk. 1, litra b).
           </Li>
           <Li>
             At beskytte tjenesten mod snyd og misbrug (vores og butikkens
@@ -107,7 +124,9 @@ export default function PrivatlivPage() {
       <LegalSection title="5. Hvor længe vi gemmer">
         <p>
           Vi gemmer oplysningerne, så længe kontoen eller kortet er aktivt.
-          Hændelseslog og tekniske oplysninger opbevares kun kortvarigt af
+          Henvisninger, der ikke bliver gennemført, og belønninger, der ikke
+          bliver indløst, udløber efter den periode, butikken har valgt, men
+          historikken gemmes sammen med kortet. Hændelseslog og tekniske oplysninger opbevares kun kortvarigt af
           sikkerhedshensyn. Du kan altid bede os om at slette dine oplysninger.
         </p>
       </LegalSection>
