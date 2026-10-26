@@ -34,16 +34,21 @@ const INTERNAL_LINKS: { href: string; label: string }[] = [
 // Siden findes stadig paa /app/integrationer for den, der kender adressen.
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
 const AGREEMENT_LINK = { href: "/app/aftale", label: "Pro-aftale" };
+// Henvisninger: kun for butikker med modulet slaaet til (ellers uaendret menu).
+const REFERRALS_LINK = { href: "/app/henvisninger", label: "Henvisninger" };
 
 export function DashboardNav({
   businesses,
   activeBusinessId,
   showAgreement = false,
+  showReferrals = false,
 }: {
   businesses: { id: string; name: string }[];
   activeBusinessId: string;
   showAgreement?: boolean;
+  showReferrals?: boolean;
 }) {
+  const primaryLinks = showReferrals ? [...PRIMARY_LINKS, REFERRALS_LINK] : PRIMARY_LINKS;
   const pathname = usePathname();
   // Pro-aftale hoerer til det interne (drift/konto), saa den ligger sidst i den
   // gruppe naar butikken er varslet/har godkendt.
@@ -92,7 +97,7 @@ export function DashboardNav({
           {/* Hårfin adskillelse fra Stempel til det daglige overblik */}
           <div className="my-3 h-px bg-fog" aria-hidden />
 
-          {PRIMARY_LINKS.map((l) => (
+          {primaryLinks.map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -172,7 +177,7 @@ export function DashboardNav({
               className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
             />
 
-            {PRIMARY_LINKS.map((l) => (
+            {primaryLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}

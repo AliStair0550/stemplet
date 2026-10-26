@@ -39,3 +39,28 @@ test("delelink og -besked", () => {
     `Jeg har en rabat til dig hos Sara Salon: 100${NBSP}kr. ved dit første besøg.`,
   );
 });
+
+// ── Kassens soegefelt ────────────────────────────────────────────────
+
+import { classifyDeskQuery } from "../src/lib/referral-query";
+
+test("kassesoegning: kode, mobil eller navn", () => {
+  assert.deepEqual(classifyDeskQuery(" sara-k8 "), { kind: "code", value: "SARA-K8" });
+  assert.deepEqual(classifyDeskQuery("VEN-AB3"), { kind: "code", value: "VEN-AB3" });
+  assert.deepEqual(classifyDeskQuery("12 34 56 78"), { kind: "phone", value: "12345678" });
+  assert.deepEqual(classifyDeskQuery("+45 1234"), { kind: "phone", value: "451234" });
+  assert.deepEqual(classifyDeskQuery("5678"), { kind: "phone", value: "5678" });
+  assert.deepEqual(classifyDeskQuery("  Sara   Jensen "), { kind: "name", value: "Sara Jensen" });
+  assert.deepEqual(classifyDeskQuery("Mette-Marie"), { kind: "name", value: "Mette-Marie" });
+});
+
+test("kassesoegning: for kort eller tomt giver ingen soegning", () => {
+  assert.equal(classifyDeskQuery(""), null);
+  assert.equal(classifyDeskQuery("a"), null);
+  assert.equal(classifyDeskQuery("123"), null);
+});
+
+test("kassesoegning: navn med bindestreg forveksles ikke med en kode", () => {
+  assert.deepEqual(classifyDeskQuery("Anne-Bo"), { kind: "name", value: "Anne-Bo" });
+  assert.deepEqual(classifyDeskQuery("Ida-Lis"), { kind: "name", value: "Ida-Lis" });
+});

@@ -519,6 +519,80 @@ export async function voidReferral(
   }
 }
 
+// ── Beloenning indloest (kassen) ─────────────────────────────────────
+
+export type RedeemResult = {
+  rewardId: string;
+  cardId: string;
+  type: RewardType;
+  value: string;
+  redeemedAt: string;
+};
+
+/**
+ * "Beloenning indloest" fra kassen: available -> redeemed. Samme moenster som
+ * recordFirstVisit: runOnce (Redis) + raekke-laas + noeglen gemt paa raekken, saa
+ * et dobbelttryk aldrig indloeser to gange, og et gentaget tryk med samme noegle
+ * faar samme svar. En udloebet beloenning kan ikke indloeses (cron'en markerer den).
+ * PIN tjekkes af kalderen (ruten), som i Stemplet.
+ */
+export async function redeemReward(
+  opts: {
+    rewardId: string;
+    businessId: string;
+    staffUserId?: string | null;
+    staffDeviceId?: string | null;
+    idempotencyKey?: string;
+    now?: Date;
+  },
+  db: Db = prisma,
+): Promise<RedeemResult> {
+  if (!opts.staffUserId && !opts.staffDeviceId) {
+    throw new ReferralError("NO_STAFF", "Indløsning skal ske fra kassen.");
+  }
+  const key = opts.idempotencyKey?.trim() || undefined;
+  return runOnce(key ? `${opts.businessId}:reward-redeem:${key}` : undefined, () =>
+    db.$transaction(async (tx) => {
+      const now = opts.now ?? new Date();
+      await tx.$queryRaw`SELECT id FROM "Reward" WHERE id = ${opts.rewardId} FOR UPDATE`;
+      const reward = await tx.reward.findUnique({ where: { id: opts.rewardId } });
+      if (!reward || reward.businessId !== opts.businessId) {
+        throw new ReferralError("NOT_FOUND", "Belønningen blev ikke fundet.");
+      }
+      const result = (r: typeof reward): RedeemResult => ({
+        rewardId: r.id,
+        cardId: r.cardId,
+        type: r.type,
+        value: r.value,
+        redeemedAt: (r.redeemedAt ?? now).toISOString(),
+      });
+      if (reward.status === "REDEEMED" && key && reward.redeemIdempotencyKey === key) {
+        return result(reward);
+      }
+      if (reward.status === "REDEEMED") {
+        throw new ReferralError("INVALID_TRANSITION", "Belønningen er allerede indløst.");
+      }
+      if (reward.status === "EXPIRED" || reward.expiresAt < now) {
+        throw new ReferralError("EXPIRED", "Belønningen er udløbet.");
+      }
+      const updated = await tx.reward.updateMany({
+        where: { id: reward.id, status: "AVAILABLE" },
+        data: {
+          status: "REDEEMED",
+          redeemedAt: now,
+          redeemedByStaffUserId: opts.staffUserId ?? null,
+          redeemedByStaffDeviceId: opts.staffDeviceId ?? null,
+          redeemIdempotencyKey: key ?? null,
+        },
+      });
+      if (updated.count !== 1) {
+        throw new ReferralError("INVALID_TRANSITION", "Belønningen er allerede indløst.");
+      }
+      return result({ ...reward, redeemedAt: now });
+    }),
+  );
+}
+
 // ── expired: daglig cron ─────────────────────────────────────────────
 
 /**
