@@ -61,7 +61,7 @@ export function ReferralFlow(props: {
           className="mb-6 rounded-[12px] px-4 py-3 text-center text-[15px]"
           style={{ backgroundColor: SURFACE, color: INK }}
         >
-          Det er din egen kode. Send den til en ven, så får vennen {props.newCustomerReward}.
+          Det er din egen kode. Send den til en ven, så får vennen {props.newCustomerReward} ved første besøg.
         </p>
       ) : null}
       {done ? <DoneView {...props} done={done} /> : <SignupView {...props} onDone={setDone} />}
