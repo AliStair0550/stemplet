@@ -78,12 +78,19 @@ model Business {
   lastInvoicedAt     DateTime? // sidste faktureringsdato, superadmin vedligeholder manuelt
   newSignupsPaused   Boolean   @default(false) // afvis nye kortholdere paent (kun superadmin)
   stopped            Boolean   @default(false) // superadmin har stoppet butikken (kun superadmin)
+  // Henvisninger (modul): slaar henvisningskoder og -beloenninger til for butikken.
+  // Standard FRA; uden flaget kan der hverken oprettes eller gennemfoeres henvisninger.
+  referralsEnabled   Boolean   @default(false)
   users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
   memberships      Membership[]
   cards            Card[]
   auditLogs        AuditLog[]
   devices          Device[]
   pairingCodes     DevicePairingCode[]
+  customerCards    CustomerCard[]
+  referralRule     ReferralRule?
+  referrals        Referral[]
+  rewards          Reward[]
   createdAt        DateTime   @default(now())
 }
 
@@ -120,6 +127,7 @@ model Device {
   revokedAt    DateTime?
   createdAt    DateTime  @default(now())
   stampsGiven  Stamp[]   @relation("DeviceStamps")
+  referralVisits Referral[] @relation("ReferralVisitDevice")
 
   @@index([businessId])
 }
@@ -156,6 +164,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   stampsGiven   Stamp[]   @relation("StaffStamps")
+  referralVisits Referral[] @relation("ReferralVisitUser")
 
   @@index([businessId])
 }
@@ -240,6 +249,25 @@ model CustomerCard {
   // Fundament for milepaele, stamkunde-status og win-back senere.
   lifetimeStamps Int                  @default(0)
   contactEmail   String? // valgfrit
+  // ── Henvisninger ──────────────────────────────────────────────
+  // Denormaliseret butik, saa henvisningskoden kan vaere unik PR. BUTIK i
+  // databasen (kortet kender ellers kun sin skabelon). Backfillet fra Card i
+  // migrationen; saettes af henvisningsmodulet, naar kortet faar en kode.
+  businessId       String?
+  business         Business?      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  // Kundens navn og mobil (valgfri). Navnet giver henvisningskoden (SARA-K8),
+  // mobilen (normaliseret, fx +4512345678) bruges mod selvhenvisning.
+  name             String?
+  phone            String?
+  // Kundens personlige henvisningskode, fx SARA-K8. Unik pr. butik.
+  referralCode     String?
+  // Hvem der henviste kunden. Saettes een gang: det foerste link vinder.
+  referredByCardId String?
+  referredBy       CustomerCard?  @relation("ReferredBy", fields: [referredByCardId], references: [id], onDelete: SetNull)
+  referredCards    CustomerCard[] @relation("ReferredBy")
+  referralsMade    Referral[]     @relation("ReferralReferrer")
+  referralReceived Referral?      @relation("ReferralReferred")
+  rewards          Reward[]
   stampsLog      Stamp[]
   redemptions    Redemption[]
   walletRegs     WalletRegistration[]
@@ -254,6 +282,9 @@ model CustomerCard {
   @@index([cardId, createdAt])
   @@index([cardId, lastStampAt])
   @@index([cardId, lifetimeStamps])
+  @@unique([businessId, referralCode])
+  @@index([referredByCardId])
+  @@index([businessId, phone])
 }
 
 enum StampMethod {
@@ -313,6 +344,109 @@ model Redemption {
   @@index([customerCardId])
   // Tids-vinduer (indloesninger seneste 30 dage) + avgDaysToFull-window-query.
   @@index([customerCardId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Henvisninger (se docs/henvisninger.md, Datamodel)
+// ─────────────────────────────────────────────────────────────
+
+enum ReferralStatus {
+  CREATED // aaben henvisning: den nye kunde har hentet kortet via kode/link
+  VISITED // foerste besoeg bekraeftet ved kassen (mellemtilstand, se lib/referral)
+  REWARDED // beloenninger oprettet
+  EXPIRED // aldrig gennemfoert inden reward_expiry_days
+  VOIDED // annulleret af butikken
+}
+
+enum ReferralSource {
+  LINK
+  CODE_ENTERED
+  MANUAL_AT_DESK
+}
+
+enum RewardType {
+  AMOUNT // value = kroner, fx "100"
+  STAMPS // value = antal stempler, fx "3"
+  SERVICE // value = fri tekst, fx "Gratis klip"
+}
+
+enum RewardStatus {
+  AVAILABLE
+  REDEEMED
+  EXPIRED
+}
+
+// Butikkens henvisningsregler. Een pr. butik; uden regel kan en henvisning ikke
+// gennemfoeres (der er intet at beloenne med).
+model ReferralRule {
+  id                     String     @id @default(cuid())
+  businessId             String     @unique
+  business               Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  newCustomerRewardType  RewardType
+  newCustomerRewardValue String
+  referrerRewardType     RewardType
+  referrerRewardValue    String
+  minPurchaseKr          Int? // vises i betingelserne; haandhaeves af personalet ved disken
+  maxReferralsPerMonth   Int? // pr. henviser, kalendermaaned (dansk tid). Null = intet loft
+  rewardExpiryDays       Int        @default(180)
+  termsLine              String?
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+}
+
+// Een henvisning: kobler henviseren (ambassadoeren) til den nye kunde. Et kort
+// kan kun vaere henvist een gang (referredCardId er unik): det foerste vinder.
+model Referral {
+  id                     String         @id @default(cuid())
+  businessId             String
+  business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  referrerCardId         String
+  referrerCard           CustomerCard   @relation("ReferralReferrer", fields: [referrerCardId], references: [id], onDelete: Cascade)
+  referredCardId         String         @unique
+  referredCard           CustomerCard   @relation("ReferralReferred", fields: [referredCardId], references: [id], onDelete: Cascade)
+  status                 ReferralStatus @default(CREATED)
+  source                 ReferralSource
+  createdAt              DateTime       @default(now())
+  visitedAt              DateTime?
+  rewardedAt             DateTime?
+  // Hvem trykkede "Foerste besoeg gennemfoert". Kassen er enten ejer-login eller
+  // en parret enhed (samme attribution som Stamp), saa begge kan logges.
+  visitedByStaffUserId   String?
+  visitedByStaffUser     User?          @relation("ReferralVisitUser", fields: [visitedByStaffUserId], references: [id], onDelete: SetNull)
+  visitedByStaffDeviceId String?
+  visitedByStaffDevice   Device?        @relation("ReferralVisitDevice", fields: [visitedByStaffDeviceId], references: [id], onDelete: SetNull)
+  // Idempotency key fra kassens tryk. Gemmes i databasen (ikke kun Redis), saa
+  // et gentaget tryk med samme noegle altid giver samme svar, ogsaa uden Redis.
+  visitIdempotencyKey    String?
+  rewards                Reward[]
+
+  @@index([businessId, status])
+  @@index([referrerCardId])
+  // Loftet: henviserens gennemfoerte henvisninger i en maaned.
+  @@index([referrerCardId, status, rewardedAt])
+}
+
+// En optjent beloenning (baade til henviser og ny kunde).
+model Reward {
+  id         String       @id @default(cuid())
+  businessId String
+  business   Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  cardId     String
+  card       CustomerCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  // SetNull: sletter den nye kunde sit kort, beholder henviseren sin beloenning.
+  referralId String?
+  referral   Referral?    @relation(fields: [referralId], references: [id], onDelete: SetNull)
+  type       RewardType
+  value      String
+  status     RewardStatus @default(AVAILABLE)
+  expiresAt  DateTime
+  redeemedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([cardId, status])
+  @@index([referralId])
+  // Daglig udloebs-sweep: status = AVAILABLE og expiresAt < nu.
+  @@index([status, expiresAt])
 }
 
 enum CampaignType {

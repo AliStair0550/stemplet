@@ -6,6 +6,8 @@ import {
 import { redisKeepAlive } from "@/lib/redis";
 import { checkWalletCertExpiry } from "@/lib/wallet/cert-monitor";
 import { bearerAuthorized } from "@/lib/secret";
+import { expireReferralsAndRewards } from "@/lib/referral";
+import { captureServerError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,16 +23,29 @@ export const maxDuration = 60;
 //     for inaktivitet (vores Redis-stier har lav trafik i opstarten).
 //  4) Wallet-certifikater: varsler i god tid (mail + Sentry) inden Pass Type ID-
 //     eller WWDR-certifikatet udloeber, saa pas-signeringen ikke pludselig doer.
+//  5) Henvisninger: aabne henvisninger aeldre end reward_expiry_days og
+//     beloenninger forbi expires_at markeres expired (idempotent).
 // Beskyttet med CRON_SECRET som de oevrige cron-ruter.
 export async function GET(req: NextRequest) {
   if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const [emails, invariant, keepalive, certs] = await Promise.all([
+  const [emails, invariant, keepalive, certs, referrals] = await Promise.all([
     sweepPendingThresholdEmails(),
     checkStampInvariant(),
     redisKeepAlive(),
     checkWalletCertExpiry(),
+    // Et fejlende udloeb maa ikke vaelte de eksisterende opgaver.
+    expireReferralsAndRewards().catch((e) => {
+      captureServerError(e, { route: "cron/referral-expiry" });
+      return { referralExpiryFailed: true };
+    }),
   ]);
-  return Response.json({ ...emails, ...invariant, ...keepalive, ...certs });
+  return Response.json({
+    ...emails,
+    ...invariant,
+    ...keepalive,
+    ...certs,
+    ...referrals,
+  });
 }
