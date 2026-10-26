@@ -131,6 +131,7 @@ model Device {
   createdAt    DateTime  @default(now())
   stampsGiven  Stamp[]   @relation("DeviceStamps")
   referralVisits Referral[] @relation("ReferralVisitDevice")
+  rewardRedemptions Reward[] @relation("RewardRedeemDevice")
 
   @@index([businessId])
 }
@@ -168,6 +169,7 @@ model User {
   sessions      Session[]
   stampsGiven   Stamp[]   @relation("StaffStamps")
   referralVisits Referral[] @relation("ReferralVisitUser")
+  rewardRedemptions Reward[] @relation("RewardRedeemUser")
 
   @@index([businessId])
 }
@@ -445,6 +447,13 @@ model Reward {
   status     RewardStatus @default(AVAILABLE)
   expiresAt  DateTime
   redeemedAt DateTime?
+  // Hvem trykkede "Beloenning indloest" (ejer-login eller parret enhed), og
+  // kassens idempotency key, saa et gentaget tryk giver samme svar uden Redis.
+  redeemedByStaffUserId   String?
+  redeemedByStaffUser     User?   @relation("RewardRedeemUser", fields: [redeemedByStaffUserId], references: [id], onDelete: SetNull)
+  redeemedByStaffDeviceId String?
+  redeemedByStaffDevice   Device? @relation("RewardRedeemDevice", fields: [redeemedByStaffDeviceId], references: [id], onDelete: SetNull)
+  redeemIdempotencyKey    String?
   createdAt  DateTime     @default(now())
 
   @@index([cardId, status])

@@ -265,6 +265,7 @@ const BUSINESS_FLAGS = [
   "selfScanEnabled",
   "welcomeStampEnabled",
   "weeklyEmailEnabled",
+  "referralsEnabled",
 ] as const;
 type BusinessFlag = (typeof BUSINESS_FLAGS)[number];
 
@@ -281,7 +282,9 @@ export async function setBusinessFlag(
       ? { selfScanEnabled: value }
       : flag === "welcomeStampEnabled"
         ? { welcomeStampEnabled: value }
-        : { weeklyEmailEnabled: value };
+        : flag === "referralsEnabled"
+          ? { referralsEnabled: value }
+          : { weeklyEmailEnabled: value };
   await prisma.business.update({ where: { id: businessId }, data });
   revalidatePath("/admin");
 }

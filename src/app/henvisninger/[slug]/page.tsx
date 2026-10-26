@@ -99,6 +99,7 @@ export default async function ReferralPage({
             : null
         }
         source={via === "kode" ? "CODE_ENTERED" : "LINK"}
+        ownLink={ownLink}
         invalidCode={Boolean(k) && referrer === null}
         initial={
           visitor?.referralCode

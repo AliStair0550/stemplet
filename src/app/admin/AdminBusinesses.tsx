@@ -51,6 +51,10 @@ export type Row = {
   lastInvoicedAt: Date | null;
   newSignupsPaused: boolean;
   stopped: boolean;
+  // Henvisninger (modul): slaaet til, og antal henvisninger i alt / gennemfoert.
+  referralsEnabled: boolean;
+  referrals: number;
+  referralsRewarded: number;
 };
 
 type Filter = "all" | "over" | "near" | "pending" | "paused" | "stopped";
@@ -457,6 +461,18 @@ function BusinessDetail({ r }: { r: Row }) {
             value={r.weeklyEmail}
             label="Ugebrev"
           />
+          <FlagToggle
+            businessId={r.id}
+            flag="referralsEnabled"
+            value={r.referralsEnabled}
+            label="Henvisninger"
+          />
+          {r.referralsEnabled || r.referrals > 0 ? (
+            <span className="text-[0.76rem] font-[300] text-stone">
+              {formatDkNumber(r.referrals)} henvisninger,{" "}
+              {formatDkNumber(r.referralsRewarded)} gennemført
+            </span>
+          ) : null}
         </div>
       </div>
     </div>
