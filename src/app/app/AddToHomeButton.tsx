@@ -12,7 +12,9 @@ type InstallPrompt = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-export function AddToHomeButton() {
+// Delt logik for knappen og Overbliks-boksen: installations-prompt, iOS-
+// vejledning og om appen allerede koerer fra hjemmeskaermen.
+function useAddToHome() {
   const [deferred, setDeferred] = useState<InstallPrompt | null>(null);
   const [standalone, setStandalone] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -38,8 +40,6 @@ export function AddToHomeButton() {
     };
   }, []);
 
-  if (standalone || installed) return null;
-
   async function onClick() {
     if (deferred) {
       await deferred.prompt();
@@ -51,24 +51,77 @@ export function AddToHomeButton() {
     setShowHint((v) => !v);
   }
 
+  return {
+    hidden: standalone || installed,
+    hintOpen: !deferred && showHint,
+    showHint,
+    onClick,
+  };
+}
+
+function HomeIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.7}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 15V4M8.5 7.5 12 4l3.5 3.5" />
+      <path d="M7 11H6a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
+    </svg>
+  );
+}
+
+const HINT_TEXT = (
+  <>
+    På iPhone: tryk på <span className="font-[500] text-ink">Del-knappen</span>{" "}
+    nederst i Safari, og vælg{" "}
+    <span className="font-[500] text-ink">Føj til hjemmeskærm</span>. På
+    computer: åbn browserens menu og vælg Installer.
+  </>
+);
+
+// Samme boks-udseende som de andre genveje i Overblik (className kommer derfra).
+export function AddToHomeTile({ className }: { className: string }) {
+  const { hidden, hintOpen, showHint, onClick } = useAddToHome();
+  if (hidden) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={hintOpen}
+      className={`${className} text-left`}
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
+        <HomeIcon />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-[400] text-[1rem] text-ink">
+          Få Stemplet på hjemmeskærmen
+        </span>
+        <span className="mt-0.5 block font-[300] text-[0.8rem] leading-relaxed text-stone">
+          {showHint ? HINT_TEXT : "Åbn dashboardet med ét tryk"}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+export function AddToHomeButton() {
+  const { hidden, hintOpen, showHint, onClick } = useAddToHome();
+  if (hidden) return null;
+
   return (
     <div className="rounded-lg border border-fog bg-sand/30 p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.7}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-5 w-5"
-              aria-hidden
-            >
-              <path d="M12 15V4M8.5 7.5 12 4l3.5 3.5" />
-              <path d="M7 11H6a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-1" />
-            </svg>
+            <HomeIcon />
           </span>
           <div className="min-w-0">
             <p className="font-[400] text-[0.95rem] text-ink">
@@ -82,7 +135,7 @@ export function AddToHomeButton() {
         <button
           type="button"
           onClick={onClick}
-          aria-expanded={!deferred && showHint}
+          aria-expanded={hintOpen}
           className={`${btnClass("outline")} shrink-0`}
         >
           Føj til hjemmeskærm
@@ -90,11 +143,7 @@ export function AddToHomeButton() {
       </div>
       {showHint ? (
         <p className="mt-4 border-t border-fog pt-4 font-[300] text-[0.82rem] leading-relaxed text-stone">
-          På iPhone: tryk på{" "}
-          <span className="font-[500] text-ink">Del-knappen</span> nederst i
-          Safari, og vælg{" "}
-          <span className="font-[500] text-ink">Føj til hjemmeskærm</span>. På
-          computer: åbn browserens menu og vælg Installer.
+          {HINT_TEXT}
         </p>
       ) : null}
     </div>

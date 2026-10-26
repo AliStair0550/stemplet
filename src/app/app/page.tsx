@@ -9,13 +9,10 @@ import {
 import { Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
-import { contrastText, rgba, shade } from "@/lib/brand";
-import { AddToHomeButton } from "./AddToHomeButton";
+import { AddToHomeTile } from "./AddToHomeButton";
 import {
   CtaArrow,
-  IconCard,
   IconChart,
-  IconDesign,
   IconGift,
   IconKey,
   IconQr,
@@ -104,13 +101,11 @@ function PulseTile({
   label,
   value,
   yesterday,
-  sub,
   icon,
 }: {
   label: string;
   value: number;
   yesterday: number;
-  sub: string;
   icon: ReactNode;
 }) {
   const d = deltaLabel(value, yesterday);
@@ -145,9 +140,6 @@ function PulseTile({
           </span>
         </div>
       ) : null}
-      <div className="mt-2 text-[0.72rem] font-[300] leading-relaxed text-stone">
-        {sub}
-      </div>
     </div>
   );
 }
@@ -172,12 +164,6 @@ const ACTIONS: Action[] = [
     icon: <IconKey />,
   },
   {
-    href: "/app/kort",
-    label: "Design",
-    sub: "Farver, logo og belønning",
-    icon: <IconDesign />,
-  },
-  {
     href: "/app/kampagner",
     label: "Kampagner",
     sub: "Påmindelser og tilbud",
@@ -189,61 +175,9 @@ const ACTIONS: Action[] = [
     sub: "Besøg, genbesøg og belønninger",
     icon: <IconChart />,
   },
-  {
-    href: "/app/visitkort",
-    label: "Visitkort",
-    sub: "Tryk-klare kort til disken",
-    icon: <IconCard />,
-  },
 ];
 
-// Den store, primaere genvej: giv et stempel. Fyldt i butikkens EGEN brandfarve
-// med en let gradient, og tekstfarven vaelges automatisk (lys eller moerk), saa
-// den altid er laesbar, ogsaa paa en lys brandfarve.
-function StampAction({ primaryColor }: { primaryColor: string }) {
-  const fg = contrastText(primaryColor);
-  return (
-    <Link
-      href="/app/kasse"
-      className="group relative flex items-center gap-4 overflow-hidden rounded-lg p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift md:p-6"
-      style={{
-        color: fg,
-        background: `linear-gradient(135deg, ${primaryColor}, ${shade(primaryColor, -0.18)})`,
-      }}
-    >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full blur-2xl"
-        style={{ background: rgba(fg, 0.12) }}
-      />
-      <span
-        className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-        style={{ background: rgba(fg, 0.16) }}
-      >
-        <IconStampMark className="h-6 w-6" />
-      </span>
-      <span className="relative min-w-0 flex-1">
-        <span className="block font-[400] text-[1.15rem] leading-tight">
-          Giv et stempel
-        </span>
-        <span
-          className="mt-0.5 block font-[300] text-[0.85rem] leading-relaxed"
-          style={{ color: rgba(fg, 0.9) }}
-        >
-          Åbn kassen og stempel en kunde
-        </span>
-      </span>
-      <span
-        className="relative shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
-        style={{ color: rgba(fg, 0.82) }}
-      >
-        <CtaArrow />
-      </span>
-    </Link>
-  );
-}
-
-// De sekundaere genveje som et rent, luftigt kort-grid.
+// Alle genveje som et rent, luftigt kort-grid i samme boks-stil.
 const tileClass =
   "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift";
 
@@ -282,15 +216,16 @@ function ActionTile({ action }: { action: Action }) {
   );
 }
 
-function ActionGrid({
-  primaryColor,
-  customerUrl,
-}: {
-  primaryColor: string;
-  customerUrl: string;
-}) {
-  // "Se kundekort" foerst: den viser kortet, som kunderne ser det (kundesiden).
+function ActionGrid({ customerUrl }: { customerUrl: string }) {
+  // "Giv et stempel" foerst (det man goer oftest), saa kundekortet, som
+  // kunderne ser det. Hjemmeskaerm-boksen skjuler sig selv i den installerede app.
   const actions: Action[] = [
+    {
+      href: "/app/kasse",
+      label: "Giv et stempel",
+      sub: "Åbn kassen og stempel en kunde",
+      icon: <IconStampMark />,
+    },
     {
       href: customerUrl,
       label: "Se kundekort",
@@ -301,13 +236,11 @@ function ActionGrid({
     ...ACTIONS,
   ];
   return (
-    <section className="animate-step">
-      <StampAction primaryColor={primaryColor} />
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        {actions.map((a) => (
-          <ActionTile key={a.href} action={a} />
-        ))}
-      </div>
+    <section className="grid grid-cols-2 gap-3 animate-step sm:gap-4 lg:grid-cols-3">
+      {actions.map((a) => (
+        <ActionTile key={a.href} action={a} />
+      ))}
+      <AddToHomeTile className={tileClass} />
     </section>
   );
 }
@@ -344,37 +277,21 @@ export default async function OverviewPage() {
 
   return (
     <>
-      {/* Øverst: personlig hilsen, dagens status i klar tekst og den primaere
-          handling. Alt synligt uden at scrolle, ogsaa paa mobil. */}
-      <section className="relative mb-6 overflow-hidden rounded-lg border border-fog bg-white shadow-lift animate-step">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full blur-[90px]"
-          style={{ background: business.primaryColor, opacity: 0.12 }}
-        />
-        <div className="relative flex flex-col gap-6 p-6 md:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="min-w-0">
-              <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-                {dateLabel}
-              </p>
-              <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
-                {greeting}, {business.name}
-              </h1>
-              <p className="mt-1.5 max-w-lg font-[300] text-[0.95rem] leading-relaxed text-stone">
-                {summary}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Øverst: personlig hilsen og dagens status i klar tekst. */}
+      <header className="mb-6 animate-step">
+        <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
+          {dateLabel}
+        </p>
+        <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
+          {greeting}, {business.name}
+        </h1>
+        <p className="mt-1.5 max-w-lg font-[300] text-[0.95rem] leading-relaxed text-stone">
+          {summary}
+        </p>
+      </header>
 
-      {/* Hjertet i Overblik: flotte genveje til de vigtigste handlinger, saa
-          ejeren med det samme kan stemple, se kundekortet, styre adgang m.m. */}
-      <ActionGrid
-        primaryColor={business.primaryColor}
-        customerUrl={`/k/${business.slug}`}
-      />
+      {/* Hjertet i Overblik: genveje til de vigtigste handlinger. */}
+      <ActionGrid customerUrl={`/k/${business.slug}`} />
 
       {isNew ? null : (
         <div className="mt-10 flex flex-col gap-9">
@@ -397,28 +314,24 @@ export default async function OverviewPage() {
                 label="Stempler i dag"
                 value={stampsToday}
                 yesterday={stampsYesterday}
-                sub="Stempler givet i dag"
                 icon={<IconStamp />}
               />
               <PulseTile
                 label="Nye kortholdere"
                 value={newToday}
                 yesterday={newYesterday}
-                sub="Har hentet kortet i dag"
                 icon={<IconSpark />}
               />
               <PulseTile
                 label="Genbesøg"
                 value={pulse.returningToday}
                 yesterday={pulse.returningYesterday}
-                sub="Kunder der har været her før"
                 icon={<IconUsers />}
               />
               <PulseTile
                 label="Indløst i dag"
                 value={pulse.redemptionsToday}
                 yesterday={pulse.redemptionsYesterday}
-                sub="Belønninger indløst i dag"
                 icon={<IconGift />}
               />
             </div>
@@ -480,11 +393,6 @@ export default async function OverviewPage() {
         </div>
       )}
 
-      {/* Foej dashboardet til hjemmeskaermen. Knappen skjuler sig selv, naar
-          appen allerede koerer fra hjemmeskaermen. */}
-      <div className="mt-10">
-        <AddToHomeButton />
-      </div>
     </>
   );
 }
