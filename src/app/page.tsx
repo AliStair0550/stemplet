@@ -21,10 +21,10 @@ const jsonLd = {
   operatingSystem: "Web, iOS",
   description:
     "Digitalt stempelkort i Apple Wallet til caféer, barberer og bagere. Kunderne scanner en QR-kode og har kortet på få sekunder. Ingen app, kun navn og e-mail.",
-  url: "https://stemplet.alius.dk",
+  url: "https://kort.folka.dk",
   inLanguage: "da-DK",
   offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },
-  publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
+  publisher: { "@type": "Organization", name: "Folka", url: "https://folka.dk" },
 };
 
 export default function Page() {

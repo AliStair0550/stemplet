@@ -16,6 +16,7 @@ import { AdminShell } from "./AdminShell";
 import { ClearDemoButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
 import { AdminCreateBusiness } from "./AdminCreateBusiness";
+import { APP_HOST } from "@/lib/platform";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -387,7 +388,7 @@ export default async function AdminPage() {
         <section>
           <SectionHead
             title={'Demo-forsøg ("Prøv det selv")'}
-            desc="Folk der har hentet demo-kortet på stemplet.alius.dk. De er ikke rigtige kunder og tæller ikke med i Overblik."
+            desc={`Folk der har hentet demo-kortet på ${APP_HOST}. De er ikke rigtige kunder og tæller ikke med i Overblik.`}
           />
           <div className="mt-4 rounded-lg border border-fog bg-white p-5 shadow-card">
             {demo ? (

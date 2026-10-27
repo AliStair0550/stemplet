@@ -51,7 +51,7 @@ export async function requestMagicLink(
       };
     }
 
-    // Superadmin (fx hej@alius.dk) kan altid logge ind, ogsaa uden butik; Auth.js
+    // Superadmin (fx hej@folka.dk) kan altid logge ind, ogsaa uden butik; Auth.js
     // opretter brugeren ved foerste login. Alle andre skal have en konto.
     const superadmin = isSuperadminEmail(email);
     const user = superadmin ? null : await prisma.user.findUnique({ where: { email } });

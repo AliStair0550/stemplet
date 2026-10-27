@@ -246,7 +246,7 @@ export default async function HomePage() {
       {/* Dashboardet som app paa hjemmeskaermen (skjules, naar det allerede er). */}
       <div className="mb-12">
         <AddToHomeButton
-          title="Tilføj Alius til hjemmeskærmen"
+          title="Tilføj Folka til hjemmeskærmen"
           text="Så åbner du dit dashboard med ét tryk, som en app."
           icon={
             // eslint-disable-next-line @next/next/no-img-element

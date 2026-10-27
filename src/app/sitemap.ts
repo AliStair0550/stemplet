@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BRANCHER } from "@/lib/brancher";
 
-const base = process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk";
+const base = process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk";
 
 // Kun offentlige, indekserbare sider. Dashboard, kunde-kort og API er udeladt.
 export default function sitemap(): MetadataRoute.Sitemap {

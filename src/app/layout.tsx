@@ -28,7 +28,7 @@ const fraunces = Fraunces({
   variable: "--font-fraunces-face",
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk";
 
 // Google Search Console: HTML-tag-verifikation. Saet selve koden i miljoe-
 // variablen GOOGLE_SITE_VERIFICATION (Vercel, production). Renders som
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: "%s - Stemplet",
   },
   description:
-    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Alius.",
+    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Folka.",
   applicationName: "Stemplet",
   keywords: [
     "stempelkort",
@@ -54,10 +54,10 @@ export const metadata: Metadata = {
     "genbesøg",
     "café loyalitet",
     "Stemplet",
-    "Alius",
+    "Folka",
   ],
-  authors: [{ name: "Alius", url: "https://alius.dk" }],
-  creator: "Alius",
+  authors: [{ name: "Folka", url: "https://folka.dk" }],
+  creator: "Folka",
   verification: googleSiteVerification
     ? { google: googleSiteVerification }
     : undefined,
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Stemplet - stempelkortet, der skaber flere gensyn",
     description:
-      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail. Et produkt fra Alius.",
+      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail. Et produkt fra Folka.",
     url: appUrl,
     siteName: "Stemplet",
     locale: "da_DK",

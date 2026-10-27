@@ -28,11 +28,11 @@ export default function TermsPage() {
     <LegalLayout
       title="Handelsbetingelser"
       updated="12. juli 2026"
-      intro="Disse betingelser gælder, når din butik bruger Stemplet, et digitalt stempelkort fra Alius. De accepteres, når du opretter en butik."
+      intro="Disse betingelser gælder, når din butik bruger Stemplet, et digitalt stempelkort fra Folka. De accepteres, når du opretter en butik."
     >
       <LegalSection title="1. Om aftalen">
         <p>
-          Stemplet leveres af Alius. Aftalen indgås mellem Alius og den butik
+          Stemplet leveres af Folka. Aftalen indgås mellem Folka og den butik
           (virksomhed), der opretter en konto. Tjenesten er beregnet til
           erhvervsbrug.
         </p>
@@ -99,7 +99,7 @@ export default function TermsPage() {
 
       <LegalSection title="7. Ansvarsbegrænsning">
         <p>
-          Stemplet leveres, som den er og forefindes. Alius er ikke ansvarlig
+          Stemplet leveres, som den er og forefindes. Folka er ikke ansvarlig
           for indirekte tab, herunder tabt omsætning eller mistede stempler ved
           nedbrud. Et eventuelt ansvar er begrænset til det beløb, du har betalt
           for tjenesten de seneste tre måneder.
@@ -108,7 +108,7 @@ export default function TermsPage() {
 
       <LegalSection title="8. Opsigelse">
         <p>
-          Både du og Alius kan opsige aftalen når som helst. Når du lukker din
+          Både du og Folka kan opsige aftalen når som helst. Når du lukker din
           konto, slettes kundeoplysningerne inden for rimelig tid, medmindre
           lovgivning kræver fortsat opbevaring.
         </p>

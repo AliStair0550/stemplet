@@ -7,7 +7,7 @@ export const WALLET_ENABLED = process.env.WALLET_ENABLED === "true";
 // .trim() fjerner et evt. stray mellemrum/tab i env-varen. En tab foran URL'en
 // gjorde bl.a. Wallet-passets webServiceURL ugyldig, saa iOS afviste passet.
 export const APP_URL = (
-  process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk"
+  process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk"
 ).trim();
 
 export const IS_PROD = process.env.NODE_ENV === "production";

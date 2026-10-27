@@ -11,7 +11,7 @@ export async function sendEmail(input: {
   fromName?: string;
 }): Promise<boolean> {
   const apiKey = process.env.AUTH_RESEND_KEY;
-  const base = process.env.EMAIL_FROM || "Stemplet <login@alius.dk>";
+  const base = process.env.EMAIL_FROM || "Stemplet <login@folka.dk>";
   const addr = /<([^>]+)>/.exec(base)?.[1] ?? base.trim();
   // Navnet renses for tegn, der kan bryde "Navn <adresse>"-formatet.
   const from = input.fromName ? `${input.fromName.replace(/[<>"\r\n]/g, "").trim()} <${addr}>` : base;

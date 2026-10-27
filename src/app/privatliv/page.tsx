@@ -27,11 +27,11 @@ export default function PrivatlivPage() {
     <LegalLayout
       title="Privatlivspolitik"
       updated="26. oktober 2026"
-      intro="Stemplet er et digitalt stempelkort fra Alius, og Henvisninger er en tilføjelse, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
+      intro="Stemplet er et digitalt stempelkort fra Folka, og Henvisninger er en tilføjelse, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
     >
       <LegalSection title="1. Hvem er ansvarlig">
         <p>
-          Stemplet drives af Alius. Har du spørgsmål om dine oplysninger, eller
+          Stemplet drives af Folka. Har du spørgsmål om dine oplysninger, eller
           vil du gøre brug af dine rettigheder, kan du skrive til os på{" "}
           <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}

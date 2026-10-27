@@ -49,7 +49,7 @@ const jsonLd = {
     "Henvisninger til frisører og klinikker: kunden deler et link, vennen får rabat ved første besøg, og kunden får en belønning, når vennen har været der.",
   inLanguage: "da-DK",
   offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },
-  publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
+  publisher: { "@type": "Organization", name: "Folka", url: "https://folka.dk" },
 };
 
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif';
@@ -297,8 +297,8 @@ export default function HenvisningerPage() {
         <div className="mx-auto flex max-w-[1120px] flex-col gap-6 border-t border-white/10 px-4 py-10 text-[13px] sm:px-6 md:flex-row md:items-center md:justify-between">
           <p>
             Lavet af{" "}
-            <a href="https://alius.dk" className="text-white underline-offset-4 hover:underline">
-              Alius
+            <a href="https://folka.dk" className="text-white underline-offset-4 hover:underline">
+              Folka
             </a>
             . Vi laver også{" "}
             <Link href="/" className="text-white underline-offset-4 hover:underline">
@@ -316,8 +316,8 @@ export default function HenvisningerPage() {
             <Link href="/handelsbetingelser" className="hover:text-white">
               Handelsbetingelser
             </Link>
-            <a href="mailto:hej@alius.dk" className="hover:text-white">
-              hej@alius.dk
+            <a href="mailto:hej@folka.dk" className="hover:text-white">
+              hej@folka.dk
             </a>
           </nav>
         </div>

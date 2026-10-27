@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { btnClass } from "@/components/ui";
+import { APP_HOST } from "@/lib/platform";
 import {
   addLoginEmail,
   removeLoginEmail,
@@ -383,7 +384,7 @@ export function AccessManager({
             <h3 className="font-[300] text-[1.3rem] text-ink">Par en ny enhed</h3>
             <p className="max-w-xs font-[300] text-[0.86rem] leading-relaxed text-stone">
               På enheden: åbn{" "}
-              <span className="font-[400] text-ink">stemplet.alius.dk/kasse</span>{" "}
+              <span className="font-[400] text-ink">{APP_HOST}/kasse</span>{" "}
               og indtast koden, eller scan QR-koden.
             </p>
             <div className="rounded-lg border border-fog bg-white shadow-card p-3">

@@ -81,7 +81,7 @@ export function StartRequestForm({ initialReferrals = false }: { initialReferral
         <p className="mx-auto mt-3 max-w-sm font-[300] text-[0.95rem] leading-relaxed text-stone">
           Vi laver et udkast til {wantsReferrals ? "din opsætning" : "dit stempelkort"} og vender tilbage på{" "}
           {email.trim()}.
-          Har du spørgsmål i mellemtiden, så skriv til hej@alius.dk.
+          Har du spørgsmål i mellemtiden, så skriv til hej@folka.dk.
         </p>
       </div>
     );

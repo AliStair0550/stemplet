@@ -68,10 +68,10 @@ export default function Footer() {
               </Link>
             ))}
             <a
-              href="mailto:hej@alius.dk"
+              href="mailto:hej@folka.dk"
               className="text-[0.9rem] text-parchment/65 transition-colors hover:text-parchment"
             >
-              Kontakt: hej@alius.dk
+              Kontakt: hej@folka.dk
             </a>
           </nav>
         </div>
@@ -99,12 +99,12 @@ export default function Footer() {
             </Link>
           </div>
           <a
-            href="https://alius.dk"
+            href="https://folka.dk"
             target="_blank"
             rel="noreferrer"
             className="text-label uppercase tracking-[0.08em] text-parchment/45 transition-colors hover:text-parchment"
           >
-            Drevet af Alius
+            Drevet af Folka
           </a>
         </div>
       </div>

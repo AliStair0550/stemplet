@@ -27,7 +27,7 @@ export default function DpaPage() {
     <LegalLayout
       title="Databehandleraftale"
       updated="26. oktober 2026"
-      intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Alius (Stemplet) er databehandler."
+      intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Folka (Stemplet) er databehandler."
     >
       <LegalSection title="1. Rammen">
         <p>
