@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import QRCode from "qrcode";
-import { requireBusiness } from "@/lib/session";
+import { requireStampsBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
 
 export default async function KampagnerPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireStampsBusiness();
 
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },

@@ -6,7 +6,7 @@ import { referralExportRows } from "@/lib/referral-desk";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// CSV til SMS-udsendelser: alle kunder med en henvisningskode. Samme vaern som
+// CSV-eksport (fx til butikkens eget kundesystem): alle kunder med en henvisningskode. Samme vaern som
 // Stemplets eksport (csvCell mod formel-injektion, BOM til Excel). Kun ejerens
 // login og kun naar henvisninger er slaaet til.
 export async function GET() {
@@ -23,7 +23,7 @@ export async function GET() {
   const lines = rows.map((r) =>
     [
       csvCell(r.name),
-      // Uden "+" (MSISDN, fx 4512345678): SMS-tjenester tager formatet, og et
+      // Uden "+" (MSISDN, fx 4512345678): de fleste systemer tager formatet, og et
       // ledende "+" ville ellers blive neutraliseret til '+45... af csvCell.
       csvCell(r.phone ? r.phone.replace(/^\+/, "") : null),
       csvCell(r.code),

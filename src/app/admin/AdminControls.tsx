@@ -199,7 +199,7 @@ export function FlagToggle({
   label,
 }: {
   businessId: string;
-  flag: "selfScanEnabled" | "welcomeStampEnabled" | "weeklyEmailEnabled" | "referralsEnabled";
+  flag: "selfScanEnabled" | "welcomeStampEnabled" | "weeklyEmailEnabled" | "referralsEnabled" | "stampsEnabled";
   value: boolean;
   label: string;
 }) {

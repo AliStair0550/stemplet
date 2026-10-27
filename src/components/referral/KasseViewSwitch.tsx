@@ -9,6 +9,15 @@ export function kasseViewFrom(enabled: boolean, param: string | undefined): Kass
   return enabled && param === "henvisninger" ? "henvisninger" : "stempler";
 }
 
+/** Kassens visning for en butik: kun Henvisninger (Stemplet fra) giver altid henvisningskassen. */
+export function kasseViewFor(
+  b: { referralsEnabled: boolean; stampsEnabled: boolean },
+  param: string | undefined,
+): { view: KasseView; showSwitch: boolean } {
+  if (b.referralsEnabled && !b.stampsEnabled) return { view: "henvisninger", showSwitch: false };
+  return { view: kasseViewFrom(b.referralsEnabled, param), showSwitch: b.referralsEnabled };
+}
+
 export function KasseViewSwitch({ basePath, view }: { basePath: string; view: KasseView }) {
   const item = (v: KasseView, label: string) => (
     <Link

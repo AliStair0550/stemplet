@@ -39,6 +39,7 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     latitude: b.latitude,
     longitude: b.longitude,
     referral,
+    stampsEnabled: b.stampsEnabled,
   });
 }
 

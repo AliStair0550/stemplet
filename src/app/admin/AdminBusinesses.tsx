@@ -53,6 +53,8 @@ export type Row = {
   stopped: boolean;
   // Henvisninger (modul): slaaet til, og antal henvisninger i alt / gennemfoert.
   referralsEnabled: boolean;
+  /** Stemplet slaaet til (fra = kun Henvisninger). */
+  stampsEnabled: boolean;
   referrals: number;
   referralsRewarded: number;
 };
@@ -460,6 +462,12 @@ function BusinessDetail({ r }: { r: Row }) {
             flag="weeklyEmailEnabled"
             value={r.weeklyEmail}
             label="Ugebrev"
+          />
+          <FlagToggle
+            businessId={r.id}
+            flag="stampsEnabled"
+            value={r.stampsEnabled}
+            label="Stemplet"
           />
           <FlagToggle
             businessId={r.id}

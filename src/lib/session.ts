@@ -76,6 +76,16 @@ export async function requireBusiness(): Promise<{
   };
 }
 
+/**
+ * Som requireBusiness, men til Stemplets egne sider: en butik med kun
+ * Henvisninger sendes til siden, hvor Stemplet kan slaas til.
+ */
+export async function requireStampsBusiness(): ReturnType<typeof requireBusiness> {
+  const r = await requireBusiness();
+  if (!r.business.stampsEnabled) redirect("/app/stemplet/tilfoej");
+  return r;
+}
+
 /** Alle butikker brugeren har adgang til (til butik-skifteren i menuen). */
 export const getMyBusinesses = cache(
   async (): Promise<{ id: string; name: string }[]> => {

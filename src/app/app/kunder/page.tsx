@@ -123,16 +123,19 @@ export default async function CustomersPage({
                       .join(" · ")}
                   </p>
                 </div>
-                <div className="text-right text-[0.8rem] text-stone">
-                  <span className="tabular-nums text-ink">
-                    {c.stamps}/{required}
-                  </span>{" "}
-                  stempler
-                  {c.completedCount > 0 ? `, ${c.completedCount} fulde kort` : ""}
-                  <span className="block text-[0.72rem] text-slate">
-                    {c.lastStampAt ? `sidst ${relativeDk(c.lastStampAt)}` : "ingen besøg endnu"}
-                  </span>
-                </div>
+                {/* Stempler kun, naar butikken har Stemplet (ikke kun Henvisninger). */}
+                {business.stampsEnabled ? (
+                  <div className="text-right text-[0.8rem] text-stone">
+                    <span className="tabular-nums text-ink">
+                      {c.stamps}/{required}
+                    </span>{" "}
+                    stempler
+                    {c.completedCount > 0 ? `, ${c.completedCount} fulde kort` : ""}
+                    <span className="block text-[0.72rem] text-slate">
+                      {c.lastStampAt ? `sidst ${relativeDk(c.lastStampAt)}` : "ingen besøg endnu"}
+                    </span>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>

@@ -40,3 +40,33 @@ test("mail til superadmin naevner Henvisninger kun naar valgt", () => {
   assert.match(ref.text, /Henvisninger: 100 kr\./);
   assert.match(ref.html, /&lt;b&gt;og&lt;\/b&gt;/);
 });
+
+test("kun henvisninger: gyldig uden stempelbeloenning, men mindst et produkt kraeves", () => {
+  const only = startRequestSchema.safeParse({
+    ...base,
+    wantsReferrals: true,
+    wantsStamps: false,
+    referralReward: "Ven faar: 100 kr. Kunden faar: gratis klip.",
+  });
+  assert.equal(only.success, true);
+  assert.equal(only.success && only.data.wantsStamps, false);
+  assert.equal(startRequestSchema.safeParse({ ...base, reward: "x", wantsStamps: false }).success, false);
+  // Uden feltet betyder det det samme som foer: stempelkort.
+  const old = startRequestSchema.safeParse({ ...base, reward: "10. kaffe gratis" });
+  assert.equal(old.success && old.data.wantsStamps, true);
+});
+
+test("mail til superadmin: kun henvisninger staar i emne og tekst", () => {
+  const m = superadminSignupRequestEmail({
+    businessName: "Salon Nord",
+    reward: "",
+    referralReward: "Ven faar: 100 kr.",
+    referralsOnly: true,
+    contactName: "(ingen)",
+    email: "sara@salon.dk",
+    phone: "(ingen)",
+    createUrl: "https://x/app/ny-butik",
+  });
+  assert.match(m.subject, /\(kun Henvisninger\)/);
+  assert.match(m.text, /slå Stemplet fra/);
+});

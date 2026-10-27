@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 // Dashboardets ramme: eet roligt dashboard med produkterne under. Oeverst det
 // faelles (Scan, Hjem, Kunder), saa PRODUKTER med hvert sit logo og undermenu, og
 // nederst butikkens egne ting. Henvisninger vises kun for butikker med modulet.
+// En butik med kun Henvisninger ser Stemplet som et "+", der kan slaas til.
 
 type NavLink = { href: string; label: string };
 
@@ -56,11 +57,14 @@ export function DashboardNav({
   activeBusinessId,
   showAgreement = false,
   showReferrals = false,
+  showStamps = true,
 }: {
   businesses: { id: string; name: string }[];
   activeBusinessId: string;
   showAgreement?: boolean;
   showReferrals?: boolean;
+  /** Fra = kun Henvisninger: Stemplet vises som "+ Tilfoej". */
+  showStamps?: boolean;
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -76,24 +80,52 @@ export function DashboardNav({
   const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
   const inHenvisninger = pathname.startsWith("/app/henvisninger");
 
-  const products = (
+  const stemplet = showStamps ? (
+    <ProductGroup
+      logo={<StempletLogo className="text-[1.05rem]" />}
+      href="/app/stemplet"
+      open={inStemplet}
+      links={STEMPLET_LINKS}
+      isActive={isActive}
+    />
+  ) : (
+    <Link
+      href="/app/stemplet/tilfoej"
+      className={cn(
+        "flex items-center justify-between rounded-lg px-3 py-2 transition-colors",
+        pathname.startsWith("/app/stemplet") ? "bg-sand" : "hover:bg-sand/60",
+      )}
+    >
+      <span className="opacity-45">
+        <StempletLogo className="text-[1.05rem]" />
+      </span>
+      <span
+        aria-label="Tilføj Stemplet"
+        className="flex h-6 w-6 items-center justify-center rounded-full border border-clay text-[0.95rem] leading-none text-stone"
+      >
+        +
+      </span>
+    </Link>
+  );
+  const henvisninger = showReferrals ? (
+    <ProductGroup
+      logo={<HenvisningerLogo className="h-[1.35rem]" />}
+      href="/app/henvisninger"
+      open={inHenvisninger}
+      links={HENVISNINGER_LINKS}
+      isActive={isActive}
+    />
+  ) : null;
+  // Kun Henvisninger: Henvisninger oeverst, Stemplet som tilvalg nedenunder.
+  const products = showStamps ? (
     <>
-      <ProductGroup
-        logo={<StempletLogo className="text-[1.05rem]" />}
-        href="/app/stemplet"
-        open={inStemplet}
-        links={STEMPLET_LINKS}
-        isActive={isActive}
-      />
-      {showReferrals ? (
-        <ProductGroup
-          logo={<HenvisningerLogo className="h-[1.35rem]" />}
-          href="/app/henvisninger"
-          open={inHenvisninger}
-          links={HENVISNINGER_LINKS}
-          isActive={isActive}
-        />
-      ) : null}
+      {stemplet}
+      {henvisninger}
+    </>
+  ) : (
+    <>
+      {henvisninger}
+      {stemplet}
     </>
   );
 

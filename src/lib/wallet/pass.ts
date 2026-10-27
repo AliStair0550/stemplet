@@ -9,6 +9,7 @@ import { buildStripImages } from "./strip";
 import {
   referralFrontFields,
   referralBackFields,
+  referralOnlyFrontFields,
   type ReferralPassInfo,
 } from "./referral-fields";
 import { isPrivateAddress } from "../integrations";
@@ -46,6 +47,9 @@ type PassInput = {
   /** Henvisninger (kun naar butikken har modulet og kunden har en kode). Uden
    *  dette bygges passet praecis som et rent stempelkort. */
   referral?: ReferralPassInfo | null;
+  /** Stemplet slaaet til for butikken (standard). Fra + henvisninger = et rent
+   *  henvisningskort uden stempelgitter (buildReferralOnlyPass). */
+  stampsEnabled?: boolean;
 };
 
 function rgbString(hex: string): string {
@@ -190,6 +194,10 @@ async function loadIcon(): Promise<Buffer> {
 
 /** Bygger et .pkpass (storeCard) for et kundekort. */
 export async function buildPass(input: PassInput): Promise<Buffer> {
+  // Kun Henvisninger: eget, enkelt kort. Alle andre kort bygges som foer herunder.
+  if (input.stampsEnabled === false && input.referral) {
+    return buildReferralOnlyPass({ ...input, referral: input.referral });
+  }
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
 
@@ -379,5 +387,77 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     });
   }
 
+  return pass.getAsBuffer();
+}
+
+/**
+ * Henvisningskort for en butik uden Stemplet: ingen stempler og intet gitter.
+ * Forsiden viser kundens kode stort og hvad vennen faar og kunden har til gode;
+ * bagsiden de samme henvisningsfelter som paa et stempelkort. Samme logo, farver,
+ * passTypeIdentifier og opdateringer (webServiceURL), saa kortet stakker og
+ * opdateres praecis som et stempelkort.
+ */
+async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPassInfo }): Promise<Buffer> {
+  const { passTypeIdentifier, teamIdentifier } = walletIds();
+  const certificates = walletCertificates();
+  const [iconBuf, logoBuf] = await Promise.all([loadIcon(), loadLogo(input.logoUrl, input.logoScale ?? 1)]);
+  const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(
+    input.primaryColor,
+    input.textColor,
+  );
+
+  const images: Record<string, Buffer> = { "icon.png": iconBuf, "icon@2x.png": iconBuf };
+  if (logoBuf) {
+    images["logo.png"] = logoBuf;
+    images["logo@2x.png"] = logoBuf;
+    images["logo@3x.png"] = logoBuf;
+  }
+
+  const pass = new PKPass(images, certificates, {
+    passTypeIdentifier,
+    teamIdentifier,
+    organizationName: input.businessName,
+    description: `Henvisninger - ${input.businessName}`,
+    serialNumber: input.serial,
+    foregroundColor: fg,
+    backgroundColor: bg,
+    labelColor: labelCol,
+    ...(logoBuf ? {} : { logoText: input.businessName }),
+    webServiceURL: `${APP_URL}/api/wallet`,
+    authenticationToken: input.authToken,
+    sharingProhibited: true,
+  });
+  pass.type = "storeCard";
+
+  const front = referralOnlyFrontFields(input.referral);
+  pass.primaryFields.push(...front.primary);
+  pass.secondaryFields.push(...front.secondary);
+  pass.backFields.push(...referralBackFields(input.referral));
+  if (input.showPoweredBy) {
+    pass.backFields.push({
+      key: "poweredby",
+      label: "Drevet af",
+      value: "Henvisninger - et produkt fra Alius. alius.dk",
+    });
+  }
+
+  pass.setBarcodes({
+    format: "PKBarcodeFormatQR",
+    message: input.serial,
+    messageEncoding: "iso-8859-1",
+    altText: input.serial,
+  });
+  if (
+    typeof input.latitude === "number" &&
+    typeof input.longitude === "number" &&
+    Number.isFinite(input.latitude) &&
+    Number.isFinite(input.longitude)
+  ) {
+    pass.setLocations({
+      latitude: input.latitude,
+      longitude: input.longitude,
+      relevantText: `Velkommen tilbage hos ${input.businessName}`,
+    });
+  }
   return pass.getAsBuffer();
 }

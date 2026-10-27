@@ -54,7 +54,7 @@ const jsonLd = {
 
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif';
 
-function CTA({ tone = "dark" }: { tone?: "dark" | "light" }) {
+function CTA({ tone = "dark", arrow = true }: { tone?: "dark" | "light"; arrow?: boolean }) {
   return (
     <Link
       href={START}
@@ -63,9 +63,11 @@ function CTA({ tone = "dark" }: { tone?: "dark" | "light" }) {
       }`}
     >
       Opret din butik gratis
-      <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
-        →
-      </span>
+      {arrow ? (
+        <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
+          →
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -285,7 +287,7 @@ export default function HenvisningerPage() {
               Lad dine kunder <Hand>gøre</Hand> arbejdet.
             </h2>
             <div className="mt-12">
-              <CTA tone="light" />
+              <CTA tone="light" arrow={false} />
             </div>
           </Reveal>
         </section>

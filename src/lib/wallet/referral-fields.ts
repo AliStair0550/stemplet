@@ -109,3 +109,23 @@ export function referralBackFields(info: ReferralPassInfo): PassField[] {
   fields.push({ key: "ref-page", label: "Din side", value: info.pageUrl });
   return fields;
 }
+
+/**
+ * Forsiden for en butik uden Stemplet (kun Henvisninger): koden stort som
+ * primaerfelt, og nedenunder hvad vennen faar og hvad kunden har til gode.
+ */
+export function referralOnlyFrontFields(info: ReferralPassInfo): { primary: PassField[]; secondary: PassField[] } {
+  const [code, owed] = referralFrontFields(info);
+  return {
+    primary: [{ key: code!.key, label: code!.label, value: code!.value }],
+    secondary: [
+      {
+        key: "ref-friend",
+        label: "DIN VEN FÅR",
+        value: info.newCustomerReward,
+        textAlignment: "PKTextAlignmentLeft",
+      },
+      owed!,
+    ],
+  };
+}

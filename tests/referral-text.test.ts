@@ -72,6 +72,7 @@ import {
   referralFrontFields,
   referralBackFields,
   type ReferralPassInfo,
+  referralOnlyFrontFields,
 } from "../src/lib/wallet/referral-fields";
 
 const info = (over: Partial<ReferralPassInfo> = {}): ReferralPassInfo => ({
@@ -141,4 +142,30 @@ test("kode: tolerant over for mellemrum, tankestreg, smaa bogstaver og manglende
   assert.ok(referralCodeCandidates("SOEREN-AB3").includes("SOEREN-AB3"));
   assert.ok(referralCodeCandidates("soerenab3").includes("SOEREN-AB3"));
   assert.deepEqual(referralCodeCandidates("   "), []);
+});
+
+test("wallet uden Stemplet: koden er primaerfelt, vennens rabat og til gode under", () => {
+  const f = referralOnlyFrontFields(info({ rewards: [{ type: "SERVICE", value: "Gratis klip" }], announce: true, referralsDone: 1 }));
+  assert.deepEqual(
+    f.primary.map((x) => [x.key, x.value]),
+    [["ref-code", "SARA-K8"]],
+  );
+  assert.deepEqual(
+    f.secondary.map((x) => [x.key, x.value]),
+    [
+      ["ref-friend", `100${NBSP}kr.`],
+      ["ref-owed", "Gratis klip"],
+    ],
+  );
+  // Beskeden ved en ny beloenning foelger med, som paa stempelkortet.
+  assert.match(f.secondary[1]!.changeMessage ?? "", /%@/);
+});
+
+import { referralSummaryLine } from "../src/lib/overview-text";
+
+test("hjem uden Stemplet: linjen taler om nye kunder, ikke stempler", () => {
+  assert.match(referralSummaryLine({ totalCustomers: 0, newThisMonth: 0, waiting: 0 }), /henvisningsside/);
+  const line = referralSummaryLine({ totalCustomers: 14, newThisMonth: 1, waiting: 2 });
+  assert.equal(line, "I har 14 kunder. 1 ny kunde via henvisninger denne måned. 2 venter på første besøg.");
+  assert.doesNotMatch(line, /stempel/i);
 });

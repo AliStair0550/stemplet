@@ -626,6 +626,8 @@ export type SuperadminSignupRequestData = {
   reward: string;
   /** Saat, naar butikken ogsaa vil have Henvisninger. */
   referralReward?: string | null;
+  /** Kun Henvisninger: opret butikken med Stemplet slaaet fra. */
+  referralsOnly?: boolean;
   contactName: string; // navn eller "(ingen)"
   email: string;
   phone: string; // nummer eller "(ingen)"
@@ -663,7 +665,7 @@ export function superadminSignupRequestEmail(
       Ny oprettelsesanmodning.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      ${d.referralReward ? "En butik vil gerne have Henvisninger. Lav et udkast, slå Henvisninger til i superadmin og tag fat i dem." : "En butik vil gerne have et stempelkort. Lav et udkast og tag fat i dem."}
+      ${d.referralsOnly ? "En butik vil gerne have Henvisninger uden stempelkort. Opret butikken, slå Henvisninger til og Stemplet fra i superadmin, og tag fat i dem." : d.referralReward ? "En butik vil gerne have Henvisninger. Lav et udkast, slå Henvisninger til i superadmin og tag fat i dem." : "En butik vil gerne have et stempelkort. Lav et udkast og tag fat i dem."}
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:16px 18px;">
@@ -688,6 +690,7 @@ export function superadminSignupRequestEmail(
     `Virksomhed: ${d.businessName}`,
     `Ønsket belønning: ${d.reward || "(ikke angivet)"}`,
     ...(d.referralReward ? [`Henvisninger: ${d.referralReward}`] : []),
+    ...(d.referralsOnly ? ["Kun Henvisninger: slå Stemplet fra i superadmin."] : []),
     `Kontakt: ${d.contactName}`,
     `Mail: ${d.email}`,
     `Telefon: ${d.phone}`,
@@ -696,7 +699,7 @@ export function superadminSignupRequestEmail(
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Oprettelsesanmodning${d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
+    subject: `[Stemplet] Oprettelsesanmodning${d.referralsOnly ? " (kun Henvisninger)" : d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
     html: shell("En butik vil gerne oprettes hos Stemplet.", inner),
     text,
   };

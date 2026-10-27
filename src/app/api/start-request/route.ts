@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const msg = parsed.error.issues[0]?.message ?? "Tjek felterne og prøv igen.";
     return apiError("INVALID", msg, 400);
   }
-  const { businessName, reward, email, wantsReferrals } = parsed.data;
+  const { businessName, reward, email, wantsReferrals, wantsStamps } = parsed.data;
   const referralReward = wantsReferrals ? parsed.data.referralReward?.trim() || null : null;
   const contactName = parsed.data.contactName?.trim() || null;
   const phone = parsed.data.phone?.trim() || null;
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   await prisma.signupRequest.create({
-    data: { businessName, reward, wantsReferrals, referralReward, contactName, email, phone, createdIp: ip },
+    data: { businessName, reward, wantsReferrals, wantsStamps, referralReward, contactName, email, phone, createdIp: ip },
   });
 
   // Notifikation til superadmin (Ali). Best-effort: en mail-fejl vaelter ikke
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         businessName,
         reward,
         referralReward,
+        referralsOnly: !wantsStamps,
         contactName: contactName || "(ingen)",
         email,
         phone: phone || "(ingen)",

@@ -260,6 +260,10 @@ export async function applyStamp(opts: {
         "Butikken tager ikke imod stempler lige nu.",
       );
     }
+    // Kun Henvisninger (Stemplet slaaet fra): ingen stempler.
+    if (!business.stampsEnabled) {
+      throw new StampError("INACTIVE", "Butikken bruger ikke stempelkort.");
+    }
 
     // Fuldt kort: bloker flere stempler indtil belønningen er indløst.
     if (cc.stamps >= required) {
