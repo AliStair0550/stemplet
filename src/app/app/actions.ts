@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { requireBusiness, ACTIVE_BUSINESS_COOKIE } from "@/lib/session";
+import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
 import { getStripe, proPriceId } from "@/lib/stripe";
 import { APP_URL } from "@/lib/env";
@@ -30,11 +30,15 @@ export async function switchBusiness(businessId: string): Promise<Result> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, error: "Ikke logget ind." };
+  // Support-butikken (superadmin) er allerede aktiv; intet at skifte.
+  if ((await getSupportBusiness())?.id === businessId) return { ok: true };
   const m = await prisma.membership.findUnique({
     where: { userId_businessId: { userId, businessId } },
     select: { id: true },
   });
   if (!m) return { ok: false, error: "Du har ikke adgang til den butik." };
+  // Skift til en af egne butikker afslutter en eventuel support-session.
+  (await cookies()).delete(SUPPORT_BUSINESS_COOKIE);
   (await cookies()).set(ACTIVE_BUSINESS_COOKIE, businessId, {
     httpOnly: true,
     sameSite: "lax",

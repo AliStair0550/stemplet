@@ -15,6 +15,7 @@ import { AdminUnlock } from "./AdminUnlock";
 import { AdminShell } from "./AdminShell";
 import { ClearDemoButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
+import { AdminCreateBusiness } from "./AdminCreateBusiness";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -443,6 +444,9 @@ export default async function AdminPage() {
             >
               Eksportér kontakter (CSV)
             </a>
+          </div>
+          <div className="mt-4">
+            <AdminCreateBusiness />
           </div>
           {real.length === 0 ? (
             <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">
