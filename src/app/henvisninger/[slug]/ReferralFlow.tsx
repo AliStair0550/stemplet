@@ -31,7 +31,8 @@ export function ReferralFlow(props: {
   source: "LINK" | "CODE_ENTERED";
   /** Kunden aabnede sit eget link eller tastede sin egen kode. */
   ownLink?: boolean;
-  invalidCode: boolean;
+  /** Den kode kunden brugte, hvis den ikke blev fundet (ellers null). */
+  invalidCode: string | null;
   initial: Done | null;
 }) {
   const [done, setDone] = useState<Done | null>(props.initial);
@@ -122,17 +123,18 @@ function SignupView(
 
   return (
     <div className="flex flex-1 flex-col">
+      {props.invalidCode ? (
+        // Tydelig, ikke til at overse: koden kunden skrev, og hvad hun kan goere.
+        <p role="alert" className="mb-6 rounded-[12px] border border-rust/30 bg-rust/5 px-4 py-3 text-center text-[15px] leading-snug text-rust">
+          Vi kunne ikke finde koden &quot;{props.invalidCode}&quot;. Tjek at den er skrevet rigtigt, eller bed din ven om linket.
+        </p>
+      ) : null}
       <h1 className="text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
         {heading}
       </h1>
       <p className="mt-3 text-center text-[17px] leading-snug" style={{ color: MUTED }}>
         {sub}
       </p>
-      {props.invalidCode ? (
-        <p className="mt-4 text-center text-[14px]" style={{ color: MUTED }}>
-          Koden virker ikke længere. Du kan stadig få din egen kode og henvise dine venner.
-        </p>
-      ) : null}
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-3">
         <Field

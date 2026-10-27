@@ -124,3 +124,17 @@ test("wallet: bagsiden har delelink, belønninger, antal og betingelser", () => 
   assert.equal(b[2]!.value, "Du har henvist 2 venner.");
   assert.equal(referralBackFields(info({ termsLine: null })).some((x) => x.key === "ref-terms"), false);
 });
+
+// ── Kode tastet af en kunde ──────────────────────────────────────────
+
+import { referralCodeCandidates } from "../src/lib/referral-code";
+
+test("kode: tolerant over for mellemrum, tankestreg, smaa bogstaver og manglende bindestreg", () => {
+  assert.deepEqual(referralCodeCandidates("SARA-FU"), ["SARA-FU", "SAR-AFU"]);
+  assert.ok(referralCodeCandidates("sara fu").includes("SARA-FU"));
+  assert.ok(referralCodeCandidates(" Sara\u2013Fu ").includes("SARA-FU"));
+  assert.ok(referralCodeCandidates("sarafu").includes("SARA-FU"));
+  assert.ok(referralCodeCandidates("SOEREN-AB3").includes("SOEREN-AB3"));
+  assert.ok(referralCodeCandidates("soerenab3").includes("SOEREN-AB3"));
+  assert.deepEqual(referralCodeCandidates("   "), []);
+});
