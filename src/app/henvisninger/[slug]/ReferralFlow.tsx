@@ -185,6 +185,8 @@ function SignupView(
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // E-mailen har allerede et kort: tilbyd et gendannelseslink paa mail.
+  const [taken, setTaken] = useState<"no" | "yes" | "sending" | "sent">("no");
   const withCode = props.referrer !== null;
 
   async function submit(e: React.FormEvent) {
@@ -192,6 +194,7 @@ function SignupView(
     if (busy) return;
     setBusy(true);
     setError(null);
+    setTaken("no");
     try {
       const res = await fetch(`/api/henvisninger/${encodeURIComponent(props.slug)}/tilmeld`, {
         method: "POST",
@@ -213,11 +216,34 @@ function SignupView(
         });
         return;
       }
+      if (data?.code === "mail_findes") setTaken("yes");
       setError(data?.message ?? "Der opstod en kortvarig fejl. Prøv igen.");
     } catch {
       setError("Der opstod en kortvarig fejl. Prøv igen.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function sendRecovery() {
+    setTaken("sending");
+    try {
+      const res = await fetch(`/api/wallet/claim/${encodeURIComponent(props.slug)}/gendan`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = (await res.json().catch(() => null)) as { ok: boolean; message?: string } | null;
+      if (data?.ok) {
+        setTaken("sent");
+        setError(null);
+      } else {
+        setTaken("yes");
+        setError(data?.message ?? "Der opstod en kortvarig fejl. Prøv igen.");
+      }
+    } catch {
+      setTaken("yes");
+      setError("Der opstod en kortvarig fejl. Prøv igen.");
     }
   }
 
@@ -280,10 +306,25 @@ function SignupView(
             altid framelde dig igen.
           </span>
         </label>
-        {error ? (
+        {taken === "sent" ? (
+          <p role="status" className="text-[14px]">
+            Tjek din mail. Åbn linket på denne telefon for at gendanne dit kort. Det virker i 30 minutter.
+          </p>
+        ) : error ? (
           <p role="alert" className="text-[14px] text-rust">
             {error}
           </p>
+        ) : null}
+        {taken === "yes" || taken === "sending" ? (
+          <button
+            type="button"
+            disabled={taken === "sending"}
+            onClick={sendRecovery}
+            className="min-h-[44px] rounded-[980px] border px-5 text-[15px] font-semibold disabled:opacity-60"
+            style={{ borderColor: props.accent }}
+          >
+            {taken === "sending" ? "Et øjeblik" : "Send link til min mail"}
+          </button>
         ) : null}
         <button
           type="submit"

@@ -18,6 +18,7 @@ import {
   type CardStyle,
 } from "@/lib/card-look";
 import { saveCardLook } from "./actions";
+import { CARD_NAME_MAX, autoCardName, claimCta } from "@/lib/card-name";
 
 // Kortet: butikkens faelles kortdesign. Stil, farver, navn og logo, eget billede
 // og knapper, med en live-forhaandsvisning af plakatkortet (iOS 27) og det
@@ -64,6 +65,7 @@ export function KortetEditor({
   initialStyle,
   initialArtwork,
   initialActions,
+  initialCardName,
   ctx,
   businessName,
   friendReward,
@@ -73,6 +75,7 @@ export function KortetEditor({
   initialStyle: CardStyle;
   initialArtwork: string | null;
   initialActions: CardAction[];
+  initialCardName: string;
   ctx: CardLookContext;
   businessName: string;
   friendReward: string;
@@ -83,6 +86,7 @@ export function KortetEditor({
   const [artwork, setArtwork] = useState<string | null>(initialArtwork);
   const [artworkChanged, setArtworkChanged] = useState(false);
   const [actions, setActions] = useState<CardAction[]>(initialActions);
+  const [cardName, setCardName] = useState(initialCardName);
   const [os, setOs] = useState<"27" | "old">("27");
   const [uploading, setUploading] = useState(false);
   const [pending, start] = useTransition();
@@ -93,10 +97,14 @@ export function KortetEditor({
     ctx.stampsEnabled && ctx.referralsEnabled ? "begge" : ctx.referralsEnabled ? "henvisninger" : "stemplet";
 
   const snapshot = useMemo(
-    () => JSON.stringify({ design, style, actions, artworkChanged }),
-    [design, style, actions, artworkChanged],
+    () => JSON.stringify({ design, style, actions, cardName, artworkChanged }),
+    [design, style, actions, cardName, artworkChanged],
   );
-  const savedRef = useRef(JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false }));
+  const savedRef = useRef(
+    JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, cardName: initialCardName, artworkChanged: false }),
+  );
+  // Automatisk navn ud fra navnet paa kortet, naar butikken ikke selv har valgt.
+  const autoName = autoCardName(design.displayName?.trim() || businessName);
   const dirty = snapshot !== savedRef.current;
 
   useEffect(() => {
@@ -142,9 +150,10 @@ export function KortetEditor({
         style,
         artwork: artworkChanged ? artwork : "keep",
         actions,
+        cardName,
       });
       if (res.ok) {
-        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false });
+        savedRef.current = JSON.stringify({ design, style, actions, cardName, artworkChanged: false });
         setArtworkChanged(false);
         setMsg({ ok: true, text: "Gemt" });
       } else {
@@ -224,6 +233,31 @@ export function KortetEditor({
 
         {/* Farver, navn og logo (faelles kortdesigner, kun udseende) */}
         <CardDesigner value={design} onChange={setDesign} businessName={businessName} allowLogo boxed hidePreview parts="look" />
+
+        {/* Kortets navn: knappen paa butikkens side */}
+        <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
+          <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Kortets navn</h2>
+          <p className="mt-0.5 text-[0.88rem] text-stone">Bruges i knappen, når kunderne henter kortet på din side.</p>
+          <input
+            value={cardName}
+            onChange={(e) => setCardName(e.target.value)}
+            maxLength={CARD_NAME_MAX}
+            placeholder={autoName}
+            aria-label="Kortets navn"
+            className="mt-4 w-full rounded-xl border border-fog bg-[#f5f5f7] px-4 py-2.5 text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-ink"
+          />
+          <p className="mt-2 text-[0.8rem] text-slate">
+            Højst {CARD_NAME_MAX} tegn. Lad feltet stå tomt for at bruge &quot;{autoName}&quot;.
+          </p>
+          <div className="mt-4 flex justify-center rounded-[14px] bg-[#f5f5f7] p-4">
+            <span
+              className="flex min-h-11 items-center rounded-2xl px-6 text-[0.92rem] font-medium"
+              style={{ background: design.textColor, color: design.primaryColor }}
+            >
+              {claimCta(cardName.trim() || autoName)}
+            </span>
+          </div>
+        </section>
 
         {/* Knapper */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">

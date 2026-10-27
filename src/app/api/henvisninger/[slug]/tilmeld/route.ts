@@ -29,7 +29,7 @@ const bodySchema = z.object({
 const MESSAGES: Record<string, string> = {
   navn: "Skriv dit navn.",
   mail: "Skriv en gyldig e-mailadresse.",
-  mail_findes: "E-mailen er allerede tilmeldt. Spørg i butikken.",
+  mail_findes: "Der er allerede et kort med den e-mail. Vi kan sende et link, så du kan gendanne det.",
   lukket: "Henvisninger er ikke åbne hos butikken lige nu.",
   pause: "Butikken tager ikke imod nye kunder lige nu. Spørg i butikken.",
   stoppet: "Butikken tager ikke imod nye kunder lige nu. Spørg i butikken.",

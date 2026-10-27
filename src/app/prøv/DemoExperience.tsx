@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { autoCardName, claimCta } from "@/lib/card-name";
 import { btnClass, CtaGlow, WalletIcon, CTA_EMPHASIS } from "@/components/ui";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
@@ -132,7 +133,7 @@ export function DemoExperience({
               }`}
             >
               <WalletIcon />
-              Hent mit stempelkort
+              {claimCta(autoCardName(businessName))}
             </a>
           </CtaGlow>
         ) : null}

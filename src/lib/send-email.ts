@@ -7,9 +7,14 @@ export async function sendEmail(input: {
   subject: string;
   html: string;
   text: string;
+  /** Afsendernavn (fx butikkens navn); adressen er altid EMAIL_FROM's. */
+  fromName?: string;
 }): Promise<boolean> {
   const apiKey = process.env.AUTH_RESEND_KEY;
-  const from = process.env.EMAIL_FROM || "Stemplet <login@alius.dk>";
+  const base = process.env.EMAIL_FROM || "Stemplet <login@alius.dk>";
+  const addr = /<([^>]+)>/.exec(base)?.[1] ?? base.trim();
+  // Navnet renses for tegn, der kan bryde "Navn <adresse>"-formatet.
+  const from = input.fromName ? `${input.fromName.replace(/[<>"\r\n]/g, "").trim()} <${addr}>` : base;
   if (!apiKey) {
     console.log(`[email] Resend ikke konfigureret, springer over: ${input.subject} -> ${input.to}`);
     return false;
