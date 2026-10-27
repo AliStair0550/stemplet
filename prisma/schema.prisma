@@ -83,6 +83,12 @@ model Business {
   referralsEnabled   Boolean   @default(false)
   /// Stemplet slaaet til. Fra = kun Henvisninger (Stemplet kan tilfoejes i dashboardet).
   stampsEnabled      Boolean   @default(true)
+  /// Kortet: stil paa iOS 27-plakatkortet: "color" | "photo" | "pattern" | "stamps".
+  cardStyle          String    @default("color")
+  /// Butikkens eget billede til plakatkortet (data-URI, JPEG, allerede beskaaret).
+  cardArtwork        String?
+  /// Knapper paa kortet (iOS 27, hoejst to): "book" | "henvis" | "beloenninger".
+  cardActions        String[]  @default([])
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?

@@ -403,5 +403,5 @@ export async function createBusinessForCustomer(
   });
   console.info(`[support] ${admin} oprettede og aabnede ${created.slug}`);
   revalidatePath("/admin");
-  redirect(product === "henvisninger" ? "/app/henvisninger/indstillinger" : "/app/kort");
+  redirect("/app/kortet");
 }

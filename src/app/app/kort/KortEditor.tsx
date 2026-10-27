@@ -110,6 +110,7 @@ export function KortEditor({
           businessName={businessName}
           allowLogo
           boxed
+          parts="rules"
         />
         <div className="mt-6 flex flex-wrap items-center gap-3 py-2 md:sticky md:bottom-0 md:z-20 md:-mx-1 md:bg-parchment/95 md:px-1 md:py-4 md:backdrop-blur">
           <button
@@ -117,7 +118,7 @@ export function KortEditor({
             disabled={pending}
             className={btnClass("primary")}
           >
-            {pending ? "Gemmer..." : "Gem kort"}
+            {pending ? "Gemmer..." : "Gem regler"}
           </button>
           <button
             onClick={download}
