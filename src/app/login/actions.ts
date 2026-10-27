@@ -6,6 +6,7 @@ import { signIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { emailSchema } from "@/lib/validation";
 import { durableRateLimit } from "@/lib/rate-limit";
+import { isSuperadminEmail } from "@/lib/superadmin-emails";
 
 export type LoginState = { error?: string; notFound?: boolean };
 
@@ -50,8 +51,11 @@ export async function requestMagicLink(
       };
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
+    // Superadmin (fx hej@alius.dk) kan altid logge ind, ogsaa uden butik; Auth.js
+    // opretter brugeren ved foerste login. Alle andre skal have en konto.
+    const superadmin = isSuperadminEmail(email);
+    const user = superadmin ? null : await prisma.user.findUnique({ where: { email } });
+    if (!superadmin && !user) {
       return {
         notFound: true,
         error:
@@ -61,7 +65,7 @@ export async function requestMagicLink(
 
     // signIn sender magic link og redirecter til /app ved succes (den redirect
     // boble op via unstable_rethrow nedenfor).
-    await signIn("resend", { email, redirectTo: "/app" });
+    await signIn("resend", { email, redirectTo: superadmin ? "/admin" : "/app" });
     return {};
   } catch (e) {
     unstable_rethrow(e); // lad redirect (succes) passere
