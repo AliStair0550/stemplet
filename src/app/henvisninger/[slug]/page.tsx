@@ -34,7 +34,7 @@ export async function generateMetadata({
   return {
     title,
     description: shop
-      ? `Del din kode, og giv dine venner ${rewardPhrase(shop.rule.newCustomerRewardType, shop.rule.newCustomerRewardValue)} hos ${cardTitle(shop)}.`
+      ? `Del dit link, og giv dine venner ${rewardPhrase(shop.rule.newCustomerRewardType, shop.rule.newCustomerRewardValue)} hos ${cardTitle(shop)}.`
       : undefined,
     // Personlig side: ikke i soegemaskiner, men link-previews virker stadig.
     robots: { index: false },

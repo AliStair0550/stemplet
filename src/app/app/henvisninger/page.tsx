@@ -8,6 +8,8 @@ import { btnClass } from "@/components/ui";
 import { HenvisningerLogo } from "@/components/ProductLogo";
 import { getReferralWorklist } from "@/lib/referral-desk";
 import { ReferralWorklist } from "./ReferralWorklist";
+import { ShopLinkCard } from "./ShopLinkCard";
+import { APP_URL } from "@/lib/env";
 
 export const metadata: Metadata = { title: "Henvisninger" };
 export const dynamic = "force-dynamic";
@@ -64,6 +66,7 @@ export default async function ReferralsPage({
   return (
     <>
       <ReferralHeader />
+      <ShopLinkCard url={`${APP_URL}/henvisninger/${business.slug}`} />
       <ReferralWorklist waiting={waiting} owed={owed} hasPin={business.staffPin != null} initialQuery={q} />
     </>
   );

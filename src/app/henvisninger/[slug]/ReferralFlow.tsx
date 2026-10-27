@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { WalletIcon } from "@/components/ui";
 import { Confetti, CheckBurst } from "@/components/Celebrate";
 import { referralShareText, referralShareUrl } from "@/lib/referral-text";
@@ -47,25 +48,23 @@ export function ReferralFlow(props: {
       className="flex w-full max-w-[400px] flex-1 flex-col"
       style={{ animation: "stepIn 0.25s ease-out both" }}
     >
-      <header className="flex flex-col items-center gap-3 pb-8">
-        {props.logoSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={props.logoSrc}
-            alt={props.shopName}
-            className="h-12 w-auto max-w-[60%] object-contain"
-          />
-        ) : (
-          <span className="text-[17px] font-semibold tracking-[-0.01em]">{props.shopName}</span>
-        )}
-      </header>
+      <ShopHero
+        {...props}
+        tagline={
+          done
+            ? "Tak, fordi du anbefaler os"
+            : props.referrer
+              ? "En gave fra en ven"
+              : "Anbefal os til en ven"
+        }
+      />
       {done && props.ownLink ? (
         <p
           role="status"
           className="mb-6 rounded-[12px] px-4 py-3 text-center text-[15px]"
           style={{ backgroundColor: SURFACE, color: INK }}
         >
-          Det er din egen kode. Send den til en ven, så får vennen {props.newCustomerReward} ved første besøg.
+          Det er dit eget link. Send det til en ven, så får vennen {props.newCustomerReward} ved første besøg.
         </p>
       ) : null}
       {fresh ? <Confetti colors={[props.accent, "#1D1D1F", "#C9A24B", "#E2DDD5"]} /> : null}
@@ -80,6 +79,98 @@ export function ReferralFlow(props: {
           }}
         />
       )}
+      <Link
+        href="/henvisninger"
+        className="mt-10 flex items-center justify-center gap-1.5 pb-2 text-[12px]"
+        style={{ color: MUTED }}
+      >
+        Drevet af
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/henvisninger-logo.svg" alt="Henvisninger" className="h-[18px] w-auto opacity-70" />
+      </Link>
+    </div>
+  );
+}
+
+// Butikkens kort oeverst: butikkens farve, logo i en hvid flise og navnet. Det er
+// det, folk ser, naar butikken linker til siden fra hjemmeside og sociale medier.
+function ShopHero(props: Parameters<typeof ReferralFlow>[0] & { tagline: string }) {
+  const initials = props.shopName
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  return (
+    <header
+      className="mb-7 rounded-[22px] px-6 pb-6 pt-7 text-center"
+      style={{ backgroundColor: props.accent, color: props.accentFg }}
+    >
+      <span className="mx-auto flex h-[68px] w-[68px] items-center justify-center overflow-hidden rounded-[18px] bg-white shadow-[0_6px_18px_-8px_rgba(0,0,0,0.35)]">
+        {props.logoSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={props.logoSrc} alt={props.shopName} className="h-[78%] w-[78%] object-contain" />
+        ) : (
+          <span className="text-[24px] font-bold tracking-[-0.02em]" style={{ color: props.accent }}>
+            {initials}
+          </span>
+        )}
+      </span>
+      <p className="mt-3 text-[22px] font-semibold leading-tight tracking-[-0.02em]">{props.shopName}</p>
+      <p className="mt-1 text-[14px] opacity-80">{props.tagline}</p>
+    </header>
+  );
+}
+
+function RewardTiles(props: { newCustomerReward: string; referrerReward: string }) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      {[
+        { label: "Din ven får", value: props.newCustomerReward, sub: "ved første besøg" },
+        { label: "Du får", value: props.referrerReward, sub: "når vennen har været her" },
+      ].map((t) => (
+        <div key={t.label} className="rounded-[14px] px-4 py-3.5 text-left" style={{ backgroundColor: SURFACE }}>
+          <p className="text-[13px]" style={{ color: MUTED }}>
+            {t.label}
+          </p>
+          <p className="mt-0.5 text-[20px] font-semibold leading-tight tracking-[-0.01em] first-letter:uppercase" style={{ color: INK }}>
+            {t.value}
+          </p>
+          <p className="mt-0.5 text-[12px] leading-snug" style={{ color: MUTED }}>
+            {t.sub}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Kundens link, stort og tydeligt, med Kopiér. Uden https:// saa det kan laeses.
+function LinkBox({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  const shown = url.replace(/^https?:\/\//, "");
+  return (
+    <div className="flex items-center gap-2 rounded-[14px] py-2 pl-4 pr-2" style={{ backgroundColor: SURFACE }}>
+      <span className="min-w-0 flex-1 truncate text-[15px]" style={{ color: INK }}>
+        {shown}
+      </span>
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          } catch {
+            // Kopiering afvist: linket kan stadig markeres og kopieres manuelt.
+          }
+        }}
+        className="min-h-[40px] shrink-0 rounded-[980px] bg-white px-4 text-[14px] font-semibold shadow-sm"
+        style={{ color: INK }}
+      >
+        {copied ? "Kopieret" : "Kopiér"}
+      </button>
     </div>
   );
 }
@@ -130,7 +221,7 @@ function SignupView(
 
   const heading = withCode
     ? `${props.referrer!.firstName ?? "Din ven"} har givet dig ${props.newCustomerReward} hos ${props.shopName}`
-    : `Henvis en ven og få ${props.referrerReward}`;
+    : "Henvis en ven";
   const sub = withCode
     ? "Skriv dit navn og nummer, så ligger rabatten klar til dit første besøg."
     : `Din ven får ${props.newCustomerReward} ved første besøg. Du får ${props.referrerReward}, når vennen har været der.`;
@@ -146,9 +237,15 @@ function SignupView(
       <h1 className="text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
         {heading}
       </h1>
-      <p className="mt-3 text-center text-[17px] leading-snug" style={{ color: MUTED }}>
-        {sub}
-      </p>
+      {withCode ? (
+        <p className="mt-3 text-center text-[17px] leading-snug" style={{ color: MUTED }}>
+          {sub}
+        </p>
+      ) : (
+        <div className="mt-5">
+          <RewardTiles newCustomerReward={props.newCustomerReward} referrerReward={props.referrerReward} />
+        </div>
+      )}
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-3">
         <Field
@@ -177,7 +274,7 @@ function SignupView(
           className="mt-2 min-h-[52px] rounded-[980px] px-6 text-[17px] font-semibold transition-opacity active:opacity-80 disabled:opacity-60"
           style={{ backgroundColor: props.accent, color: props.accentFg }}
         >
-          {busy ? "Et øjeblik" : withCode ? "Hent min rabat" : "Få min kode"}
+          {busy ? "Et øjeblik" : withCode ? "Hent min rabat" : "Få mit link"}
         </button>
       </form>
 
@@ -186,7 +283,7 @@ function SignupView(
           {props.termsLine}
         </p>
       ) : null}
-      <p className="mt-3 text-center text-[12px] leading-relaxed" style={{ color: MUTED }}>
+      <p className="mb-6 mt-3 text-center text-[12px] leading-relaxed" style={{ color: MUTED }}>
         {props.shopName} gemmer dit navn og nummer, så din henvisning kan registreres. Se{" "}
         <a href="/privatliv" target="_blank" rel="noreferrer" className="underline">
           privatlivspolitikken
@@ -245,7 +342,7 @@ function CodeEntry({ slug }: { slug: string }) {
       <input
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        placeholder="Har du en kode fra en ven?"
+        placeholder="Har du en henvisningskode?"
         autoCapitalize="characters"
         aria-label="Kode fra en ven"
         className="min-h-[44px] flex-1 rounded-[12px] px-3 text-[16px] uppercase outline-none placeholder:normal-case"
@@ -315,10 +412,13 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done; fres
           ) : null}
         </div>
         <div className="mt-auto border-t pt-5 text-center" style={{ borderColor: LINE }}>
-          <p className="text-[14px]" style={{ color: MUTED }}>
-            Du kan også selv henvise. Din kode:
+          <p className="mb-2 text-[14px]" style={{ color: MUTED }}>
+            Du kan også selv henvise. Dit link:
           </p>
-          <p className="mt-1 text-[22px] font-semibold tracking-[0.04em]">{done.code}</p>
+          <LinkBox url={shareUrl} />
+          <p className="mt-2 text-[13px]" style={{ color: MUTED }}>
+            Eller giv din ven koden <span className="font-semibold tracking-[0.04em]" style={{ color: INK }}>{done.code}</span>
+          </p>
           <div className="mt-3">
             <ShareButton
               url={shareUrl}
@@ -340,16 +440,26 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done; fres
         </p>
       ) : null}
       {badge}
-      <p className="text-center text-[14px]" style={{ color: MUTED }}>
-        {fresh ? "Din kode er klar" : "Din kode"}
+      <h1 className="text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
+        {fresh ? "Dit link er klar" : "Dit link"}
+      </h1>
+      <p className="mx-auto mt-2 max-w-[320px] text-center text-[16px] leading-snug" style={{ color: MUTED }}>
+        Send det til en ven. Når vennen har været her, får du {props.referrerReward}
+        {props.referrerReward.endsWith(".") ? "" : "."}
       </p>
-      <p className="mt-1 text-center text-[44px] font-semibold leading-none tracking-[0.04em]" style={pop}>
-        {done.code}
+      <div className="mt-6" style={pop}>
+        <LinkBox url={shareUrl} />
+      </div>
+      <p className="mt-3 text-center text-[14px]" style={{ color: MUTED }}>
+        Eller giv din ven koden{" "}
+        <span className="font-semibold tracking-[0.04em]" style={{ color: INK }}>
+          {done.code}
+        </span>
       </p>
-      <p className="mx-auto mt-4 max-w-[320px] text-center text-[17px] leading-snug" style={{ color: MUTED }}>
-        Din ven får {props.newCustomerReward} ved første besøg. Du får {props.referrerReward}, når vennen har været der.
-      </p>
-      <div className="mt-8 flex flex-col gap-3">
+      <div className="mt-6">
+        <RewardTiles newCustomerReward={props.newCustomerReward} referrerReward={props.referrerReward} />
+      </div>
+      <div className="mt-6 flex flex-col gap-3">
         <ShareButton
           url={shareUrl}
           text={referralShareText(props.shopName, props.newCustomerReward)}
