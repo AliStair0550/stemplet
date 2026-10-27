@@ -8,7 +8,7 @@ import { effectiveStyle, normalizeActions, suggestedActions, type CardLookContex
 import { rewardPhrase } from "@/lib/referral-text";
 import { KortetEditor } from "./KortetEditor";
 
-export const metadata: Metadata = { title: "Kortet" };
+export const metadata: Metadata = { title: "Design af dit kort" };
 export const dynamic = "force-dynamic";
 
 // Kortet: det faelles kortdesign for alle butikkens produkter. Reglerne for
@@ -42,8 +42,8 @@ export default async function KortetPage() {
   return (
     <>
       <PageHeading
-        title="Kortet"
-        subtitle="Dit kort i kundernes Apple Wallet. Det samme kort bruges af alle dine produkter."
+        title="Design af dit kort"
+        subtitle="Kortet i kundernes Apple Wallet. Det samme kort bærer alle dine funktioner, fx stempler og henvisninger."
       />
       <KortetEditor
         initial={initial}

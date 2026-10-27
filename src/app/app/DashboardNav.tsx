@@ -8,9 +8,9 @@ import { BusinessSwitcher } from "./BusinessSwitcher";
 import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
 
-// Dashboardets ramme: eet roligt dashboard med produkterne under. Oeverst det
-// faelles (Scan, Hjem, Kunder), saa PRODUKTER med hvert sit logo og undermenu, og
-// nederst butikkens egne ting. Et produkt, butikken ikke har, vises som "+", saa
+// Dashboardets ramme med kundernes kort i centrum. Oeverst det faelles (Scan,
+// Hjem, Kunder), saa DIT KORT: kortets design og funktionerne paa kortet med
+// hvert sit logo og undermenu, og nederst butikkens egne ting. Et produkt, butikken ikke har, vises som "+", saa
 // begge produkter altid er inden for et tryk.
 
 type NavLink = { href: string; label: string };
@@ -19,8 +19,6 @@ const SCAN: NavLink = { href: "/app/kasse", label: "Scan" };
 const COMMON: NavLink[] = [
   { href: "/app", label: "Hjem" },
   { href: "/app/kunder", label: "Kunder" },
-  // Kortet: det faelles kortdesign for alle produkter.
-  { href: "/app/kortet", label: "Kortet" },
 ];
 
 const STEMPLET_LINKS: NavLink[] = [
@@ -127,6 +125,23 @@ export function DashboardNav({
     </>
   );
 
+  // Kortets design: faelles for alle funktioner paa kortet.
+  const designLink = (
+    <Link
+      href="/app/kortet"
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[0.88rem] transition-colors",
+        isActive("/app/kortet") ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
+      )}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-4 w-4" aria-hidden>
+        <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+        <path d="M3.5 9.5h17" />
+      </svg>
+      Design
+    </Link>
+  );
+
   const shop = shopLinks.map((l) => (
     <Link
       key={l.href}
@@ -171,7 +186,9 @@ export function DashboardNav({
             </Link>
           ))}
 
-          <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Produkter</p>
+          {/* Dit kort: kortets design oeverst, derunder funktionerne paa kortet. */}
+          <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
+          {designLink}
           {products}
         </nav>
 
@@ -194,16 +211,8 @@ export function DashboardNav({
             className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
-            <Link
-              href="/app/kortet"
-              className={cn(
-                "mb-3 flex items-center rounded-lg px-3 py-2 text-[0.9rem]",
-                isActive("/app/kortet") ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
-              )}
-            >
-              Kortet
-            </Link>
-            <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Produkter</p>
+            <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
+            {designLink}
             {products}
             <div className="mt-4 flex flex-col gap-0.5 border-t border-fog pt-3">
               {shop}
