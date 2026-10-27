@@ -81,6 +81,8 @@ model Business {
   // Henvisninger (modul): slaar henvisningskoder og -beloenninger til for butikken.
   // Standard FRA; uden flaget kan der hverken oprettes eller gennemfoeres henvisninger.
   referralsEnabled   Boolean   @default(false)
+  /// Stemplet slaaet til. Fra = kun Henvisninger (Stemplet kan tilfoejes i dashboardet).
+  stampsEnabled      Boolean   @default(true)
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?
@@ -538,7 +540,8 @@ model SignupRequest {
   id           String   @id @default(cuid())
   businessName String
   reward       String // oensket beloenning, fri tekst
-  wantsReferrals Boolean @default(false) // Henvisninger oven i stempelkortet
+  wantsReferrals Boolean @default(false) // Henvisninger valgt
+  wantsStamps    Boolean @default(true) // stempelkort valgt (fra = kun Henvisninger)
   referralReward String? // oenskede henvisningsbeloenninger, fri tekst
   contactName  String? // valgfrit
   email        String

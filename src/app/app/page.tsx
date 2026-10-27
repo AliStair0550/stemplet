@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity, getOverviewPulse } from "@/lib/stats";
 import { getReferralOverview, type ReferralRow } from "@/lib/referral-desk";
-import { greetingFor, summaryLine } from "@/lib/overview-text";
+import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
 import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { Panel, SectionHeader } from "@/components/dash";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
@@ -69,6 +69,29 @@ function ProductCard({ href, logo, children }: { href: string; logo: ReactNode; 
   );
 }
 
+// Kun Henvisninger: Stemplet som et tilvalg, der kan slaas til.
+function AddStempletCard() {
+  return (
+    <Link
+      href="/app/stemplet/tilfoej"
+      className="group flex flex-col justify-between gap-6 rounded-xl border border-dashed border-clay bg-white/50 p-6 transition-colors hover:border-ink hover:bg-white"
+    >
+      <span className="flex items-center justify-between">
+        <span className="opacity-50 transition-opacity group-hover:opacity-100">
+          <StempletLogo className="text-[1.35rem]" />
+        </span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-clay text-[1.1rem] leading-none text-stone transition-colors group-hover:border-ink group-hover:text-ink">
+          +
+        </span>
+      </span>
+      <span>
+        <span className="block text-[0.95rem] font-[500] text-ink">Tilføj stempelkort</span>
+        <span className="mt-0.5 block text-[0.85rem] text-stone">Få de nye kunder til at komme igen.</span>
+      </span>
+    </Link>
+  );
+}
+
 export default async function HomePage() {
   const { business } = await requireBusiness();
   const [stats, pulse, stampActivity, referrals] = await Promise.all([
@@ -112,21 +135,29 @@ export default async function HomePage() {
           {greetingFor(now)}, {business.name}
         </h1>
         <p className="mt-1.5 max-w-xl font-[300] text-[0.95rem] leading-relaxed text-stone">
-          {summaryLine({
-            totalCustomers: stats.totalCustomers,
-            activeCustomers: stats.activeCustomers,
-            visitorsToday: pulse.visitorsToday,
-            returningToday: pulse.returningToday,
-          })}
+          {!business.stampsEnabled && referrals
+            ? referralSummaryLine({
+                totalCustomers: stats.totalCustomers,
+                newThisMonth: referrals.doneThisMonth,
+                waiting: referrals.open,
+              })
+            : summaryLine({
+                totalCustomers: stats.totalCustomers,
+                activeCustomers: stats.activeCustomers,
+                visitorsToday: pulse.visitorsToday,
+                returningToday: pulse.returningToday,
+              })}
         </p>
       </header>
 
       <div className={cn("mb-10 grid gap-4", referrals ? "md:grid-cols-2" : "")}>
-        <ProductCard href="/app/stemplet" logo={<StempletLogo className="text-[1.35rem]" />}>
-          <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
-          <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
-          <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
-        </ProductCard>
+        {business.stampsEnabled ? (
+          <ProductCard href="/app/stemplet" logo={<StempletLogo className="text-[1.35rem]" />}>
+            <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
+            <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
+            <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
+          </ProductCard>
+        ) : null}
         {referrals ? (
           <ProductCard href="/app/henvisninger" logo={<HenvisningerLogo className="h-[1.9rem]" />}>
             <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
@@ -141,6 +172,7 @@ export default async function HomePage() {
             />
           </ProductCard>
         ) : null}
+        {business.stampsEnabled ? null : <AddStempletCard />}
       </div>
 
       <section>
@@ -148,7 +180,9 @@ export default async function HomePage() {
         <Panel>
           {activity.length === 0 ? (
             <p className="py-1 text-[0.88rem] text-stone">
-              Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder dagen at tælle.
+              {business.stampsEnabled
+                ? "Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder dagen at tælle."
+                : "Ingen aktivitet endnu. Del linket til din henvisningsside, så begynder det at tælle."}
             </p>
           ) : (
             <ol className="flex flex-col divide-y divide-fog">

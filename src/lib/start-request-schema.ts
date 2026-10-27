@@ -13,6 +13,8 @@ export const startRequestSchema = z
   // fra Henvisningers forside skal ikke tvinges til at beskrive et stempelkort).
   reward: z.string().trim().max(300, "Beskrivelsen er for lang").default(""),
   wantsReferrals: z.boolean().default(false),
+  // Fra = kun Henvisninger (uden stempelkort). Standard til, som foer.
+  wantsStamps: z.boolean().default(true),
   referralReward: z.string().trim().max(300, "Beskrivelsen er for lang").optional(),
   contactName: z.string().trim().max(80, "Navnet er for langt").optional(),
   email: z
@@ -25,6 +27,14 @@ export const startRequestSchema = z
   phone: z.string().trim().max(40, "Nummeret er for langt").optional(),
   })
   .superRefine((d, ctx) => {
+    if (!d.wantsStamps && !d.wantsReferrals) {
+      ctx.addIssue({ code: "custom", path: ["wantsStamps"], message: "Vælg mindst ét produkt" });
+      return;
+    }
+    if (d.wantsStamps && d.wantsReferrals && !d.referralReward) {
+      ctx.addIssue({ code: "custom", path: ["referralReward"], message: "Beskriv kort, hvad vennen og ambassadøren får" });
+      return;
+    }
     if (d.wantsReferrals) {
       if (!d.referralReward) {
         ctx.addIssue({ code: "custom", path: ["referralReward"], message: "Beskriv kort, hvad vennen og ambassadøren får" });

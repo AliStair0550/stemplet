@@ -58,6 +58,7 @@ function buildRow(
     newSignupsPaused: boolean;
     stopped: boolean;
     referralsEnabled: boolean;
+    stampsEnabled: boolean;
     memberships: {
       user: {
         id: string;
@@ -102,6 +103,7 @@ function buildRow(
     newSignupsPaused: b.newSignupsPaused,
     stopped: b.stopped,
     referralsEnabled: b.referralsEnabled,
+    stampsEnabled: b.stampsEnabled,
     referrals: m.referrals,
     referralsRewarded: m.referralsRewarded,
   };

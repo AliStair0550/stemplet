@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StampCard } from "@/components/StampCard";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
@@ -77,6 +77,12 @@ export default async function ClaimPage({
     },
   });
   if (!business) notFound();
+  // Kun Henvisninger (Stemplet slaaet fra): intet stempelkort, men butikkens
+  // henvisningsside, saa et gammelt QR-link ikke ender blindt.
+  if (!business.stampsEnabled) {
+    if (business.referralsEnabled) redirect(`/henvisninger/${business.slug}`);
+    notFound();
+  }
   // Lille webp-logo bages ind i den (CDN-cachede) side, saa der ikke er en ekstra
   // netvaerkshentning: konsistent, oejeblikkelig LCP paa mobil.
   const logoSrc = await optimizedLogoDataUri(business.logoUrl);

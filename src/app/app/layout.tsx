@@ -31,6 +31,7 @@ export default async function AppLayout({
         activeBusinessId={business.id}
         showAgreement={showAgreement}
         showReferrals={business.referralsEnabled}
+        showStamps={business.stampsEnabled}
       />
       {/* pb-24 paa mobil: plads til fanerne i bunden. */}
       <main className="pb-24 md:pb-0 md:pl-60 print:!pl-0 print:!pb-0">

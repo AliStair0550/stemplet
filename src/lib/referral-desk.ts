@@ -227,7 +227,7 @@ export async function getReferralOverview(
   };
 }
 
-/** Raekker til CSV-eksporten (til SMS-udsendelser): alle med en henvisningskode. */
+/** Raekker til CSV-eksporten: alle med en henvisningskode. */
 export async function referralExportRows(businessId: string, db: Db = prisma) {
   const now = new Date();
   const cards = await db.customerCard.findMany({

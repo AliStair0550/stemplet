@@ -9,7 +9,7 @@ import { InstallHomeScreen } from "./InstallHomeScreen";
 import { ReferralDesk } from "@/components/referral/ReferralDesk";
 import {
   KasseViewSwitch,
-  kasseViewFrom,
+  kasseViewFor,
 } from "@/components/referral/KasseViewSwitch";
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export default async function KasseRegisterPage({
   }
   const card = business.cards[0];
   // Henvisninger (kun naar modulet er slaaet til). Uden modulet er siden uaendret.
-  const view = kasseViewFrom(business.referralsEnabled, visning);
+  const { view, showSwitch } = kasseViewFor(business, visning);
   const kioskCard: KioskCard = {
     businessName: business.name,
     logoUrl: business.logoUrl,
@@ -80,7 +80,7 @@ export default async function KasseRegisterPage({
         </div>
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
-        {business.referralsEnabled ? (
+        {showSwitch ? (
           <KasseViewSwitch basePath="/kasse" view={view} />
         ) : null}
         {view === "henvisninger" ? (

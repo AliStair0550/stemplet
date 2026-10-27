@@ -266,6 +266,7 @@ const BUSINESS_FLAGS = [
   "welcomeStampEnabled",
   "weeklyEmailEnabled",
   "referralsEnabled",
+  "stampsEnabled",
 ] as const;
 type BusinessFlag = (typeof BUSINESS_FLAGS)[number];
 
@@ -284,7 +285,11 @@ export async function setBusinessFlag(
         ? { welcomeStampEnabled: value }
         : flag === "referralsEnabled"
           ? { referralsEnabled: value }
-          : { weeklyEmailEnabled: value };
-  await prisma.business.update({ where: { id: businessId }, data });
+          : flag === "stampsEnabled"
+            ? { stampsEnabled: value }
+            : { weeklyEmailEnabled: value };
+  const b = await prisma.business.update({ where: { id: businessId }, data, select: { slug: true } });
   revalidatePath("/admin");
+  // Stemplets QR-side er cachet (ISR); den skal straks foelge Stemplet til/fra.
+  if (flag === "stampsEnabled") revalidatePath(`/k/${b.slug}`);
 }

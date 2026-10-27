@@ -58,3 +58,14 @@ export function summaryLine(p: {
   } besøgt jer i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
 }
 
+/** Hjem-linjen for en butik med kun Henvisninger (ingen stempler at taelle). */
+export function referralSummaryLine(p: { totalCustomers: number; newThisMonth: number; waiting: number }): string {
+  if (p.totalCustomers === 0) {
+    return "Velkommen. Del linket til din henvisningsside, så kommer de første kunder.";
+  }
+  const n = formatDkNumber(p.newThisMonth);
+  const base = `I har ${formatDkNumber(p.totalCustomers)} ${p.totalCustomers === 1 ? "kunde" : "kunder"}. ${n} ${
+    p.newThisMonth === 1 ? "ny kunde" : "nye kunder"
+  } via henvisninger denne måned.`;
+  return p.waiting > 0 ? `${base} ${formatDkNumber(p.waiting)} venter på første besøg.` : base;
+}

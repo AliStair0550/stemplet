@@ -211,3 +211,18 @@ test("checkStampInvariant opdager en korrupt taeller", async () => {
     await cleanup(bizId);
   }
 });
+
+// ── Kun Henvisninger: Stemplet slaaet fra giver ingen stempler ─────────
+
+test("stempling afvises, naar butikken har Stemplet slaaet fra", async () => {
+  const { bizId, cardId } = await makeBiz();
+  try {
+    await prisma.business.update({ where: { id: bizId }, data: { stampsEnabled: false } });
+    const cc = await makeCard(cardId);
+    await assert.rejects(stamp(cc.id), (e: Error & { code?: string }) => e.code === "INACTIVE");
+    const after = await prisma.customerCard.findUnique({ where: { id: cc.id }, select: { stamps: true } });
+    assert.equal(after?.stamps, 0);
+  } finally {
+    await cleanup(bizId);
+  }
+});

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { requireBusiness } from "@/lib/session";
+import { requireStampsBusiness } from "@/lib/session";
 import {
   getBusinessStats,
   getRecentActivity,
@@ -195,7 +195,7 @@ function ActionGrid({ customerUrl }: { customerUrl: string }) {
 }
 
 export default async function StempletOverviewPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireStampsBusiness();
   const [stats, activity, pulse] = await Promise.all([
     getBusinessStats(business.id),
     getRecentActivity(business.id, 6),

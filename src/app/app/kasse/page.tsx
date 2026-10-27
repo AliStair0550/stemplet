@@ -7,7 +7,7 @@ import type { StampIconKey } from "@/lib/brand";
 import { ReferralDesk } from "@/components/referral/ReferralDesk";
 import {
   KasseViewSwitch,
-  kasseViewFrom,
+  kasseViewFor,
 } from "@/components/referral/KasseViewSwitch";
 
 export const metadata: Metadata = { title: "Stempel" };
@@ -21,7 +21,7 @@ export default async function KassePage({
   const { business } = await requireBusiness();
   // Henvisninger (kun naar modulet er slaaet til): skift oeverst + egen visning.
   // Uden modulet er siden uaendret.
-  const view = kasseViewFrom(business.referralsEnabled, (await searchParams).visning);
+  const { view, showSwitch } = kasseViewFor(business, (await searchParams).visning);
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },
     orderBy: { createdAt: "asc" },
@@ -49,7 +49,7 @@ export default async function KassePage({
               : "Scan kundens kort for at give stempler eller indløse en belønning."
         }
       />
-      {business.referralsEnabled ? (
+      {showSwitch ? (
         <KasseViewSwitch basePath="/app/kasse" view={view} />
       ) : null}
       {view === "henvisninger" ? (

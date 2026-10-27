@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { requireStampsBusiness } from "@/lib/session";
 import { getBusinessStats, type BusinessStats } from "@/lib/stats";
 import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
@@ -67,7 +67,7 @@ function summarize(stats: BusinessStats): { headline: string; body: string } {
 }
 
 export default async function StatistikPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireStampsBusiness();
   const stats = await getBusinessStats(business.id);
   const started = stats.totalCustomers > 0;
   const summary = summarize(stats);
