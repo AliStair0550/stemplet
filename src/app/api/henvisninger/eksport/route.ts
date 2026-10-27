@@ -19,10 +19,13 @@ export async function GET() {
   if (!business?.referralsEnabled) return new Response("Ikke fundet.", { status: 404 });
 
   const rows = await referralExportRows(businessId);
-  const header = ["navn", "mobil", "kode", "henvist_af", "henvisninger_gennemfoert", "beloenninger_til_gode", "oprettet"];
+  const header = ["navn", "email", "nyheder_samtykke", "mobil", "kode", "henvist_af", "henvisninger_gennemfoert", "beloenninger_til_gode", "oprettet"];
   const lines = rows.map((r) =>
     [
       csvCell(r.name),
+      csvCell(r.email),
+      // Tidspunkt for samtykke til nyhedsmail (tomt = intet samtykke).
+      csvCell(r.consentAt ? r.consentAt.toISOString().slice(0, 10) : null),
       // Uden "+" (MSISDN, fx 4512345678): de fleste systemer tager formatet, og et
       // ledende "+" ville ellers blive neutraliseret til '+45... af csvCell.
       csvCell(r.phone ? r.phone.replace(/^\+/, "") : null),

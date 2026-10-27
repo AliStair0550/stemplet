@@ -9,8 +9,12 @@ import {
 } from "./stamp";
 import { signupBlockReason } from "./billing";
 import { withDbRetry } from "./db-retry";
+import type { Contact } from "./contact";
+import { findEmailOwner, saveContact } from "./contact-save";
 
-export type ClaimError = "lukket" | "pause" | "stoppet" | "fuld";
+// "kontakt" = ny kunde uden navn og e-mail (kun GET-linket): send til formularen.
+// "mail_findes" = e-mailen hoerer allerede til et andet kort i butikken.
+export type ClaimError = "lukket" | "pause" | "stoppet" | "fuld" | "kontakt" | "mail_findes";
 export type ResolvedCard =
   | {
       ok: true;
@@ -25,9 +29,18 @@ export type ResolvedCard =
 // kundens kort via device-cookien, eller opret et nyt (race-sikkert, med evt.
 // loft). SAETTER IKKE cookien og fyrer IKKE taerskler - det goer kalderen (claim-
 // ruten), saa cookien kan saettes paa den maade der er paalidelig i konteksten.
+//
+// Et NYT kort kraever kontaktdata (navn + e-mail fra formularen paa /k). Uden
+// kontakt genfindes kun et eksisterende kort; ellers "kontakt". Saa kan det
+// rigtige Wallet-link (GET) aldrig oprette et kort uden om formularen, mens en
+// returkunde stadig kommer i Wallet med eet tryk.
 export async function resolveOrCreateCard(
   slug: string,
   deviceId: string | null = null,
+  contact: Contact | null = null,
+  // Kort-cookien for butikken. Injicerbar, saa integrationstests kan koere uden
+  // en request (cookies() virker kun inde i en request).
+  readCardToken: (businessId: string) => Promise<string | undefined> = getCardToken,
 ): Promise<ResolvedCard> {
   // Foerste DB-touch i claim-flowet: mest udsat for et Neon cold start, saa den
   // koeres med korte retries paa forbigaaende forbindelsesfejl. Er computen
@@ -50,10 +63,12 @@ export async function resolveOrCreateCard(
   const card = business.cards[0];
 
   // Samme telefon rammer altid samme kort (kort-cookie).
-  const existingToken = await getCardToken(business.id);
+  const existingToken = await readCardToken(business.id);
   if (existingToken) {
     const cc = await loadCardByToken(existingToken);
     if (cc && cc.cardId === card.id) {
+      // Returkunde, der udfyldte formularen: udfyld kun tomme felter.
+      if (contact) await saveContact(cc.id, business.id, contact);
       return {
         ok: true,
         serial: cc.serial,
@@ -70,9 +85,10 @@ export async function resolveOrCreateCard(
   if (deviceId) {
     const cc = await prisma.customerCard.findFirst({
       where: { cardId: card.id, deviceId },
-      select: { serial: true, authToken: true },
+      select: { id: true, serial: true, authToken: true },
     });
     if (cc) {
+      if (contact) await saveContact(cc.id, business.id, contact);
       return {
         ok: true,
         serial: cc.serial,
@@ -87,6 +103,14 @@ export async function resolveOrCreateCard(
   const block = signupBlockReason(business);
   if (block) return { ok: false, error: block };
 
+  // Intet kort uden navn og e-mail. Er e-mailen allerede paa et andet kort i
+  // butikken, opretter vi ikke et nyt (uden bekraeftelse ved vi ikke, om det er
+  // kundens egen e-mail, saa vi udleverer heller ikke det eksisterende kort).
+  if (!contact) return { ok: false, error: "kontakt" };
+  if (await findEmailOwner(business.id, contact.email)) {
+    return { ok: false, error: "mail_findes" };
+  }
+
   // Loftet (hvis aktivt) haandhaeves atomisk pr. butik. Null = loftet er naaet.
   const created = await createCardholderAtomically(
     business.plan,
@@ -96,6 +120,12 @@ export async function resolveOrCreateCard(
     deviceId,
   );
   if (!created) return { ok: false, error: "fuld" };
+
+  // Samtidig oprettelse med samme e-mail: unik-indekset vinder. Kortet er stadig
+  // enhedens eget (genbruges naeste gang), men uden e-mail.
+  if (!(await saveContact(created.id, business.id, contact))) {
+    return { ok: false, error: "mail_findes" };
+  }
 
   // Stempel ved afhentning: koerer der en aktiv PICKUP_STAMP-kampagne, faar det
   // nye kort 1 stempel med det samme (kortet lander i Wallet med 1/x). MANUAL

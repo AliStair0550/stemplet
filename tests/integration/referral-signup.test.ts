@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 
 // Integrationstests for henvisningssidens tilmelding mod en RIGTIG Postgres
 // (samme opsaetning som locks.test.ts). Fokus: eet kort pr. kunde, de aftalte
-// regler for kendte kunder og mobilnumre, og at Stemplet er uroert (ingen
+// regler for kendte kunder og e-mails, og at Stemplet er uroert (ingen
 // stempler gives, butikker uden modulet kan ikke tilmeldes).
 
 import { prisma } from "../../src/lib/prisma";
@@ -46,17 +46,18 @@ async function cleanup(bizId: string) {
 
 const device = () => `dev-${randomUUID()}`;
 
-test("ny kunde uden kode: eet almindeligt kort med navn, mobil og kode, ingen stempler", async () => {
+test("ny kunde uden kode: eet almindeligt kort med navn, e-mail og kode, ingen stempler", async () => {
   const s = await makeShop();
   try {
-    const r = await signupForReferrals({ slug: s.slug, name: " Sara  Jensen ", phone: "12 34 56 78", deviceId: device() });
+    const r = await signupForReferrals({ slug: s.slug, name: " Sara  Jensen ", email: " Sara@Eksempel.DK ", deviceId: device() });
     assert.ok(r.ok);
     assert.equal(r.referred, false);
     assert.match(r.code, /^SARA-..$/);
     const cards = await prisma.customerCard.findMany({ where: { cardId: s.cardId } });
     assert.equal(cards.length, 1);
     assert.equal(cards[0]!.name, "Sara Jensen");
-    assert.equal(cards[0]!.phone, "+4512345678");
+    assert.equal(cards[0]!.contactEmail, "sara@eksempel.dk");
+    assert.equal(cards[0]!.marketingConsentAt, null, "intet flueben, intet samtykke");
     assert.equal(cards[0]!.businessId, s.bizId);
     assert.equal(cards[0]!.stamps, 0);
     assert.equal(await prisma.stamp.count({ where: { customerCardId: cards[0]!.id } }), 0);
@@ -68,18 +69,21 @@ test("ny kunde uden kode: eet almindeligt kort med navn, mobil og kode, ingen st
 test("ny kunde via kode: aaben henvisning (created) til henviseren", async () => {
   const s = await makeShop();
   try {
-    const sara = await signupForReferrals({ slug: s.slug, name: "Sara", phone: "11111111", deviceId: device() });
+    const sara = await signupForReferrals({ slug: s.slug, name: "Sara", email: "sara@test.dk", deviceId: device() });
     assert.ok(sara.ok);
     const mikkel = await signupForReferrals({
       slug: s.slug,
       name: "Mikkel",
-      phone: "22222222",
+      email: "mikkel@test.dk",
+      consent: true,
       code: sara.code.toLowerCase(),
       source: "CODE_ENTERED",
       deviceId: device(),
     });
     assert.ok(mikkel.ok);
     assert.equal(mikkel.referred, true);
+    const mCard = await prisma.customerCard.findFirstOrThrow({ where: { contactEmail: "mikkel@test.dk", businessId: s.bizId } });
+    assert.ok(mCard.marketingConsentAt, "fluebenet gemmer samtykket med tidspunkt");
     const ref = await prisma.referral.findFirstOrThrow({ where: { businessId: s.bizId } });
     assert.equal(ref.status, "CREATED");
     assert.equal(ref.source, "CODE_ENTERED");
@@ -93,15 +97,15 @@ test("ny kunde via kode: aaben henvisning (created) til henviseren", async () =>
 test("kendt kunde paa enheden via en vens kode: genbruger kortet, ingen henvisning", async () => {
   const s = await makeShop();
   try {
-    const sara = await signupForReferrals({ slug: s.slug, name: "Sara", phone: "11111111", deviceId: device() });
+    const sara = await signupForReferrals({ slug: s.slug, name: "Sara", email: "sara@test.dk", deviceId: device() });
     assert.ok(sara.ok);
     const dev = device();
-    const first = await signupForReferrals({ slug: s.slug, name: "Mette", phone: "33333333", deviceId: dev });
+    const first = await signupForReferrals({ slug: s.slug, name: "Mette", email: "mette@test.dk", deviceId: dev });
     assert.ok(first.ok);
     const again = await signupForReferrals({
       slug: s.slug,
       name: "Mette",
-      phone: "33333333",
+      email: "mette@test.dk",
       code: sara.code,
       deviceId: dev,
     });
@@ -116,7 +120,7 @@ test("kendt kunde paa enheden via en vens kode: genbruger kortet, ingen henvisni
   }
 });
 
-test("eksisterende stempelkunde (kort uden navn/mobil) faar sin kode paa samme kort", async () => {
+test("eksisterende stempelkunde (kort uden navn/e-mail) faar sin kode paa samme kort", async () => {
   const s = await makeShop();
   try {
     const authToken = randomUUID();
@@ -126,7 +130,7 @@ test("eksisterende stempelkunde (kort uden navn/mobil) faar sin kode paa samme k
     const r = await signupForReferrals({
       slug: s.slug,
       name: "Ole",
-      phone: "44444444",
+      email: "ole@test.dk",
       cardTokenFor: () => authToken,
       deviceId: device(),
     });
@@ -134,7 +138,8 @@ test("eksisterende stempelkunde (kort uden navn/mobil) faar sin kode paa samme k
     assert.equal(r.created, false);
     const after = await prisma.customerCard.findUniqueOrThrow({ where: { id: stampCard.id } });
     assert.equal(after.stamps, 4, "stemplerne er uroerte");
-    assert.equal(after.phone, "+4544444444");
+    assert.equal(after.contactEmail, "ole@test.dk");
+    assert.equal(after.name, "Ole");
     assert.equal(after.referralCode, r.code);
     assert.equal(await prisma.customerCard.count({ where: { cardId: s.cardId } }), 1);
   } finally {
@@ -142,29 +147,29 @@ test("eksisterende stempelkunde (kort uden navn/mobil) faar sin kode paa samme k
   }
 });
 
-test("mobilnummer der tilhoerer et andet kort: afvist, intet nyt kort, intet afsloeret", async () => {
+test("e-mail der tilhoerer et andet kort: afvist, intet nyt kort, intet afsloeret", async () => {
   const s = await makeShop();
   try {
-    await signupForReferrals({ slug: s.slug, name: "Sara", phone: "+45 11 11 11 11", deviceId: device() });
-    const r = await signupForReferrals({ slug: s.slug, name: "Fremmed", phone: "11111111", deviceId: device() });
-    assert.deepEqual(r, { ok: false, error: "mobil_findes" });
+    await signupForReferrals({ slug: s.slug, name: "Sara", email: "sara@test.dk", deviceId: device() });
+    const r = await signupForReferrals({ slug: s.slug, name: "Fremmed", email: " SARA@test.dk", deviceId: device() });
+    assert.deepEqual(r, { ok: false, error: "mail_findes" });
     assert.equal(await prisma.customerCard.count({ where: { cardId: s.cardId } }), 1);
   } finally {
     await cleanup(s.bizId);
   }
 });
 
-test("to samtidige tilmeldinger med samme mobil: praecis eet kort faar nummeret", async () => {
+test("to samtidige tilmeldinger med samme e-mail: praecis eet kort faar e-mailen", async () => {
   const s = await makeShop();
   try {
     const results = await Promise.all(
       [device(), device()].map((d) =>
-        signupForReferrals({ slug: s.slug, name: "Tvilling", phone: "55555555", deviceId: d }),
+        signupForReferrals({ slug: s.slug, name: "Tvilling", email: "tvilling@test.dk", deviceId: d }),
       ),
     );
     assert.equal(results.filter((r) => r.ok).length, 1);
     assert.equal(
-      await prisma.customerCard.count({ where: { businessId: s.bizId, phone: "+4555555555" } }),
+      await prisma.customerCard.count({ where: { businessId: s.bizId, contactEmail: "tvilling@test.dk" } }),
       1,
     );
   } finally {
@@ -177,7 +182,7 @@ test("butik uden modulet eller uden regel: ingen tilmelding, intet kort", async 
   const noRule = await makeShop({ rule: false });
   try {
     for (const s of [off, noRule]) {
-      const r = await signupForReferrals({ slug: s.slug, name: "Sara", phone: "12345678", deviceId: device() });
+      const r = await signupForReferrals({ slug: s.slug, name: "Sara", email: "sara@test.dk", deviceId: device() });
       assert.deepEqual(r, { ok: false, error: "lukket" });
       assert.equal(await prisma.customerCard.count({ where: { cardId: s.cardId } }), 0);
     }
@@ -187,13 +192,13 @@ test("butik uden modulet eller uden regel: ingen tilmelding, intet kort", async 
   }
 });
 
-test("ugyldigt navn eller nummer afvises foer databasen", async () => {
+test("ugyldigt navn eller e-mail afvises foer databasen", async () => {
   assert.deepEqual(
-    await signupForReferrals({ slug: "findes-ikke", name: "  ", phone: "12345678" }),
+    await signupForReferrals({ slug: "findes-ikke", name: "  ", email: "sara@test.dk" }),
     { ok: false, error: "navn" },
   );
   assert.deepEqual(
-    await signupForReferrals({ slug: "findes-ikke", name: "Sara", phone: "123" }),
-    { ok: false, error: "mobil" },
+    await signupForReferrals({ slug: "findes-ikke", name: "Sara", email: "sara@" }),
+    { ok: false, error: "mail" },
   );
 });

@@ -17,8 +17,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
-  name: z.string().max(80),
-  phone: z.string().max(40),
+  // Rummelige lofter; de rigtige graenser (og beskeder) ligger i parseContact.
+  name: z.string().max(400),
+  email: z.string().max(1000),
+  consent: z.boolean().optional(),
   code: z.string().max(20).optional().nullable(),
   source: z.enum(["LINK", "CODE_ENTERED"]).optional(),
 });
@@ -26,8 +28,8 @@ const bodySchema = z.object({
 // Fejl-koder fra tilmeldingen oversat til en rolig besked til kunden.
 const MESSAGES: Record<string, string> = {
   navn: "Skriv dit navn.",
-  mobil: "Skriv et gyldigt mobilnummer.",
-  mobil_findes: "Nummeret er allerede tilmeldt. Spørg i butikken.",
+  mail: "Skriv en gyldig e-mailadresse.",
+  mail_findes: "E-mailen er allerede tilmeldt. Spørg i butikken.",
   lukket: "Henvisninger er ikke åbne hos butikken lige nu.",
   pause: "Butikken tager ikke imod nye kunder lige nu. Spørg i butikken.",
   stoppet: "Butikken tager ikke imod nye kunder lige nu. Spørg i butikken.",
@@ -59,7 +61,8 @@ export async function POST(
     res = await signupForReferrals({
       slug,
       name: parsed.data.name,
-      phone: parsed.data.phone,
+      email: parsed.data.email,
+      consent: parsed.data.consent,
       code: parsed.data.code,
       source: parsed.data.source,
       cardTokenFor: (businessId) => jar.get(cardCookieName(businessId))?.value,

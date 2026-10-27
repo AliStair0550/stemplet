@@ -5,8 +5,8 @@ import { csvCell } from "@/lib/csv";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Formel-injektions-vaern (se @/lib/csv). contactEmail skrives i dag ikke fra
-// brugerinput, men vaernet holder hullet lukket, hvis det aendrer sig.
+// Formel-injektions-vaern (se @/lib/csv). Navn og e-mail kommer fra kundens
+// egen formular, saa vaernet er noedvendigt.
 function cell(v: string | number | null): string {
   return csvCell(v);
 }
@@ -34,6 +34,9 @@ export async function GET() {
     "email",
     "oprettet",
     "sidste_stempel",
+    // Nye kolonner til sidst, saa eksisterende importer ikke forskydes.
+    "navn",
+    "nyheder_samtykke",
   ];
 
   const encoder = new TextEncoder();
@@ -59,6 +62,8 @@ export async function GET() {
             contactEmail: true,
             createdAt: true,
             lastStampAt: true,
+            name: true,
+            marketingConsentAt: true,
           },
           orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           take: BATCH,
@@ -75,6 +80,8 @@ export async function GET() {
               c.contactEmail ?? "",
               c.createdAt.toISOString(),
               c.lastStampAt?.toISOString() ?? "",
+              c.name ?? "",
+              c.marketingConsentAt?.toISOString() ?? "",
             ]
               .map(cell)
               .join(","),

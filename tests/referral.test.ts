@@ -94,6 +94,31 @@ test("selvhenvisning: forskellige kort og numre er tilladt", () => {
   assert.equal(isSelfReferral({ id: "a", phone: "12345678" }, { id: "b", phone: null }), false);
 });
 
+test("selvhenvisning: samme e-mail (uanset store bogstaver og mellemrum) afvises", () => {
+  assert.equal(
+    isSelfReferral(
+      { id: "a", phone: null, contactEmail: "sara@test.dk" },
+      { id: "b", phone: null, contactEmail: " Sara@Test.DK " },
+    ),
+    true,
+  );
+  // Forskellige e-mails er tilladt; et gammelt kort med samme mobil afvises stadig.
+  assert.equal(
+    isSelfReferral(
+      { id: "a", phone: null, contactEmail: "sara@test.dk" },
+      { id: "b", phone: null, contactEmail: "mette@test.dk" },
+    ),
+    false,
+  );
+  assert.equal(
+    isSelfReferral(
+      { id: "a", phone: "12345678", contactEmail: null },
+      { id: "b", phone: "+4512345678", contactEmail: "ny@test.dk" },
+    ),
+    true,
+  );
+});
+
 test("mobil normaliseres til +45-format, ugyldige giver null", () => {
   assert.equal(normalizePhone("12 34 56 78"), "+4512345678");
   assert.equal(normalizePhone("+45 12 34 56 78"), "+4512345678");

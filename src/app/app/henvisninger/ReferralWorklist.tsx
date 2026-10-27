@@ -26,6 +26,11 @@ function formatPhone(p: string | null): string | null {
   return m ? `${m[1]} ${m[2]} ${m[3]} ${m[4]}` : p;
 }
 
+// Kontaktlinjen: e-mail (nye kunder), ellers mobil (aeldre kort).
+function contactLine(c: { email: string | null; phone: string | null }): string | null {
+  return c.email ?? formatPhone(c.phone);
+}
+
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 type Toast = { title: string; text?: string };
@@ -123,7 +128,7 @@ export function ReferralWorklist({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Find kunde: navn, mobil eller kode"
+          placeholder="Find kunde: navn, e-mail eller kode"
           aria-label="Find kunde"
           autoComplete="off"
           className="min-h-12 flex-1 rounded-full border border-clay bg-white px-5 text-[1rem] text-ink outline-none focus:border-ink"
@@ -168,7 +173,7 @@ export function ReferralWorklist({
                   </p>
                   <p className="text-[0.82rem] text-stone">
                     Henvist af <span className="text-ink">{w.referrer.name ?? w.referrer.code}</span>
-                    {formatPhone(w.referred.phone) ? ` · ${formatPhone(w.referred.phone)}` : ""} · {relativeDk(w.createdAt)}
+                    {contactLine(w.referred) ? ` · ${contactLine(w.referred)}` : ""} · {relativeDk(w.createdAt)}
                   </p>
                 </div>
                 {w.stale ? (
@@ -213,7 +218,7 @@ export function ReferralWorklist({
                     ) : (
                       "Velkomstrabat"
                     )}
-                    {formatPhone(o.card.phone) ? ` · ${formatPhone(o.card.phone)}` : ""}
+                    {contactLine(o.card) ? ` · ${contactLine(o.card)}` : ""}
                   </p>
                 </div>
                 <button type="button" disabled={busy !== null} onClick={() => redeem(o)} className={buttonCls}>

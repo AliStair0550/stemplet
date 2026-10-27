@@ -122,7 +122,7 @@ export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
                 setQuery(e.target.value);
                 setNote(null);
               }}
-              placeholder="Navn, mobil eller kode"
+              placeholder="Navn, e-mail eller kode"
               aria-label="Søg kunde"
               autoComplete="off"
               className="min-h-[3.25rem] flex-1 rounded-full border border-clay bg-white px-5 text-[1rem] text-ink outline-none focus:border-terracotta"
@@ -146,7 +146,7 @@ export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-[0.95rem] text-ink">{h.name ?? "Uden navn"}</span>
-                      <span className="block text-[0.78rem] text-stone">{formatPhone(h.phone)}</span>
+                      <span className="block truncate text-[0.78rem] text-stone">{h.email ?? formatPhone(h.phone)}</span>
                     </span>
                     <span className="shrink-0 text-[0.8rem] tracking-[0.04em] text-slate">{h.code}</span>
                   </button>
@@ -279,7 +279,7 @@ function CustomerCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-[1.15rem] text-ink">{customer.name ?? "Uden navn"}</p>
-            <p className="text-[0.82rem] text-stone">{formatPhone(customer.phone)}</p>
+            <p className="truncate text-[0.82rem] text-stone">{customer.email ?? formatPhone(customer.phone)}</p>
           </div>
           {customer.code ? (
             <span className="shrink-0 rounded-full bg-sand px-3 py-1 text-[0.8rem] tracking-[0.04em] text-ink">
@@ -406,7 +406,7 @@ function LinkReferrer({
         id="henvist-af"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Vennens navn, mobil eller kode"
+        placeholder="Vennens navn, e-mail eller kode"
         autoComplete="off"
         className="mt-2 min-h-[2.75rem] w-full rounded-full border border-clay bg-parchment px-4 text-[0.95rem] text-ink outline-none focus:border-terracotta"
       />
