@@ -16,8 +16,9 @@ import { APP_URL } from "@/lib/env";
 export const metadata: Metadata = { title: "Henvisninger" };
 export const dynamic = "force-dynamic";
 
-// Henvisningers Overblik: en arbejdsliste, personalet krydser af. Tal og bedste
-// ambassadoerer ligger under Statistik, opsaetningen under Indstillinger. Kun for
+// Henvisningers Overblik: en kasse, personalet arbejder fra (find kunden, giv
+// rabat, indloes). Tal og bedste ambassadoerer ligger under Statistik,
+// opsaetningen under Regler. Kun for
 // butikker med modulet; ellers en aegte 404.
 
 function ReferralHeader() {
@@ -28,7 +29,7 @@ function ReferralHeader() {
         <Scribble className="absolute bottom-0 left-[14%] h-[1rem] w-[90%]" />
       </h1>
       <p className="mt-3 text-[1rem] text-stone">
-        Kryds af, når en ny kunde får sin rabat, og når en ambassadør får sin belønning.
+        Din henvisningskasse. Find kunden, giv rabatten, og indløs belønninger.
       </p>
     </header>
   );
@@ -69,6 +70,8 @@ export default async function ReferralsPage({
   return (
     <>
       <ReferralHeader />
+      <ReferralWorklist waiting={waiting} owed={owed} hasPin={business.staffPin != null} initialQuery={q} />
+      <h2 className="mb-3 mt-12 text-[1.2rem] font-[700] tracking-[-0.02em] text-ink">Del din henvisningsside</h2>
       <ShopLinkCard url={`${APP_URL}/henvisninger/${business.slug}`} />
       <div className="mb-8">
         <AddToHomeButton
@@ -80,7 +83,6 @@ export default async function ReferralsPage({
           }
         />
       </div>
-      <ReferralWorklist waiting={waiting} owed={owed} hasPin={business.staffPin != null} initialQuery={q} />
     </>
   );
 }

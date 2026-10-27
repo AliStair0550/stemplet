@@ -29,7 +29,7 @@ const STYLE_HINT: Record<CardStyle, string> = {
   color: "Din farve og dit navn",
   photo: "Upload dit eget foto",
   pattern: "Dit stempel som mønster",
-  stamps: "Stempelgitteret på kortet",
+  stamps: "Dine stempler på kortet",
 };
 
 // Beskaer og komprimér i browseren foer upload (serveren goer det igen). Holder

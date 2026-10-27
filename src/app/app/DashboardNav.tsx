@@ -24,15 +24,18 @@ const COMMON: NavLink[] = [
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
   { href: "/app/kort", label: "Regler" },
-  { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },
 ];
 
 const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger", label: "Overblik" },
-  { href: "/app/henvisninger/statistik", label: "Statistik" },
   { href: "/app/henvisninger/indstillinger", label: "Regler" },
+  { href: "/app/henvisninger/statistik", label: "Statistik" },
 ];
+
+// Kampagner hoerer til kunderne (velkomst, dobbelt-stempler m.m.), ikke til et
+// enkelt produkt; de kraever dog stempler.
+const CAMPAIGNS: NavLink = { href: "/app/kampagner", label: "Kampagner" };
 
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
@@ -159,6 +162,15 @@ export function DashboardNav({
           <circle cx="10" cy="17" r="2" />
         </>,
       )}
+      {cardLink(
+        "/app/plakat",
+        "Plakat",
+        <>
+          <rect x="5" y="3.5" width="14" height="17" rx="1.5" />
+          <rect x="9" y="11" width="6" height="6" rx="0.8" />
+          <path d="M8.5 7.5h7" />
+        </>,
+      )}
       <p className="mx-3 mb-1 mt-3 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Funktioner</p>
     </>
   );
@@ -206,6 +218,17 @@ export function DashboardNav({
               {l.label}
             </Link>
           ))}
+          {showStamps ? (
+            <Link
+              href={CAMPAIGNS.href}
+              className={cn(
+                "ml-3 border-l border-fog py-1.5 pl-4 text-[0.82rem] transition-colors",
+                isActive(CAMPAIGNS.href) ? "font-[500] text-ink" : "text-stone hover:text-ink",
+              )}
+            >
+              {CAMPAIGNS.label}
+            </Link>
+          ) : null}
 
           {/* Dit kort: design og regler oeverst, derunder funktionerne paa kortet. */}
           <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
@@ -232,6 +255,17 @@ export function DashboardNav({
             className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
+            {showStamps ? (
+              <Link
+                href={CAMPAIGNS.href}
+                className={cn(
+                  "mb-3 flex rounded-lg px-3 py-2 text-[0.88rem] transition-colors",
+                  isActive(CAMPAIGNS.href) ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
+                )}
+              >
+                Kampagner til dine kunder
+              </Link>
+            ) : null}
             <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
             {designLink}
             {products}
@@ -255,7 +289,7 @@ export function DashboardNav({
         <TabLink href={SCAN.href} label="Scan" active={isActive(SCAN.href)}>
           <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
         </TabLink>
-        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder")}>
+        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder") || isActive(CAMPAIGNS.href)}>
           <circle cx="9" cy="8" r="3.5" />
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
         </TabLink>
@@ -265,7 +299,7 @@ export function DashboardNav({
           aria-expanded={moreOpen}
           className={cn(
             "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
-            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder"))
+            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder") && !isActive(CAMPAIGNS.href))
               ? "font-[500] text-ink"
               : "text-slate",
           )}

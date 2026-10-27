@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn, relativeDk } from "@/lib/utils";
 import { rewardPhrase } from "@/lib/referral-text";
 import { CelebrationToast } from "@/components/Celebrate";
 import type { OwedRow, WaitingRow } from "@/lib/referral-desk";
 
-// Henvisningers Overblik som arbejdsliste: det personalet krydser af. To lister
+// Henvisningers Overblik som kasse: oeverst et kassefelt (find kunden, scan
+// kortet, PIN og dagens to tal), derunder det personalet krydser af. To lister
 // med tydelige roller: nye kunder paa vej ("Rabat givet" ved foerste besoeg) og
 // beloenninger at give (oftest ambassadoerer; "Indløs"). Soegning paa begge
 // parters navn, mobil og kode, og en kort fejring efter hvert tryk.
@@ -124,34 +126,58 @@ export function ReferralWorklist({
     <div className="flex flex-col gap-8">
       {toast ? <CelebrationToast title={toast.title} text={toast.text} onDone={() => setToast(null)} /> : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Find kunde: navn, e-mail eller kode"
-          aria-label="Find kunde"
-          autoComplete="off"
-          className="min-h-12 flex-1 rounded-full border border-clay bg-white px-5 text-[1rem] text-ink outline-none focus:border-ink"
-        />
-        {hasPin ? (
+      {/* Kassefeltet: det foerste personalet ser, naar en kunde staar ved disken. */}
+      <section className="rounded-[22px] bg-ink p-5 text-white shadow-lift sm:p-6">
+        <h2 className="text-[1.3rem] font-[700] tracking-[-0.02em]">Hvem står ved disken?</h2>
+        <p className="mt-1 text-[0.9rem] text-white/65">
+          Find kunden eller scan kortet. Giv rabatten til nye kunder, og indløs belønninger.
+        </p>
+        <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
           <input
-            value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            inputMode="numeric"
-            placeholder="Personale-PIN"
-            aria-label="Personale-PIN"
-            className="min-h-12 rounded-full border border-clay bg-white px-5 text-center text-[1rem] tracking-[0.2em] text-ink outline-none focus:border-ink sm:w-44"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Navn, e-mail eller kode"
+            aria-label="Find kunde"
+            autoComplete="off"
+            className="min-h-12 flex-1 rounded-full bg-white px-5 text-[1rem] text-ink outline-none placeholder:text-slate focus:ring-2 focus:ring-white/60"
           />
-        ) : null}
-      </div>
+          <Link
+            href="/app/kasse?visning=henvisninger"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-[0.95rem] font-[500] text-white hover:bg-white/10"
+          >
+            <ScanIcon />
+            Scan kort
+          </Link>
+          {hasPin ? (
+            <input
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              inputMode="numeric"
+              placeholder="PIN"
+              aria-label="Personale-PIN"
+              className="min-h-12 rounded-full bg-white/10 px-5 text-center text-[1rem] tracking-[0.2em] text-white outline-none placeholder:text-white/50 focus:ring-2 focus:ring-white/60 sm:w-28"
+            />
+          ) : null}
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <a href="#nye" className="rounded-[14px] bg-white/10 px-4 py-3 hover:bg-white/15">
+            <span className="block text-[1.8rem] font-[700] leading-none">{waiting.filter((w) => !w.stale).length}</span>
+            <span className="mt-1 block text-[0.82rem] text-white/70">nye kunder på vej</span>
+          </a>
+          <a href="#beloenninger" className="rounded-[14px] bg-white/10 px-4 py-3 hover:bg-white/15">
+            <span className="block text-[1.8rem] font-[700] leading-none">{owed.length}</span>
+            <span className="mt-1 block text-[0.82rem] text-white/70">belønninger at give</span>
+          </a>
+        </div>
+      </section>
 
       {error ? (
-        <p role="alert" className="-mt-4 text-[0.9rem] text-rust">
+        <p role="alert" className="-mt-4 rounded-xl border border-rust/30 bg-rust/5 px-4 py-3 text-[0.9rem] text-rust">
           {error}
         </p>
       ) : null}
 
-      <section>
+      <section id="nye" className="scroll-mt-6">
         <SectionTitle
           title="Nye kunder på vej"
           count={waiting.length}
@@ -190,7 +216,7 @@ export function ReferralWorklist({
         )}
       </section>
 
-      <section>
+      <section id="beloenninger" className="scroll-mt-6">
         <SectionTitle
           title="Belønninger at give"
           count={owed.length}
@@ -256,6 +282,14 @@ function Role({ kind }: { kind: "ny" | "ambassador" }) {
 
 function Empty({ text }: { text: string }) {
   return <p className={cn("rounded-xl border border-dashed border-clay px-5 py-4 text-[0.88rem] text-stone")}>{text}</p>;
+}
+
+function ScanIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+      <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
+    </svg>
+  );
 }
 
 function CheckIcon() {

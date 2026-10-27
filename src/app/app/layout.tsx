@@ -4,11 +4,14 @@ import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
-  title: { default: "Overblik", template: "%s - Stemplet" },
+  title: { default: "Hjem", template: "%s - Alius" },
   robots: { index: false },
   // Eget manifest for dashboardet: foejer butikken det til hjemmeskaermen, aabner
-  // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest).
+  // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest). Alius-
+  // ikonet: hvidt flueben med to streger paa sort.
   manifest: "/app-manifest",
+  appleWebApp: { capable: true, title: "Alius", statusBarStyle: "default" },
+  icons: { apple: "/app-apple-touch-icon.png" },
 };
 
 export default async function AppLayout({
