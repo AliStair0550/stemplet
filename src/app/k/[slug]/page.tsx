@@ -328,7 +328,7 @@ export default async function ClaimPage({
             className="text-[0.65rem] font-[300] tracking-[0.08em]"
             style={{ color: rgba(text, 0.45) }}
           >
-            Drevet af Alius
+            Drevet af Folka
           </p>
         ) : null}
       </div>

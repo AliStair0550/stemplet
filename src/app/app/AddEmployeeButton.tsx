@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { btnClass } from "@/components/ui";
+import { APP_HOST } from "@/lib/platform";
 import { createPairingCodeAction } from "./indstillinger/device-actions";
 
 // "Tilfoej medarbejder" der bliver paa siden: danner en parringskode og viser
@@ -78,7 +79,7 @@ export function AddEmployeeButton({
             </h3>
             <p className="mx-auto mt-2 max-w-xs font-[300] text-[0.85rem] leading-relaxed text-stone">
               Åbn{" "}
-              <span className="font-[500] text-ink">stemplet.alius.dk/kasse</span>{" "}
+              <span className="font-[500] text-ink">{APP_HOST}/kasse</span>{" "}
               på deres telefon og indtast koden, eller scan QR-koden.
             </p>
             <p className="my-4 font-fraunces text-[2.2rem] tracking-[0.25em] text-terracotta">

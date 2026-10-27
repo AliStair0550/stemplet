@@ -3,7 +3,7 @@ import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
-import { aliusSender, loginEmail, welcomeEmail } from "./emails";
+import { folkaSender, loginEmail, welcomeEmail } from "./emails";
 import { isSuperadminEmail } from "./superadmin-emails";
 import { DEMO_SLUG } from "./demo";
 import { verifyOnboardingToken } from "./onboarding-token";
@@ -15,7 +15,7 @@ const baseAdapter = PrismaAdapter(prisma);
 
 // Bloker selvbetjent oprettelse: brugere oprettes kun via onboarding (/start).
 // Et magisk link til en ukendt e-mail giver dermed ingen konto. Undtagelse:
-// superadmin (fx hej@alius.dk), som ikke har en butik, oprettes ved foerste login.
+// superadmin (fx hej@folka.dk), som ikke har en butik, oprettes ved foerste login.
 // En bruger skal (legacy) hoere til en butik. Superadmin knyttes til demo-
 // butikken (din egen, bag "Proev det selv"), eller en intern, stoppet butik,
 // hvis demoen ikke findes. Superadmin lander alligevel i /admin.
@@ -25,7 +25,7 @@ async function createSuperadminUser(user: { email: string; emailVerified: Date |
     (await prisma.business.upsert({
       where: { slug: "alius-intern" },
       update: {},
-      create: { name: "Alius (intern)", slug: "alius-intern", stopped: true, stampsEnabled: false },
+      create: { name: "Folka (intern)", slug: "alius-intern", stopped: true, stampsEnabled: false },
       select: { id: true },
     }));
   return prisma.$transaction(async (tx) => {
@@ -60,9 +60,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
-      from: process.env.EMAIL_FROM || "Stemplet <login@stemplet.alius.dk>",
+      from: process.env.EMAIL_FROM || "Stemplet <login@folka.dk>",
       name: "E-mail",
-      // Vi sender ALTID vores egen brandede mail (Alius, se emails.ts).
+      // Vi sender ALTID vores egen brandede mail (Folka, se emails.ts).
       // Uden Resend-noegle (lokal udvikling) logges linket i terminalen.
       sendVerificationRequest: async ({
         identifier,
@@ -103,9 +103,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            // Login er faelles for Alius' produkter: afsendernavnet er altid
-            // "Alius", uanset navnet i EMAIL_FROM (adressen genbruges).
-            from: aliusSender(provider.from),
+            // Login er faelles for Folkas produkter: afsendernavnet er altid
+            // "Folka", uanset navnet i EMAIL_FROM (adressen genbruges).
+            from: folkaSender(provider.from),
             to: identifier,
             subject: mail.subject,
             html: mail.html,
@@ -145,7 +145,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     // Tillad kun eksisterende virksomhedsbrugere at logge ind, samt superadmin
-    // (fx hej@alius.dk), der ikke behoever en butik; brugeren oprettes da ved
+    // (fx hej@folka.dk), der ikke behoever en butik; brugeren oprettes da ved
     // foerste login.
     async signIn({ user }) {
       if (!user?.email) return false;

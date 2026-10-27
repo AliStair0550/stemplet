@@ -17,6 +17,7 @@ import {
 } from "./referral-fields";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
+import { PLATFORM, APP_HOST } from "../platform";
 import {
   hexToRgb,
   contrastText,
@@ -370,7 +371,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     pass.backFields.push({
       key: "poweredby",
       label: "Drevet af",
-      value: "Stemplet - et produkt fra Alius. stemplet.alius.dk",
+      value: `Stemplet - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
     });
   }
 
@@ -451,7 +452,7 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
     pass.backFields.push({
       key: "poweredby",
       label: "Drevet af",
-      value: "Henvisninger - et produkt fra Alius. alius.dk",
+      value: `Henvisninger - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
     });
   }
 

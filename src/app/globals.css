@@ -603,7 +603,7 @@ textarea:focus-visible {
   }
 }
 
-/* Primaer knapfarve. Terracotta som altid; inde i dashboardet (Alius-rammen med
+/* Primaer knapfarve. Terracotta som altid; inde i dashboardet (Folka-rammen med
    Stemplet og Henvisninger) er knapperne sorte, saa siden virker samlet. */
 :root {
   --btn-primary: #a6502e;

@@ -198,10 +198,10 @@ export default async function IndstillingerPage({
                 <p className="max-w-[15rem] text-right font-[200] text-[0.8rem] leading-relaxed text-stone">
                   Din Pro-plan styres af os. Skriv til{" "}
                   <a
-                    href="mailto:hej@alius.dk"
+                    href="mailto:hej@folka.dk"
                     className="text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
                   >
-                    hej@alius.dk
+                    hej@folka.dk
                   </a>{" "}
                   for ændringer.
                 </p>

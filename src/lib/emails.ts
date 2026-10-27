@@ -4,6 +4,9 @@
 // inline styles, saa det ser ens ud i alle mail-klienter. Ingen lange
 // bindestreger.
 
+import { APP_URL } from "./env";
+import { PLATFORM } from "./platform";
+
 // Praecis samme palette som sitet (globals.css @theme), saa mails og sider
 // spiller sammen. Kun web-sikre fonts i selve mailen (Instrument Sans kan ikke
 // embeddes paalideligt), men farverne er identiske med brandet.
@@ -46,19 +49,19 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
 </body></html>`;
 }
 
-// Login og velkomst er faelles for alle Alius-produkter (Stemplet og
-// Henvisninger), saa de baerer Alius og den nye stil: hvidt, sort, systemfont.
+// Login og velkomst er faelles for alle Folka-produkter (Stemplet og
+// Henvisninger), saa de baerer Folka og den nye stil: hvidt, sort, systemfont.
 const A = { bg: "#FFFFFF", ink: "#111111", muted: "#6E6E73", line: "#ECECEF", surface: "#F5F5F7" };
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
-/** "Stemplet <login@x.dk>" -> "Alius <login@x.dk>" (kun navnet skiftes). */
-export function aliusSender(from: string | undefined): string | undefined {
+/** "Stemplet <login@x.dk>" -> "Folka <login@x.dk>" (kun navnet skiftes). */
+export function folkaSender(from: string | undefined): string | undefined {
   if (!from) return from;
   const addr = /<([^>]+)>/.exec(from)?.[1] ?? from.trim();
-  return `Alius <${addr}>`;
+  return `${PLATFORM.name} <${addr}>`;
 }
 
-function aliusShell(preheader: string, inner: string): string {
+function folkaShell(preheader: string, inner: string): string {
   return `<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
 <body style="margin:0;padding:0;background:${A.bg};">
@@ -67,12 +70,12 @@ function aliusShell(preheader: string, inner: string): string {
   <tr><td align="center" style="padding:44px 20px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
       <tr><td style="padding:0 0 28px;">
-        <span style="font-family:${FONT};font-size:22px;font-weight:800;letter-spacing:-.04em;color:${A.ink};">Alius</span>
+        <img src="${APP_URL}/folka-mail-logo.png" width="86" height="48" alt="${PLATFORM.name}" style="display:block;border:0;font-family:${FONT};font-size:22px;font-style:italic;color:${PLATFORM.color};">
       </td></tr>
       <tr><td>${inner}</td></tr>
       <tr><td style="padding:32px 0 0;border-top:1px solid ${A.line};">
         <p style="margin:20px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          Alius. Stemplet og Henvisninger.
+          Folka. Stemplet og Henvisninger.
         </p>
       </td></tr>
     </table>
@@ -81,14 +84,14 @@ function aliusShell(preheader: string, inner: string): string {
 </body></html>`;
 }
 
-function aliusButton(url: string, label: string): string {
+function folkaButton(url: string, label: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
     <td style="border-radius:999px;background:${A.ink};">
       <a href="${url}" style="display:inline-block;padding:15px 28px;font-family:${FONT};font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;">${label}</a>
     </td></tr></table>`;
 }
 
-function aliusFallback(url: string, note: string): string {
+function folkaFallback(url: string, note: string): string {
   return `<p style="margin:28px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};word-break:break-all;">
       Virker knappen ikke, så kopiér linket:<br>
       <a href="${url}" style="color:${A.ink};">${url}</a>
@@ -103,8 +106,8 @@ export function loginEmail(url: string): Email {
     <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Du er ét klik fra dit dashboard.
     </p>
-    ${aliusButton(url, "Log ind")}
-    ${aliusFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.")}`;
+    ${folkaButton(url, "Log ind")}
+    ${folkaFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.")}`;
 
   const text = [
     "Log ind",
@@ -114,10 +117,10 @@ export function loginEmail(url: string): Email {
     "",
     "Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.",
     "",
-    "Alius. Stemplet og Henvisninger.",
+    "Folka. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return { subject: "Dit login-link til Alius", html: aliusShell("Log ind på dit dashboard.", inner), text };
+  return { subject: "Dit login-link til Folka", html: folkaShell("Log ind på dit dashboard.", inner), text };
 }
 
 /** Gendan kortet: link til kunden, der virker een gang og i 30 minutter. */
@@ -128,8 +131,8 @@ export function cardRecoveryEmail(shopName: string, url: string): Email {
     <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Tryk på knappen på den telefon, hvor du vil have dit kort hos ${shop}. Dine stempler og belønninger følger med.
     </p>
-    ${aliusButton(url, "Gendan mit kort")}
-    ${aliusFallback(url, "Linket virker i 30 minutter og kun én gang. Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.")}`;
+    ${folkaButton(url, "Gendan mit kort")}
+    ${folkaFallback(url, "Linket virker i 30 minutter og kun én gang. Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.")}`;
   const text = [
     `Gendan dit kort hos ${shopName}`,
     "",
@@ -138,7 +141,7 @@ export function cardRecoveryEmail(shopName: string, url: string): Email {
     "",
     "Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.",
   ].join("\n");
-  return { subject: `Gendan dit kort hos ${shopName}`, html: aliusShell(`Dit kort hos ${shop}.`, inner), text };
+  return { subject: `Gendan dit kort hos ${shopName}`, html: folkaShell(`Dit kort hos ${shop}.`, inner), text };
 }
 
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
@@ -164,14 +167,14 @@ export function welcomeEmail(url: string): Email {
     <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Din butik er klar. Du logger ind uden adgangskode.
     </p>
-    ${aliusButton(url, "Gå til dit dashboard")}
+    ${folkaButton(url, "Gå til dit dashboard")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 0;background:${A.surface};border-radius:16px;">
       <tr><td style="padding:18px 20px;">
         <p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">Kom godt fra start</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
       </td></tr>
     </table>
-    ${aliusFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.")}`;
+    ${folkaFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.")}`;
 
   const text = [
     "Velkommen",
@@ -184,10 +187,10 @@ export function welcomeEmail(url: string): Email {
     "",
     "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.",
     "",
-    "Alius. Stemplet og Henvisninger.",
+    "Folka. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return { subject: "Velkommen til Alius", html: aliusShell("Din butik er klar. Log ind og kom i gang.", inner), text };
+  return { subject: "Velkommen til Folka", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text };
 }
 
 // ── Ugentlig statistik-mail ──────────────────────────────────────────
@@ -569,7 +572,7 @@ export function marketingWelcomeEmail(name?: string | null): Email {
       Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.
     </p>
     <p style="margin:20px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-      Har du ikke selv skrevet dig op, så skriv til os på hej@alius.dk, så fjerner vi dig med det samme.
+      Har du ikke selv skrevet dig op, så skriv til os på hej@folka.dk, så fjerner vi dig med det samme.
     </p>`;
 
   const text = [
@@ -577,7 +580,7 @@ export function marketingWelcomeEmail(name?: string | null): Email {
     "",
     "Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.",
     "",
-    "Har du ikke selv skrevet dig op, så skriv til os på hej@alius.dk, så fjerner vi dig med det samme.",
+    "Har du ikke selv skrevet dig op, så skriv til os på hej@folka.dk, så fjerner vi dig med det samme.",
     "",
     "Stemplet. Stempelkortet, der skaber flere gensyn.",
   ].join("\n");

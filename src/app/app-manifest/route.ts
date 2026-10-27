@@ -8,8 +8,8 @@ export const dynamic = "force-static";
 export function GET() {
   return Response.json(
     {
-      name: "Alius",
-      short_name: "Alius",
+      name: "Folka",
+      short_name: "Folka",
       description: "Dit dashboard, altid ved hånden.",
       // Aabner direkte i dashboardet. Er butikken ikke logget ind, sender /app
       // videre til /login, saa de er eet tryk fra at komme ind.
@@ -17,8 +17,8 @@ export function GET() {
       // Bredt scope, saa login-flowet (uden for /app) ogsaa koerer i app-tilstand.
       scope: "/",
       display: "standalone",
-      background_color: "#1C1917",
-      theme_color: "#1C1917",
+      background_color: "#061C3D",
+      theme_color: "#061C3D",
       lang: "da",
       icons: [
         {

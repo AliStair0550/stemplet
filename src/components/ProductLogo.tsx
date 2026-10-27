@@ -62,9 +62,9 @@ export function HenvisningerLogo({
   );
 }
 
-/** Alius: den faelles konto (login og mails) over Stemplet og Henvisninger. */
-export function AliusLogo({ className }: { className?: string }) {
-  // Alius' haandtegnede logo (public/alius-logo.svg), fx paa login.
+/** Folka: den faelles konto (login og mails) over Stemplet og Henvisninger. */
+export function FolkaLogo({ className }: { className?: string }) {
+  // Folkas ordmaerke fra folka.dk (public/folka-logo.svg), fx paa login.
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/alius-logo.svg" alt="Alius" width={268} height={90} className={cn("h-7 w-auto", className)} />;
+  return <img src="/folka-logo.svg" alt="Folka" width={189} height={105} className={cn("h-9 w-auto", className)} />;
 }

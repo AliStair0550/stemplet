@@ -70,10 +70,10 @@ export default function BrancherPage() {
             <span className="text-[0.9rem] leading-relaxed text-slate">
               Flere brancher er på vej. Er din ikke med endnu? Skriv til{" "}
               <a
-                href="mailto:hej@alius.dk"
+                href="mailto:hej@folka.dk"
                 className="text-terracotta underline underline-offset-2"
               >
-                hej@alius.dk
+                hej@folka.dk
               </a>
               .
             </span>

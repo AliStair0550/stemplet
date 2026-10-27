@@ -11,7 +11,7 @@ export const QR_PRINT_BRAND = "Lavet med Stemplet";
 export function qrPrintText(stampsEnabled: boolean) {
   return stampsEnabled
     ? { headline: QR_PRINT_HEADLINE, helper: QR_PRINT_HELPER, brand: QR_PRINT_BRAND }
-    : { headline: "Henvis en ven, og få en belønning", helper: QR_PRINT_HELPER, brand: "Lavet med Alius" };
+    : { headline: "Henvis en ven, og få en belønning", helper: QR_PRINT_HELPER, brand: "Lavet med Folka" };
 }
 
 export type QrFormat = "visitkort" | "a4";

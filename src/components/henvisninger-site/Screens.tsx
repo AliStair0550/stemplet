@@ -147,7 +147,7 @@ export function LinkScreen({ buttonClass }: { buttonClass?: string }) {
       <div className="mt-6 flex items-center gap-2 rounded-[10px] px-3 py-2.5 text-left" style={{ background: SURFACE }}>
         <LinkGlyph />
         <span className="truncate text-[11px]" style={{ color: INK }}>
-          alius.dk/henvisninger/salon-nord
+          kort.folka.dk/k/salon-nord
         </span>
       </div>
       <div className="mt-auto">
@@ -192,7 +192,7 @@ export function ShareScene() {
           <span className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[#1D1D1F] text-[11px] font-bold text-white">SN</span>
           <span className="min-w-0 flex-1 text-left">
             <span className="block truncate text-[11px] font-semibold text-black">100 kr. hos Salon Nord</span>
-            <span className="block truncate text-[9.5px] text-[#8E8E93]">alius.dk</span>
+            <span className="block truncate text-[9.5px] text-[#8E8E93]">kort.folka.dk</span>
           </span>
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E5E5EA] text-[10px] text-[#8E8E93]">✕</span>
         </div>
@@ -265,7 +265,7 @@ export function MessageScene() {
           </div>
           <div className="px-3 py-2">
             <p className="text-[11px] font-semibold leading-snug">Sara har givet dig 100 kr.</p>
-            <p className="text-[9.5px] text-[#8E8E93]">alius.dk</p>
+            <p className="text-[9.5px] text-[#8E8E93]">kort.folka.dk</p>
           </div>
         </div>
       </div>

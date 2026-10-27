@@ -4,13 +4,13 @@ import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
-  title: { default: "Hjem", template: "%s - Alius" },
+  title: { default: "Hjem", template: "%s - Folka" },
   robots: { index: false },
   // Eget manifest for dashboardet: foejer butikken det til hjemmeskaermen, aabner
-  // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest). Alius-
-  // ikonet: hvidt flueben med to streger paa sort.
+  // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest). Folka-
+  // ikonet: hvidt kursivt f paa Folkas moerkeblaa (som folka.dk).
   manifest: "/app-manifest",
-  appleWebApp: { capable: true, title: "Alius", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "Folka", statusBarStyle: "default" },
   icons: { apple: "/app-apple-touch-icon.png" },
 };
 
