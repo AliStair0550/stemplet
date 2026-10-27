@@ -4,6 +4,7 @@ import { HenvisningerLogo } from "@/components/ProductLogo";
 import { Reveal } from "@/components/henvisninger-site/Reveal";
 import { Play } from "@/components/henvisninger-site/Play";
 import { Calculator } from "@/components/henvisninger-site/Calculator";
+import { HandTick, Note, Scribble, hand } from "@/components/henvisninger-site/Hand";
 import {
   CodeScreen,
   DeskScene,
@@ -16,11 +17,11 @@ import {
 } from "@/components/henvisninger-site/Screens";
 import "./forside.css";
 
-// Henvisningers forside (fase 5, docs/henvisninger.md "Forsiden"). Egen stil:
-// hvidt rum, systemfont, sort som eneste accent (Alis valg). Ali bad om mindre
-// tekst og mere bevaegelse: siden fortaeller med smaa scener i loop (Screens.tsx,
-// forside.css), og teksten er skaaret ned til overskrifter.
-// Kundesiderne ligger paa /henvisninger/[butik]; denne side er roden.
+// Henvisningers forside (fase 5, docs/henvisninger.md "Forsiden"). Eget udtryk:
+// sort paa hvidt med store sorte flader, og logoets haandskrift som noter med
+// pile (Hand.tsx), fordi anbefalinger er mund til mund. Smaa scener i loop
+// viser produktet (Screens.tsx, forside.css); teksten er skaaret ned til
+// overskrifter (Alis oenske). Kundesiderne ligger paa /henvisninger/[butik].
 
 const START = "/start?produkt=henvisninger";
 
@@ -51,17 +52,20 @@ const jsonLd = {
   publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
 };
 
-const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif';
+const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif';
 
 function CTA({ tone = "dark" }: { tone?: "dark" | "light" }) {
   return (
     <Link
       href={START}
-      className={`inline-flex min-h-12 items-center justify-center rounded-full px-7 text-[17px] font-medium transition-[transform,background-color] duration-150 active:scale-[0.97] ${
-        tone === "dark" ? "bg-[#1D1D1F] text-white hover:bg-black" : "bg-white text-[#1D1D1F] hover:bg-[#F5F5F7]"
+      className={`group inline-flex min-h-14 items-center justify-center gap-2 rounded-full px-8 text-[17px] font-semibold transition-[transform,background-color] duration-150 active:scale-[0.97] ${
+        tone === "dark" ? "bg-[#111] text-white hover:bg-black" : "bg-white text-[#111] hover:bg-[#F2F2F2]"
       }`}
     >
       Opret din butik gratis
+      <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-0.5">
+        →
+      </span>
     </Link>
   );
 }
@@ -70,52 +74,65 @@ function Section({
   children,
   tone = "white",
   id,
+  className,
 }: {
   children: React.ReactNode;
-  tone?: "white" | "grey";
+  tone?: "white" | "black";
   id?: string;
+  className?: string;
 }) {
   return (
-    <section id={id} className={`overflow-hidden ${tone === "grey" ? "bg-[#F5F5F7]" : "bg-white"}`}>
-      <Reveal className="mx-auto max-w-[1080px] px-4 py-16 sm:px-6 md:py-[120px]">{children}</Reveal>
+    <section
+      id={id}
+      className={`overflow-hidden ${tone === "black" ? "bg-[#111] text-white" : "bg-white text-[#111]"} ${className ?? ""}`}
+    >
+      <Reveal className="mx-auto max-w-[1120px] px-4 py-20 sm:px-6 md:py-[140px]">{children}</Reveal>
     </section>
   );
 }
 
-function Heading({ children, sub }: { children: React.ReactNode; sub?: string }) {
+function H2({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="mx-auto max-w-[640px] text-center">
-      <h2 className="text-[32px] font-semibold leading-[1.08] tracking-[-0.025em] md:text-[44px]">{children}</h2>
-      {sub ? <p className="mt-3 text-[19px] text-[#6E6E73]">{sub}</p> : null}
-    </div>
+    <h2 className={`text-[38px] font-bold leading-[1.02] tracking-[-0.035em] md:text-[60px] ${className ?? ""}`}>
+      {children}
+    </h2>
+  );
+}
+
+/** Et ord i haandskrift midt i en overskrift. */
+function Hand({ children }: { children: React.ReactNode }) {
+  return (
+    <span className={`${hand.className} relative mx-[0.06em] inline-block font-normal tracking-normal`} style={{ fontSize: "1.12em" }}>
+      {children}
+    </span>
   );
 }
 
 const STEPS = [
-  { scene: <ShareScene />, title: "Kunden deler." },
-  { scene: <MessageScene />, title: "Vennen kommer." },
-  { scene: <NotifyScene />, title: "Begge belønnes.", buzz: true },
+  { scene: <ShareScene />, title: "Kunden deler sin kode." },
+  { scene: <MessageScene />, title: "Vennen får rabat." },
+  { scene: <NotifyScene />, title: "Kunden får sin belønning.", buzz: true },
 ];
 
 const BOOKING = ["Planway", "Bookio", "Treatwell", "Booksy", "Fresha", "Papirkalenderen"];
 
 export default function HenvisningerPage() {
   return (
-    <div className="bg-white text-[#1D1D1F] antialiased" style={{ fontFamily: FONT }}>
+    <div className="bg-white text-[#111] antialiased" style={{ fontFamily: FONT }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <header className="sticky top-0 z-40 border-b border-[#D2D2D7]/60 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
           <Link href="/henvisninger" aria-label="Henvisninger, til forsiden">
-            <HenvisningerLogo className="h-[30px]" />
+            <HenvisningerLogo className="h-[34px]" />
           </Link>
-          <nav className="flex items-center gap-5 text-[14px]">
-            <Link href="/login" className="text-[#6E6E73] hover:text-[#1D1D1F]">
+          <nav className="flex items-center gap-5 text-[15px]">
+            <Link href="/login" className="hidden text-[#111]/60 hover:text-[#111] sm:inline">
               Log ind
             </Link>
             <Link
               href={START}
-              className="rounded-full bg-[#1D1D1F] px-4 py-1.5 font-medium text-white transition-colors hover:bg-black"
+              className="rounded-full bg-[#111] px-5 py-2 font-semibold text-white transition-colors hover:bg-black"
             >
               Kom i gang
             </Link>
@@ -126,39 +143,31 @@ export default function HenvisningerPage() {
       <main>
         {/* Hero */}
         <section className="overflow-hidden bg-white">
-          <div className="mx-auto grid max-w-[1080px] items-center gap-14 px-4 pb-20 pt-14 sm:px-6 md:grid-cols-[1.1fr_1fr] md:pb-[120px] md:pt-24">
-            <div className="text-center md:text-left">
-              <h1 className="text-[44px] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-[56px] lg:text-[68px]">
-                Dine kunder{" "}
-                <span className="relative inline-block">
+          <div className="mx-auto grid max-w-[1120px] items-center gap-16 px-4 pb-24 pt-12 sm:px-6 md:grid-cols-[1.15fr_1fr] md:pb-[140px] md:pt-20">
+            <Play className="text-center md:text-left">
+              <h1 className="text-[52px] font-bold leading-[0.98] tracking-[-0.045em] sm:text-[68px] lg:text-[84px]">
+                Dine kunder
+                <br />
+                <Hand>
                   anbefaler
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 200 14"
-                    preserveAspectRatio="none"
-                    className="absolute -bottom-[0.12em] left-0 h-[0.22em] w-full overflow-visible"
-                  >
-                    <path
-                      className="hv-underline"
-                      d="M3 9 C 45 3, 110 2, 197 6"
-                      pathLength={1}
-                      fill="none"
-                      stroke="#1D1D1F"
-                      strokeWidth={4}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>{" "}
+                  <Scribble className="absolute -bottom-[0.06em] left-[-0.05em] h-[0.18em] w-[105%]" />
+                </Hand>
+                <br />
                 dig allerede.
-                <span className="mt-2 block text-[#6E6E73]">Nu får du noget ud af det.</span>
               </h1>
-              <div className="mt-10 flex flex-col items-center gap-3 md:items-start">
+              <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55 md:text-[26px]">
+                Nu får du noget ud af det.
+              </p>
+              <div className="mt-10 flex flex-col items-center gap-4 md:items-start">
                 <CTA />
-                <p className="text-[14px] text-[#6E6E73]">Gratis op til 100 kortholdere.</p>
+                <p className="flex items-center gap-2 text-[15px] text-[#111]/60">
+                  <HandTick className="h-5 w-5 text-[#111]" />
+                  Gratis op til 100 kortholdere
+                </p>
               </div>
-            </div>
-            <Play className="relative mx-auto h-[540px] w-[320px] sm:w-[360px]">
-              <div className="absolute left-0 top-8 hidden origin-bottom-left -rotate-6 sm:block">
+            </Play>
+            <Play className="relative mx-auto h-[560px] w-[320px] sm:w-[380px]">
+              <div className="absolute left-0 top-10 hidden origin-bottom-left -rotate-6 sm:block">
                 <Phone>
                   <CodeScreen />
                 </Phone>
@@ -168,23 +177,29 @@ export default function HenvisningerPage() {
                   <FriendScene />
                 </Phone>
               </div>
+              <Note arrow="down-left" className="absolute -right-2 -top-12 hidden text-right lg:block xl:-right-24" rotate={6}>
+                Emma er ny kunde
+              </Note>
+              <Note arrow="right" className="absolute -left-40 bottom-6 hidden lg:block xl:-left-44" rotate={-8}>
+                Saras kode
+              </Note>
             </Play>
           </div>
         </section>
 
-        {/* Flowet */}
-        <Section tone="grey" id="saadan">
-          <Heading>Sådan virker det.</Heading>
-          <ol className="mt-14 grid gap-14 md:grid-cols-3 md:gap-8">
+        {/* Flowet, paa sort */}
+        <Section tone="black" id="saadan">
+          <H2 className="text-center">
+            Sådan <Hand>virker</Hand> det.
+          </H2>
+          <ol className="mt-16 grid gap-16 md:grid-cols-3 md:gap-8">
             {STEPS.map((s, i) => (
               <li key={s.title} className="flex flex-col items-center text-center">
                 <Play>
-                  <Phone className={s.buzz ? "hv-buzz" : undefined}>{s.scene}</Phone>
+                  <Phone className={`ring-1 ring-white/15 ${s.buzz ? "hv-buzz" : ""}`}>{s.scene}</Phone>
                 </Play>
-                <p className="mt-8 text-[21px] font-semibold tracking-[-0.01em]">
-                  <span className="mr-2 text-[#6E6E73]">{i + 1}</span>
-                  {s.title}
-                </p>
+                <p className={`${hand.className} mt-8 text-[44px] leading-none`}>{i + 1}</p>
+                <p className="mt-2 text-[22px] font-semibold tracking-[-0.02em]">{s.title}</p>
               </li>
             ))}
           </ol>
@@ -192,39 +207,56 @@ export default function HenvisningerPage() {
 
         {/* Wallet */}
         <Section>
-          <div className="grid items-center gap-12 md:grid-cols-2 md:gap-16">
+          <div className="grid items-center gap-14 md:grid-cols-2 md:gap-16">
             <div className="text-center md:text-left">
-              <h2 className="text-[32px] font-semibold leading-[1.08] tracking-[-0.025em] md:text-[44px]">
-                Koden bor i Apple Wallet.
-              </h2>
-              <p className="mt-3 text-[19px] text-[#6E6E73]">Kortet opdaterer sig selv.</p>
+              <H2>
+                Koden bor i <Hand>Wallet.</Hand>
+              </H2>
+              <p className="mt-5 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">Kortet opdaterer sig selv.</p>
             </div>
-            <Play>
+            <Play className="relative">
               <WalletScene />
+              <Note arrow="down-left" className="absolute -top-16 right-0 hidden text-right sm:block md:-right-6" rotate={5}>
+                nyt stempel
+              </Note>
+              <Note arrow="left" className="absolute -bottom-6 -right-4 hidden sm:block lg:-right-28" rotate={-5}>
+                og en belønning
+              </Note>
             </Play>
           </div>
         </Section>
 
         {/* Disken */}
-        <Section tone="grey">
-          <Heading sub="Belønningen udløses først, når vennen har været der.">Et tryk ved disken.</Heading>
-          <Play className="mt-14">
+        <Section className="border-t border-[#111]/10">
+          <H2 className="text-center">
+            <Hand>Ét</Hand> tryk ved disken.
+          </H2>
+          <p className="mt-5 text-center text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">
+            Belønningen kommer først, når vennen har været der.
+          </p>
+          <Play className="relative mx-auto mt-16 max-w-[720px]">
             <DeskScene />
+            <Note arrow="left" className="absolute -right-44 top-[118px] hidden lg:block" rotate={-4}>
+              tryk her
+            </Note>
           </Play>
         </Section>
 
         {/* Booking-systemet */}
-        <section className="overflow-hidden bg-white py-16 md:py-[120px]">
-          <Reveal className="px-4 sm:px-6">
-            <Heading sub="Ingen integration.">Virker ved siden af dit booking-system.</Heading>
+        <section className="overflow-hidden bg-[#111] py-20 text-white md:py-[140px]">
+          <Reveal className="px-4 text-center sm:px-6">
+            <H2>
+              Virker ved siden af <Hand>alt.</Hand>
+            </H2>
+            <p className="mt-5 text-[22px] font-medium tracking-[-0.01em] text-white/55">Ingen integration. Intet nyt system.</p>
           </Reveal>
-          <div className="relative mt-12 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+          <div className="relative mt-14 [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
             <ul className="hv-marquee flex w-max gap-4" aria-label="Booking-systemer">
               {[...BOOKING, ...BOOKING].map((n, i) => (
                 <li
                   key={i}
                   aria-hidden={i >= BOOKING.length}
-                  className="whitespace-nowrap rounded-full bg-[#F5F5F7] px-7 py-4 text-[20px] font-semibold tracking-[-0.01em] text-[#1D1D1F]/80"
+                  className="whitespace-nowrap rounded-full border border-white/20 px-8 py-4 text-[22px] font-semibold tracking-[-0.02em] text-white/85"
                 >
                   {n}
                 </li>
@@ -234,59 +266,62 @@ export default function HenvisningerPage() {
         </section>
 
         {/* Regneeksempel */}
-        <Section tone="grey">
-          <Heading>Regn selv efter.</Heading>
-          <div className="mt-14">
+        <Section>
+          <H2 className="text-center">
+            Regn <Hand>selv</Hand> efter.
+          </H2>
+          <div className="mt-16">
             <Calculator />
           </div>
         </Section>
 
         {/* Pris */}
-        <Section id="pris">
-          <div className="text-center">
-            <p className="text-[56px] font-semibold leading-none tracking-[-0.04em] md:text-[88px]">Gratis</p>
-            <p className="mt-4 text-[19px] text-[#6E6E73]">op til 100 kortholdere.</p>
+        <Section id="pris" className="border-t border-[#111]/10">
+          <Play className="text-center">
+            <p className={`${hand.className} text-[96px] leading-none md:text-[150px]`}>Gratis</p>
+            <Scribble className="mx-auto -mt-2 block h-4 w-[260px] md:w-[400px]" />
+            <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">op til 100 kortholdere.</p>
             <p className="mt-10 text-[17px]">
               Derefter <span className="font-semibold">99 kr./md.</span>{" "}
-              <span className="text-[#6E6E73]">ekskl. moms. Henvisninger er med.</span>
+              <span className="text-[#111]/55">ekskl. moms. Henvisninger er med.</span>
             </p>
-          </div>
+          </Play>
         </Section>
 
         {/* Afslutning */}
-        <section className="bg-[#1D1D1F] text-white">
-          <Reveal className="mx-auto flex max-w-[720px] flex-col items-center px-4 py-20 text-center sm:px-6 md:py-[140px]">
-            <HenvisningerLogo tone="light" className="h-[44px] md:h-[56px]" />
-            <h2 className="mt-8 text-[36px] font-semibold leading-[1.05] tracking-[-0.03em] md:text-[52px]">
-              Lad dine kunder gøre arbejdet.
+        <section className="bg-[#111] text-white">
+          <Reveal className="mx-auto flex max-w-[760px] flex-col items-center px-4 py-24 text-center sm:px-6 md:py-[160px]">
+            <HenvisningerLogo tone="light" className="h-[52px] md:h-[68px]" />
+            <h2 className="mt-10 text-[40px] font-bold leading-[1.02] tracking-[-0.04em] md:text-[64px]">
+              Lad dine kunder <Hand>gøre</Hand> arbejdet.
             </h2>
-            <div className="mt-10">
+            <div className="mt-12">
               <CTA tone="light" />
             </div>
           </Reveal>
         </section>
       </main>
 
-      <footer className="bg-[#F5F5F7]">
-        <div className="mx-auto flex max-w-[1080px] flex-col gap-6 px-4 py-10 text-[13px] text-[#6E6E73] sm:px-6 md:flex-row md:items-center md:justify-between">
+      <footer className="bg-[#111] text-white/55">
+        <div className="mx-auto flex max-w-[1120px] flex-col gap-6 border-t border-white/10 px-4 py-10 text-[13px] sm:px-6 md:flex-row md:items-center md:justify-between">
           <p>
             Lavet af Alius. Vi laver også{" "}
-            <Link href="/" className="text-[#1D1D1F] underline-offset-4 hover:underline">
+            <Link href="/" className="text-white underline-offset-4 hover:underline">
               Stemplet
             </Link>
             .
           </p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/login" className="hover:text-[#1D1D1F]">
+            <Link href="/login" className="hover:text-white">
               Log ind
             </Link>
-            <Link href="/privatliv" className="hover:text-[#1D1D1F]">
+            <Link href="/privatliv" className="hover:text-white">
               Privatliv
             </Link>
-            <Link href="/handelsbetingelser" className="hover:text-[#1D1D1F]">
+            <Link href="/handelsbetingelser" className="hover:text-white">
               Handelsbetingelser
             </Link>
-            <a href="mailto:hej@alius.dk" className="hover:text-[#1D1D1F]">
+            <a href="mailto:hej@alius.dk" className="hover:text-white">
               hej@alius.dk
             </a>
           </nav>
