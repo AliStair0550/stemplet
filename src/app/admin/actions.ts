@@ -13,6 +13,12 @@ import {
   UNLOCK_TTL_SECONDS,
 } from "@/lib/admin";
 import { DEMO_SLUG } from "@/lib/demo";
+import { redirect } from "next/navigation";
+import { SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
+import { onboardingStartSchema } from "@/lib/validation";
+import { createStampBusiness, StampOnboardingError } from "@/lib/stamp-onboarding";
+import { createReferralBusiness, ReferralOnboardingError } from "@/lib/referral-onboarding";
+import { saveReferralRule } from "@/lib/referral";
 import { signIn } from "@/lib/auth";
 import { captureServerError } from "@/lib/sentry";
 
@@ -292,4 +298,110 @@ export async function setBusinessFlag(
   revalidatePath("/admin");
   // Stemplets QR-side er cachet (ISR); den skal straks foelge Stemplet til/fra.
   if (flag === "stampsEnabled") revalidatePath(`/k/${b.slug}`);
+}
+
+/**
+ * Support: aabn en butiks dashboard som superadmin (ogsaa butikker, der har
+ * oprettet sig selv), saa du kan rette design, regler og indstillinger for dem.
+ * Gaelder kun, mens admin er laast op (se session.ts). Logges i serverloggen,
+ * ikke i butikkens aktivitet.
+ */
+export async function startSupport(businessId: string): Promise<void> {
+  const admin = await requireAdmin();
+  const b = await prisma.business.findUnique({ where: { id: businessId }, select: { id: true, slug: true } });
+  if (!b) throw new Error("Butikken findes ikke");
+  (await cookies()).set(SUPPORT_BUSINESS_COOKIE, b.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: UNLOCK_TTL_SECONDS,
+  });
+  console.info(`[support] ${admin} aabnede ${b.slug}`);
+  redirect("/app");
+}
+
+/** Afslut support og gaa tilbage til admin. Kraever ikke oplaasning. */
+export async function endSupport(): Promise<void> {
+  (await cookies()).delete(SUPPORT_BUSINESS_COOKIE);
+  redirect("/admin");
+}
+
+export type CreateForCustomerState = { error?: string };
+
+/**
+ * Opret en butik for en kunde (service): butik og ejer med kundens e-mail, valgt
+ * produkt med standardvaerdier, login-mail til kunden, og superadmin lander i
+ * butikkens dashboard i support-tilstand for at saette resten op.
+ */
+export async function createBusinessForCustomer(
+  _prev: CreateForCustomerState,
+  formData: FormData,
+): Promise<CreateForCustomerState> {
+  let admin: string;
+  try {
+    admin = await requireAdmin();
+  } catch {
+    return { error: "Ikke tilladt. Lås admin op igen." };
+  }
+  const base = onboardingStartSchema.safeParse({
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+  });
+  if (!base.success) return { error: base.error.issues[0]?.message ?? "Tjek felterne." };
+  const product = String(formData.get("product") ?? "stemplet");
+
+  let created: { businessId: string; slug: string };
+  try {
+    if (product === "henvisninger") {
+      created = await createReferralBusiness({
+        name: base.data.name,
+        email: base.data.email,
+        friendReward: "100 kr.",
+        referrerReward: "100 kr.",
+      });
+    } else {
+      created = await createStampBusiness({
+        name: base.data.name,
+        email: base.data.email,
+        rewardText: "Din belønning",
+        stampsRequired: 10,
+        stampIcon: "star",
+      });
+      if (product === "begge") {
+        await prisma.business.update({ where: { id: created.businessId }, data: { referralsEnabled: true } });
+        await saveReferralRule(created.businessId, {
+          newCustomerRewardType: "AMOUNT",
+          newCustomerRewardValue: "100",
+          referrerRewardType: "AMOUNT",
+          referrerRewardValue: "100",
+          rewardExpiryDays: 180,
+        });
+      }
+    }
+  } catch (e) {
+    if (e instanceof StampOnboardingError || e instanceof ReferralOnboardingError) return { error: e.message };
+    throw e;
+  }
+
+  // Login-mail til kunden. Superadmins egen session paavirkes ikke (redirect:false).
+  try {
+    await signIn("resend", { email: base.data.email, redirect: false, redirectTo: "/app" });
+  } catch (e) {
+    const digest = (e as { digest?: string })?.digest;
+    if (!(typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))) {
+      captureServerError(e, { route: "admin:createBusinessForCustomer" });
+    }
+  }
+
+  (await cookies()).set(SUPPORT_BUSINESS_COOKIE, created.businessId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: UNLOCK_TTL_SECONDS,
+  });
+  console.info(`[support] ${admin} oprettede og aabnede ${created.slug}`);
+  revalidatePath("/admin");
+  redirect(product === "henvisninger" ? "/app/henvisninger/indstillinger" : "/app/kort");
 }

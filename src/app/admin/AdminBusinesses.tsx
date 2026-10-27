@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { startSupport } from "./actions";
 import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
 import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
 import {
@@ -338,6 +339,15 @@ function BusinessDetail({ r }: { r: Row }) {
             : " · Vilkår ikke registreret"}
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          {/* Support: aabn butikkens dashboard som superadmin og ret for dem. */}
+          <form action={startSupport.bind(null, r.id)}>
+            <button
+              type="submit"
+              className="rounded-full bg-ink px-4 py-1.5 text-[0.78rem] font-[500] text-parchment hover:bg-black"
+            >
+              Åbn dashboard
+            </button>
+          </form>
           <PlanSelect businessId={r.id} plan={r.plan} />
           <ResetStampsButton businessId={r.id} />
           <DeleteButton businessId={r.id} name={r.name} />
