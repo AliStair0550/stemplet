@@ -189,7 +189,7 @@ export function RuleForm({
         />
       </Box>
 
-      <Box title="Betingelser" hint="Vises under knappen på kundesiden. Personalet tjekker dem ved kassen.">
+      <Box title="Betingelser" hint="Valgfrit. Vises under knappen på kundesiden, og personalet tjekker dem ved kassen.">
         <Field label="Minimumskøb ved første besøg" suffix="kr." hint="Lad stå tomt, hvis der ikke er et minimum.">
           <input
             value={form.minPurchaseKr}
@@ -210,7 +210,7 @@ export function RuleForm({
         </Field>
       </Box>
 
-      <Box title="Grænser" hint="Beskytter dig mod misbrug. Standarden passer til de fleste.">
+      <Box title="Grænser" hint="Valgfrit. Sæt en grænse, hvis du vil beskytte dig mod misbrug.">
         <Field
           label="Højst antal belønninger pr. ambassadør pr. måned"
           hint="Når grænsen er nået, får den nye kunde stadig sin rabat. Tomt betyder ingen grænse."
@@ -219,7 +219,7 @@ export function RuleForm({
             value={form.maxReferralsPerMonth}
             onChange={(e) => set("maxReferralsPerMonth", e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
-            placeholder="5"
+            placeholder="Ingen grænse"
             className={cn(fieldCls, "max-w-[10rem]")}
           />
         </Field>

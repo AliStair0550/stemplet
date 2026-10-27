@@ -112,7 +112,16 @@ export function AddToHomeTile({ className }: { className: string }) {
   );
 }
 
-export function AddToHomeButton() {
+export function AddToHomeButton({
+  title = "Tilføj til hjemmeskærm",
+  text = "Så åbner du dit dashboard med ét tryk, som en app.",
+  icon,
+}: {
+  title?: string;
+  text?: string;
+  /** Eget ikon (fx Henvisningers app-ikon) i stedet for hus-pilen. */
+  icon?: React.ReactNode;
+} = {}) {
   const { hidden, hintOpen, showHint, onClick } = useAddToHome();
   if (hidden) return null;
 
@@ -120,16 +129,14 @@ export function AddToHomeButton() {
     <div className="rounded-lg border border-fog bg-sand/30 p-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
-            <HomeIcon />
-          </span>
+          {icon ?? (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+              <HomeIcon />
+            </span>
+          )}
           <div className="min-w-0">
-            <p className="font-[400] text-[0.95rem] text-ink">
-              Tilføj til hjemmeskærm
-            </p>
-            <p className="font-[300] text-[0.8rem] leading-relaxed text-stone">
-              Så åbner du dit dashboard med ét tryk, som en app.
-            </p>
+            <p className="font-[400] text-[0.95rem] text-ink">{title}</p>
+            <p className="font-[300] text-[0.8rem] leading-relaxed text-stone">{text}</p>
           </div>
         </div>
         <button
