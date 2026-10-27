@@ -22,7 +22,7 @@ const COMMON: NavLink[] = [
 
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
-  { href: "/app/kort", label: "Kort og design" },
+  { href: "/app/kort", label: "Design" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },
 ];
@@ -36,7 +36,7 @@ const HENVISNINGER_LINKS: NavLink[] = [
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
   { href: "/app/indstillinger", label: "Butik og adgang" },
-  { href: "/app/visitkort", label: "QR og materialer" },
+  { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/guide", label: "Guide til personalet" },
 ];
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.

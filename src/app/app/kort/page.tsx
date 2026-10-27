@@ -40,7 +40,7 @@ export default async function KortPage() {
     <>
       <PageHeading
         title="Design"
-        subtitle="Design dit unikke stempelkort, download det og fortæl dine kunder om det."
+        subtitle="Sådan ser dit stempelkort ud for kunderne. Tryk Gem, når du er færdig."
       />
       <KortEditor
         initial={initial}

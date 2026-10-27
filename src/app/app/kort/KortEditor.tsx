@@ -102,14 +102,16 @@ export function KortEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
+      <div>
+        {/* Hvert afsnit i sin egen kasse; knapperne staar fast nederst (computer). */}
         <CardDesigner
           value={design}
           onChange={setDesign}
           businessName={businessName}
           allowLogo
+          boxed
         />
-        <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-fog pt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-3 py-2 md:sticky md:bottom-0 md:z-20 md:-mx-1 md:bg-parchment/95 md:px-1 md:py-4 md:backdrop-blur">
           <button
             onClick={save}
             disabled={pending}
@@ -140,7 +142,7 @@ export function KortEditor({
           ) : msg ? (
             <span
               className={`text-[0.82rem] font-[300] ${
-                msg.ok ? "text-terracotta" : "text-rust"
+                msg.ok ? "text-ink" : "text-rust"
               }`}
             >
               {msg.text}
