@@ -45,7 +45,7 @@ function Box({
 }) {
   return (
     <section className="rounded-lg border border-fog bg-white p-5 shadow-card md:p-6">
-      <h2 className="text-[1.05rem] text-ink">{title}</h2>
+      <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">{title}</h2>
       <p className="mt-1 text-[0.85rem] leading-relaxed text-stone">{hint}</p>
       <div className="mt-4 flex flex-col gap-4">{children}</div>
     </section>
@@ -247,7 +247,7 @@ export function RuleForm({
       </Box>
 
       <section className="rounded-lg border border-fog bg-sand/40 p-5 md:p-6">
-        <h2 className="text-[1.05rem] text-ink">Sådan ser kunderne det</h2>
+        <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Sådan ser kunderne det</h2>
         <p className="mt-3 text-[1.1rem] text-ink">
           Henvis en ven og få {phrase(form.referrerRewardType, form.referrerRewardValue)}
         </p>

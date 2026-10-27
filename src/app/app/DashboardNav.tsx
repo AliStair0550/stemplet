@@ -145,7 +145,7 @@ export function DashboardNav({
   return (
     <>
       {/* Desktop */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-white px-4 py-6 md:flex print:hidden">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-[#f7f7f8] px-4 py-6 md:flex print:hidden">
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
 
         <Link
