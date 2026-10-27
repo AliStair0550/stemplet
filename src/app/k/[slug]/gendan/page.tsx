@@ -29,7 +29,7 @@ export default async function RecoverPage({
   const valid = !udloebet && (await recoveryTokenValid(t, slug));
   const fg = business.textColor;
   const shop = cardTitle(business);
-  const backHref = business.stampsEnabled ? `/k/${slug}` : `/henvisninger/${slug}`;
+  const backHref = `/k/${slug}`;
 
   return (
     <main

@@ -30,7 +30,7 @@ export default async function ReferralSettingsPage() {
         subtitle="Bestem hvad dine kunder får, når de anbefaler dig."
       />
       <RuleForm
-        pageUrl={`${APP_URL}/henvisninger/${business.slug}`}
+        pageUrl={`${APP_URL}/k/${business.slug}`}
         isNew={!rule}
         initial={{
           newCustomerRewardType: rule?.newCustomerRewardType ?? "AMOUNT",

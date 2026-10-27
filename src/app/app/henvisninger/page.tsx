@@ -72,7 +72,7 @@ export default async function ReferralsPage({
       <ReferralHeader />
       <ReferralWorklist waiting={waiting} owed={owed} hasPin={business.staffPin != null} initialQuery={q} />
       <h2 className="mb-3 mt-12 text-[1.2rem] font-[700] tracking-[-0.02em] text-ink">Del din henvisningsside</h2>
-      <ShopLinkCard url={`${APP_URL}/henvisninger/${business.slug}`} />
+      <ShopLinkCard url={`${APP_URL}/k/${business.slug}`} />
       <div className="mb-8">
         <AddToHomeButton
           title="Tilføj Henvisninger til hjemmeskærmen"

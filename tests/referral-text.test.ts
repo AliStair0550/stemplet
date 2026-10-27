@@ -32,7 +32,7 @@ test("fornavn til overskriften", () => {
 test("delelink og -besked", () => {
   assert.equal(
     referralShareUrl("https://stemplet.alius.dk", "sara-salon", "SARA-K8"),
-    "https://stemplet.alius.dk/henvisninger/sara-salon?k=SARA-K8",
+    "https://stemplet.alius.dk/k/sara-salon?k=SARA-K8",
   );
   assert.equal(
     referralShareText("Sara Salon", `100${NBSP}kr.`),

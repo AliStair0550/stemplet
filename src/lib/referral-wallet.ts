@@ -54,7 +54,7 @@ export async function loadReferralPassInfo(
   return {
     code: cc.referralCode,
     shareUrl: referralShareUrl(APP_URL, b.slug, cc.referralCode),
-    pageUrl: `${APP_URL}/henvisninger/${b.slug}`,
+    pageUrl: `${APP_URL}/k/${b.slug}?del=1`,
     termsLine: rule?.termsLine ?? null,
     newCustomerReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "rabat",
     referrerReward: rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "en belønning",

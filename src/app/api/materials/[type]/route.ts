@@ -98,7 +98,8 @@ export async function GET(
   const sp = req.nextUrl.searchParams;
   // Fokus: hent kortet (QR til /k) eller henvis en ven (QR til henvisningssiden).
   const focus = focusFromParam(sp.get("fokus"), business);
-  const cardUrl = focus === "henvis" ? `${APP_URL}/henvisninger/${business.slug}` : `${APP_URL}/k/${business.slug}`;
+  // Een butiksside: QR til /k; "henvis"-plakaten aabner den med henvisningen fremme.
+  const cardUrl = focus === "henvis" ? `${APP_URL}/k/${business.slug}?del=1` : `${APP_URL}/k/${business.slug}`;
   const card = business.cards[0];
   const rule = business.referralRule;
   const required = card?.stampsRequired ?? 10;

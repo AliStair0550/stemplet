@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
 
   // Uden stempler er kundens side henvisningssiden; ellers stempelkortets side,
   // som nu genkender kortet og viser "Tilføj til Apple Wallet".
-  const res = go(r.stampsEnabled ? `/k/${slug}?gendannet=1` : `/henvisninger/${slug}`);
+  const res = go(`/k/${slug}?gendannet=1`);
   res.cookies.set(cardCookieName(r.businessId), r.authToken, cardCookieOptions());
   if (!existingDid) res.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
   return res;

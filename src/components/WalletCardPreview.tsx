@@ -28,6 +28,11 @@ export type WalletCardPreviewProps = {
   friendReward: string;
   referrerReward: string;
   actions: CardAction[];
+  /** Vis disse i stedet for eksempelkunden (fx butikssiden: 0 stempler). */
+  sampleStamps?: number;
+  sampleCode?: string;
+  /** Et nyt kort (butikssiden): intet til gode endnu. */
+  fresh?: boolean;
 };
 
 const EXAMPLE_STAMPS = 3;
@@ -91,11 +96,14 @@ function Qr({ size }: { size: number }) {
 
 function Poster(p: WalletCardPreviewProps) {
   const fg = p.textColor;
+  const n = p.sampleStamps ?? EXAMPLE_STAMPS;
+  const code = p.sampleCode ?? EXAMPLE_CODE;
+  const owed = p.fresh ? "Intet endnu" : cap(p.referrerReward);
   const stamps = p.product !== "henvisninger";
   const refs = p.product !== "stemplet";
   const header = stamps
-    ? { label: "Stempler", value: `${EXAMPLE_STAMPS}/${p.stampsRequired}` }
-    : { label: "Til gode", value: cap(p.referrerReward) };
+    ? { label: "Stempler", value: `${n}/${p.stampsRequired}` }
+    : { label: "Til gode", value: owed };
   return (
     <div
       className="relative isolate aspect-[300/430] w-full max-w-[300px] overflow-hidden rounded-[18px] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.5)]"
@@ -114,7 +122,7 @@ function Poster(p: WalletCardPreviewProps) {
       </div>
       {p.style === "stamps" && stamps ? (
         <div className="absolute inset-x-4 top-[72px]">
-          <Grid n={EXAMPLE_STAMPS} of={p.stampsRequired} icon={p.stampIcon} fg={fg} bg={p.primaryColor} />
+          <Grid n={n} of={p.stampsRequired} icon={p.stampIcon} fg={fg} bg={p.primaryColor} />
         </div>
       ) : p.style === "color" ? (
         <div className="absolute inset-x-4 top-[78px] text-[38px] font-extrabold leading-[0.95] tracking-[-0.04em]">
@@ -128,12 +136,12 @@ function Poster(p: WalletCardPreviewProps) {
         <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-2">
           {p.product === "henvisninger" ? (
             <div className="col-span-2">
-              <Field label="Henvis en ven" value={EXAMPLE_CODE} big />
+              <Field label="Henvis en ven" value={code} big />
             </div>
           ) : refs ? (
             <>
-              <Field label="Henvis en ven" value={EXAMPLE_CODE} />
-              <Field label="Til gode" value={cap(p.referrerReward)} />
+              <Field label="Henvis en ven" value={code} />
+              <Field label="Til gode" value={owed} />
             </>
           ) : (
             <div className="col-span-2">
@@ -147,7 +155,7 @@ function Poster(p: WalletCardPreviewProps) {
             ? `Din ven får ${p.friendReward} ved første besøg`
             : refs
               ? `Belønning: ${p.rewardText}`
-              : `${p.stampsRequired - EXAMPLE_STAMPS} stempler til næste belønning`}
+              : `${p.stampsRequired - n} stempler til næste belønning`}
         </div>
       </div>
     </div>
@@ -164,7 +172,7 @@ function Classic(p: WalletCardPreviewProps) {
           primaryColor={p.primaryColor}
           textColor={p.textColor}
           stampIcon={p.stampIcon}
-          stamps={EXAMPLE_STAMPS}
+          stamps={p.sampleStamps ?? EXAMPLE_STAMPS}
           required={p.stampsRequired}
           rewardText={p.rewardText}
           landscape
@@ -179,11 +187,11 @@ function Classic(p: WalletCardPreviewProps) {
     >
       <span className="text-[15px] font-extrabold">{p.name}</span>
       <div className="mt-5">
-        <Field label="Henvis en ven" value={EXAMPLE_CODE} big />
+        <Field label="Henvis en ven" value={p.sampleCode ?? EXAMPLE_CODE} big />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Din ven får" value={p.friendReward} />
-        <Field label="Til gode" value={cap(p.referrerReward)} />
+        <Field label="Til gode" value={p.fresh ? "Intet endnu" : cap(p.referrerReward)} />
       </div>
       <div className="mt-5 flex justify-center">
         <Qr size={70} />
