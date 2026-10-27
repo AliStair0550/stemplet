@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { requestMagicLink, type LoginState } from "./actions";
-import { SubmitButton } from "@/components/SubmitButton";
+import { useFormStatus } from "react-dom";
+
+function SubmitLabel() {
+  const { pending } = useFormStatus();
+  return <>{pending ? "Sender link" : "Send login-link"}</>;
+}
 
 // Vi husker selv den sidst brugte e-mail. Magic-link-login har ingen adgangskode,
 // saa Safari/iOS gemmer den ikke automatisk som ved en password-formular. Ved at
@@ -30,9 +35,7 @@ export function LoginForm() {
   return (
     <form action={action} className="flex w-full flex-col gap-4">
       <label htmlFor="login-email" className="flex flex-col gap-1.5">
-        <span className="text-[0.7rem] font-[400] uppercase tracking-[0.12em] text-slate">
-          E-mail
-        </span>
+        <span className="text-[14px] font-medium text-[#111]/60">E-mail</span>
         <input
           id="login-email"
           type="email"
@@ -53,18 +56,19 @@ export function LoginForm() {
               // ignore
             }
           }}
-          className="border border-clay bg-parchment px-4 py-3 font-[200] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+          placeholder="din@mail.dk"
+          className="min-h-[52px] rounded-[14px] bg-[#F5F5F7] px-4 text-[17px] text-[#111] outline-none placeholder:text-[#111]/35 focus:ring-2 focus:ring-[#111]"
         />
       </label>
       {state.error ? (
-        <p className="text-[0.8rem] font-[200] text-rust">
+        <p className="text-[15px] text-rust">
           {state.error}
           {state.notFound ? (
             <>
               {" "}
               <Link
                 href="/start"
-                className="font-[400] text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
+                className="font-medium text-[#111] underline underline-offset-2"
               >
                 Opret din butik gratis
               </Link>
@@ -73,9 +77,12 @@ export function LoginForm() {
           ) : null}
         </p>
       ) : null}
-      <SubmitButton variant="primary" size="lg" pendingText="Sender link...">
-        Send login-link
-      </SubmitButton>
+      <button
+        type="submit"
+        className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#111] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-black active:scale-[0.98] disabled:opacity-60"
+      >
+        <SubmitLabel />
+      </button>
     </form>
   );
 }

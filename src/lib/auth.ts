@@ -3,7 +3,7 @@ import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
-import { loginEmail, welcomeEmail } from "./emails";
+import { aliusSender, loginEmail, welcomeEmail } from "./emails";
 import { verifyOnboardingToken } from "./onboarding-token";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
@@ -31,7 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM || "Stemplet <login@stemplet.alius.dk>",
       name: "E-mail",
-      // Vi sender ALTID vores egen brandede mail (Stemplets tone og stil).
+      // Vi sender ALTID vores egen brandede mail (Alius, se emails.ts).
       // Uden Resend-noegle (lokal udvikling) logges linket i terminalen.
       sendVerificationRequest: async ({
         identifier,
@@ -72,7 +72,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             "content-type": "application/json",
           },
           body: JSON.stringify({
-            from: provider.from,
+            // Login er faelles for Alius' produkter: afsendernavnet er altid
+            // "Alius", uanset navnet i EMAIL_FROM (adressen genbruges).
+            from: aliusSender(provider.from),
             to: identifier,
             subject: mail.subject,
             html: mail.html,

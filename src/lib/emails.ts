@@ -46,119 +46,127 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
 </body></html>`;
 }
 
-/** Login-link (magic link). Bruges baade ved log ind og efter onboarding. */
-export function loginEmail(url: string): Email {
-  const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td style="border-radius:8px;background:${C.ink};">
-      <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Log ind på Stemplet</a>
-    </td></tr></table>`;
+// Login og velkomst er faelles for alle Alius-produkter (Stemplet og
+// Henvisninger), saa de baerer Alius og den nye stil: hvidt, sort, systemfont.
+const A = { bg: "#FFFFFF", ink: "#111111", muted: "#6E6E73", line: "#ECECEF", surface: "#F5F5F7" };
+const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
-  const inner = `
-    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      Her er dit login-link.
-    </p>
-    <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      Du er ét klik fra dit dashboard, hvor du følger stempler, genbesøg og indløsninger i realtid.
-    </p>
-    ${button}
-    <p style="margin:24px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:${C.slate};">
-      Klik på knappen for at komme ind. Linket virker i kort tid og kun én gang.
-    </p>
-    <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
+/** "Stemplet <login@x.dk>" -> "Alius <login@x.dk>" (kun navnet skiftes). */
+export function aliusSender(from: string | undefined): string | undefined {
+  if (!from) return from;
+  const addr = /<([^>]+)>/.exec(from)?.[1] ?? from.trim();
+  return `Alius <${addr}>`;
+}
+
+function aliusShell(preheader: string, inner: string): string {
+  return `<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<body style="margin:0;padding:0;background:${A.bg};">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${A.bg};">
+  <tr><td align="center" style="padding:44px 20px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+      <tr><td style="padding:0 0 28px;">
+        <span style="font-family:${FONT};font-size:22px;font-weight:800;letter-spacing:-.04em;color:${A.ink};">Alius</span>
+      </td></tr>
+      <tr><td>${inner}</td></tr>
+      <tr><td style="padding:32px 0 0;border-top:1px solid ${A.line};">
+        <p style="margin:20px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
+          Alius. Stemplet og Henvisninger.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+function aliusButton(url: string, label: string): string {
+  return `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+    <td style="border-radius:999px;background:${A.ink};">
+      <a href="${url}" style="display:inline-block;padding:15px 28px;font-family:${FONT};font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;">${label}</a>
+    </td></tr></table>`;
+}
+
+function aliusFallback(url: string, note: string): string {
+  return `<p style="margin:28px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};word-break:break-all;">
       Virker knappen ikke, så kopiér linket:<br>
-      <a href="${url}" style="color:${C.terracotta};">${url}</a>
+      <a href="${url}" style="color:${A.ink};">${url}</a>
     </p>
-    <p style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-      Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.
-    </p>`;
+    <p style="margin:16px 0 32px;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">${note}</p>`;
+}
+
+/** Login-link (magic link). Bruges baade ved log ind og efter oprettelse. */
+export function loginEmail(url: string): Email {
+  const inner = `
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Log ind</h1>
+    <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Du er ét klik fra dit dashboard.
+    </p>
+    ${aliusButton(url, "Log ind")}
+    ${aliusFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.")}`;
 
   const text = [
-    "Her er dit login-link.",
+    "Log ind",
     "",
-    "Du er ét klik fra dit dashboard, hvor du følger stempler, genbesøg og indløsninger.",
-    "",
-    "Log ind her (virker i kort tid og kun én gang):",
+    "Du er ét klik fra dit dashboard (linket virker i kort tid og kun én gang):",
     url,
     "",
     "Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.",
     "",
-    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+    "Alius. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return {
-    subject: "Dit login-link til Stemplet",
-    html: shell("Log ind på dit Stemplet-dashboard.", inner),
-    text,
-  };
+  return { subject: "Dit login-link til Alius", html: aliusShell("Log ind på dit dashboard.", inner), text };
 }
 
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
-// Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (dvs. lige
-// efter onboarding, hvor emailVerified endnu er null). Byder velkommen, giver et
-// tydeligt login-link og et par gode foerste skridt. Selve linket er det samme
-// magiske login-link, saa der er stadig kun een mail og eet klik.
+// Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (lige
+// efter oprettelsen, hvor emailVerified endnu er null). Samme magiske link.
 export function welcomeEmail(url: string): Email {
-  const button = `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td style="border-radius:8px;background:${C.ink};">
-      <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Log ind på dit dashboard</a>
-    </td></tr></table>`;
-
-  const tipList = [
-    "Print et skilt med din QR-kode og stil det ved kassen.",
-    "Del dit kortlink online, så kunderne kan hente kortet hjemmefra.",
-    "Tilpas farver, ikon og belønning i dashboardet, når du vil.",
-  ]
+  const steps = [
+    "Sæt linket til din side på din hjemmeside.",
+    "Hæng QR-koden op ved kassen.",
+    "Tilføj det andet produkt i dashboardet, når du er klar.",
+  ];
+  const list = steps
     .map(
       (t, i) => `<tr>
-        <td valign="top" style="padding:6px 10px 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:${C.terracotta};">${i + 1}.</td>
-        <td valign="top" style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">${t}</td>
+        <td valign="top" style="padding:7px 12px 7px 0;font-family:${FONT};font-size:15px;font-weight:700;color:${A.ink};">${i + 1}</td>
+        <td valign="top" style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:1.5;color:${A.ink};">${t}</td>
       </tr>`,
     )
     .join("");
 
   const inner = `
-    <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:19px;line-height:1.4;font-weight:600;color:${C.ink};">
-      Velkommen til Stemplet.
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen</h1>
+    <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Din butik er klar. Du logger ind uden adgangskode.
     </p>
-    <p style="margin:0 0 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      Din butik er oprettet og klar. Du logger ind uden adgangskode, bare klik herunder, så er du inde i dit dashboard.
-    </p>
-    ${button}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;background:${C.tint};border-radius:10px;">
-      <tr><td style="padding:16px 18px;">
-        <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${C.terracotta};">Kom godt fra start</p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${tipList}</table>
+    ${aliusButton(url, "Gå til dit dashboard")}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 0;background:${A.surface};border-radius:16px;">
+      <tr><td style="padding:18px 20px;">
+        <p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">Kom godt fra start</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
       </td></tr>
     </table>
-    <p style="margin:22px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};word-break:break-all;">
-      Virker knappen ikke, så kopiér linket:<br>
-      <a href="${url}" style="color:${C.terracotta};">${url}</a>
-    </p>
-    <p style="margin:16px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-      Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.
-    </p>`;
+    ${aliusFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.")}`;
 
   const text = [
-    "Velkommen til Stemplet.",
+    "Velkommen",
     "",
-    "Din butik er oprettet og klar. Du logger ind uden adgangskode, bare klik herunder:",
+    "Din butik er klar. Du logger ind uden adgangskode:",
     url,
     "",
     "Kom godt fra start:",
-    "1. Print et skilt med din QR-kode og stil det ved kassen.",
-    "2. Del dit kortlink online, så kunderne kan hente kortet hjemmefra.",
-    "3. Tilpas farver, ikon og belønning i dashboardet, når du vil.",
+    ...steps.map((t, i) => `${i + 1}. ${t}`),
     "",
     "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.",
     "",
-    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+    "Alius. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return {
-    subject: "Velkommen til Stemplet",
-    html: shell("Din butik er klar. Log ind og kom i gang.", inner),
-    text,
-  };
+  return { subject: "Velkommen til Alius", html: aliusShell("Din butik er klar. Log ind og kom i gang.", inner), text };
 }
 
 // ── Ugentlig statistik-mail ──────────────────────────────────────────

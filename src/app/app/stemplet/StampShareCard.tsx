@@ -5,18 +5,20 @@ import { useState } from "react";
 // Sådan kommer kunderne til stempelkortet: QR-koden ved kassen og linket paa
 // hjemmesiden. Instagram og Facebook aabner links i deres egen browser, hvor
 // kortet ikke kan laegges i Wallet, saa dem fraraader vi som primaer kanal.
+// Moerk flade for kontrast paa den lyse side (Alis oenske). Bruger faste farver
+// (ikke text-ink m.fl.), saa dashboardets lyse stil ikke overstyrer dem.
 export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: string }) {
   const [copied, setCopied] = useState(false);
   const shown = url.replace(/^https?:\/\//, "");
   return (
-    <section className="mb-10 grid gap-6 rounded-2xl border border-fog bg-white p-5 shadow-card sm:grid-cols-[1fr_auto] sm:items-center sm:p-6">
+    <section className="mb-10 grid gap-7 rounded-[22px] bg-[#111] p-6 text-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.5)] sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
       <div className="min-w-0">
-        <p className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Del dit stempelkort</p>
-        <p className="mt-1 text-[0.92rem] text-stone">
+        <p className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">Del dit stempelkort.</p>
+        <p className="mt-2 text-[0.98rem] text-white/65">
           Hæng QR-koden op ved kassen, og sæt linket på din hjemmeside. Kunderne henter kortet med ét tryk.
         </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <span className="min-w-0 flex-1 truncate rounded-full bg-[#f5f5f7] px-4 py-2.5 text-[0.9rem] text-ink">{shown}</span>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+          <span className="min-w-0 flex-1 truncate rounded-full bg-white/10 px-4 py-2.5 text-[0.92rem] text-white">{shown}</span>
           <span className="flex gap-2">
             <button
               type="button"
@@ -29,7 +31,7 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
                   // Kopiering afvist: linket kan stadig markeres.
                 }
               }}
-              className="min-h-11 flex-1 rounded-full bg-ink px-5 text-[0.9rem] font-[500] text-white transition-transform active:scale-[0.97] sm:flex-none"
+              className="min-h-11 flex-1 rounded-full bg-white px-5 text-[0.92rem] font-[600] text-[#111] transition-transform active:scale-[0.97] sm:flex-none"
             >
               {copied ? "Kopieret" : "Kopiér link"}
             </button>
@@ -37,32 +39,28 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
               href={url}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-5 text-[0.9rem] font-[500] text-ink hover:border-ink sm:flex-none"
+              className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-white/25 px-5 text-[0.92rem] font-[500] text-white hover:border-white sm:flex-none"
             >
               Åbn
             </a>
           </span>
         </div>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[0.88rem]">
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem]">
           {/* PDF-download (en fil, ikke en side), derfor <a download>. */}
-          <a href="/api/qr-print/a4" download className="font-[500] text-ink underline underline-offset-4">
+          <a href="/api/qr-print/a4" download className="font-[500] text-white underline underline-offset-4">
             Download QR til kassen (A4)
           </a>
-          <a href="/api/qr-print/visitkort" download className="font-[500] text-ink underline underline-offset-4">
+          <a href="/api/qr-print/visitkort" download className="font-[500] text-white underline underline-offset-4">
             Download visitkort
           </a>
         </div>
-        <p className="mt-4 text-[0.82rem] leading-relaxed text-slate">
+        <p className="mt-5 text-[0.82rem] leading-relaxed text-white/45">
           Instagram og Facebook åbner links i deres egen browser, hvor kortet ikke kan lægges i Wallet. Brug derfor
           hjemmesiden og QR-koden.
         </p>
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={qrDataUrl}
-        alt="QR-kode til dit stempelkort"
-        className="hidden h-36 w-36 rounded-xl border border-fog bg-white p-2 sm:block"
-      />
+      <img src={qrDataUrl} alt="QR-kode til dit stempelkort" className="mx-auto h-40 w-40 rounded-[18px] bg-white p-3 sm:h-44 sm:w-44" />
     </section>
   );
 }
