@@ -624,6 +624,8 @@ export function superadminMarketingSignupEmail(
 export type SuperadminSignupRequestData = {
   businessName: string;
   reward: string;
+  /** Saat, naar butikken ogsaa vil have Henvisninger. */
+  referralReward?: string | null;
   contactName: string; // navn eller "(ingen)"
   email: string;
   phone: string; // nummer eller "(ingen)"
@@ -661,14 +663,16 @@ export function superadminSignupRequestEmail(
       Ny oprettelsesanmodning.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      En butik vil gerne have et stempelkort. Lav et udkast og tag fat i dem.
+      ${d.referralReward ? "En butik vil gerne have Henvisninger. Lav et udkast, slå Henvisninger til i superadmin og tag fat i dem." : "En butik vil gerne have et stempelkort. Lav et udkast og tag fat i dem."}
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:16px 18px;">
         <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.slate};">Virksomhed</p>
         <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:700;color:${C.ink};">${esc(d.businessName)}</p>
         <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.slate};">Ønsket belønning</p>
-        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:${C.ink};">${esc(d.reward)}</p>
+        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:${C.ink};">${esc(d.reward || "(ikke angivet)")}</p>
+        ${d.referralReward ? `<p style="margin:14px 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.slate};">Henvisninger</p>
+        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:${C.ink};">${esc(d.referralReward)}</p>` : ""}
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;border-top:1px solid ${C.fog};">
           ${detailRow("Kontakt", d.contactName)}
           ${detailRow("Mail", d.email)}
@@ -682,7 +686,8 @@ export function superadminSignupRequestEmail(
     "Ny oprettelsesanmodning.",
     "",
     `Virksomhed: ${d.businessName}`,
-    `Ønsket belønning: ${d.reward}`,
+    `Ønsket belønning: ${d.reward || "(ikke angivet)"}`,
+    ...(d.referralReward ? [`Henvisninger: ${d.referralReward}`] : []),
     `Kontakt: ${d.contactName}`,
     `Mail: ${d.email}`,
     `Telefon: ${d.phone}`,
@@ -691,7 +696,7 @@ export function superadminSignupRequestEmail(
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Oprettelsesanmodning: ${d.businessName}`,
+    subject: `[Stemplet] Oprettelsesanmodning${d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
     html: shell("En butik vil gerne oprettes hos Stemplet.", inner),
     text,
   };
