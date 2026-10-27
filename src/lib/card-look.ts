@@ -49,7 +49,7 @@ export function effectiveStyle(style: string, ctx: CardLookContext, hasArtwork: 
 /** Hvorfor en knap ikke kan vaelges (null = kan vaelges). */
 export function actionUnavailableReason(action: CardAction, ctx: CardLookContext): string | null {
   if (action === "book" && !(ctx.bookingUrl && /^https?:\/\//i.test(ctx.bookingUrl))) {
-    return "Tilføj et booking-link under Henvisninger, Regler.";
+    return "Tilføj et booking-link under Regler, Henvisninger.";
   }
   if (action === "henvis" && !ctx.referralsEnabled) return "Kræver Henvisninger.";
   return null;

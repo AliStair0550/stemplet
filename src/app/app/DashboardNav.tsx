@@ -125,21 +125,42 @@ export function DashboardNav({
     </>
   );
 
-  // Kortets design: faelles for alle funktioner paa kortet.
-  const designLink = (
+  // Dit kort: designet og reglerne, faelles for alle funktioner paa kortet.
+  const cardLink = (href: string, label: string, icon: React.ReactNode) => (
     <Link
-      href="/app/kortet"
+      href={href}
       className={cn(
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-[0.88rem] transition-colors",
-        isActive("/app/kortet") ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
+        isActive(href) ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
       )}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} className="h-4 w-4" aria-hidden>
-        <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
-        <path d="M3.5 9.5h17" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" className="h-4 w-4" aria-hidden>
+        {icon}
       </svg>
-      Design
+      {label}
     </Link>
+  );
+  const designLink = (
+    <>
+      {cardLink(
+        "/app/kortet",
+        "Design",
+        <>
+          <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+          <path d="M3.5 9.5h17" />
+        </>,
+      )}
+      {cardLink(
+        "/app/regler",
+        "Regler",
+        <>
+          <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+          <circle cx="16" cy="7" r="2" />
+          <circle cx="10" cy="17" r="2" />
+        </>,
+      )}
+      <p className="mx-3 mb-1 mt-3 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Funktioner</p>
+    </>
   );
 
   const shop = shopLinks.map((l) => (
@@ -186,7 +207,7 @@ export function DashboardNav({
             </Link>
           ))}
 
-          {/* Dit kort: kortets design oeverst, derunder funktionerne paa kortet. */}
+          {/* Dit kort: design og regler oeverst, derunder funktionerne paa kortet. */}
           <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
           {designLink}
           {products}

@@ -13,8 +13,8 @@ import type { CardDesign } from "@/components/CardDesigner";
 type Result = { ok: true } | { ok: false; error: string };
 
 /**
- * Gem Kortet: butikkens udseende (farver, navn, logo, stil, eget billede og
- * knapper). Reglerne for stempler og henvisninger gemmes hos hvert produkt.
+ * Gem Design: butikkens udseende (farver, ikon, navn, logo, stil, eget billede
+ * og knapper). Reglerne for stempler og henvisninger gemmes hos hvert produkt.
  */
 export async function saveCardLook(input: {
   design: CardDesign;
@@ -50,6 +50,16 @@ export async function saveCardLook(input: {
     referralsEnabled: business.referralsEnabled,
     bookingUrl: business.bookingUrl,
   });
+
+  // Ikonet hoerer til udseendet, men gemmes paa stempelkortet (som i Wallet).
+  const card = await prisma.card.findFirst({
+    where: { businessId: business.id },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (card) {
+    await prisma.card.update({ where: { id: card.id }, data: { stampIcon: parsed.data.stampIcon } });
+  }
 
   await prisma.business.update({
     where: { id: business.id },

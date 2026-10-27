@@ -198,7 +198,7 @@ export default async function HomePage() {
             <p className="mt-0.5 text-[0.88rem] text-stone">Funktionerne ligger på det samme kort hos kunden. Tilføj dem, du vil bruge.</p>
           </div>
           {business.stampsEnabled ? (
-            <Feature href="/app/stemplet" rulesHref="/app/kort" logo={<StempletLogo className="text-[1.35rem]" />}>
+            <Feature href="/app/stemplet" rulesHref="/app/regler?f=stempler" logo={<StempletLogo className="text-[1.35rem]" />}>
               <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
               <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
               <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
@@ -207,7 +207,7 @@ export default async function HomePage() {
           {referrals ? (
             <Feature
               href="/app/henvisninger"
-              rulesHref="/app/henvisninger/indstillinger"
+              rulesHref="/app/regler?f=henvisninger"
               logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
             >
               <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
@@ -224,7 +224,7 @@ export default async function HomePage() {
           ) : null}
           {business.stampsEnabled ? null : (
             <AddFeature
-              href="/app/stemplet/tilfoej"
+              href="/app/regler"
               logo={<StempletLogo className="text-[1.35rem]" />}
               title="Tilføj Stemplet"
               text="Stempler på kortet, så kunderne kommer igen."
@@ -232,7 +232,7 @@ export default async function HomePage() {
           )}
           {business.referralsEnabled ? null : (
             <AddFeature
-              href="/app/henvisninger/tilfoej"
+              href="/app/regler"
               logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
               title="Tilføj Henvisninger"
               text="En henvisningskode på kortet, så kunderne skaffer nye kunder."

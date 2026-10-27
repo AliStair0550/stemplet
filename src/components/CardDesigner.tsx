@@ -200,8 +200,8 @@ export function CardDesigner({
   hidePreview?: boolean;
   // Hvert afsnit i sin egen kasse (Design-siden). Standard: enkle blokke.
   boxed?: boolean;
-  // Hvilke afsnit: "look" = udseende (farver, navn og logo; siden Kortet),
-  // "rules" = stempelregler (beloenning, ikon, betingelser; Stemplet, Regler).
+  // Hvilke afsnit: "look" = udseende (farver, ikon, navn og logo; Design),
+  // "rules" = stempelregler (antal, beloenning, betingelser; Regler).
   parts?: "all" | "look" | "rules";
 }) {
   const showLook = parts !== "rules";
@@ -473,9 +473,9 @@ export function CardDesigner({
         </Section>
         ) : null}
 
-        {/* Stempel-ikon */}
-        {showRules ? (
-        <Section boxed={boxed} title="Stempel-ikon" hint="Det lille ikon i hvert felt på kortet.">
+        {/* Ikon: hoerer til udseendet (stempelfelter, moenster og logo-felt). */}
+        {showLook ? (
+        <Section boxed={boxed} title="Ikon" hint="Bruges i stempelfelterne og i mønsteret på kortet.">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-2">
               {STAMP_ICONS.map((icon) => (

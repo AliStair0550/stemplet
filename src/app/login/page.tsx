@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AliusWordmark, HenvisningerLogo, StempletLogo } from "@/components/ProductLogo";
+import { AliusLogo, HenvisningerLogo, StempletLogo } from "@/components/ProductLogo";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default async function LoginPage({
   return (
     <main className="flex min-h-screen flex-col bg-white text-[#111] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 w-full max-w-[1120px] items-center px-4 sm:px-6">
-        <AliusWordmark className="text-[1.6rem]" />
+        <AliusLogo />
       </header>
       <div className="flex flex-1 items-center justify-center px-4 pb-20 sm:px-6">
         <div className="flex w-full max-w-[400px] flex-col gap-8">

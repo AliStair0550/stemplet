@@ -69,6 +69,7 @@ export async function saveReferralSettings(input: RuleInput): Promise<Result> {
   });
   revalidatePath("/app/henvisninger");
   revalidatePath("/app/henvisninger/indstillinger");
+  revalidatePath("/app/regler");
   revalidatePath(`/henvisninger/${business.slug}`);
   return { ok: true };
 }
