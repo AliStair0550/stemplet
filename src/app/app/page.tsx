@@ -101,7 +101,7 @@ function AddReferralsCard() {
     >
       <span className="flex items-center justify-between">
         <span className="opacity-50 transition-opacity group-hover:opacity-100">
-          <HenvisningerLogo className="h-[1.9rem]" />
+          <HenvisningerLogo lines className="h-[1.9rem]" />
         </span>
         <span className="flex h-8 w-8 items-center justify-center rounded-full border border-clay text-[1.1rem] leading-none text-stone transition-colors group-hover:border-ink group-hover:text-ink">
           +
@@ -182,7 +182,7 @@ export default async function HomePage() {
           </ProductCard>
         ) : null}
         {referrals ? (
-          <ProductCard href="/app/henvisninger" logo={<HenvisningerLogo className="h-[1.9rem]" />}>
+          <ProductCard href="/app/henvisninger" logo={<HenvisningerLogo lines className="h-[1.9rem]" />}>
             <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
             <Stat value={formatDkNumber(referrals.doneThisMonth)} label="nye kunder i måneden" />
             <Stat

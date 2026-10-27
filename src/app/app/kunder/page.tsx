@@ -6,13 +6,17 @@ import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { formatDkDate, formatDkNumber, relativeDk } from "@/lib/utils";
 import { normalizeReferralCode } from "@/lib/referral-code";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Kunder" };
 export const dynamic = "force-dynamic";
 
-// Kunder: alle butikkens kortholdere paa tvaers af produkterne. Stempelkunder er
-// som regel anonyme (kun et kort), henvisningskunder har navn, mobil og kode.
-// Kun laesning; handlinger sker via Scan.
+// Kunder: alle butikkens kortholdere paa tvaers af produkterne, i een oversigt.
+// Maerker viser produktet: Stemplet (har stempler eller et rent stempelkort) og
+// Henvisninger (har en henvisningskode; den gives kun ved tilmelding via
+// henvisningssiden). En kunde kan have begge. Har butikken begge produkter, kan
+// oversigten filtreres. Kun laesning; handlinger sker via Scan.
 
 const PAGE_SIZE = 50;
 
@@ -25,19 +29,29 @@ function formatPhone(p: string | null): string | null {
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; vis?: string }>;
 }) {
   const { business } = await requireBusiness();
-  const q = ((await searchParams).q ?? "").trim().slice(0, 60);
+  const sp = await searchParams;
+  const q = (sp.q ?? "").trim().slice(0, 60);
+  const both = business.stampsEnabled && business.referralsEnabled;
+  const vis = both && (sp.vis === "stemplet" || sp.vis === "henvisninger") ? sp.vis : "alle";
 
   // Butikken afgoeres af kortets skabelon, saa ogsaa stempelkunder uden
   // denormaliseret businessId kommer med.
   const scope: Prisma.CustomerCardWhereInput = { card: { businessId: business.id } };
   const digits = q.replace(/\D/g, "");
+  const product: Prisma.CustomerCardWhereInput =
+    vis === "henvisninger"
+      ? { referralCode: { not: null } }
+      : vis === "stemplet"
+        ? { OR: [{ lifetimeStamps: { gt: 0 } }, { referralCode: null }] }
+        : {};
   const where: Prisma.CustomerCardWhereInput = q
     ? {
         AND: [
           scope,
+          product,
           {
             OR: [
               { name: { contains: q, mode: "insensitive" } },
@@ -48,7 +62,7 @@ export default async function CustomersPage({
           },
         ],
       }
-    : scope;
+    : { AND: [scope, product] };
 
   const [total, cards, required] = await Promise.all([
     prisma.customerCard.count({ where: scope }),
@@ -63,6 +77,7 @@ export default async function CustomersPage({
         phone: true,
         referralCode: true,
         stamps: true,
+        lifetimeStamps: true,
         completedCount: true,
         createdAt: true,
         lastStampAt: true,
@@ -85,7 +100,32 @@ export default async function CustomersPage({
         subtitle={`${formatDkNumber(total)} ${total === 1 ? "kortholder" : "kortholdere"} i alt.`}
       />
 
+      {both ? (
+        <nav aria-label="Vis kunder" className="mb-4 inline-flex rounded-full bg-[#f5f5f7] p-1">
+          {(
+            [
+              ["alle", "Alle"],
+              ["stemplet", "Stemplet"],
+              ["henvisninger", "Henvisninger"],
+            ] as const
+          ).map(([v, label]) => (
+            <Link
+              key={v}
+              href={v === "alle" ? "/app/kunder" : `/app/kunder?vis=${v}`}
+              aria-current={vis === v ? "page" : undefined}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[0.88rem] transition-colors",
+                vis === v ? "bg-white font-[600] text-ink shadow-sm" : "text-stone hover:text-ink",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+
       <form className="mb-5 flex gap-2" role="search">
+        {vis !== "alle" ? <input type="hidden" name="vis" value={vis} /> : null}
         <input
           name="q"
           defaultValue={q}
@@ -101,7 +141,13 @@ export default async function CustomersPage({
       <Panel className="p-0">
         {cards.length === 0 ? (
           <p className="px-6 py-5 text-[0.9rem] text-stone">
-            {q ? "Ingen kunder matcher din søgning." : "Ingen kortholdere endnu."}
+            {q
+              ? "Ingen kunder matcher din søgning."
+              : vis === "stemplet"
+                ? "Ingen stempelkunder endnu."
+                : vis === "henvisninger"
+                  ? "Ingen kunder via henvisninger endnu."
+                  : "Ingen kortholdere endnu."}
           </p>
         ) : (
           <ul className="divide-y divide-fog">
@@ -113,18 +159,27 @@ export default async function CustomersPage({
                     {!c.name ? <span className="ml-2 text-[0.75rem] text-slate">#{c.serial.slice(0, 6)}</span> : null}
                   </p>
                   <p className="text-[0.76rem] text-slate">
-                    {[
-                      formatPhone(c.phone),
-                      c.referralCode,
-                      c.referredBy?.name ? `henvist af ${c.referredBy.name}` : null,
-                      `oprettet ${formatDkDate(c.createdAt)}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {[formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
                   </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
+                        <span className="font-sans font-bold tracking-[-0.03em]">Stemplet</span>
+                        <span aria-hidden className="-ml-1 h-[5px] w-[5px] rounded-full" style={{ backgroundColor: "#a6502e" }} />
+                      </span>
+                    ) : null}
+                    {c.referralCode ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#111] px-2.5 py-0.5 text-[0.74rem] text-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/henvisninger-logo-hvid.svg" alt="Henvisninger" className="h-[0.95rem] w-auto" />
+                        <span className="tracking-[0.03em] text-white/75">{c.referralCode}</span>
+                        {c.referredBy?.name ? <span className="text-white/75">· henvist af {c.referredBy.name}</span> : null}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
                 {/* Stempler kun, naar butikken har Stemplet (ikke kun Henvisninger). */}
-                {business.stampsEnabled ? (
+                {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
                   <div className="text-right text-[0.8rem] text-stone">
                     <span className="tabular-nums text-ink">
                       {c.stamps}/{required}

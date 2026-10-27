@@ -70,3 +70,15 @@ test("mail til superadmin: kun henvisninger staar i emne og tekst", () => {
   assert.match(m.subject, /\(kun Henvisninger\)/);
   assert.match(m.text, /slå Stemplet fra/);
 });
+
+import { aliusSender, loginEmail, welcomeEmail } from "../src/lib/emails";
+
+test("login og velkomst baerer Alius, ikke Stemplet", () => {
+  assert.equal(aliusSender("Stemplet <login@stemplet.alius.dk>"), "Alius <login@stemplet.alius.dk>");
+  assert.equal(aliusSender("login@alius.dk"), "Alius <login@alius.dk>");
+  for (const m of [loginEmail("https://x/l"), welcomeEmail("https://x/l")]) {
+    assert.match(m.subject, /Alius/);
+    assert.doesNotMatch(m.html + m.text, /Stemplet\. Stempelkortet/);
+    assert.match(m.html, /https:\/\/x\/l/);
+  }
+});

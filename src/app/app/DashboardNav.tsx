@@ -98,7 +98,7 @@ export function DashboardNav({
   );
   const henvisninger = showReferrals ? (
     <ProductGroup
-      logo={<HenvisningerLogo className="h-[1.35rem]" />}
+      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
       href="/app/henvisninger"
       open={inHenvisninger}
       links={HENVISNINGER_LINKS}
@@ -109,7 +109,7 @@ export function DashboardNav({
       href="/app/henvisninger/tilfoej"
       label="Tilføj Henvisninger"
       active={inHenvisninger}
-      logo={<HenvisningerLogo className="h-[1.35rem]" />}
+      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
     />
   );
   // Det aktive produkt foerst, tilvalget ("+") nedenunder.
