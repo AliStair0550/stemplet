@@ -97,7 +97,8 @@ export async function requireBusiness(): Promise<{
   const id = await activeBusinessId(userId);
   const business = id ? await findBusinessById(id) : null;
   if (!business) {
-    redirect("/login");
+    // Superadmin uden egen butik (fx hej@alius.dk): til admin, ikke i ring via login.
+    redirect(isSuperadminEmail(session.user.email) ? "/admin" : "/login");
   }
   return {
     business,

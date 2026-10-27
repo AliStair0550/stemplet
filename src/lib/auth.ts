@@ -4,6 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { aliusSender, loginEmail, welcomeEmail } from "./emails";
+import { isSuperadminEmail } from "./superadmin-emails";
+import { DEMO_SLUG } from "./demo";
 import { verifyOnboardingToken } from "./onboarding-token";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
@@ -12,10 +14,39 @@ import { verifyOnboardingToken } from "./onboarding-token";
 const baseAdapter = PrismaAdapter(prisma);
 
 // Bloker selvbetjent oprettelse: brugere oprettes kun via onboarding (/start).
-// Et magisk link til en ukendt e-mail giver dermed ingen konto.
+// Et magisk link til en ukendt e-mail giver dermed ingen konto. Undtagelse:
+// superadmin (fx hej@alius.dk), som ikke har en butik, oprettes ved foerste login.
+// En bruger skal (legacy) hoere til en butik. Superadmin knyttes til demo-
+// butikken (din egen, bag "Proev det selv"), eller en intern, stoppet butik,
+// hvis demoen ikke findes. Superadmin lander alligevel i /admin.
+async function createSuperadminUser(user: { email: string; emailVerified: Date | null; name?: string | null; image?: string | null }) {
+  const home =
+    (await prisma.business.findUnique({ where: { slug: DEMO_SLUG }, select: { id: true } })) ??
+    (await prisma.business.upsert({
+      where: { slug: "alius-intern" },
+      update: {},
+      create: { name: "Alius (intern)", slug: "alius-intern", stopped: true, stampsEnabled: false },
+      select: { id: true },
+    }));
+  return prisma.$transaction(async (tx) => {
+    const u = await tx.user.create({
+      data: {
+        email: user.email,
+        emailVerified: user.emailVerified,
+        name: user.name ?? null,
+        image: user.image ?? null,
+        businessId: home.id,
+      },
+    });
+    await tx.membership.create({ data: { userId: u.id, businessId: home.id } });
+    return u;
+  });
+}
+
 const adapter = {
   ...baseAdapter,
-  createUser: async () => {
+  createUser: async (user: Parameters<NonNullable<typeof baseAdapter.createUser>>[0]) => {
+    if (isSuperadminEmail(user.email)) return createSuperadminUser(user);
     throw new Error(
       "Selvbetjent oprettelse er slået fra. Opret din virksomhed på /start.",
     );
@@ -113,9 +144,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   callbacks: {
-    // Tillad kun eksisterende virksomhedsbrugere at logge ind.
+    // Tillad kun eksisterende virksomhedsbrugere at logge ind, samt superadmin
+    // (fx hej@alius.dk), der ikke behoever en butik; brugeren oprettes da ved
+    // foerste login.
     async signIn({ user }) {
       if (!user?.email) return false;
+      if (isSuperadminEmail(user.email)) return true;
       const existing = await prisma.user.findUnique({
         where: { email: user.email },
         select: { id: true },
