@@ -8,7 +8,7 @@
     "vercel-build": "sh scripts/vercel-build.sh",
     "start": "next start",
     "test": "node --conditions=react-server --import tsx --test tests/security.test.ts && node --import tsx --test tests/guide.test.tsx && node --import tsx --test tests/apns.test.ts && node --conditions=react-server --import tsx --test tests/billing.test.ts && node --conditions=react-server --import tsx --test tests/idempotency.test.ts && node --conditions=react-server --import tsx --test tests/stamp.test.ts && node --conditions=react-server --import tsx --test tests/wallet.test.ts && node --import tsx --test tests/sentry-scrub.test.ts && node --conditions=react-server --import tsx --test tests/marketing.test.ts && node --import tsx --test tests/card-terms.test.ts && node --conditions=react-server --import tsx --test tests/cert-monitor.test.ts && node --import tsx --test tests/csv.test.ts && node --conditions=react-server --import tsx --test tests/referral.test.ts && node --import tsx --test tests/referral-text.test.ts && node --conditions=react-server --import tsx --test tests/start-request.test.ts",
-    "test:integration": "node --conditions=react-server --import tsx --test tests/integration/locks.test.ts tests/integration/referrals.test.ts tests/integration/referral-signup.test.ts tests/integration/referral-desk.test.ts",
+    "test:integration": "node --conditions=react-server --import tsx --test tests/integration/locks.test.ts tests/integration/referrals.test.ts tests/integration/referral-signup.test.ts tests/integration/referral-desk.test.ts tests/integration/referral-onboarding.test.ts",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",

@@ -26,6 +26,7 @@ import { sendEmail } from "@/lib/send-email";
 import { superadminRecipients } from "@/lib/superadmin-emails";
 import { superadminNewBusinessEmail } from "@/lib/emails";
 import { captureServerError } from "@/lib/sentry";
+import { createReferralBusiness, ReferralOnboardingError } from "@/lib/referral-onboarding";
 import type { CardDesign } from "@/components/CardDesigner";
 
 export type CreateResult =
@@ -260,6 +261,89 @@ export async function createBusinessAction(input: {
     : undefined;
 
   return { ok: true, slug, cardUrl, qrDataUrl, loginSent, loginToken };
+}
+
+/**
+ * Selvbetjent oprettelse via Henvisninger: butikken oprettes straks med
+ * Henvisninger slaaet til (Stemplet fra) og rabatordningen som regel. Svaret
+ * giver et kortlivet login-token, saa ejeren kommer direkte ind i dashboardet.
+ */
+export async function createReferralBusinessAction(input: {
+  name: string;
+  email: string;
+  contactName?: string;
+  friendReward: string;
+  referrerReward: string;
+  acceptedTerms: boolean;
+}): Promise<{ ok: true; loginToken: string } | { ok: false; error: string; field?: "email" }> {
+  if (!input.acceptedTerms) {
+    return { ok: false, error: "Du skal acceptere betingelserne for at oprette en butik." };
+  }
+  const base = onboardingStartSchema.safeParse({ name: input.name, email: input.email });
+  if (!base.success) {
+    return { ok: false, error: base.error.issues[0]?.message ?? "Tjek felterne." };
+  }
+  const h = await headers();
+  const ip = h.get("x-real-ip")?.trim() || h.get("x-forwarded-for")?.split(",")[0]?.trim() || "ukendt";
+  if (!(await durableRateLimit("start-henvisninger", ip, 5, 3600))) {
+    return { ok: false, error: "For mange forsøg. Prøv igen om lidt." };
+  }
+
+  let created: { businessId: string; userId: string; slug: string };
+  try {
+    created = await createReferralBusiness({
+      name: base.data.name,
+      email: base.data.email,
+      friendReward: input.friendReward,
+      referrerReward: input.referrerReward,
+    });
+  } catch (e) {
+    if (e instanceof ReferralOnboardingError) {
+      return { ok: false, error: e.message, field: e.code === "EMAIL_TAKEN" ? "email" : undefined };
+    }
+    throw e;
+  }
+  const contactName = input.contactName?.trim();
+  if (contactName) {
+    await prisma.user
+      .update({ where: { id: created.userId }, data: { name: contactName.slice(0, 80) } })
+      .catch(() => {});
+  }
+
+  // Login-mail som fallback, hvis auto-login ikke lykkes (samme vej som Stemplets
+  // oprettelse). En fejl her stopper ikke oprettelsen.
+  try {
+    await signIn("resend", { email: base.data.email, redirect: false, redirectTo: "/app/henvisninger" });
+  } catch (e) {
+    const digest = (e as { digest?: string })?.digest;
+    if (!(typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))) {
+      captureServerError(e, { route: "start:henvisninger-login", extra: { slug: created.slug } });
+    }
+  }
+
+  // Besked til superadmin efter svaret, saa en mail-fejl aldrig forsinker.
+  after(async () => {
+    const recipients = superadminRecipients();
+    if (recipients.length === 0) return;
+    const mail = superadminNewBusinessEmail({
+      businessName: base.data.name,
+      slug: created.slug,
+      ownerEmail: base.data.email,
+      category: "Henvisninger (uden Stemplet)",
+      address: "(ingen)",
+      cardUrl: `${APP_URL}/henvisninger/${created.slug}`,
+      adminUrl: `${APP_URL}/admin`,
+    });
+    for (const to of recipients) {
+      try {
+        await sendEmail({ to, ...mail });
+      } catch (e) {
+        captureServerError(e, { route: "start:henvisninger-notify", extra: { slug: created.slug } });
+      }
+    }
+  });
+
+  return { ok: true, loginToken: createOnboardingToken(created.userId) };
 }
 
 // Auto-login efter oprettelse: kvitteringens "Gå til mit dashboard"-knap sender

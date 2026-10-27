@@ -33,3 +33,17 @@ export function referralShareUrl(appUrl: string, slug: string, code: string): st
 export function referralShareText(shopName: string, newCustomerReward: string): string {
   return `Jeg har en rabat til dig hos ${shopName}: ${newCustomerReward} ved dit første besøg.`;
 }
+
+/**
+ * Fortolker en beloenning skrevet som fri tekst ved oprettelsen: "150 kr.",
+ * "1.000 kr", "200,-" og "100 kr. rabat" bliver et beloeb; alt andet ("gratis
+ * vask") en behandling. Tom tekst giver null.
+ */
+export function parseRewardInput(raw: string): { type: "AMOUNT" | "SERVICE"; value: string } | null {
+  const t = raw.trim().replace(/\s+/g, " ");
+  if (!t) return null;
+  const n = t.replace(/(\d)\.(\d{3})(?!\d)/g, "$1$2");
+  const m = /^(\d{1,6})\s*(kr\.?|kroner|dkk|,-)?(\s+(i\s+)?rabat)?$/i.exec(n);
+  if (m && /^[1-9]/.test(m[1]!)) return { type: "AMOUNT", value: m[1]! };
+  return { type: "SERVICE", value: t.slice(0, 80) };
+}

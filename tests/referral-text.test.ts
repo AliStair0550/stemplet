@@ -169,3 +169,16 @@ test("hjem uden Stemplet: linjen taler om nye kunder, ikke stempler", () => {
   assert.equal(line, "I har 14 kunder. 1 ny kunde via henvisninger denne måned. 2 venter på første besøg.");
   assert.doesNotMatch(line, /stempel/i);
 });
+
+import { parseRewardInput } from "../src/lib/referral-text";
+
+test("oprettelse: beloenning som fri tekst bliver beloeb eller behandling", () => {
+  assert.deepEqual(parseRewardInput("150 kr."), { type: "AMOUNT", value: "150" });
+  assert.deepEqual(parseRewardInput("1.000 kr"), { type: "AMOUNT", value: "1000" });
+  assert.deepEqual(parseRewardInput("200,-"), { type: "AMOUNT", value: "200" });
+  assert.deepEqual(parseRewardInput("100 kr. rabat"), { type: "AMOUNT", value: "100" });
+  assert.deepEqual(parseRewardInput("75"), { type: "AMOUNT", value: "75" });
+  assert.deepEqual(parseRewardInput("gratis vask"), { type: "SERVICE", value: "gratis vask" });
+  assert.deepEqual(parseRewardInput("10 % rabat"), { type: "SERVICE", value: "10 % rabat" });
+  assert.equal(parseRewardInput("   "), null);
+});
