@@ -616,14 +616,47 @@ textarea:focus-visible {
 
 /* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden
    gentagelse; ingen konfetti for den, der har slaaet animationer fra. */
-@keyframes confetti-burst {
+/* Konfetti (Henvisninger): den ydre brik flyver (op og saa ned med tyngdekraft),
+   den midterste svajer og drejer, den inderste vender sig som papir. */
+@keyframes confetti-fly {
   0% {
-    transform: translate(-50%, -50%) rotate(0deg);
+    transform: translate(-50%, -50%);
+    animation-timing-function: cubic-bezier(0.2, 0.75, 0.35, 1);
+  }
+  28% {
+    transform: translate(calc(-50% + var(--peak-x)), calc(-50% + var(--peak-y)));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.8, 0.6);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y)));
+  }
+}
+@keyframes confetti-flutter {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(var(--sway)) rotate(calc(var(--spin) * 0.5));
+  }
+  70% {
+    transform: translateX(calc(var(--sway) * -1)) rotate(calc(var(--spin) * 0.8));
     opacity: 1;
   }
   100% {
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot));
+    transform: translateX(calc(var(--sway) * 0.5)) rotate(var(--spin));
     opacity: 0;
+  }
+}
+@keyframes confetti-flip {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(40deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(0deg);
   }
 }
 @keyframes celebrate-pop {
