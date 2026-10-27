@@ -602,3 +602,16 @@ textarea:focus-visible {
     opacity: 1;
   }
 }
+
+/* Primaer knapfarve. Terracotta som altid; inde i dashboardet (Alius-rammen med
+   Stemplet og Henvisninger) er knapperne sorte, saa siden virker samlet. */
+:root {
+  --btn-primary: #a6502e;
+  --btn-primary-hover: #8f4326;
+  --section-accent: #a6502e;
+}
+.dash-theme {
+  --btn-primary: #1c1917;
+  --btn-primary-hover: #000000;
+  --section-accent: #1c1917;
+}

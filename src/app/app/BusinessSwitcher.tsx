@@ -52,14 +52,14 @@ export function BusinessSwitcher({
   }
 
   return (
-    <div className="relative mt-1.5" ref={wrapRef}>
+    <div className="relative" ref={wrapRef}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         disabled={pending}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 rounded-md border border-fog bg-white px-2.5 py-1.5 text-left text-[0.78rem] font-[400] text-ink transition-colors hover:border-clay disabled:opacity-60"
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-clay bg-parchment px-3 py-2.5 text-left text-[0.88rem] font-[500] text-ink transition-colors hover:border-stone/40 disabled:opacity-60"
       >
         <span className="truncate">{pending ? "Skifter..." : active?.name}</span>
         <svg

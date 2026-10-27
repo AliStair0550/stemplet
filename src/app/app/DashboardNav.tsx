@@ -1,41 +1,54 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Wordmark } from "@/components/Wordmark";
 import { signOutAction } from "./actions";
 import { BusinessSwitcher } from "./BusinessSwitcher";
-import { IconStampMark } from "./icons";
+import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
 
-// "Stempel" (kassen) er dagens primaere handling og loeftes bevidst ud fra de
-// oevrige menupunkter, saa det staar tydeligt for sig selv.
-const STAMP_LINK = { href: "/app/kasse", label: "Stempel" };
+// Dashboardets ramme: eet roligt dashboard med produkterne under. Oeverst det
+// faelles (Scan, Hjem, Kunder), saa PRODUKTER med hvert sit logo og undermenu, og
+// nederst butikkens egne ting. Henvisninger vises kun for butikker med modulet.
 
-// Dagligt overblik og det kunde-vendte (kortet, deling, kampagner).
-const PRIMARY_LINKS: { href: string; label: string }[] = [
-  { href: "/app", label: "Overblik" },
-  { href: "/app/statistik", label: "Statistik" },
-  { href: "/app/kampagner", label: "Kampagner" },
+type NavLink = { href: string; label: string };
+
+const SCAN: NavLink = { href: "/app/kasse", label: "Scan" };
+const COMMON: NavLink[] = [
+  { href: "/app", label: "Hjem" },
+  { href: "/app/kunder", label: "Kunder" },
 ];
 
-// Det interne: opsaetning, design og drift af butikken.
-const INTERNAL_LINKS: { href: string; label: string }[] = [
+const STEMPLET_LINKS: NavLink[] = [
+  { href: "/app/stemplet", label: "Overblik" },
   { href: "/app/kort", label: "Design" },
-  { href: "/app/visitkort", label: "Visitkort" },
-  // "Opsætning" (/app/kom-i-gang) er skjult fra menuen for nu. Siden findes
-  // stadig paa adressen for den, der kender den.
-  { href: "/app/guide", label: "Guide til personalet" },
-  { href: "/app/indstillinger", label: "Indstillinger" },
+  { href: "/app/kampagner", label: "Kampagner" },
+  { href: "/app/statistik", label: "Statistik" },
 ];
 
-// "Integrationer" (API/webhooks) er skjult fra menuen til efter kundetesten.
-// Siden findes stadig paa /app/integrationer for den, der kender adressen.
+const HENVISNINGER_LINKS: NavLink[] = [
+  { href: "/app/henvisninger", label: "Overblik" },
+  { href: "/app/henvisninger/indstillinger", label: "Indstillinger" },
+];
+
+// "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
+// menuen; siderne findes stadig paa adressen for den, der kender den.
+const SHOP_LINKS: NavLink[] = [
+  { href: "/app/indstillinger", label: "Butik og adgang" },
+  { href: "/app/visitkort", label: "Visitkort" },
+  { href: "/app/guide", label: "Guide til personalet" },
+];
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
-const AGREEMENT_LINK = { href: "/app/aftale", label: "Pro-aftale" };
-// Henvisninger: kun for butikker med modulet slaaet til (ellers uaendret menu).
-const REFERRALS_LINK = { href: "/app/henvisninger", label: "Henvisninger" };
+const AGREEMENT_LINK: NavLink = { href: "/app/aftale", label: "Pro-aftale" };
+
+function ScanIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className={className} aria-hidden>
+      <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
+    </svg>
+  );
+}
 
 export function DashboardNav({
   businesses,
@@ -48,180 +61,222 @@ export function DashboardNav({
   showAgreement?: boolean;
   showReferrals?: boolean;
 }) {
-  const primaryLinks = showReferrals ? [...PRIMARY_LINKS, REFERRALS_LINK] : PRIMARY_LINKS;
   const pathname = usePathname();
-  // Pro-aftale hoerer til det interne (drift/konto), saa den ligger sidst i den
-  // gruppe naar butikken er varslet/har godkendt.
-  const internalLinks = showAgreement
-    ? [...INTERNAL_LINKS, AGREEMENT_LINK]
-    : INTERNAL_LINKS;
+  const [moreOpen, setMoreOpen] = useState(false);
+  const shopLinks = showAgreement ? [...SHOP_LINKS, AGREEMENT_LINK] : SHOP_LINKS;
 
+  // "Mere" lukkes, naar man navigerer.
+  useEffect(() => setMoreOpen(false), [pathname]);
+
+  // Overblik-sider matcher kun praecis; resten matcher ogsaa undersider.
+  const exact = new Set(["/app", "/app/henvisninger"]);
   const isActive = (href: string) =>
-    href === "/app" ? pathname === "/app" : pathname.startsWith(href);
+    exact.has(href) ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
+  const inHenvisninger = pathname.startsWith("/app/henvisninger");
 
-  // Mobil: rul det aktive punkt ind i midten af den vandrette menu, saa man
-  // altid kan se hvor man er (ellers kan det ligge uden for skaermen). Ruller kun
-  // selve menu-baaren (ikke siden), saa der er ingen uoenskede side-hop.
-  const mobileNavRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const nav = mobileNavRef.current;
-    if (!nav) return;
-    const active = nav.querySelector<HTMLElement>('[data-active="true"]');
-    if (!active) return;
-    const target = active.offsetLeft - nav.clientWidth / 2 + active.offsetWidth / 2;
-    nav.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
-  }, [pathname]);
+  const products = (
+    <>
+      <ProductGroup
+        logo={<StempletLogo className="text-[1.05rem]" />}
+        href="/app/stemplet"
+        open={inStemplet}
+        links={STEMPLET_LINKS}
+        isActive={isActive}
+      />
+      {showReferrals ? (
+        <ProductGroup
+          logo={<HenvisningerLogo className="h-[1.35rem]" />}
+          href="/app/henvisninger"
+          open={inHenvisninger}
+          links={HENVISNINGER_LINKS}
+          isActive={isActive}
+        />
+      ) : null}
+    </>
+  );
+
+  const shop = shopLinks.map((l) => (
+    <Link
+      key={l.href}
+      href={l.href}
+      className={cn(
+        "rounded-lg px-3 py-1.5 text-[0.8rem] transition-colors",
+        isActive(l.href) ? "text-ink" : "text-stone hover:text-ink",
+      )}
+    >
+      {l.label}
+    </Link>
+  ));
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-fog bg-sand/40 px-6 py-8 md:flex print:hidden">
-        <Wordmark />
+      {/* Desktop */}
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-white px-4 py-6 md:flex print:hidden">
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
 
-        <nav className="mt-9 flex flex-col gap-1">
-          {/* Stempel: dagens primaere handling, som en tydelig knap for sig selv */}
-          <Link
-            href={STAMP_LINK.href}
-            className={cn(
-              "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-[0.85rem] font-[400] tracking-[0.01em] transition-colors",
-              isActive(STAMP_LINK.href)
-                ? "border-terracotta bg-terracotta text-parchment shadow-[0_8px_22px_-10px_rgba(166,80,46,0.7)]"
-                : "border-terracotta/25 bg-terracotta/[0.06] text-terracotta hover:bg-terracotta/[0.11]",
-            )}
-          >
-            <IconStampMark className="h-[1.05rem] w-[1.05rem]" />
-            {STAMP_LINK.label}
-          </Link>
+        <Link
+          href={SCAN.href}
+          className={cn(
+            "mt-5 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[0.88rem] font-[500] text-parchment transition-colors",
+            isActive(SCAN.href) ? "bg-black" : "bg-ink hover:bg-black",
+          )}
+        >
+          <ScanIcon />
+          {SCAN.label}
+        </Link>
 
-          {/* Hårfin adskillelse fra Stempel til det daglige overblik */}
-          <div className="my-3 h-px bg-fog" aria-hidden />
-
-          {primaryLinks.map((l) => (
+        <nav className="mt-4 flex flex-col gap-0.5">
+          {COMMON.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-lg px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
-                isActive(l.href)
-                  ? "bg-terracotta/10 text-terracotta"
-                  : "text-stone hover:text-ink",
+                "rounded-lg px-3 py-2 text-[0.86rem] transition-colors",
+                isActive(l.href) ? "bg-sand font-[500] text-ink" : "text-stone hover:text-ink",
               )}
             >
               {l.label}
             </Link>
           ))}
 
-          {/* Kant: skiller det kunde-vendte fra det interne */}
-          <div className="my-3 h-px bg-fog" aria-hidden />
-
-          {internalLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={cn(
-                "rounded-lg px-3 py-2 text-[0.82rem] font-[300] tracking-[0.02em] transition-colors",
-                isActive(l.href)
-                  ? "bg-terracotta/10 text-terracotta"
-                  : "text-stone hover:text-ink",
-              )}
-            >
-              {l.label}
-            </Link>
-          ))}
+          <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Produkter</p>
+          {products}
         </nav>
 
-        <form action={signOutAction} className="mt-auto">
-          <button className="text-[0.72rem] font-[300] uppercase tracking-[0.12em] text-slate hover:text-ink">
-            Log ud
-          </button>
-        </form>
-      </aside>
-
-      {/* Mobile top bar */}
-      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 backdrop-blur-md md:hidden print:hidden">
-        <div className="flex items-center justify-between px-6 py-4">
-          <Wordmark />
+        <div className="mt-auto flex flex-col gap-0.5 border-t border-fog pt-4">
+          {shop}
           <form action={signOutAction}>
-            <button className="text-[0.7rem] font-[300] uppercase tracking-[0.1em] text-slate">
-              Log ud
-            </button>
+            <button className="px-3 py-1.5 text-[0.8rem] text-stone hover:text-ink">Log ud</button>
           </form>
         </div>
-        <div className="px-6 pb-3">
-          <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
-        </div>
-        <div className="relative">
-          <nav
-            ref={mobileNavRef}
-            className="no-scrollbar flex items-center gap-1.5 overflow-x-auto scroll-smooth px-4 pb-3"
+      </aside>
+
+      {/* Mobil: butik oeverst, faner i bunden */}
+      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 px-5 py-3 backdrop-blur-md md:hidden print:hidden">
+        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
+      </div>
+
+      {moreOpen ? (
+        <div className="fixed inset-x-0 bottom-[4.25rem] top-0 z-40 flex flex-col justify-end bg-ink/20 md:hidden" onClick={() => setMoreOpen(false)}>
+          <div
+            className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Stempel: loeftet ud som en tydelig knap foerst i raekken */}
+            <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Produkter</p>
+            {products}
+            <div className="mt-4 flex flex-col gap-0.5 border-t border-fog pt-3">
+              {shop}
+              <form action={signOutAction}>
+                <button className="px-3 py-1.5 text-[0.8rem] text-stone hover:text-ink">Log ud</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <nav
+        aria-label="Hovedmenu"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-fog bg-white pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
+      >
+        <TabLink href="/app" label="Hjem" active={isActive("/app")}>
+          <path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z" />
+        </TabLink>
+        <TabLink href={SCAN.href} label="Scan" active={isActive(SCAN.href)}>
+          <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
+        </TabLink>
+        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder")}>
+          <circle cx="9" cy="8" r="3.5" />
+          <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
+        </TabLink>
+        <button
+          type="button"
+          onClick={() => setMoreOpen((o) => !o)}
+          aria-expanded={moreOpen}
+          className={cn(
+            "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
+            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder"))
+              ? "font-[500] text-ink"
+              : "text-slate",
+          )}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" className="h-[1.35rem] w-[1.35rem]" aria-hidden>
+            <circle cx="5" cy="12" r="1.3" />
+            <circle cx="12" cy="12" r="1.3" />
+            <circle cx="19" cy="12" r="1.3" />
+          </svg>
+          Mere
+        </button>
+      </nav>
+    </>
+  );
+}
+
+function ProductGroup({
+  logo,
+  href,
+  open,
+  links,
+  isActive,
+}: {
+  logo: React.ReactNode;
+  href: string;
+  open: boolean;
+  links: NavLink[];
+  isActive: (href: string) => boolean;
+}) {
+  return (
+    <div className="flex flex-col">
+      <Link
+        href={href}
+        className={cn("flex items-center rounded-lg px-3 py-2 transition-colors", open ? "bg-sand" : "hover:bg-sand/60")}
+      >
+        {logo}
+      </Link>
+      {open ? (
+        <div className="mb-1 ml-3 mt-0.5 flex flex-col border-l border-fog pl-3">
+          {links.map((l) => (
             <Link
-              href={STAMP_LINK.href}
-              data-active={isActive(STAMP_LINK.href)}
+              key={l.href}
+              href={l.href}
               className={cn(
-                "flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.8rem] font-[400] transition-colors",
-                isActive(STAMP_LINK.href)
-                  ? "border-terracotta bg-terracotta text-parchment"
-                  : "border-terracotta/30 bg-terracotta/[0.08] text-terracotta",
+                "py-1.5 text-[0.82rem] transition-colors",
+                isActive(l.href) ? "font-[500] text-ink" : "text-slate hover:text-ink",
               )}
             >
-              <IconStampMark className="h-4 w-4" />
-              {STAMP_LINK.label}
+              {l.label}
             </Link>
-
-            {/* Lodret hårstreg, der skiller Stempel fra de oevrige punkter */}
-            <span
-              aria-hidden
-              className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
-            />
-
-            {primaryLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                data-active={isActive(l.href)}
-                className={cn(
-                  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
-                  isActive(l.href)
-                    ? "bg-terracotta/10 text-terracotta"
-                    : "text-stone hover:text-ink",
-                )}
-              >
-                {l.label}
-              </Link>
-            ))}
-
-            {/* Kant: skiller det kunde-vendte fra det interne */}
-            <span
-              aria-hidden
-              className="mx-0.5 h-6 w-px shrink-0 self-center bg-clay"
-            />
-
-            {internalLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                data-active={isActive(l.href)}
-                className={cn(
-                  "inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full px-3.5 text-[0.8rem] font-[300] transition-colors",
-                  isActive(l.href)
-                    ? "bg-terracotta/10 text-terracotta"
-                    : "text-stone hover:text-ink",
-                )}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-          {/* BlOd fade i hoejre kant, saa det er tydeligt at menuen kan scrolles. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-parchment to-transparent"
-          />
+          ))}
         </div>
-      </div>
-    </>
+      ) : null}
+    </div>
+  );
+}
+
+function TabLink({
+  href,
+  label,
+  active,
+  children,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
+        active ? "font-[500] text-ink" : "text-slate",
+      )}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[1.35rem] w-[1.35rem]" aria-hidden>
+        {children}
+      </svg>
+      {label}
+    </Link>
   );
 }

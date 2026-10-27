@@ -101,8 +101,8 @@ export function AddToHomeTile({ className }: { className: string }) {
         <HomeIcon />
       </span>
       <span className="min-w-0">
-        <span className="block font-[400] text-[1rem] text-ink">
-          Få Stemplet på hjemmeskærmen
+        <span className="block font-[600] text-[1rem] text-ink">
+          Tilføj til hjemmeskærm
         </span>
         <span className="mt-0.5 block font-[300] text-[0.8rem] leading-relaxed text-stone">
           {showHint ? HINT_TEXT : "Åbn dashboardet med ét tryk"}
@@ -125,7 +125,7 @@ export function AddToHomeButton() {
           </span>
           <div className="min-w-0">
             <p className="font-[400] text-[0.95rem] text-ink">
-              Få Stemplet på hjemmeskærmen
+              Tilføj til hjemmeskærm
             </p>
             <p className="font-[300] text-[0.8rem] leading-relaxed text-stone">
               Så åbner du dit dashboard med ét tryk, som en app.

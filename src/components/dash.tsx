@@ -47,7 +47,7 @@ export function SectionHeader({
       <h2 className="flex items-center gap-2.5 text-title font-[400] tracking-[0.01em] text-ink">
         <span
           aria-hidden
-          className="h-[1.05rem] w-[3px] shrink-0 rounded-full bg-terracotta"
+          className="h-[1.05rem] w-[3px] shrink-0 rounded-full bg-[var(--section-accent)]"
         />
         {title}
       </h2>

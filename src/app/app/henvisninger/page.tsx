@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { PageHeading, Panel, SectionHeader, StatTile } from "@/components/dash";
+import { Panel, SectionHeader, StatTile } from "@/components/dash";
+import { HenvisningerLogo } from "@/components/ProductLogo";
 import { btnClass } from "@/components/ui";
 import { formatDkNumber } from "@/lib/utils";
 import { getReferralOverview } from "@/lib/referral-desk";
@@ -11,6 +12,21 @@ import { ReferralList } from "./ReferralList";
 
 export const metadata: Metadata = { title: "Henvisninger" };
 export const dynamic = "force-dynamic";
+
+// Produktets logo oeverst (som Stemplet), med en valgfri handling til hoejre.
+function ReferralHeader({ action }: { action?: React.ReactNode }) {
+  return (
+    <header className="mb-8 flex items-end justify-between gap-4 border-b border-fog pb-6">
+      <div>
+        <h1>
+          <HenvisningerLogo className="h-[2.9rem] -ml-1" />
+        </h1>
+        <p className="mt-2 font-[300] text-[0.95rem] text-stone">Dine kunder anbefaler dig.</p>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </header>
+  );
+}
 
 // Fanen Henvisninger (fase 3). Kun for butikker med modulet slaaet til; ellers
 // en aegte 404, saa Stemplet-butikker aldrig ser den. Bevidst enkel: tre tal,
@@ -32,7 +48,7 @@ export default async function ReferralsPage() {
   if (!rule) {
     return (
       <>
-        <PageHeading title="Henvisninger" subtitle="Dine kunder anbefaler dig." />
+        <ReferralHeader />
         <Panel>
           <p className="text-[1.05rem] text-ink">Sæt dine belønninger op for at komme i gang.</p>
           <p className="mt-1 text-[0.88rem] text-stone">
@@ -51,7 +67,7 @@ export default async function ReferralsPage() {
 
   return (
     <>
-      <PageHeading title="Henvisninger" subtitle="Dine kunder anbefaler dig." action={settings} />
+      <ReferralHeader action={settings} />
 
       <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <StatTile label="Venter på besøg" value={formatDkNumber(overview.open)} />
@@ -73,7 +89,7 @@ export default async function ReferralsPage() {
           action={
             <a
               href="/api/henvisninger/eksport"
-              className="text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta hover:opacity-70"
+              className="text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-ink underline-offset-4 hover:underline"
             >
               Eksportér
             </a>
