@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: "Hvordan er det med GDPR?",
-    a: "Kundedata ligger i EU, og dine kunder kan være helt anonyme, et stempelkort kræver kun et kort, ikke en identitet. Der ligger både en privatlivspolitik og en databehandleraftale klar til dig.",
+    a: "Kundedata ligger i EU, og kortet kræver kun kundens navn og e-mail. Nyheder på mail får kun dem, der selv siger ja tak. Der ligger både en privatlivspolitik og en databehandleraftale klar til dig.",
   },
 ];
 

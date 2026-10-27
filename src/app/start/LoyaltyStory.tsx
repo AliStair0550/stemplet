@@ -29,7 +29,7 @@ const BEATS = [
   {
     scene: "scan" as const,
     title: "Kunden scanner den",
-    body: "Kortet lander direkte i deres Apple Wallet. Ingen app, ingen tilmelding.",
+    body: "Kortet lander direkte i deres Apple Wallet. Ingen app, kun navn og e-mail.",
   },
   {
     scene: "card" as const,

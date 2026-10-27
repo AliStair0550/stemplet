@@ -15,7 +15,7 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
       <div className="min-w-0">
         <p className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">Del dit stempelkort.</p>
         <p className="mt-2 text-[0.98rem] text-white/65">
-          Hæng QR-koden op ved kassen, og sæt linket på din hjemmeside. Kunderne henter kortet med ét tryk.
+          Hæng QR-koden op ved kassen, og sæt linket på din hjemmeside. Kunderne henter kortet på få sekunder.
         </p>
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <span className="min-w-0 flex-1 truncate rounded-full bg-white/10 px-4 py-2.5 text-[0.92rem] text-white">{shown}</span>

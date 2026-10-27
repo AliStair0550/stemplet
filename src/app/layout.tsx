@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: "%s - Stemplet",
   },
   description:
-    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på fem sekunder. Ingen app. Ingen tilmelding. Et produkt fra Alius.",
+    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Alius.",
   applicationName: "Stemplet",
   keywords: [
     "stempelkort",
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Stemplet - stempelkortet, der skaber flere gensyn",
     description:
-      "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding. Et produkt fra Alius.",
+      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail. Et produkt fra Alius.",
     url: appUrl,
     siteName: "Stemplet",
     locale: "da_DK",
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Stemplet - stempelkortet, der skaber flere gensyn",
     description:
-      "Digitalt stempelkort i Apple Wallet. Ingen app, ingen tilmelding.",
+      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail.",
   },
   icons: {
     // Nyt logo: rust prik (selve stemplet). SVG er skarp paa alle skaerme;

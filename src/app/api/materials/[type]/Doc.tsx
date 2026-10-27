@@ -106,7 +106,7 @@ export function MaterialsPdf({
             {showBrand && businessName ? <Text style={s.brand}>{businessName}</Text> : null}
             <Text style={s.head}>{headline}</Text>
             {rewardText ? <Text style={s.reward}>{rewardText}</Text> : null}
-            <Text style={s.foot}>Ingen app. Ingen tilmelding.</Text>
+            <Text style={s.foot}>Ingen app. Kun navn og e-mail.</Text>
           </View>
         </Page>
       </Document>
@@ -138,7 +138,7 @@ export function MaterialsPdf({
           <View style={styles.tile}>
             <Image src={qrDataUrl} style={styles.qr} />
           </View>
-          <Text style={styles.foot}>Ingen app. Ingen tilmelding.</Text>
+          <Text style={styles.foot}>Ingen app. Kun navn og e-mail.</Text>
         </View>
       </Page>
     </Document>

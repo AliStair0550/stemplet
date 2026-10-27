@@ -40,7 +40,7 @@ export default function Footer() {
               </p>
               <p className="text-[0.95rem] leading-[1.7] text-parchment/65">
                 Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
-                hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
+                hånden i Apple Wallet. Ingen app. Kun navn og e-mail. Indsigt i
                 statistik og købsmønstre.
               </p>
             </div>

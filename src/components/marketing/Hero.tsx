@@ -31,7 +31,7 @@ export default function Hero() {
           <div className="min-w-0 animate-fade-up delay-200 md:col-start-1 md:row-start-2">
             <p className="max-w-md text-[1.05rem] leading-[1.6] text-taupe">
               Den klassiske loyalitetsidé får nu et digitalt hjem. Altid ved
-              hånden i Apple Wallet. Ingen app. Ingen tilmelding. Indsigt i
+              hånden i Apple Wallet. Ingen app. Kun navn og e-mail. Indsigt i
               statistik og købsmønstre.
             </p>
             <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">

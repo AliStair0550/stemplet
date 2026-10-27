@@ -235,7 +235,7 @@ export function GuideContent({ data }: { data: GuideData }) {
           <div className="flex flex-col gap-4">
             <QA
               q="Kunden har ikke et kort endnu"
-              a="Bed kunden scanne skiltet med QR ved disken. Det tager fem sekunder at oprette kortet, og bagefter viser de bare kortet til dig."
+              a="Bed kunden scanne skiltet med QR ved disken. Kunden skriver navn og e-mail, og så er kortet oprettet, og bagefter viser de bare kortet til dig."
             />
             <QA
               q="Kunden siger jeg fik ikke stempel"
