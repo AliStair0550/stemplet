@@ -4,16 +4,15 @@ import { HenvisningerLogo } from "@/components/ProductLogo";
 import { Reveal } from "@/components/henvisninger-site/Reveal";
 import { Play } from "@/components/henvisninger-site/Play";
 import { Calculator } from "@/components/henvisninger-site/Calculator";
-import { HandTick, Note, Scribble, hand } from "@/components/henvisninger-site/Hand";
+import { Note, Scribble, hand } from "@/components/henvisninger-site/Hand";
 import {
-  CodeScreen,
   DeskScene,
   FriendScene,
+  LinkScreen,
   MessageScene,
   NotifyScene,
   Phone,
   ShareScene,
-  WalletScene,
 } from "@/components/henvisninger-site/Screens";
 import "./forside.css";
 
@@ -28,12 +27,12 @@ const START = "/start?produkt=henvisninger";
 export const metadata: Metadata = {
   title: { absolute: "Henvisninger: få flere kunder via dine kunder" },
   description:
-    "Henvisningsprogram til frisører, klinikker og saloner. Dine kunder deler en kode, vennen får rabat ved første besøg, og du krydser af ved disken. Virker ved siden af Planway og Bookio.",
+    "Henvisningsprogram til frisører, klinikker og saloner. Dine kunder deler et link, vennen får rabat ved første besøg, og du krydser af ved disken. Virker ved siden af Planway og Bookio.",
   alternates: { canonical: "/henvisninger" },
   openGraph: {
     title: "Henvisninger: få flere kunder via dine kunder",
     description:
-      "Dine kunder anbefaler dig allerede. Med Henvisninger får du noget ud af det. Gratis op til 100 kortholdere.",
+      "Motivér dine kunder til at henvise dig, og få flere nye kunder. Gratis op til 100 kortholdere.",
     type: "website",
     locale: "da_DK",
   },
@@ -46,7 +45,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web, iOS",
   description:
-    "Henvisninger til frisører og klinikker: kunden deler en kode, vennen får rabat ved første besøg, og kunden får en belønning, når vennen har været der.",
+    "Henvisninger til frisører og klinikker: kunden deler et link, vennen får rabat ved første besøg, og kunden får en belønning, når vennen har været der.",
   inLanguage: "da-DK",
   offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },
   publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
@@ -99,6 +98,16 @@ function H2({ children, className }: { children: React.ReactNode; className?: st
   );
 }
 
+/** Logoet, der staar paa to haandtegnede linjer (som et ord skrevet paa papir). */
+function LogoOnLine({ className, tone = "ink" }: { className?: string; tone?: "ink" | "light" }) {
+  return (
+    <span className={`relative inline-block pb-[0.32em] ${tone === "light" ? "text-white" : "text-[#111]"}`}>
+      <HenvisningerLogo tone={tone} className={className} />
+      <Scribble className="absolute bottom-0 left-[-4%] h-[0.42em] w-[108%]" />
+    </span>
+  );
+}
+
 /** Et ord i haandskrift midt i en overskrift. */
 function Hand({ children }: { children: React.ReactNode }) {
   return (
@@ -109,9 +118,9 @@ function Hand({ children }: { children: React.ReactNode }) {
 }
 
 const STEPS = [
-  { scene: <ShareScene />, title: "Kunden deler sin kode." },
+  { scene: <ShareScene />, title: "Kunden deler sit link." },
   { scene: <MessageScene />, title: "Vennen får rabat." },
-  { scene: <NotifyScene />, title: "Kunden får sin belønning.", buzz: true },
+  { scene: <NotifyScene />, title: "Kunden får sin belønning.", buzz: true, light: true },
 ];
 
 const BOOKING = ["Planway", "Bookio", "Treatwell", "Booksy", "Fresha", "Papirkalenderen"];
@@ -124,7 +133,7 @@ export default function HenvisningerPage() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
           <Link href="/henvisninger" aria-label="Henvisninger, til forsiden">
-            <HenvisningerLogo className="h-[34px]" />
+            <LogoOnLine className="h-[30px] sm:h-[34px]" />
           </Link>
           <nav className="flex items-center gap-5 text-[15px]">
             <Link href="/login" className="hidden text-[#111]/60 hover:text-[#111] sm:inline">
@@ -145,31 +154,26 @@ export default function HenvisningerPage() {
         <section className="overflow-hidden bg-white">
           <div className="mx-auto grid max-w-[1120px] items-center gap-16 px-4 pb-24 pt-12 sm:px-6 md:grid-cols-[1.15fr_1fr] md:pb-[140px] md:pt-20">
             <Play className="text-center md:text-left">
-              <h1 className="text-[52px] font-bold leading-[0.98] tracking-[-0.045em] sm:text-[68px] lg:text-[84px]">
-                Dine kunder
-                <br />
+              <h1 className="text-[40px] font-bold leading-[1.02] tracking-[-0.04em] sm:text-[52px] lg:text-[64px]">
+                Motivér dine kunder til at{" "}
                 <Hand>
-                  anbefaler
-                  <Scribble className="absolute -bottom-[0.06em] left-[-0.05em] h-[0.18em] w-[105%]" />
-                </Hand>
-                <br />
-                dig allerede.
+                  henvise
+                  <Scribble className="absolute -bottom-[0.06em] left-[-0.05em] h-[0.18em] w-[110%]" />
+                </Hand>{" "}
+                dig.
               </h1>
-              <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55 md:text-[26px]">
-                Nu får du noget ud af det.
+              <p className="mt-5 text-[20px] font-medium tracking-[-0.01em] text-[#111]/55 md:text-[24px]">
+                Få flere nye kunder.
               </p>
-              <div className="mt-10 flex flex-col items-center gap-4 md:items-start">
+              <div className="mt-9 flex flex-col items-center gap-3 md:items-start">
                 <CTA />
-                <p className="flex items-center gap-2 text-[15px] text-[#111]/60">
-                  <HandTick className="h-5 w-5 text-[#111]" />
-                  Gratis op til 100 kortholdere
-                </p>
+                <p className="text-[15px] text-[#111]/55">Gratis op til 100 kortholdere</p>
               </div>
             </Play>
             <Play className="relative mx-auto h-[560px] w-[320px] sm:w-[380px]">
               <div className="absolute left-0 top-10 hidden origin-bottom-left -rotate-6 sm:block">
                 <Phone>
-                  <CodeScreen />
+                  <LinkScreen />
                 </Phone>
               </div>
               <div className="absolute inset-x-0 top-0 flex justify-center sm:left-auto sm:right-0">
@@ -181,7 +185,7 @@ export default function HenvisningerPage() {
                 Emma er ny kunde
               </Note>
               <Note arrow="right" className="absolute -left-40 bottom-6 hidden lg:block xl:-left-44" rotate={-8}>
-                Saras kode
+                Saras link
               </Note>
             </Play>
           </div>
@@ -196,7 +200,9 @@ export default function HenvisningerPage() {
             {STEPS.map((s, i) => (
               <li key={s.title} className="flex flex-col items-center text-center">
                 <Play>
-                  <Phone className={`ring-1 ring-white/15 ${s.buzz ? "hv-buzz" : ""}`}>{s.scene}</Phone>
+                  <Phone tone={s.light ? "light" : "dark"} className={s.buzz ? "hv-buzz" : undefined}>
+                    {s.scene}
+                  </Phone>
                 </Play>
                 <p className={`${hand.className} mt-8 text-[44px] leading-none`}>{i + 1}</p>
                 <p className="mt-2 text-[22px] font-semibold tracking-[-0.02em]">{s.title}</p>
@@ -205,29 +211,8 @@ export default function HenvisningerPage() {
           </ol>
         </Section>
 
-        {/* Wallet */}
-        <Section>
-          <div className="grid items-center gap-14 md:grid-cols-2 md:gap-16">
-            <div className="text-center md:text-left">
-              <H2>
-                Koden bor i <Hand>Wallet.</Hand>
-              </H2>
-              <p className="mt-5 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">Kortet opdaterer sig selv.</p>
-            </div>
-            <Play className="relative">
-              <WalletScene />
-              <Note arrow="down-left" className="absolute -top-16 right-0 hidden text-right sm:block md:-right-6" rotate={5}>
-                nyt stempel
-              </Note>
-              <Note arrow="left" className="absolute -bottom-6 -right-4 hidden sm:block lg:-right-28" rotate={-5}>
-                og en belønning
-              </Note>
-            </Play>
-          </div>
-        </Section>
-
         {/* Disken */}
-        <Section className="border-t border-[#111]/10">
+        <Section>
           <H2 className="text-center">
             <Hand>Ét</Hand> tryk ved disken.
           </H2>
@@ -291,7 +276,9 @@ export default function HenvisningerPage() {
         {/* Afslutning */}
         <section className="bg-[#111] text-white">
           <Reveal className="mx-auto flex max-w-[760px] flex-col items-center px-4 py-24 text-center sm:px-6 md:py-[160px]">
-            <HenvisningerLogo tone="light" className="h-[52px] md:h-[68px]" />
+            <span className="text-[52px] md:text-[68px]">
+              <LogoOnLine tone="light" className="h-[52px] md:h-[68px]" />
+            </span>
             <h2 className="mt-10 text-[40px] font-bold leading-[1.02] tracking-[-0.04em] md:text-[64px]">
               Lad dine kunder <Hand>gøre</Hand> arbejdet.
             </h2>
@@ -305,7 +292,11 @@ export default function HenvisningerPage() {
       <footer className="bg-[#111] text-white/55">
         <div className="mx-auto flex max-w-[1120px] flex-col gap-6 border-t border-white/10 px-4 py-10 text-[13px] sm:px-6 md:flex-row md:items-center md:justify-between">
           <p>
-            Lavet af Alius. Vi laver også{" "}
+            Lavet af{" "}
+            <a href="https://alius.dk" className="text-white underline-offset-4 hover:underline">
+              Alius
+            </a>
+            . Vi laver også{" "}
             <Link href="/" className="text-white underline-offset-4 hover:underline">
               Stemplet
             </Link>
