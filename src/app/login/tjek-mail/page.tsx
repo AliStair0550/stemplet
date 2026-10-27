@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AliusWordmark } from "@/components/ProductLogo";
+import { AliusLogo } from "@/components/ProductLogo";
 
 // Forbigaaende kvitteringsside uden SEO-vaerdi. Crawlbar (ikke i robots-
 // disallow), saa Google ser noindex og holder den ude af indekset.
@@ -15,7 +15,7 @@ export default function CheckMailPage() {
   return (
     <main className="flex min-h-screen flex-col bg-white text-[#111] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 w-full max-w-[1120px] items-center px-4 sm:px-6">
-        <AliusWordmark className="text-[1.6rem]" />
+        <AliusLogo />
       </header>
       <div className="flex flex-1 items-center justify-center px-4 pb-20 sm:px-6">
         <div className="flex w-full max-w-[400px] flex-col items-start gap-5">

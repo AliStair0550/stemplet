@@ -40,7 +40,7 @@ export default async function KortPage() {
     <>
       <PageHeading
         title="Regler"
-        subtitle="Antal stempler, belønningen og betingelser. Udseendet laver du under Kortet."
+        subtitle="Antal stempler, belønningen og betingelser. Udseendet laver du under Design."
       />
       <KortEditor
         initial={initial}

@@ -63,13 +63,8 @@ export function HenvisningerLogo({
 }
 
 /** Alius: den faelles konto (login og mails) over Stemplet og Henvisninger. */
-export function AliusWordmark({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn("inline-block font-extrabold leading-none tracking-[-0.045em] text-[#111]", className)}
-      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, system-ui, sans-serif' }}
-    >
-      Alius
-    </span>
-  );
+export function AliusLogo({ className }: { className?: string }) {
+  // Alius' haandtegnede logo (public/alius-logo.svg), fx paa login.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/alius-logo.svg" alt="Alius" width={268} height={90} className={cn("h-7 w-auto", className)} />;
 }

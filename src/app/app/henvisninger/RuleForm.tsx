@@ -136,10 +136,13 @@ export function RuleForm({
   initial,
   pageUrl,
   isNew,
+  afterCreate = "/app/henvisninger",
 }: {
   initial: Form;
   pageUrl: string;
   isNew: boolean;
+  /** Hvor man sendes hen, naar reglen er gemt foerste gang. */
+  afterCreate?: string;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<Form>(initial);
@@ -164,7 +167,7 @@ export function RuleForm({
           const res = await saveReferralSettings(form as RuleInput);
           if (res.ok) {
             setNote({ ok: true, text: "Gemt. Kundesiden er opdateret." });
-            if (isNew) router.push("/app/henvisninger");
+            if (isNew) router.push(afterCreate);
           } else {
             setNote({ ok: false, text: res.error });
           }

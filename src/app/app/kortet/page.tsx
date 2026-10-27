@@ -8,11 +8,11 @@ import { effectiveStyle, normalizeActions, suggestedActions, type CardLookContex
 import { rewardPhrase } from "@/lib/referral-text";
 import { KortetEditor } from "./KortetEditor";
 
-export const metadata: Metadata = { title: "Design af dit kort" };
+export const metadata: Metadata = { title: "Design" };
 export const dynamic = "force-dynamic";
 
-// Kortet: det faelles kortdesign for alle butikkens produkter. Reglerne for
-// stempler og henvisninger ligger under hvert produkt.
+// Design: det faelles kortdesign for alle funktioner paa kortet. Hvad kortet
+// kan (stempler, henvisninger og deres regler), ligger under Regler.
 export default async function KortetPage() {
   const { business } = await requireBusiness();
   const [card, rule] = await Promise.all([
@@ -42,8 +42,8 @@ export default async function KortetPage() {
   return (
     <>
       <PageHeading
-        title="Design af dit kort"
-        subtitle="Kortet i kundernes Apple Wallet. Det samme kort bærer alle dine funktioner, fx stempler og henvisninger."
+        title="Design"
+        subtitle="Sådan ser dit kort ud i kundernes Apple Wallet. Hvad kortet kan, vælger du under Regler."
       />
       <KortetEditor
         initial={initial}
