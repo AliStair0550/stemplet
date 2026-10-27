@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 // Sådan kommer kunderne til stempelkortet: QR-koden ved kassen og linket paa
@@ -46,10 +47,10 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[0.9rem]">
+          <Link href="/app/plakat" className="font-[500] text-white underline underline-offset-4">
+            Lav en plakat
+          </Link>
           {/* PDF-download (en fil, ikke en side), derfor <a download>. */}
-          <a href="/api/qr-print/a4" download className="font-[500] text-white underline underline-offset-4">
-            Download QR til kassen (A4)
-          </a>
           <a href="/api/qr-print/visitkort" download className="font-[500] text-white underline underline-offset-4">
             Download visitkort
           </a>

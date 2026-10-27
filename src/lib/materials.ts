@@ -22,3 +22,23 @@ export function headlineFromParam(v: string | null): string {
   const t = (v ?? "").trim().slice(0, MATERIAL_HEADLINE_MAX);
   return t || DEFAULT_MATERIAL_HEADLINE;
 }
+
+// Plakatens fokus: hent kortet (stempler) eller henvis en ven (henvisninger).
+export type PosterFocus = "kort" | "henvis";
+
+export const REFERRAL_HEADLINES = [
+  "Henvis en ven",
+  "Giv en ven rabat",
+  "Del os med en ven",
+] as const;
+
+/** Fokus ud fra query'en og butikkens funktioner (uden stempler altid henvis). */
+export function focusFromParam(v: string | null, b: { stampsEnabled: boolean; referralsEnabled: boolean }): PosterFocus {
+  if (!b.stampsEnabled) return "henvis";
+  return v === "henvis" && b.referralsEnabled ? "henvis" : "kort";
+}
+
+/** Linjen under QR-koden. */
+export function posterFootline(focus: PosterFocus): string {
+  return focus === "henvis" ? "Scan, og få dit eget link at dele." : "Ingen app. Kun navn og e-mail.";
+}

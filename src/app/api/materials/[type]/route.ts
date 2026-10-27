@@ -10,7 +10,9 @@ import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { buildStripImages } from "@/lib/wallet/strip";
 import { isStampIcon, contrastRatio } from "@/lib/brand";
-import { headlineFromParam } from "@/lib/materials";
+import { headlineFromParam, focusFromParam, posterFootline } from "@/lib/materials";
+import { cardShortName, claimCta } from "@/lib/card-name";
+import { rewardPhrase } from "@/lib/referral-text";
 import { MaterialsPdf, type MaterialTier } from "./Doc";
 
 export const runtime = "nodejs";
@@ -43,8 +45,12 @@ const FORMATS: Record<
   visitkort: { pageSize: "A7", tier: "xs", file: "visitkort" },
 };
 
+// Afslut en saetning med punktum, men ikke to ("100 kr." + ".").
+const sentence = (t: string) => (t.endsWith(".") ? t : `${t}.`);
+
 const withCard = {
   cards: { take: 1, orderBy: { createdAt: "asc" as const } },
+  referralRule: true,
 };
 
 export async function GET(
@@ -89,18 +95,31 @@ export async function GET(
     return new Response("Ikke fundet.", { status: slug ? 404 : 401 });
   }
 
-  const cardUrl = `${APP_URL}/k/${business.slug}`;
+  const sp = req.nextUrl.searchParams;
+  // Fokus: hent kortet (QR til /k) eller henvis en ven (QR til henvisningssiden).
+  const focus = focusFromParam(sp.get("fokus"), business);
+  const cardUrl = focus === "henvis" ? `${APP_URL}/henvisninger/${business.slug}` : `${APP_URL}/k/${business.slug}`;
   const card = business.cards[0];
+  const rule = business.referralRule;
   const required = card?.stampsRequired ?? 10;
   const stampIcon =
     card && isStampIcon(card.stampIcon) ? card.stampIcon : "coffee";
 
   // Valgmuligheder (query): navn/logo, baggrund, overskrift, stempel-gitter.
-  const sp = req.nextUrl.searchParams;
   const showBrand = sp.get("navn") === "1";
   const light = sp.get("bg") === "lys";
-  const showGridOpt = sp.get("stempler") !== "0";
-  const headline = headlineFromParam(sp.get("titel"));
+  // Eget billede fra Design som baggrund (kun naar butikken har et).
+  const photo = sp.get("bg") === "billede" && business.cardArtwork ? business.cardArtwork : null;
+  const showGridOpt = sp.get("stempler") !== "0" && focus === "kort";
+  const fallbackHeadline =
+    focus === "henvis" ? "Henvis en ven" : claimCta(cardShortName(business));
+  const headline = sp.get("titel")?.trim() ? headlineFromParam(sp.get("titel")) : fallbackHeadline;
+  const rewardLine =
+    focus === "henvis"
+      ? rule
+        ? `${sentence(`Din ven får ${rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue)}`)} ${sentence(`Du får ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`)}`
+        : ""
+      : (card?.rewardText ?? "");
 
   // Oploeste side-farver. Farvet: kortets egne farver. Lys: blaeksparende
   // parchment med en laesbar moerk tekst (kortets farve hvis den staar klart paa
@@ -108,7 +127,9 @@ export async function GET(
   const LIGHT_BG = "#FAF8F4";
   const brandReadsOnLight = contrastRatio(business.primaryColor, LIGHT_BG) >= 3.2;
   const pageBg = light ? LIGHT_BG : business.primaryColor;
-  const pageFg = light
+  const pageFg = photo
+    ? business.textColor
+    : light
     ? brandReadsOnLight
       ? business.primaryColor
       : "#1C1917"
@@ -149,7 +170,9 @@ export async function GET(
   const element = MaterialsPdf({
     businessName: business.name,
     qrDataUrl,
-    rewardText: card?.rewardText ?? "",
+    rewardText: rewardLine,
+    footline: posterFootline(focus),
+    photo,
     logoUrl: business.logoUrl,
     pageSize: fmt.pageSize,
     tier: fmt.tier,
@@ -166,7 +189,7 @@ export async function GET(
   return new Response(new Uint8Array(buffer), {
     headers: {
       "content-type": "application/pdf",
-      "content-disposition": `inline; filename="stemplet-${fmt.file}.pdf"`,
+      "content-disposition": `inline; filename="${business.slug}-${focus === "henvis" ? "henvis" : "kort"}-${fmt.file}.pdf"`,
     },
   });
 }

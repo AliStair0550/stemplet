@@ -9,6 +9,7 @@ import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
 import { APP_URL } from "@/lib/env";
+import { AddToHomeButton } from "./AddToHomeButton";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -241,6 +242,18 @@ export default async function HomePage() {
           <p className="px-1 pt-1 text-[0.8rem] text-slate">Flere funktioner er på vej. De lægges på det samme kort.</p>
         </div>
       </section>
+
+      {/* Dashboardet som app paa hjemmeskaermen (skjules, naar det allerede er). */}
+      <div className="mb-12">
+        <AddToHomeButton
+          title="Tilføj Alius til hjemmeskærmen"
+          text="Så åbner du dit dashboard med ét tryk, som en app."
+          icon={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/app-icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-[10px]" />
+          }
+        />
+      </div>
 
       <section>
         <SectionHeader title="Seneste aktivitet" />

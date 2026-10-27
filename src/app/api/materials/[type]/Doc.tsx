@@ -15,6 +15,15 @@ export type MaterialTier = "lg" | "md" | "sm" | "xs";
 
 type PageSize = "A4" | "A5" | "A6" | "A7" | [number, number];
 
+// Sidemaal i punkter. Alt indhold ligger i EEN absolut, side-stor container, og
+// Page faar kun en punkt-tuple som stoerrelse: ellers udleder react-pdf sidens
+// hoejde af indholdet (A4 blev fx 825 i stedet for 842 punkter hoej).
+const PAGE_PT: Record<"A4" | "A5" | "A6", { w: number; h: number }> = {
+  A4: { w: 595.28, h: 841.89 },
+  A5: { w: 419.53, h: 595.28 },
+  A6: { w: 297.64, h: 419.53 },
+};
+
 // Lodrette skilte (A4/A5/A6): samme opbygning, skaleret pr. stoerrelse.
 const TIERS: Record<
   "lg" | "md" | "sm",
@@ -59,6 +68,10 @@ export function MaterialsPdf({
   // Transparent PNG af det tomme stempel-gitter (samme ikoner som kortet).
   stampGrid,
   stampAspect,
+  // Linjen under QR-koden (afhaenger af plakatens fokus).
+  footline,
+  // Butikkens eget billede (data-URI) som baggrund, toned i butikkens farve.
+  photo = null,
 }: {
   businessName: string;
   qrDataUrl: string;
@@ -73,6 +86,8 @@ export function MaterialsPdf({
   showBrand: boolean;
   stampGrid: string | null;
   stampAspect: number;
+  footline: string;
+  photo?: string | null;
 }) {
   const brand =
     showBrand && logoUrl ? (
@@ -106,7 +121,7 @@ export function MaterialsPdf({
             {showBrand && businessName ? <Text style={s.brand}>{businessName}</Text> : null}
             <Text style={s.head}>{headline}</Text>
             {rewardText ? <Text style={s.reward}>{rewardText}</Text> : null}
-            <Text style={s.foot}>Ingen app. Kun navn og e-mail.</Text>
+            <Text style={s.foot}>{footline}</Text>
           </View>
         </Page>
       </Document>
@@ -114,10 +129,12 @@ export function MaterialsPdf({
   }
 
   const t = TIERS[tier];
+  const dims = PAGE_PT[typeof pageSize === "string" && pageSize in PAGE_PT ? (pageSize as "A4" | "A5" | "A6") : "A4"];
+  const full = { position: "absolute" as const, top: 0, left: 0, width: dims.w, height: dims.h };
   const showGrid = t.grid > 0 && !!stampGrid;
   const styles = StyleSheet.create({
-    page: { backgroundColor: pageBg, color: pageFg, paddingVertical: t.padV, paddingHorizontal: t.padH, fontFamily: FONT },
-    inner: { alignItems: "center", textAlign: "center" },
+    page: { backgroundColor: pageBg, color: pageFg, fontFamily: FONT },
+    inner: { ...full, paddingVertical: t.padV, paddingHorizontal: t.padH, alignItems: "center", justifyContent: "center", textAlign: "center" },
     brand: { marginBottom: t.brandMb, alignItems: "center" },
     head: { fontSize: t.head, fontWeight: 700, marginBottom: t.headMb, lineHeight: 1.15, color: pageFg },
     grid: { width: t.grid, height: t.grid / stampAspect, marginBottom: t.gridMb },
@@ -129,7 +146,10 @@ export function MaterialsPdf({
 
   return (
     <Document>
-      <Page size={pageSize} style={styles.page} wrap={false}>
+      <Page size={[dims.w, dims.h]} style={styles.page}>
+        <View style={full}>
+          {photo ? <Image src={photo} style={{ ...full, objectFit: "cover" }} /> : null}
+          {photo ? <View style={{ ...full, backgroundColor: pageBg, opacity: 0.55 }} /> : null}
         <View style={styles.inner}>
           {brand ? <View style={styles.brand}>{brand}</View> : null}
           <Text style={styles.head}>{headline}</Text>
@@ -138,7 +158,8 @@ export function MaterialsPdf({
           <View style={styles.tile}>
             <Image src={qrDataUrl} style={styles.qr} />
           </View>
-          <Text style={styles.foot}>Ingen app. Kun navn og e-mail.</Text>
+          <Text style={styles.foot}>{footline}</Text>
+        </View>
         </View>
       </Page>
     </Document>
