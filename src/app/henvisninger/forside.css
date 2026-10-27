@@ -14,7 +14,6 @@
 .hv-toast,
 .hv-burst,
 .hv-cursor,
-.hv-owed-new,
 .hv-count-new {
   opacity: 0;
 }
@@ -266,67 +265,6 @@
   36%,
   100% {
     transform: rotate(0);
-  }
-}
-
-/* Wallet-kortet: nyt stempel og ny beloenning (6 s) */
-.hv-stamp {
-  animation: hv-stamp 6s infinite;
-}
-@keyframes hv-stamp {
-  0%,
-  14% {
-    transform: scale(0);
-    opacity: 0;
-    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  22%,
-  94% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-.hv-owed-old {
-  animation: hv-owed-old 6s infinite;
-}
-.hv-owed-new {
-  animation: hv-owed-new 6s infinite;
-}
-@keyframes hv-owed-old {
-  0%,
-  44% {
-    opacity: 1;
-    transform: none;
-  }
-  50%,
-  94% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes hv-owed-new {
-  0%,
-  46% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  52%,
-  92% {
-    opacity: 1;
-    transform: none;
-  }
-  98%,
-  100% {
-    opacity: 0;
-    transform: none;
   }
 }
 
