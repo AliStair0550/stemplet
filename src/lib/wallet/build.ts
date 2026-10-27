@@ -4,6 +4,7 @@ import { prisma } from "../prisma";
 import { PLAN_LIMITS } from "../plans";
 import { cardTitle } from "../brand";
 import { buildPass } from "./pass";
+import { loadReferralPassInfo } from "../referral-wallet";
 
 /** Loader kundekort med alt, Wallet-passet skal bruge. */
 export function loadCCForWallet(serial: string) {
@@ -15,8 +16,10 @@ export function loadCCForWallet(serial: string) {
 
 type LoadedCC = NonNullable<Awaited<ReturnType<typeof loadCCForWallet>>>;
 
-export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
+export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
   const b = cc.card.business;
+  // Henvisninger (null for et rent stempelkort, som saa bygges praecis som foer).
+  const referral = await loadReferralPassInfo(cc);
   return buildPass({
     serial: cc.serial,
     authToken: cc.authToken,
@@ -35,6 +38,7 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     showPoweredBy: PLAN_LIMITS[b.plan].showPoweredBy,
     latitude: b.latitude,
     longitude: b.longitude,
+    referral,
   });
 }
 

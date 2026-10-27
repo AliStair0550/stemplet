@@ -64,3 +64,63 @@ test("kassesoegning: navn med bindestreg forveksles ikke med en kode", () => {
   assert.deepEqual(classifyDeskQuery("Anne-Bo"), { kind: "name", value: "Anne-Bo" });
   assert.deepEqual(classifyDeskQuery("Ida-Lis"), { kind: "name", value: "Ida-Lis" });
 });
+
+// ── Wallet-felter (fase 4) ───────────────────────────────────────────
+
+import {
+  owedLabel,
+  referralFrontFields,
+  referralBackFields,
+  type ReferralPassInfo,
+} from "../src/lib/wallet/referral-fields";
+
+const info = (over: Partial<ReferralPassInfo> = {}): ReferralPassInfo => ({
+  code: "SARA-K8",
+  shareUrl: "https://stemplet.alius.dk/henvisninger/sara-salon?k=SARA-K8",
+  pageUrl: "https://stemplet.alius.dk/henvisninger/sara-salon",
+  termsLine: "Gælder ved første besøg over 300 kr.",
+  referralsDone: 0,
+  rewards: [],
+  announce: false,
+  ...over,
+});
+
+test("wallet: til gode lægger beløb sammen, ellers behandling eller antal", () => {
+  assert.equal(owedLabel([]), "Intet endnu");
+  assert.equal(
+    owedLabel([{ type: "AMOUNT", value: "100" }, { type: "AMOUNT", value: "50" }]),
+    `150${NBSP}kr.`,
+  );
+  assert.equal(owedLabel([{ type: "SERVICE", value: "Gratis klip" }]), "Gratis klip");
+  assert.equal(
+    owedLabel([{ type: "SERVICE", value: "Gratis klip" }, { type: "AMOUNT", value: "100" }]),
+    "2 belønninger",
+  );
+});
+
+test("wallet: forsiden viser kode og til gode, altid begge felter", () => {
+  const f = referralFrontFields(info());
+  assert.deepEqual(f.map((x) => x.key), ["ref-code", "ref-owed"]);
+  assert.equal(f[0]!.value, "SARA-K8");
+  assert.equal(f[1]!.value, "Intet endnu");
+  assert.equal(f[1]!.changeMessage, undefined);
+});
+
+test("wallet: besked kun ved en ny belønning, og ambassadøren får 'din ven'-beskeden", () => {
+  const rewards = [{ type: "AMOUNT" as const, value: "100" }];
+  const amb = referralFrontFields(info({ rewards, announce: true, referralsDone: 1 }))[1]!;
+  assert.equal(amb.changeMessage, "Din ven har været her. Du har nu %@ til gode.");
+  const ny = referralFrontFields(info({ rewards, announce: true }))[1]!;
+  assert.equal(ny.changeMessage, "Du har nu %@ til gode.");
+  // Efter en indløsning: ingen besked.
+  assert.equal(referralFrontFields(info({ rewards, announce: false }))[1]!.changeMessage, undefined);
+});
+
+test("wallet: bagsiden har delelink, belønninger, antal og betingelser", () => {
+  const b = referralBackFields(info({ referralsDone: 2, rewards: [{ type: "AMOUNT", value: "100" }] }));
+  assert.deepEqual(b.map((x) => x.key), ["ref-share", "ref-rewards", "ref-count", "ref-terms", "ref-page"]);
+  assert.ok(b[0]!.value.includes("?k=SARA-K8"));
+  assert.equal(b[1]!.value, `100${NBSP}kr.`);
+  assert.equal(b[2]!.value, "Du har henvist 2 venner.");
+  assert.equal(referralBackFields(info({ termsLine: null })).some((x) => x.key === "ref-terms"), false);
+});
