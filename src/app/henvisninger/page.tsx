@@ -10,8 +10,9 @@ import {
   FriendScene,
   LinkScreen,
   MessageScene,
-  NotifyScene,
+  NewCustomersScene,
   Phone,
+  RuleScene,
   ShareScene,
 } from "@/components/henvisninger-site/Screens";
 import "./forside.css";
@@ -103,7 +104,7 @@ function LogoOnLine({ className, tone = "ink" }: { className?: string; tone?: "i
   return (
     <span className={`relative inline-block pb-[0.32em] ${tone === "light" ? "text-white" : "text-[#111]"}`}>
       <HenvisningerLogo tone={tone} className={className} />
-      <Scribble className="absolute bottom-0 left-[-4%] h-[0.42em] w-[108%]" />
+      <Scribble className="absolute bottom-0 left-[14%] h-[0.42em] w-[90%]" />
     </span>
   );
 }
@@ -118,9 +119,10 @@ function Hand({ children }: { children: React.ReactNode }) {
 }
 
 const STEPS = [
+  { scene: <RuleScene />, title: "Lav din rabatordning." },
   { scene: <ShareScene />, title: "Kunden deler sit link." },
-  { scene: <MessageScene />, title: "Vennen får rabat." },
-  { scene: <NotifyScene />, title: "Kunden får sin belønning.", buzz: true, light: true },
+  { scene: <MessageScene />, title: "Ven får rabat." },
+  { scene: <NewCustomersScene />, title: "Nye kunder i butikken." },
 ];
 
 const BOOKING = ["Planway", "Bookio", "Treatwell", "Booksy", "Fresha", "Papirkalenderen"];
@@ -154,7 +156,7 @@ export default function HenvisningerPage() {
         <section className="overflow-hidden bg-white">
           <div className="mx-auto grid max-w-[1120px] items-center gap-16 px-4 pb-24 pt-12 sm:px-6 md:grid-cols-[1.15fr_1fr] md:pb-[140px] md:pt-20">
             <Play className="text-center md:text-left">
-              <h1 className="text-[40px] font-bold leading-[1.02] tracking-[-0.04em] sm:text-[52px] lg:text-[64px]">
+              <h1 className="text-[34px] font-bold leading-[1.04] tracking-[-0.04em] sm:text-[44px] lg:text-[54px]">
                 Motivér dine kunder til at{" "}
                 <Hand>
                   henvise
@@ -181,8 +183,10 @@ export default function HenvisningerPage() {
                   <FriendScene />
                 </Phone>
               </div>
-              <Note arrow="down-left" className="absolute -right-2 -top-12 hidden text-right lg:block xl:-right-24" rotate={6}>
-                Emma er ny kunde
+              <Note arrow="left" className="absolute left-full top-[230px] ml-1 hidden w-max xl:block" rotate={-6}>
+                Emma er
+                <br />
+                ny kunde
               </Note>
               <Note arrow="right" className="absolute -left-40 bottom-6 hidden lg:block xl:-left-44" rotate={-8}>
                 Saras link
@@ -196,13 +200,11 @@ export default function HenvisningerPage() {
           <H2 className="text-center">
             Sådan <Hand>virker</Hand> det.
           </H2>
-          <ol className="mt-16 grid gap-16 md:grid-cols-3 md:gap-8">
+          <ol className="mt-16 grid gap-16 md:grid-cols-2 md:gap-x-8 xl:grid-cols-4 xl:gap-x-6">
             {STEPS.map((s, i) => (
               <li key={s.title} className="flex flex-col items-center text-center">
                 <Play>
-                  <Phone tone={s.light ? "light" : "dark"} className={s.buzz ? "hv-buzz" : undefined}>
-                    {s.scene}
-                  </Phone>
+                  <Phone>{s.scene}</Phone>
                 </Play>
                 <p className={`${hand.className} mt-8 text-[44px] leading-none`}>{i + 1}</p>
                 <p className="mt-2 text-[22px] font-semibold tracking-[-0.02em]">{s.title}</p>
@@ -268,7 +270,7 @@ export default function HenvisningerPage() {
             <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">op til 100 kortholdere.</p>
             <p className="mt-10 text-[17px]">
               Derefter <span className="font-semibold">99 kr./md.</span>{" "}
-              <span className="text-[#111]/55">ekskl. moms. Henvisninger er med.</span>
+              <span className="text-[#111]/55">ekskl. moms. Stemplet er med.</span>
             </p>
           </Play>
         </Section>

@@ -223,19 +223,41 @@
   }
 }
 
-/* Trin 3: beskeden lander paa laaseskaermen, og telefonen summer (6 s) */
-.hv-notif {
-  animation: hv-notif 6s infinite;
+/* Trin 1: rabatordningen aendres (+ trykkes, vaerdien skifter) og gemmes (6 s) */
+.hv-val-new {
+  opacity: 0;
 }
-@keyframes hv-notif {
+.hv-val-old {
+  animation: hv-val-old 6s infinite;
+}
+.hv-val-new {
+  animation: hv-val-new 6s infinite;
+}
+@keyframes hv-val-old {
   0%,
-  24% {
+  26% {
+    opacity: 1;
+    transform: none;
+  }
+  30%,
+  90% {
     opacity: 0;
-    transform: translateY(-60px) scale(0.96);
-    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(-6px);
+  }
+  95%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hv-val-new {
+  0%,
+  27% {
+    opacity: 0;
+    transform: translateY(6px);
   }
   32%,
-  86% {
+  89% {
     opacity: 1;
     transform: none;
   }
@@ -245,26 +267,37 @@
     transform: none;
   }
 }
-.hv-buzz {
-  animation: hv-buzz 6s infinite;
+.hv-plus {
+  animation: hv-plus 6s infinite;
 }
-@keyframes hv-buzz {
+@keyframes hv-plus {
   0%,
-  30% {
-    transform: rotate(0);
+  22% {
+    background: transparent;
   }
-  31.5% {
-    transform: rotate(-1.4deg);
+  25% {
+    background: #d1d1d6;
   }
-  33% {
-    transform: rotate(1.4deg);
-  }
-  34.5% {
-    transform: rotate(-0.8deg);
-  }
-  36%,
+  29%,
   100% {
-    transform: rotate(0);
+    background: transparent;
+  }
+}
+.hv-save {
+  animation: hv-save 6s infinite;
+}
+@keyframes hv-save {
+  0%,
+  62% {
+    transform: scale(1);
+  }
+  65% {
+    transform: scale(0.95);
+    background: #000;
+  }
+  68%,
+  100% {
+    transform: scale(1);
   }
 }
 
