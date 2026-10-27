@@ -26,7 +26,7 @@ export default async function ReferralSettingsPage() {
         ← Henvisninger
       </Link>
       <PageHeading
-        title="Indstillinger"
+        title="Regler"
         subtitle="Bestem hvad dine kunder får, når de anbefaler dig."
       />
       <RuleForm

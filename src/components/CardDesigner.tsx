@@ -188,6 +188,7 @@ export function CardDesigner({
   showPoweredBy = false,
   hidePreview = false,
   boxed = false,
+  parts = "all",
 }: {
   value: CardDesign;
   onChange: (next: CardDesign) => void;
@@ -199,7 +200,12 @@ export function CardDesigner({
   hidePreview?: boolean;
   // Hvert afsnit i sin egen kasse (Design-siden). Standard: enkle blokke.
   boxed?: boolean;
+  // Hvilke afsnit: "look" = udseende (farver, navn og logo; siden Kortet),
+  // "rules" = stempelregler (beloenning, ikon, betingelser; Stemplet, Regler).
+  parts?: "all" | "look" | "rules";
 }) {
+  const showLook = parts !== "rules";
+  const showRules = parts !== "look";
   const [uploading, setUploading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   // Betingelser: til/fra + en kladde, saa teksten ikke tabes, hvis man slaar
@@ -258,6 +264,7 @@ export function CardDesigner({
         }
       >
         {/* Belønning: kernen i kortet */}
+        {showRules ? (
         <Section boxed={boxed} first title="Belønning" hint="Det, kunderne sparer op til.">
           <Field label={`Antal stempler (${value.stampsRequired})`}>
             <input
@@ -318,8 +325,10 @@ export function CardDesigner({
             </div>
           </div>
         </Section>
+        ) : null}
 
         {/* Farver: tema eller egne farver */}
+        {showLook ? (
         <Section boxed={boxed} title="Farver" hint="Kortets farve og tekstfarve, som kunden ser i Wallet.">
 
           <div className="flex flex-col gap-2.5">
@@ -462,8 +471,10 @@ export function CardDesigner({
           </div>
 
         </Section>
+        ) : null}
 
         {/* Stempel-ikon */}
+        {showRules ? (
         <Section boxed={boxed} title="Stempel-ikon" hint="Det lille ikon i hvert felt på kortet.">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-2">
@@ -486,8 +497,10 @@ export function CardDesigner({
             </div>
           </div>
         </Section>
+        ) : null}
 
         {/* Navn og logo */}
+        {showLook ? (
         <Section boxed={boxed} title="Navn og logo" hint="Det, der står øverst på kortet.">
           <div className="flex flex-col gap-2">
             <span className="text-[0.85rem] font-[400] text-ink">
@@ -576,9 +589,11 @@ export function CardDesigner({
             </div>
           ) : null}
         </Section>
+        ) : null}
 
         {/* Betingelser (valgfri): til/fra + kort tekst. Vises IKKE paa kortet,
             men diskret under "Hent mit stempelkort" for kunden. */}
+        {showRules ? (
         <Section boxed={boxed} title="Betingelser" hint="Valgfrit. Fx hvilke produkter kortet gælder for.">
           <div className="flex items-center justify-between gap-4">
             <span className="text-[0.85rem] font-[400] text-ink">Vis betingelser</span>
@@ -628,6 +643,7 @@ export function CardDesigner({
             </p>
           )}
         </Section>
+        ) : null}
       </div>
 
       {/* Live preview: paa mobil oeverst (order-1), paa desktop klaebende til hoejre.

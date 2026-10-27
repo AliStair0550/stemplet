@@ -19,11 +19,13 @@ const SCAN: NavLink = { href: "/app/kasse", label: "Scan" };
 const COMMON: NavLink[] = [
   { href: "/app", label: "Hjem" },
   { href: "/app/kunder", label: "Kunder" },
+  // Kortet: det faelles kortdesign for alle produkter.
+  { href: "/app/kortet", label: "Kortet" },
 ];
 
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
-  { href: "/app/kort", label: "Design" },
+  { href: "/app/kort", label: "Regler" },
   { href: "/app/kampagner", label: "Kampagner" },
   { href: "/app/statistik", label: "Statistik" },
 ];
@@ -31,7 +33,7 @@ const STEMPLET_LINKS: NavLink[] = [
 const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger", label: "Overblik" },
   { href: "/app/henvisninger/statistik", label: "Statistik" },
-  { href: "/app/henvisninger/indstillinger", label: "Indstillinger" },
+  { href: "/app/henvisninger/indstillinger", label: "Regler" },
 ];
 
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
@@ -192,6 +194,15 @@ export function DashboardNav({
             className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
+            <Link
+              href="/app/kortet"
+              className={cn(
+                "mb-3 flex items-center rounded-lg px-3 py-2 text-[0.9rem]",
+                isActive("/app/kortet") ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
+              )}
+            >
+              Kortet
+            </Link>
             <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Produkter</p>
             {products}
             <div className="mt-4 flex flex-col gap-0.5 border-t border-fog pt-3">
