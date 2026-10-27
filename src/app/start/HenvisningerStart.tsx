@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { HenvisningerLogo } from "@/components/ProductLogo";
 import { Phone } from "@/components/henvisninger-site/Screens";
 import { Scribble, hand } from "@/components/henvisninger-site/Hand";
+import { createReferralBusinessAction, loginWithOnboardingToken } from "./actions";
 
 // "Kom i gang" med Henvisninger som udgangspunkt (/start?produkt=henvisninger), i
 // Henvisningers eget udtryk. Ved siden af formularen viser en iPhone butikkens
-// henvisningsside live, mens man skriver. Stempelkortet er et frivilligt "+".
-// Samme anmodning som Stemplets formular (/api/start-request): Ali opretter
-// butikken og vender tilbage.
+// henvisningsside live, mens man skriver. Kun Henvisninger aktiveres; Stemplet
+// kan butikken selv slaa til i dashboardet senere.
+// Selvbetjent: butikken oprettes straks med rabatordningen, og ejeren logges
+// direkte ind paa Henvisninger i dashboardet (onboarding-token, som Stemplets
+// tidligere oprettelse).
 
 const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif';
 const INK = "#111";
@@ -26,14 +29,18 @@ export function HenvisningerStart() {
   const [businessName, setBusinessName] = useState("");
   const [friend, setFriend] = useState("");
   const [referrer, setReferrer] = useState("");
-  const [wantsStamps, setWantsStamps] = useState(false);
-  const [stampReward, setStampReward] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [loginToken, setLoginToken] = useState<string | null>(null);
+  const loginForm = useRef<HTMLFormElement>(null);
+
+  // Oprettet: log direkte ind paa Henvisninger i dashboardet.
+  useEffect(() => {
+    if (loginToken) loginForm.current?.requestSubmit();
+  }, [loginToken]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,34 +53,29 @@ export function HenvisningerStart() {
       setError("Skriv hvad vennen og kunden får.");
       return;
     }
-    if (wantsStamps && !stampReward.trim()) {
-      setError("Skriv stempelkortets belønning, eller fjern stempelkortet.");
+    if (!acceptedTerms) {
+      setError("Accepter betingelserne for at oprette din butik.");
       return;
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/start-request", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          businessName,
-          reward: wantsStamps ? stampReward : "",
-          wantsReferrals: true,
-          wantsStamps,
-          referralReward: `Ven får: ${friend.trim()}. Kunden får: ${referrer.trim()}.`,
-          contactName,
-          email,
-          phone,
-        }),
+      const res = await createReferralBusinessAction({
+        name: businessName,
+        email,
+        contactName,
+        friendReward: friend,
+        referrerReward: referrer,
+        acceptedTerms,
       });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.ok) setDone(true);
-      else setError(data?.message ?? "Noget gik galt. Prøv igen om lidt.");
+      if (res.ok) {
+        setLoginToken(res.loginToken);
+        return;
+      }
+      setError(res.error);
     } catch {
-      setError("Kunne ikke sende lige nu. Tjek forbindelsen og prøv igen.");
-    } finally {
-      setBusy(false);
+      setError("Noget gik galt. Prøv igen om lidt.");
     }
+    setBusy(false);
   }
 
   return (
@@ -86,14 +88,19 @@ export function HenvisningerStart() {
         <span className="text-[13px] text-[#111]/50">Gratis. Intet kreditkort.</span>
       </header>
 
-      {done ? (
+      {loginToken ? (
         <main className="mx-auto flex max-w-[560px] flex-col items-center px-4 py-24 text-center sm:px-6">
-          <p className={`${hand.className} text-[88px] leading-none`}>Tak</p>
-          <Scribble className="-mt-1 h-4 w-[180px]" />
-          <h1 className="mt-8 text-[30px] font-bold leading-tight tracking-[-0.03em]">Vi har fået det.</h1>
-          <p className="mt-3 text-[18px] text-[#111]/60">
-            Vi sætter din henvisningsside op og vender tilbage på {email.trim()}. Spørgsmål kan sendes til hej@alius.dk.
-          </p>
+          <p className={`${hand.className} text-[88px] leading-none`}>Velkommen</p>
+          <Scribble className="-mt-1 h-4 w-[260px]" />
+          <h1 className="mt-8 text-[30px] font-bold leading-tight tracking-[-0.03em]">{businessName.trim()} er klar.</h1>
+          <p className="mt-3 text-[18px] text-[#111]/60">Vi åbner dit dashboard.</p>
+          <form ref={loginForm} action={loginWithOnboardingToken} className="mt-8">
+            <input type="hidden" name="token" value={loginToken} />
+            <input type="hidden" name="dest" value="/app/henvisninger" />
+            <button type="submit" className="rounded-full bg-[#111] px-7 py-3.5 text-[17px] font-semibold text-white hover:bg-black">
+              Gå til dashboardet
+            </button>
+          </form>
         </main>
       ) : (
         <main className="mx-auto grid max-w-[1120px] gap-14 px-4 pb-24 pt-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:gap-20 lg:pt-14">
@@ -104,7 +111,7 @@ export function HenvisningerStart() {
                 Henvisninger.
               </span>
             </h1>
-            <p className="mt-4 text-[19px] text-[#111]/55">Lav din rabatordning. Vi sætter resten op sammen med dig.</p>
+            <p className="mt-4 text-[19px] text-[#111]/55">Lav din rabatordning, så er din side klar på et minut.</p>
 
             <form onSubmit={submit} className="mt-10 flex flex-col gap-8">
               <label className="block">
@@ -146,43 +153,6 @@ export function HenvisningerStart() {
                 <p className="mt-2 text-[14px] text-[#111]/50">Du bestemmer selv, og det kan ændres når som helst.</p>
               </fieldset>
 
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setWantsStamps((v) => !v)}
-                  aria-pressed={wantsStamps}
-                  className={`flex w-full items-center gap-4 rounded-[18px] border px-5 py-4 text-left transition-colors ${
-                    wantsStamps ? "border-[#111] bg-white" : "border-dashed border-[#111]/25 hover:border-[#111]/60"
-                  }`}
-                >
-                  <span
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[20px] leading-none transition-colors ${
-                      wantsStamps ? "bg-[#111] text-white" : "border border-[#111]/25 text-[#111]/60"
-                    }`}
-                  >
-                    {wantsStamps ? "✓" : "+"}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[17px] font-semibold">Tilføj stempelkort</span>
-                    <span className="block text-[14px] text-[#111]/55">
-                      Få de nye kunder til at komme igen. Kan også slås til senere i dashboardet.
-                    </span>
-                  </span>
-                </button>
-                {wantsStamps ? (
-                  <label className="mt-3 block">
-                    <Label>Stempelkortets belønning</Label>
-                    <input
-                      className={inputCls}
-                      value={stampReward}
-                      maxLength={300}
-                      onChange={(e) => setStampReward(e.target.value)}
-                      placeholder="Fx 10. klip gratis"
-                    />
-                  </label>
-                ) : null}
-              </div>
-
               <fieldset>
                 <legend className="mb-3 text-[22px] font-bold tracking-[-0.02em]">Dig</legend>
                 <div className="flex flex-col gap-3">
@@ -196,29 +166,41 @@ export function HenvisningerStart() {
                     autoComplete="email"
                     aria-label="E-mail"
                   />
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <input
-                      className={inputCls}
-                      value={contactName}
-                      maxLength={80}
-                      onChange={(e) => setContactName(e.target.value)}
-                      placeholder="Navn (valgfrit)"
-                      autoComplete="name"
-                      aria-label="Navn"
-                    />
-                    <input
-                      className={inputCls}
-                      type="tel"
-                      value={phone}
-                      maxLength={40}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Telefon (valgfrit)"
-                      autoComplete="tel"
-                      aria-label="Telefon"
-                    />
-                  </div>
+                  <input
+                    className={inputCls}
+                    value={contactName}
+                    maxLength={80}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Dit navn (valgfrit)"
+                    autoComplete="name"
+                    aria-label="Navn"
+                  />
                 </div>
               </fieldset>
+
+              <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-[#111]/70">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 accent-[#111]"
+                />
+                <span>
+                  Jeg accepterer{" "}
+                  <a href="/handelsbetingelser" target="_blank" rel="noreferrer" className="text-[#111] underline underline-offset-2">
+                    handelsbetingelserne
+                  </a>
+                  ,{" "}
+                  <a href="/privatliv" target="_blank" rel="noreferrer" className="text-[#111] underline underline-offset-2">
+                    privatlivspolitikken
+                  </a>{" "}
+                  og{" "}
+                  <a href="/databehandleraftale" target="_blank" rel="noreferrer" className="text-[#111] underline underline-offset-2">
+                    databehandleraftalen
+                  </a>
+                  .
+                </span>
+              </label>
 
               {error ? (
                 <p role="alert" className="text-[15px] text-rust">
@@ -232,10 +214,10 @@ export function HenvisningerStart() {
                   disabled={busy}
                   className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#111] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-black active:scale-[0.98] disabled:opacity-60 sm:w-auto"
                 >
-                  {busy ? "Sender" : "Kom i gang"}
+                  {busy ? "Opretter" : "Opret min butik"}
                 </button>
                 <p className="mt-3 text-[13px] text-[#111]/45">
-                  Vi bruger kun dine oplysninger til at sætte din butik op og kontakte dig.
+                  Vi bruger dine oplysninger til at sætte din butik op.
                 </p>
               </div>
             </form>

@@ -9,7 +9,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   if ((await searchParams).produkt === "henvisninger") {
     return {
       title: { absolute: "Kom i gang med Henvisninger" },
-      description: "Lav din rabatordning, så sætter vi din henvisningsside op sammen med dig. Gratis og uden kreditkort.",
+      description: "Lav din rabatordning, så er din henvisningsside klar på et minut. Gratis og uden kreditkort.",
     };
   }
   return {
