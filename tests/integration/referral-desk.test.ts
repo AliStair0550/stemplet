@@ -271,3 +271,50 @@ test("dashboard: aabne, gennemfoerte denne maaned, til gode og top-ambassadoerer
     await cleanup(s.bizId);
   }
 });
+
+// ── Wallet (fase 4) ──────────────────────────────────────────────────
+
+import { loadReferralPassInfo } from "../../src/lib/referral-wallet";
+
+async function loadForWallet(id: string) {
+  return prisma.customerCard.findUniqueOrThrow({
+    where: { id },
+    include: { card: { include: { business: true } } },
+  });
+}
+
+test("wallet: rent stempelkort (uden modul eller kode) faar ingen henvisningsfelter", async () => {
+  const s = await makeShop();
+  try {
+    const plain = await prisma.customerCard.create({
+      data: { cardId: s.cardId, serial: randomUUID().slice(0, 12), authToken: randomUUID() },
+    });
+    assert.equal(await loadReferralPassInfo(await loadForWallet(plain.id)), null, "ingen kode");
+    const sara = await makeCustomer(s, "Sara", "+4511111111");
+    await prisma.business.update({ where: { id: s.bizId }, data: { referralsEnabled: false } });
+    assert.equal(await loadReferralPassInfo(await loadForWallet(sara.id)), null, "modul slaaet fra");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});
+
+test("wallet: ambassadoeren faar besked ved ny beloenning, ikke efter indloesning", async () => {
+  const s = await makeShop();
+  try {
+    const { sara, visit } = await rewardedPair(s);
+    const before = await loadReferralPassInfo(await loadForWallet(sara.id));
+    assert.ok(before);
+    assert.equal(before.code, sara.code);
+    assert.equal(before.referralsDone, 1);
+    assert.deepEqual(before.rewards, [{ type: "AMOUNT", value: "50" }]);
+    assert.equal(before.announce, true);
+
+    const saraReward = visit.rewards.find((r) => r.role === "referrer")!;
+    await redeemReward({ rewardId: saraReward.id, businessId: s.bizId, staffDeviceId: s.deviceId });
+    const afterRedeem = await loadReferralPassInfo(await loadForWallet(sara.id));
+    assert.deepEqual(afterRedeem?.rewards, []);
+    assert.equal(afterRedeem?.announce, false);
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

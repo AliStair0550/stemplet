@@ -6,6 +6,11 @@ import { lookup } from "node:dns/promises";
 import path from "node:path";
 import { walletIds, walletCertificates } from "./config";
 import { buildStripImages } from "./strip";
+import {
+  referralFrontFields,
+  referralBackFields,
+  type ReferralPassInfo,
+} from "./referral-fields";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
 import {
@@ -38,6 +43,9 @@ type PassInput = {
   showPoweredBy: boolean;
   latitude: number | null;
   longitude: number | null;
+  /** Henvisninger (kun naar butikken har modulet og kunden har en kode). Uden
+   *  dette bygges passet praecis som et rent stempelkort. */
+  referral?: ReferralPassInfo | null;
 };
 
 function rgbString(hex: string): string {
@@ -278,7 +286,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: input.rewardText,
     textAlignment: "PKTextAlignmentLeft",
   });
-  if (input.lifetimeStamps > 0) {
+  if (input.referral) {
+    // Henvisninger: kode og "til gode" i stedet for "Samlet i alt" (der staar
+    // stadig paa bagsiden under "Din historik"), saa raekken ikke bliver trang.
+    pass.secondaryFields.push(...referralFrontFields(input.referral));
+  } else if (input.lifetimeStamps > 0) {
     pass.secondaryFields.push({
       key: "lifetime",
       label: "Samlet i alt",
@@ -316,6 +328,10 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
       label: "Betingelser",
       value: input.terms,
     });
+  }
+
+  if (input.referral) {
+    pass.backFields.push(...referralBackFields(input.referral));
   }
 
   // Historik/stamkunde-tekst paa bagsiden: samlet antal stempler + fyldte kort.

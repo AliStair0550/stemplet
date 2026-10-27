@@ -1,6 +1,11 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { referralKasse, noAccess, referralErrorResponse } from "@/lib/referral-kasse";
+import {
+  referralKasse,
+  noAccess,
+  referralErrorResponse,
+  pushReferralWallet,
+} from "@/lib/referral-kasse";
 import { recordFirstVisit, ReferralError } from "@/lib/referral";
 import { IdempotencyInFlight } from "@/lib/idempotency";
 import { apiError } from "@/lib/http";
@@ -29,6 +34,8 @@ export async function POST(req: NextRequest) {
       staffDeviceId: kasse.staffDeviceId,
       idempotencyKey: parsed.data.idempotencyKey,
     });
+    // Begge kort (ny kunde + ambassadoer) faar deres nye beloenning i Wallet.
+    pushReferralWallet(res.rewards.map((r) => r.cardId));
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof ReferralError) return referralErrorResponse(e);

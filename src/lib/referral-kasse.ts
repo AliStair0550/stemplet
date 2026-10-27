@@ -1,4 +1,6 @@
 import "server-only";
+import { after } from "next/server";
+import { WALLET_ENABLED } from "./env";
 import { prisma } from "./prisma";
 import { kasseAccess } from "./kasse";
 import { ensureDeviceId } from "./cookies";
@@ -31,6 +33,29 @@ export async function referralKasse(): Promise<ReferralKasse | null> {
     staffDeviceId: access.source === "device" ? (access.deviceId ?? null) : null,
     staffPin: business.staffPin,
   };
+}
+
+/**
+ * Opdatér kundernes Wallet-kort efter en henvisning eller indloesning (fase 4).
+ * Koeres EFTER svaret (next/server after), saa kassen ikke venter paa Apple, og
+ * holder funktionen i live til pushet er sendt, ligesom Stemplets stempling.
+ */
+export function pushReferralWallet(cardIds: string[]): void {
+  if (!WALLET_ENABLED || cardIds.length === 0) return;
+  const unique = [...new Set(cardIds)];
+  const run = async () => {
+    try {
+      const { pushWalletUpdate } = await import("./wallet/apns");
+      await Promise.all(unique.map((id) => pushWalletUpdate(id)));
+    } catch (e) {
+      console.error("Wallet-push efter henvisning fejlede", e);
+    }
+  };
+  try {
+    after(run);
+  } catch {
+    void run();
+  }
 }
 
 export function noAccess() {

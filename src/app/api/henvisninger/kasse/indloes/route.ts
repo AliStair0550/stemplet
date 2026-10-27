@@ -5,6 +5,7 @@ import {
   noAccess,
   referralErrorResponse,
   checkStaffPin,
+  pushReferralWallet,
 } from "@/lib/referral-kasse";
 import { redeemReward, ReferralError } from "@/lib/referral";
 import { IdempotencyInFlight } from "@/lib/idempotency";
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       staffDeviceId: kasse.staffDeviceId,
       idempotencyKey: parsed.data.idempotencyKey,
     });
+    pushReferralWallet([res.cardId]);
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof ReferralError) return referralErrorResponse(e);
