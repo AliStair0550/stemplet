@@ -538,6 +538,8 @@ model SignupRequest {
   id           String   @id @default(cuid())
   businessName String
   reward       String // oensket beloenning, fri tekst
+  wantsReferrals Boolean @default(false) // Henvisninger oven i stempelkortet
+  referralReward String? // oenskede henvisningsbeloenninger, fri tekst
   contactName  String? // valgfrit
   email        String
   phone        String? // valgfrit

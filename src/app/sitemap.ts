@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/hvorfor`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/brancher`, changeFrequency: "monthly", priority: 0.7 },
     ...brancheUrls,
+    { url: `${base}/henvisninger`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/start`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/login`, changeFrequency: "yearly", priority: 0.3 },
     {
