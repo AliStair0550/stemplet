@@ -1,6 +1,9 @@
 import "server-only";
 import sharp from "sharp";
-import { PKPass } from "passkit-generator";
+import { PKPass, PassType } from "passkit-generator";
+import { posterEnabled, posterFields, featuredActionsFor } from "./poster";
+import { renderPosterArtwork } from "./artwork";
+import { effectiveStyle, normalizeActions } from "../card-look";
 import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
 import path from "node:path";
@@ -50,6 +53,15 @@ type PassInput = {
   /** Stemplet slaaet til for butikken (standard). Fra + henvisninger = et rent
    *  henvisningskort uden stempelgitter (buildReferralOnlyPass). */
   stampsEnabled?: boolean;
+  /** Kortet (butikkens faelles design) til iOS 27-plakaten. Bruges kun, naar
+   *  WALLET_POSTER=true; ellers bygges kortet praecis som foer. */
+  look?: {
+    style: string;
+    artwork: string | null;
+    actions: string[];
+    bookingUrl: string | null;
+    cardPageUrl: string;
+  } | null;
 };
 
 function rgbString(hex: string): string {
@@ -362,6 +374,8 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     });
   }
 
+  if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
+
   pass.setBarcodes({
     format: "PKBarcodeFormatQR",
     message: input.serial,
@@ -441,6 +455,8 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
     });
   }
 
+  if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
+
   pass.setBarcodes({
     format: "PKBarcodeFormatQR",
     message: input.serial,
@@ -460,4 +476,56 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
     });
   }
   return pass.getAsBuffer();
+}
+
+/**
+ * iOS 27-plakaten ("posterGeneric") ved siden af det klassiske kort, som
+ * allerede ligger som foerste korttype. Wallet vaelger plakaten paa iOS 27 og
+ * det klassiske kort paa aeldre iPhones. Bagsiden genbruges fra det klassiske.
+ */
+async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null): Promise<void> {
+  const look = input.look!;
+  const stampsEnabled = input.stampsEnabled !== false;
+  const ctx = { stampsEnabled, referralsEnabled: !!input.referral, bookingUrl: look.bookingUrl };
+  const style = effectiveStyle(look.style, ctx, !!look.artwork);
+
+  const art = await renderPosterArtwork({
+    style,
+    primaryColor: input.primaryColor,
+    textColor: input.textColor,
+    stampIcon: input.stampIcon,
+    stamps: input.stamps,
+    required: input.required,
+    photo: look.artwork,
+  });
+  pass.addBuffer("artwork.png", art.x1);
+  pass.addBuffer("artwork@2x.png", art.x2);
+  pass.addBuffer("artwork@3x.png", art.x3);
+  if (logoBuf) {
+    pass.addBuffer("primaryLogo.png", logoBuf);
+    pass.addBuffer("primaryLogo@2x.png", logoBuf);
+    pass.addBuffer("primaryLogo@3x.png", logoBuf);
+  }
+
+  const fields = posterFields({
+    stamps: input.stamps,
+    required: input.required,
+    rewardText: input.rewardText,
+    stampsEnabled,
+    referral: input.referral ?? null,
+  });
+  const poster = new PassType("posterGeneric");
+  poster.headerFields.push(...fields.header);
+  poster.primaryFields.push(...fields.primary);
+  poster.footerFields.push(...fields.footer);
+  poster.backFields.push(...pass.types[0]!.backFields);
+  pass.types.push(poster);
+
+  const actions = featuredActionsFor({
+    actions: normalizeActions(look.actions, ctx),
+    bookingUrl: look.bookingUrl,
+    referralPageUrl: input.referral?.pageUrl ?? null,
+    cardPageUrl: look.cardPageUrl,
+  });
+  if (actions.length > 0) pass.featuredActions = actions;
 }

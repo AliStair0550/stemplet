@@ -7,7 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
 import { getStripe, proPriceId } from "@/lib/stripe";
-import { APP_URL } from "@/lib/env";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
+import { after } from "next/server";
 import { hashPin } from "@/lib/security";
 import { generateApiKey } from "@/lib/integrations";
 import { isBusinessCategory } from "@/lib/categories";
@@ -220,6 +221,13 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
   // Kundens hente-side er ISR-cachet pr. butik: revalidér den, saa aendret
   // design (farver, beloenning, betingelser) slaar igennem med det samme.
   revalidatePath(`/k/${business.slug}`);
+  // Regler (fx beloenningsteksten) staar paa kortet: opdatér kort i Wallet stille.
+  if (WALLET_ENABLED) {
+    after(async () => {
+      const { pushAllWalletPasses } = await import("@/lib/wallet/build");
+      await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+    });
+  }
   return { ok: true };
 }
 

@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { WALLET_ENABLED } from "@/lib/env";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { cardDesignSchema } from "@/lib/validation";
@@ -67,5 +69,13 @@ export async function saveCardLook(input: {
   revalidatePath("/app");
   // Kundesiderne er cachet pr. butik: farver og logo slaar igennem med det samme.
   revalidatePath(`/k/${business.slug}`);
+  // Kort, der allerede ligger i kundernes Wallet, faar det nye udseende via en
+  // stille opdatering (efter svaret, saa gem er hurtigt).
+  if (WALLET_ENABLED) {
+    after(async () => {
+      const { pushAllWalletPasses } = await import("@/lib/wallet/build");
+      await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+    });
+  }
   return { ok: true };
 }
