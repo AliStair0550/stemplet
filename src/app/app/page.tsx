@@ -48,7 +48,7 @@ function referralText(r: ReferralRow): string {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <span>
-      <span className="block font-[400] text-[1.75rem] leading-none tabular-nums text-ink">{value}</span>
+      <span className="block text-[1.9rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-ink">{value}</span>
       <span className="mt-1.5 block text-[0.78rem] text-slate">{label}</span>
     </span>
   );
@@ -131,7 +131,7 @@ export default async function HomePage() {
     <>
       <header className="mb-8 animate-step">
         <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">{dateLabel}</p>
-        <h1 className="mt-2 font-[400] text-[1.9rem] leading-tight tracking-[-0.01em] text-ink">
+        <h1 className="mt-2 text-[2rem] font-bold leading-[1.05] tracking-[-0.035em] text-ink md:text-[2.4rem]">
           {greetingFor(now)}, {business.name}
         </h1>
         <p className="mt-1.5 max-w-xl font-[300] text-[0.95rem] leading-relaxed text-stone">
@@ -193,8 +193,10 @@ export default async function HomePage() {
                       aria-hidden
                       className={cn(
                         "inline-block h-[7px] w-[7px] shrink-0 rounded-full",
-                        a.alert ? "bg-rust" : a.product === "stemplet" ? "bg-terracotta" : "bg-ink",
+                        a.alert ? "bg-rust" : a.product === "stemplet" ? "" : "bg-ink",
                       )}
+                      // Stemplets produktfarve (fast, saa dashboardets stil ikke rammer den).
+                      style={!a.alert && a.product === "stemplet" ? { backgroundColor: "#a6502e" } : undefined}
                     />
                     <span className={cn("text-[0.9rem]", a.alert ? "text-rust" : "text-ink")}>{a.text}</span>
                   </span>

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { HenvisningerLogo } from "@/components/ProductLogo";
+import { Scribble } from "@/components/henvisninger-site/Hand";
 import { getReferralWorklist } from "@/lib/referral-desk";
 import { ReferralWorklist } from "./ReferralWorklist";
 import { ShopLinkCard } from "./ShopLinkCard";
@@ -20,11 +21,12 @@ export const dynamic = "force-dynamic";
 
 function ReferralHeader() {
   return (
-    <header className="mb-8 border-b border-fog pb-6">
-      <h1>
+    <header className="mb-10">
+      <h1 className="relative inline-block pb-[0.9rem] text-ink">
         <HenvisningerLogo className="-ml-1 h-[2.9rem]" />
+        <Scribble className="absolute bottom-0 left-[14%] h-[1rem] w-[90%]" />
       </h1>
-      <p className="mt-2 font-[300] text-[0.95rem] text-stone">
+      <p className="mt-3 text-[1rem] text-stone">
         Kryds af, når en ny kunde får sin rabat, og når en ambassadør får sin belønning.
       </p>
     </header>

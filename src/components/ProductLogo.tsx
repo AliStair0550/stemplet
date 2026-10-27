@@ -10,15 +10,17 @@ export function StempletLogo({ className }: { className?: string }) {
       role="img"
       aria-label="Stemplet"
       className={cn(
-        "inline-flex items-baseline font-bold leading-none tracking-[-0.045em] text-ink",
+        "inline-flex items-baseline font-sans font-bold leading-none tracking-[-0.045em] text-ink",
         className,
       )}
     >
       Stemplet
       <span
         aria-hidden
-        className="ml-[0.1em] inline-block rounded-full bg-terracotta"
-        style={{ width: "0.29em", height: "0.29em" }}
+        // Fast farve (ikke bg-terracotta), saa dashboardets sort/hvide stil aldrig
+        // rammer Stemplets prik.
+        className="ml-[0.1em] inline-block rounded-full"
+        style={{ width: "0.29em", height: "0.29em", backgroundColor: "#a6502e" }}
       />
     </span>
   );

@@ -60,7 +60,7 @@ function PulseTile({
   const d = deltaLabel(value, yesterday);
   const showDelta = value !== 0 || yesterday !== 0;
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift">
+    <div className="group relative overflow-hidden rounded-lg border border-fog bg-white p-5 shadow-card transition-all duration-200 hover:border-clay">
       <div className="flex items-start justify-between gap-2">
         <span className="text-label font-[400] uppercase tracking-[0.14em] text-stone">
           {label}
@@ -128,7 +128,7 @@ const ACTIONS: Action[] = [
 
 // Alle genveje som et rent, luftigt kort-grid i samme boks-stil.
 const tileClass =
-  "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift";
+  "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-white p-5 shadow-card transition-all duration-200 hover:border-clay";
 
 function ActionTile({ action }: { action: Action }) {
   const inner = (

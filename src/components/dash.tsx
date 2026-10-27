@@ -10,13 +10,13 @@ export function PageHeading({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-8 flex items-start justify-between gap-4 border-b border-fog pb-5">
+    <div className="mb-10 flex items-start justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="font-[300] text-heading tracking-[0.01em] text-ink">
+        <h1 className="text-[2rem] font-bold leading-[1.05] tracking-[-0.035em] text-ink md:text-[2.4rem]">
           {title}
         </h1>
         {subtitle ? (
-          <p className="mt-1.5 max-w-xl font-[300] text-[0.88rem] leading-relaxed text-stone">
+          <p className="mt-2 max-w-xl text-[1rem] leading-relaxed text-stone">
             {subtitle}
           </p>
         ) : null}
@@ -44,7 +44,7 @@ export function SectionHeader({
         className,
       )}
     >
-      <h2 className="text-title font-[600] tracking-[0.01em] text-ink">{title}</h2>
+      <h2 className="text-[1.3rem] font-bold tracking-[-0.025em] text-ink">{title}</h2>
       {action}
     </div>
   );
@@ -60,7 +60,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "rounded-lg border border-fog bg-white p-6 shadow-card",
+        "rounded-[18px] border border-fog bg-white p-6 shadow-card",
         className,
       )}
     >
@@ -85,12 +85,12 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift",
+        "group relative overflow-hidden rounded-[18px] border border-fog bg-white p-5 shadow-card transition-all duration-200 hover:border-clay",
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-label font-[400] uppercase tracking-[0.14em] text-stone">
+        <div className="text-[0.85rem] font-medium text-stone">
           {label}
         </div>
         {icon ? (
@@ -99,7 +99,7 @@ export function StatTile({
           </span>
         ) : null}
       </div>
-      <div className="mt-3 font-[300] text-[2rem] leading-none text-ink tabular-nums">
+      <div className="mt-3 text-[2.1rem] font-bold leading-none tracking-[-0.03em] text-ink tabular-nums">
         {value}
       </div>
       {sub ? (
