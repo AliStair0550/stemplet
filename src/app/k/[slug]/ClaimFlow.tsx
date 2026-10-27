@@ -5,6 +5,7 @@ import { WalletIcon } from "@/components/ui";
 import { Spinner } from "@/components/SubmitButton";
 import { WalletAddedNotice } from "@/components/WalletAddedNotice";
 import { rgba } from "@/lib/brand";
+import { claimCta } from "@/lib/card-name";
 
 // Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
 const ERRORS: Record<string, string> = {
@@ -30,17 +31,25 @@ const RETRYABLE = new Set(["serverfejl", "optaget"]);
 function ContactForm({
   slug,
   shopName,
+  cta,
   ctaBg,
   ctaFg,
   onReady,
   onFejl,
+  onEmailTaken,
+  onRecover,
 }: {
   slug: string;
   shopName: string;
+  /** "Hent dit Sara Salon-kort" */
+  cta: string;
   ctaBg: string;
   ctaFg: string;
   onReady: () => void;
   onFejl: (code: string) => void;
+  /** E-mailen har allerede et kort i butikken: tilbyd at gendanne det. */
+  onEmailTaken: (email: string) => void;
+  onRecover: () => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -64,6 +73,10 @@ function ContactForm({
         | null;
       if (data?.ok) {
         onReady();
+        return;
+      }
+      if (data?.code === "mail_findes") {
+        onEmailTaken(email);
         return;
       }
       if (data?.message) setError(data.message);
@@ -153,9 +166,124 @@ function ContactForm({
           style={{ backgroundColor: ctaBg, color: ctaFg }}
         >
           {busy ? <Spinner /> : null}
-          {busy ? "Et øjeblik" : "Fortsæt"}
+          {busy ? "Et øjeblik" : cta}
         </button>
       </div>
+      <button
+        type="button"
+        onClick={onRecover}
+        className="mt-1 self-center text-[0.84rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
+        style={{ color: ctaBg }}
+      >
+        Har du allerede et kort? Gendan det med din e-mail
+      </button>
+    </form>
+  );
+}
+
+// Gendan kortet: kunden skriver sin e-mail og faar et link, der virker een gang.
+// Svaret er altid det samme, saa siden ikke afsloerer, hvem der har et kort.
+function RecoverForm({
+  slug,
+  shopName,
+  initialEmail,
+  taken,
+  ctaBg,
+  ctaFg,
+  onBack,
+}: {
+  slug: string;
+  shopName: string;
+  initialEmail: string;
+  /** Kom vi hertil, fordi e-mailen allerede har et kort? */
+  taken: boolean;
+  ctaBg: string;
+  ctaFg: string;
+  onBack: () => void;
+}) {
+  const [email, setEmail] = useState(initialEmail);
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/wallet/claim/${encodeURIComponent(slug)}/gendan`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = (await res.json().catch(() => null)) as { ok: boolean; message?: string } | null;
+      if (data?.ok) setSent(true);
+      else setError(data?.message ?? "Der opstod en kortvarig fejl. Prøv igen.");
+    } catch {
+      setError("Der opstod en kortvarig fejl. Prøv igen.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const muted = { color: rgba(ctaBg, 0.82) };
+  if (sent) {
+    return (
+      <div
+        role="status"
+        className="flex w-full flex-col items-center gap-2 rounded-xl p-5 text-center"
+        style={{ background: rgba(ctaBg, 0.1), border: `1px solid ${rgba(ctaBg, 0.18)}` }}
+      >
+        <span className="text-[0.98rem] font-[500]">Tjek din mail</span>
+        <span className="text-[0.86rem] font-[300] leading-relaxed" style={muted}>
+          Har {email} et kort hos {shopName}, har vi sendt et link. Åbn det på denne telefon. Linket virker i 30 minutter.
+        </span>
+        <button type="button" onClick={onBack} className="mt-1 text-[0.82rem] underline underline-offset-2 opacity-80">
+          Tilbage
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="flex w-full flex-col gap-3" noValidate>
+      <p className="text-center text-[0.9rem] font-[300] leading-relaxed" style={muted}>
+        {taken
+          ? `Der er allerede et kort med den e-mail hos ${shopName}. Vi sender et link til din mail, så du kan gendanne det på denne telefon.`
+          : "Skriv den e-mail, du brugte, da du fik kortet. Så sender vi et link, så du kan gendanne det på denne telefon."}
+      </p>
+      <input
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        autoCapitalize="none"
+        spellCheck={false}
+        maxLength={254}
+        aria-label="E-mail"
+        placeholder="navn@mail.dk"
+        className="w-full rounded-xl px-4 py-3 text-[1rem] font-[400] outline-none placeholder:opacity-50 focus:ring-2"
+        style={{ color: ctaBg, background: rgba(ctaBg, 0.08), border: `1px solid ${rgba(ctaBg, 0.28)}` }}
+      />
+      {error ? (
+        <p role="alert" className="rounded-lg border border-rust/40 bg-rust/10 px-4 py-3 text-center text-[0.85rem] font-[300] text-rust">
+          {error}
+        </p>
+      ) : null}
+      <button
+        type="submit"
+        disabled={busy}
+        className="flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium shadow-lift transition-transform active:scale-[0.98] disabled:opacity-70"
+        style={{ backgroundColor: ctaBg, color: ctaFg }}
+      >
+        {busy ? <Spinner /> : null}
+        {busy ? "Et øjeblik" : "Send link"}
+      </button>
+      <button type="button" onClick={onBack} className="self-center text-[0.84rem] underline underline-offset-2 opacity-80" style={{ color: ctaBg }}>
+        Tilbage
+      </button>
     </form>
   );
 }
@@ -198,7 +326,7 @@ function CtaLink({
   );
 }
 
-// "Hent mit stempelkort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
+// "Hent dit X-kort" er et RIGTIGT link til /api/wallet/claim/[slug]. Ruten
 // opretter kortet og returnerer .pkpass'et i samme svar, saa Safari aabner Apple
 // Wallet-arket direkte fra kundens eget tryk. Ingen skroebelig JavaScript-
 // navigation, saa ingen "Prøv igen"-crash.
@@ -213,6 +341,7 @@ export function ClaimFlow({
   slug,
   walletEnabled,
   shopName,
+  cardName,
   // CTA-farver: passer til kortet. Standard = kortets tekstfarve som baggrund og
   // kortfarven som tekst, saa knappen altid harmonerer med brandet.
   ctaBg = "#F6EEE4",
@@ -221,6 +350,8 @@ export function ClaimFlow({
   slug: string;
   walletEnabled: boolean;
   shopName: string;
+  /** Kortets korte navn til knappen ("Hent dit Sara Salon-kort"). */
+  cardName: string;
   ctaBg?: string;
   ctaFg?: string;
 }) {
@@ -232,12 +363,16 @@ export function ClaimFlow({
   // kort (eller er formularen sendt), er vi "ready" og viser Wallet-linket.
   // "checking" er det korte opslag ved indlaesning, saa en returkunde ikke ser
   // formularen blinke.
-  const [stage, setStage] = useState<"checking" | "form" | "ready">("checking");
+  const [stage, setStage] = useState<"checking" | "form" | "recover" | "ready">("checking");
   const [justCreated, setJustCreated] = useState(false);
+  // Gendannet via mail-linket (?gendannet=1): vis det, saa kunden ved det.
+  const [recovered, setRecovered] = useState(false);
+  const [recover, setRecover] = useState<{ email: string; taken: boolean }>({ email: "", taken: false });
+  const cta = claimCta(cardName);
   const [ios, setIos] = useState(false);
   // In-app-browser (fx Messenger/Facebook/Instagram) paa iPhone: deres indbyggede
   // browser (WKWebView) kan IKKE overdrage et .pkpass til Apple Wallet, saa
-  // "Hent mit stempelkort" aabner ingenting. Vi opdager det og guider til Safari.
+  // Wallet-linket aabner ingenting. Vi opdager det og guider til Safari.
   const [inApp, setInApp] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   // Blev siden skjult, mens vi ventede? Saa AABNEDE Wallet-arket sig, og
@@ -250,8 +385,10 @@ export function ClaimFlow({
 
   // Læs en evt. ?fejl=... paa klienten, saa /k-siden kan forblive statisk (ISR).
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("fejl");
+    const q = new URLSearchParams(window.location.search);
+    const code = q.get("fejl");
     if (code && ERRORS[code]) setFejl(code);
+    if (q.get("gendannet")) setRecovered(true);
   }, []);
 
   // Har enheden allerede et kort hos butikken? Saa eet tryk som foer.
@@ -541,31 +678,49 @@ export function ClaimFlow({
         shopName={shopName}
         ctaBg={ctaBg}
         ctaFg={ctaFg}
+        cta={cta}
         onReady={() => {
           setJustCreated(true);
           setStage("ready");
         }}
         onFejl={setFejl}
+        onEmailTaken={(email) => {
+          setRecover({ email, taken: true });
+          setStage("recover");
+        }}
+        onRecover={() => {
+          setRecover({ email: "", taken: false });
+          setStage("recover");
+        }}
+      />
+    );
+  }
+
+  if (stage === "recover") {
+    return (
+      <RecoverForm
+        slug={slug}
+        shopName={shopName}
+        initialEmail={recover.email}
+        taken={recover.taken}
+        ctaBg={ctaBg}
+        ctaFg={ctaFg}
+        onBack={() => setStage("form")}
       />
     );
   }
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
-      {justCreated ? (
+      {justCreated || recovered ? (
         <p className="text-center text-[0.9rem] font-[400]" style={{ color: rgba(ctaBg, 0.9) }}>
-          {ios && walletEnabled
-            ? "Dit kort er klar. Læg det i Apple Wallet."
-            : "Dit kort er klar."}
+          {recovered ? "Dit kort er gendannet." : "Dit kort er klar."}
+          {ios && walletEnabled ? " Læg det i Apple Wallet." : ""}
         </p>
       ) : null}
       <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
         <WalletIcon />
-        {justCreated
-          ? ios && walletEnabled
-            ? "Tilføj til Apple Wallet"
-            : "Åbn mit stempelkort"
-          : "Hent mit stempelkort"}
+        {(justCreated || recovered) && ios && walletEnabled ? "Tilføj til Apple Wallet" : cta}
       </CtaLink>
     </div>
   );

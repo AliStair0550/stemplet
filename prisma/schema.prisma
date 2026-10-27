@@ -24,6 +24,8 @@ model Business {
   id               String     @id @default(cuid())
   name             String // firmanavn (login, faktura, konto)
   displayName      String? // navn vist paa kundens kort; tomt = brug name
+  // Kortets korte navn i knappen "Hent dit X-kort". Tomt = laves automatisk.
+  cardName         String?
   slug             String     @unique
   category         String? // branche (kode), backfilles i indstillinger
   logoUrl          String?
@@ -265,6 +267,7 @@ model CustomerCard {
   // Udtrykkeligt samtykke til nyheder og tilbud paa mail fra butikken (frivilligt
   // flueben ved oprettelse). Null = intet samtykke. Tidspunktet er dokumentationen.
   marketingConsentAt DateTime?
+  recoveryTokens   CardRecoveryToken[]
   // ── Henvisninger ──────────────────────────────────────────────
   // Denormaliseret butik, saa henvisningskoden kan vaere unik PR. BUTIK i
   // databasen (kortet kender ellers kun sin skabelon). Backfillet fra Card i
@@ -616,4 +619,18 @@ model OnboardingEvent {
 
   @@unique([anonId, step])
   @@index([step, createdAt])
+}
+
+// Gendan kortet med e-mail: kunden faar et link paa mail, der virker een gang og
+// i kort tid. Kun hashen gemmes, saa en databaselaesning ikke giver brugbare links.
+model CardRecoveryToken {
+  id             String       @id @default(cuid())
+  tokenHash      String       @unique
+  customerCardId String
+  customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([customerCardId])
 }

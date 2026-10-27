@@ -8,6 +8,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, shade, rgba, hexToRgb, type StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
+import { cardShortName } from "@/lib/card-name";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { optimizedLogoDataUri } from "@/lib/logo";
 
@@ -229,6 +230,7 @@ export default async function ClaimPage({
             slug={slug}
             walletEnabled={WALLET_ENABLED}
             shopName={cardTitle(business)}
+            cardName={cardShortName(business)}
             ctaBg={text}
             ctaFg={primary}
           />

@@ -120,6 +120,27 @@ export function loginEmail(url: string): Email {
   return { subject: "Dit login-link til Alius", html: aliusShell("Log ind på dit dashboard.", inner), text };
 }
 
+/** Gendan kortet: link til kunden, der virker een gang og i 30 minutter. */
+export function cardRecoveryEmail(shopName: string, url: string): Email {
+  const shop = esc(shopName);
+  const inner = `
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Gendan dit kort</h1>
+    <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Tryk på knappen på den telefon, hvor du vil have dit kort hos ${shop}. Dine stempler og belønninger følger med.
+    </p>
+    ${aliusButton(url, "Gendan mit kort")}
+    ${aliusFallback(url, "Linket virker i 30 minutter og kun én gang. Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.")}`;
+  const text = [
+    `Gendan dit kort hos ${shopName}`,
+    "",
+    "Åbn linket på den telefon, hvor du vil have dit kort (virker i 30 minutter og kun én gang):",
+    url,
+    "",
+    "Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.",
+  ].join("\n");
+  return { subject: `Gendan dit kort hos ${shopName}`, html: aliusShell(`Dit kort hos ${shop}.`, inner), text };
+}
+
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
 // Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (lige
 // efter oprettelsen, hvor emailVerified endnu er null). Samme magiske link.
