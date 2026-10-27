@@ -79,6 +79,8 @@ const info = (over: Partial<ReferralPassInfo> = {}): ReferralPassInfo => ({
   shareUrl: "https://stemplet.alius.dk/henvisninger/sara-salon?k=SARA-K8",
   pageUrl: "https://stemplet.alius.dk/henvisninger/sara-salon",
   termsLine: "Gælder ved første besøg over 300 kr.",
+  newCustomerReward: `100${NBSP}kr.`,
+  referrerReward: "gratis klip",
   referralsDone: 0,
   rewards: [],
   announce: false,
@@ -118,10 +120,12 @@ test("wallet: besked kun ved en ny belønning, og ambassadøren får 'din ven'-b
 
 test("wallet: bagsiden har delelink, belønninger, antal og betingelser", () => {
   const b = referralBackFields(info({ referralsDone: 2, rewards: [{ type: "AMOUNT", value: "100" }] }));
-  assert.deepEqual(b.map((x) => x.key), ["ref-share", "ref-rewards", "ref-count", "ref-terms", "ref-page"]);
-  assert.ok(b[0]!.value.includes("?k=SARA-K8"));
-  assert.equal(b[1]!.value, `100${NBSP}kr.`);
-  assert.equal(b[2]!.value, "Du har henvist 2 venner.");
+  assert.deepEqual(b.map((x) => x.key), ["ref-how", "ref-share", "ref-rewards", "ref-count", "ref-terms", "ref-page"]);
+  assert.ok(b[0]!.value.includes("koden SARA-K8"));
+  assert.ok(b[0]!.value.includes("du får gratis klip"));
+  assert.ok(b[1]!.value.includes("?k=SARA-K8"));
+  assert.equal(b[2]!.value, `100${NBSP}kr.`);
+  assert.equal(b[3]!.value, "Du har henvist 2 venner.");
   assert.equal(referralBackFields(info({ termsLine: null })).some((x) => x.key === "ref-terms"), false);
 });
 

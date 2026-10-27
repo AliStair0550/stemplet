@@ -10,6 +10,9 @@ export type ReferralPassInfo = {
   shareUrl: string;
   pageUrl: string;
   termsLine: string | null;
+  /** Fra butikkens regel, fx "100 kr." og "gratis klip". */
+  newCustomerReward: string;
+  referrerReward: string;
   referralsDone: number;
   /** Beloenninger der kan indloeses nu (ikke udloebne). */
   rewards: { type: RewardType; value: string }[];
@@ -61,7 +64,8 @@ export function referralFrontFields(info: ReferralPassInfo): PassField[] {
         : "Du har nu %@ til gode.";
   }
   return [
-    { key: "ref-code", label: "DIN KODE", value: info.code, textAlignment: "PKTextAlignmentCenter" },
+    // "Henvis en ven" fortaeller, hvad koden er til (Alis test: "Din kode" var uklart).
+    { key: "ref-code", label: "HENVIS EN VEN", value: info.code, textAlignment: "PKTextAlignmentCenter" },
     owed,
   ];
 }
@@ -71,9 +75,14 @@ export function referralBackFields(info: ReferralPassInfo): PassField[] {
   const n = info.referralsDone;
   const fields: PassField[] = [
     {
+      key: "ref-how",
+      label: "Sådan henviser du en ven",
+      value: `Giv din ven koden ${info.code}, eller send linket herunder. Din ven får ${info.newCustomerReward} ved første besøg, og du får ${info.referrerReward}, når vennen har været her.`,
+    },
+    {
       key: "ref-share",
-      label: "Del din kode",
-      value: `Send linket til en ven. Vennen får rabat, og du får en belønning, når vennen har været her: ${info.shareUrl}`,
+      label: "Dit link",
+      value: info.shareUrl,
     },
     {
       key: "ref-rewards",

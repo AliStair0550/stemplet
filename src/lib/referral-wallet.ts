@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { APP_URL } from "./env";
-import { referralShareUrl } from "./referral-text";
+import { referralShareUrl, rewardPhrase } from "./referral-text";
 import type { ReferralPassInfo } from "./wallet/referral-fields";
 
 type Db = typeof prisma;
@@ -24,7 +24,16 @@ export async function loadReferralPassInfo(
   if (!b.referralsEnabled || !cc.referralCode) return null;
 
   const [rule, rewards, lastRedeemed, referralsDone] = await Promise.all([
-    db.referralRule.findUnique({ where: { businessId: b.id }, select: { termsLine: true } }),
+    db.referralRule.findUnique({
+      where: { businessId: b.id },
+      select: {
+        termsLine: true,
+        newCustomerRewardType: true,
+        newCustomerRewardValue: true,
+        referrerRewardType: true,
+        referrerRewardValue: true,
+      },
+    }),
     db.reward.findMany({
       where: { cardId: cc.id, status: "AVAILABLE", expiresAt: { gt: now } },
       orderBy: { createdAt: "asc" },
@@ -47,6 +56,8 @@ export async function loadReferralPassInfo(
     shareUrl: referralShareUrl(APP_URL, b.slug, cc.referralCode),
     pageUrl: `${APP_URL}/henvisninger/${b.slug}`,
     termsLine: rule?.termsLine ?? null,
+    newCustomerReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "rabat",
+    referrerReward: rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "en belønning",
     referralsDone,
     rewards: rewards.map((r) => ({ type: r.type, value: r.value })),
     announce: newest > redeemed,

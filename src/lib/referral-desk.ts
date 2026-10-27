@@ -256,3 +256,115 @@ export async function referralExportRows(businessId: string, db: Db = prisma) {
     createdAt: c.createdAt,
   }));
 }
+
+// ── Arbejdslisten (Overblik) ─────────────────────────────────────────
+
+export type WaitingRow = {
+  referralId: string;
+  createdAt: string;
+  stale: boolean;
+  referred: { id: string; name: string | null; phone: string | null; code: string | null };
+  referrer: { id: string; name: string | null; code: string | null };
+};
+
+export type OwedRow = {
+  rewardId: string;
+  createdAt: string;
+  expiresAt: string;
+  type: RewardType;
+  value: string;
+  card: { id: string; name: string | null; phone: string | null; code: string | null };
+  /** Den ven, belønningen kom fra (ambassadør), eller null for den nye kundes egen. */
+  forReferring: string | null;
+};
+
+/**
+ * Det, personalet skal krydse af: nye kunder der venter paa deres foerste besoeg
+ * ("Rabat givet") og beloenninger der venter paa at blive indloest. Soegningen
+ * rammer BEGGE parters navn, mobil og kode, saa "jeg er blevet henvist af Sara"
+ * og "jeg hedder Mikkel" begge finder raekken.
+ */
+export async function getReferralWorklist(
+  businessId: string,
+  query: string,
+  now: Date = new Date(),
+  db: Db = prisma,
+): Promise<{ waiting: WaitingRow[]; owed: OwedRow[] }> {
+  const q = query.trim().replace(/\s+/g, " ").slice(0, 60);
+  const digits = q.replace(/\D/g, "");
+  const code = q.toUpperCase().replace(/\s+/g, "");
+  const cardMatch = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" as const } },
+          { referralCode: { contains: code } },
+          ...(digits.length >= 4 ? [{ phone: { contains: digits } }] : []),
+        ],
+      }
+    : undefined;
+
+  const [rule, waiting, owed] = await Promise.all([
+    db.referralRule.findUnique({ where: { businessId }, select: { rewardExpiryDays: true } }),
+    db.referral.findMany({
+      where: {
+        businessId,
+        status: "CREATED",
+        ...(cardMatch ? { OR: [{ referredCard: cardMatch }, { referrerCard: cardMatch }] } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        createdAt: true,
+        referredCard: { select: { id: true, name: true, phone: true, referralCode: true } },
+        referrerCard: { select: { id: true, name: true, referralCode: true } },
+      },
+    }),
+    db.reward.findMany({
+      where: {
+        businessId,
+        status: "AVAILABLE",
+        expiresAt: { gt: now },
+        ...(cardMatch ? { card: cardMatch } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        createdAt: true,
+        expiresAt: true,
+        type: true,
+        value: true,
+        card: { select: { id: true, name: true, phone: true, referralCode: true } },
+        referral: { select: { referrerCardId: true, referredCard: { select: { name: true } } } },
+      },
+    }),
+  ]);
+
+  return {
+    waiting: waiting.map((r) => ({
+      referralId: r.id,
+      createdAt: r.createdAt.toISOString(),
+      stale: rule ? isReferralStale(r.createdAt, rule.rewardExpiryDays, now) : false,
+      referred: {
+        id: r.referredCard.id,
+        name: r.referredCard.name,
+        phone: r.referredCard.phone,
+        code: r.referredCard.referralCode,
+      },
+      referrer: { id: r.referrerCard.id, name: r.referrerCard.name, code: r.referrerCard.referralCode },
+    })),
+    owed: owed.map((w) => ({
+      rewardId: w.id,
+      createdAt: w.createdAt.toISOString(),
+      expiresAt: w.expiresAt.toISOString(),
+      type: w.type,
+      value: w.value,
+      card: { id: w.card.id, name: w.card.name, phone: w.card.phone, code: w.card.referralCode },
+      forReferring:
+        w.referral && w.referral.referrerCardId === w.card.id
+          ? (w.referral.referredCard.name ?? "en ven")
+          : null,
+    })),
+  };
+}
