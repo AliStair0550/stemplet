@@ -267,7 +267,7 @@ function CodeEntry({ slug }: { slug: string }) {
 function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done; fresh: boolean }) {
   const { done, fresh } = props;
   // Koden/rabatten "popper" frem lige efter tilmelding.
-  const pop = fresh ? { animation: "celebrate-pop 420ms 120ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both" } : undefined;
+  const pop = fresh ? { animation: "celebrate-pop 420ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both" } : undefined;
   const badge = fresh ? (
     <div className="mb-4 flex justify-center">
       <CheckBurst size={56} bg={props.accent} fg={props.accentFg} />

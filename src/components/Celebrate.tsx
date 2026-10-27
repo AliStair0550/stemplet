@@ -87,7 +87,7 @@ export function CheckBurst({
     <span
       aria-hidden
       className="inline-flex items-center justify-center rounded-full"
-      style={{ width: size, height: size, background: bg, animation: "celebrate-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}
+      style={{ width: size, height: size, background: bg, animation: "celebrate-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
     >
       <svg viewBox="0 0 24 24" width={size * 0.52} height={size * 0.52} fill="none">
         <path
@@ -129,7 +129,7 @@ export function CelebrationToast({
         <div
           role="status"
           className="pointer-events-auto flex w-full max-w-[26rem] items-center gap-4 rounded-2xl border border-fog bg-white px-5 py-4 shadow-lift"
-          style={{ animation: "celebrate-pop 380ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}
+          style={{ animation: "celebrate-pop 380ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
         >
           <CheckBurst size={44} />
           <div className="min-w-0">
