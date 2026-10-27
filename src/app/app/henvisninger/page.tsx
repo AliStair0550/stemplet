@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Panel } from "@/components/dash";
@@ -39,7 +39,7 @@ export default async function ReferralsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { business } = await requireBusiness();
-  if (!business.referralsEnabled) notFound();
+  if (!business.referralsEnabled) redirect("/app/henvisninger/tilfoej");
 
   const rule = await prisma.referralRule.findUnique({
     where: { businessId: business.id },

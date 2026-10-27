@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 
 // Dashboardets ramme: eet roligt dashboard med produkterne under. Oeverst det
 // faelles (Scan, Hjem, Kunder), saa PRODUKTER med hvert sit logo og undermenu, og
-// nederst butikkens egne ting. Henvisninger vises kun for butikker med modulet.
-// En butik med kun Henvisninger ser Stemplet som et "+", der kan slaas til.
+// nederst butikkens egne ting. Et produkt, butikken ikke har, vises som "+", saa
+// begge produkter altid er inden for et tryk.
 
 type NavLink = { href: string; label: string };
 
@@ -89,23 +89,12 @@ export function DashboardNav({
       isActive={isActive}
     />
   ) : (
-    <Link
+    <AddProduct
       href="/app/stemplet/tilfoej"
-      className={cn(
-        "flex items-center justify-between rounded-lg px-3 py-2 transition-colors",
-        pathname.startsWith("/app/stemplet") ? "bg-sand" : "hover:bg-sand/60",
-      )}
-    >
-      <span className="opacity-45">
-        <StempletLogo className="text-[1.05rem]" />
-      </span>
-      <span
-        aria-label="Tilføj Stemplet"
-        className="flex h-6 w-6 items-center justify-center rounded-full border border-clay text-[0.95rem] leading-none text-stone"
-      >
-        +
-      </span>
-    </Link>
+      label="Tilføj Stemplet"
+      active={pathname.startsWith("/app/stemplet")}
+      logo={<StempletLogo className="text-[1.05rem]" />}
+    />
   );
   const henvisninger = showReferrals ? (
     <ProductGroup
@@ -115,8 +104,15 @@ export function DashboardNav({
       links={HENVISNINGER_LINKS}
       isActive={isActive}
     />
-  ) : null;
-  // Kun Henvisninger: Henvisninger oeverst, Stemplet som tilvalg nedenunder.
+  ) : (
+    <AddProduct
+      href="/app/henvisninger/tilfoej"
+      label="Tilføj Henvisninger"
+      active={inHenvisninger}
+      logo={<HenvisningerLogo className="h-[1.35rem]" />}
+    />
+  );
+  // Det aktive produkt foerst, tilvalget ("+") nedenunder.
   const products = showStamps ? (
     <>
       {stemplet}
@@ -242,6 +238,36 @@ export function DashboardNav({
         </button>
       </nav>
     </>
+  );
+}
+
+// Et produkt, butikken ikke har endnu: nedtonet logo og "+", der fører til
+// siden, hvor det slaas til.
+function AddProduct({
+  href,
+  label,
+  active,
+  logo,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  logo: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      className={cn(
+        "flex items-center justify-between rounded-lg px-3 py-2 transition-colors",
+        active ? "bg-sand" : "hover:bg-sand/60",
+      )}
+    >
+      <span className="opacity-45">{logo}</span>
+      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-clay text-[0.95rem] leading-none text-stone">
+        +
+      </span>
+    </Link>
   );
 }
 

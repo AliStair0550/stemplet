@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import QRCode from "qrcode";
+import { APP_URL } from "@/lib/env";
+import { StampShareCard } from "./StampShareCard";
 import { requireStampsBusiness } from "@/lib/session";
 import {
   getBusinessStats,
@@ -210,6 +213,8 @@ export default async function StempletOverviewPage() {
   });
 
   const isNew = stats.stampsTotal === 0;
+  const cardUrl = `${APP_URL}/k/${business.slug}`;
+  const qrDataUrl = await QRCode.toDataURL(cardUrl, { margin: 1, width: 320, color: { dark: "#111111", light: "#FFFFFF" } });
 
   const stampsToday = stats.perDay.at(-1)?.count ?? 0;
   const stampsYesterday = stats.perDay.at(-2)?.count ?? 0;
@@ -227,6 +232,9 @@ export default async function StempletOverviewPage() {
           {summary}
         </p>
       </header>
+
+      {/* Saadan kommer kunderne til kortet: QR ved kassen, link paa hjemmesiden. */}
+      <StampShareCard url={cardUrl} qrDataUrl={qrDataUrl} />
 
       {/* Hjertet i Overblik: genveje til de vigtigste handlinger. */}
       <ActionGrid customerUrl={`/k/${business.slug}`} />

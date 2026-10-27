@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Wordmark } from "@/components/Wordmark";
-import { StartRequestForm } from "./StartRequestForm";
+import { StempletStart } from "./StempletStart";
 import { HenvisningerStart } from "./HenvisningerStart";
 
 type Search = { produkt?: string };
@@ -14,28 +13,13 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }
   return {
     title: "Kom gratis i gang",
-    description:
-      "Fortæl kort om din butik, så laver vi et udkast til dit stempelkort og tager fat i dig. Ingen konto eller kreditkort.",
+    description: "Lav dit digitale stempelkort, så er det klar på et minut. Gratis og uden kreditkort.",
   };
 }
 
+// Selvbetjent oprettelse i samme udtryk for begge produkter: Stemplet som
+// standard, Henvisninger via ?produkt=henvisninger.
 export default async function StartPage({ searchParams }: { searchParams: Promise<Search> }) {
-  // Fra Henvisningers forside: Henvisninger som udgangspunkt, i eget udtryk.
-  // Stempelkortet er et tilvalg. Uden ?produkt er siden Stemplets, som foer.
   if ((await searchParams).produkt === "henvisninger") return <HenvisningerStart />;
-  return (
-    <main className="min-h-screen bg-parchment">
-      <header className="border-b border-fog">
-        <div className="mx-auto flex max-w-[1100px] items-center justify-between px-6 py-5 md:px-8">
-          <Wordmark />
-          <span className="text-[0.7rem] font-[300] uppercase tracking-[0.12em] text-slate">
-            Gratis. Intet kreditkort.
-          </span>
-        </div>
-      </header>
-      <div className="px-6 py-14 md:px-8 md:py-20">
-        <StartRequestForm />
-      </div>
-    </main>
-  );
+  return <StempletStart />;
 }

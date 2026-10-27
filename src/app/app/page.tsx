@@ -92,6 +92,29 @@ function AddStempletCard() {
   );
 }
 
+// Kun Stemplet: Henvisninger som et tilvalg, der kan slaas til.
+function AddReferralsCard() {
+  return (
+    <Link
+      href="/app/henvisninger/tilfoej"
+      className="group flex flex-col justify-between gap-6 rounded-xl border border-dashed border-clay bg-white/50 p-6 transition-colors hover:border-ink hover:bg-white"
+    >
+      <span className="flex items-center justify-between">
+        <span className="opacity-50 transition-opacity group-hover:opacity-100">
+          <HenvisningerLogo className="h-[1.9rem]" />
+        </span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-clay text-[1.1rem] leading-none text-stone transition-colors group-hover:border-ink group-hover:text-ink">
+          +
+        </span>
+      </span>
+      <span>
+        <span className="block text-[0.95rem] font-[500] text-ink">Tilføj Henvisninger</span>
+        <span className="mt-0.5 block text-[0.85rem] text-stone">Få nye kunder via dine kunder.</span>
+      </span>
+    </Link>
+  );
+}
+
 export default async function HomePage() {
   const { business } = await requireBusiness();
   const [stats, pulse, stampActivity, referrals] = await Promise.all([
@@ -150,7 +173,7 @@ export default async function HomePage() {
         </p>
       </header>
 
-      <div className={cn("mb-10 grid gap-4", referrals ? "md:grid-cols-2" : "")}>
+      <div className="mb-10 grid gap-4 md:grid-cols-2">
         {business.stampsEnabled ? (
           <ProductCard href="/app/stemplet" logo={<StempletLogo className="text-[1.35rem]" />}>
             <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
@@ -173,6 +196,7 @@ export default async function HomePage() {
           </ProductCard>
         ) : null}
         {business.stampsEnabled ? null : <AddStempletCard />}
+        {business.referralsEnabled ? null : <AddReferralsCard />}
       </div>
 
       <section>

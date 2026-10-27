@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
 import { PageHeading, Panel, SectionHeader, StatTile } from "@/components/dash";
 import { formatDkNumber } from "@/lib/utils";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 // Overblik kan vaere en ren arbejdsliste.
 export default async function ReferralStatsPage() {
   const { business } = await requireBusiness();
-  if (!business.referralsEnabled) notFound();
+  if (!business.referralsEnabled) redirect("/app/henvisninger/tilfoej");
   const o = await getReferralOverview(business.id);
 
   return (

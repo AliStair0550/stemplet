@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
@@ -70,4 +71,15 @@ export async function saveReferralSettings(input: RuleInput): Promise<Result> {
   revalidatePath("/app/henvisninger/indstillinger");
   revalidatePath(`/henvisninger/${business.slug}`);
   return { ok: true };
+}
+
+/** Slaar Henvisninger til for en butik, der indtil nu kun har haft Stemplet. */
+export async function enableReferralsAction() {
+  const { business } = await requireBusiness();
+  if (!business.referralsEnabled) {
+    await prisma.business.update({ where: { id: business.id }, data: { referralsEnabled: true } });
+    revalidatePath("/app", "layout");
+  }
+  // Uden regel viser Overblik "Saet beloenninger op"; ellers arbejdslisten.
+  redirect("/app/henvisninger/indstillinger");
 }
