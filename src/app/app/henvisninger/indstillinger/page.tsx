@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 // Egen side, saa fanen Henvisninger forbliver enkel.
 export default async function ReferralSettingsPage() {
   const { business } = await requireBusiness();
-  if (!business.referralsEnabled) notFound();
+  if (!business.referralsEnabled) redirect("/app/henvisninger/tilfoej");
   const rule = await prisma.referralRule.findUnique({ where: { businessId: business.id } });
 
   return (
