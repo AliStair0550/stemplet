@@ -59,6 +59,7 @@ type Props = {
   stampsRequired: number;
   rewardText: string;
   stampIcon: StampIconKey;
+  stampsEnabled: boolean;
 };
 
 function Field({
@@ -215,6 +216,7 @@ export function VisitkortDesigner({
   stampsRequired,
   rewardText,
   stampIcon,
+  stampsEnabled,
 }: Props) {
   const router = useRouter();
   const [design, setDesign] = useState<VisitkortDesign>(initial);
@@ -592,20 +594,22 @@ export function VisitkortDesigner({
             Bagside
           </h2>
           <div className="flex flex-col gap-4">
-            <Segmented
-              options={[
-                { key: "qr" as const, label: "QR med tekst", note: "Overskrift + QR + to linjer" },
-                { key: "stempelkort" as const, label: "Stempelkort", note: "Belønning + felter + QR" },
-              ]}
-              value={design.backContent}
-              onChange={(backContent) => set({ backContent })}
-            />
+            {stampsEnabled ? (
+              <Segmented
+                options={[
+                  { key: "qr" as const, label: "QR med tekst", note: "Overskrift + QR + to linjer" },
+                  { key: "stempelkort" as const, label: "Stempelkort", note: "Belønning + felter + QR" },
+                ]}
+                value={design.backContent}
+                onChange={(backContent) => set({ backContent })}
+              />
+            ) : null}
             {design.backContent === "qr" ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <TextField label="Overskrift" value={design.backHeadline} maxLength={60} onChange={(v) => set({ backHeadline: v })} placeholder="Saml stempler." bold={{ value: design.headlineBold, onChange: (v) => set({ headlineBold: v }) }} />
                 <TextField label="Overskrift, accent" value={design.backHeadlineAccent} maxLength={60} onChange={(v) => set({ backHeadlineAccent: v })} placeholder="Få belønninger." />
                 <TextField label="Linje 1" value={design.backLine1} maxLength={60} onChange={(v) => set({ backLine1: v })} placeholder="Direkte i Apple Wallet" bold={{ value: design.line1Bold, onChange: (v) => set({ line1Bold: v }) }} />
-                <TextField label="Linje 2" value={design.backLine2} maxLength={60} onChange={(v) => set({ backLine2: v })} placeholder="Ingen app. Ingen tilmelding." bold={{ value: design.line2Bold, onChange: (v) => set({ line2Bold: v }) }} />
+                <TextField label="Linje 2" value={design.backLine2} maxLength={60} onChange={(v) => set({ backLine2: v })} placeholder="Ingen app. Kun navn og e-mail." bold={{ value: design.line2Bold, onChange: (v) => set({ line2Bold: v }) }} />
               </div>
             ) : (
               <p className="text-[0.78rem] font-[300] leading-relaxed text-slate">

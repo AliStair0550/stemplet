@@ -13,8 +13,7 @@ import {
   normalizeOrient,
   defaultOrient,
   clampName,
-  QR_PRINT_HEADLINE,
-  QR_PRINT_HELPER,
+  qrPrintText,
 } from "@/lib/qr-print";
 import { QrPrintDoc } from "./PrintDoc";
 
@@ -103,8 +102,7 @@ export async function GET(
       format,
       orientation,
       businessName: clampName(business.name, format === "visitkort" ? 30 : 42),
-      headline: QR_PRINT_HEADLINE,
-      helper: QR_PRINT_HELPER,
+      ...qrPrintText(business.stampsEnabled),
       logoUrl: business.logoUrl,
       primaryColor: business.primaryColor,
       textColor: business.textColor,

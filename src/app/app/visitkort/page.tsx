@@ -29,14 +29,17 @@ export default async function VisitkortPage() {
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     slug: business.slug,
+    stampsEnabled: business.stampsEnabled,
   });
-  const design = mergeDesign(base, business.businessCardDesign);
+  const merged = mergeDesign(base, business.businessCardDesign);
+  // Uden stempler giver stempelkort-bagsiden ingen mening: vis QR-bagsiden.
+  const design = business.stampsEnabled ? merged : { ...merged, backContent: "qr" as const };
 
   return (
     <>
       <PageHeading
         title="Visitkort"
-        subtitle="Design et visitkort med for- og bagside, og hent en tryk-klar PDF til Vistaprint. Forsiden er dine oplysninger, bagsiden er stempelkortet."
+        subtitle="Design et visitkort med for- og bagside, og hent en tryk-klar PDF til Vistaprint. Forsiden er dine oplysninger, bagsiden er QR-koden til dit kort."
       />
       <VisitkortDesigner
         initial={design}
@@ -47,6 +50,7 @@ export default async function VisitkortPage() {
         stampsRequired={card?.stampsRequired ?? 10}
         rewardText={card?.rewardText ?? "10. på huset"}
         stampIcon={(card?.stampIcon as StampIconKey) ?? "coffee"}
+        stampsEnabled={business.stampsEnabled}
       />
     </>
   );

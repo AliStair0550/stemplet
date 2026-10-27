@@ -20,7 +20,7 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web, iOS",
   description:
-    "Digitalt stempelkort i Apple Wallet til caféer, barberer og bagere. Kunderne scanner en QR-kode og har kortet på fem sekunder. Ingen app, ingen tilmelding.",
+    "Digitalt stempelkort i Apple Wallet til caféer, barberer og bagere. Kunderne scanner en QR-kode og har kortet på få sekunder. Ingen app, kun navn og e-mail.",
   url: "https://stemplet.alius.dk",
   inLanguage: "da-DK",
   offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },

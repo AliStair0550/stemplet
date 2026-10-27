@@ -335,7 +335,7 @@ export function StampConfirm({
             Hent dit stempelkort først
           </h1>
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
-            Du mangler et kort hos {businessName}. Det tager fem sekunder.
+            Du mangler et kort hos {businessName}. Det tager få sekunder.
           </p>
           <ButtonLink href={`/k/${slug}`} variant="primary" size="lg">
             Hent dit kort

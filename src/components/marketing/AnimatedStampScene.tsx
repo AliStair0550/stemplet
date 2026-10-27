@@ -138,7 +138,7 @@ export default function AnimatedStampScene() {
         {phase === "scan" ? (
           <span className="inline-flex items-center gap-2 rounded-full border border-clay bg-white px-4 py-2 text-[0.78rem] font-[300] text-stone">
             <span className="h-2 w-2 animate-pulse rounded-full bg-terracotta" />
-            Kortet lander i Apple Wallet på fem sekunder
+            Kortet lander i Apple Wallet på få sekunder
           </span>
         ) : null}
         {phase === "fill" ? (

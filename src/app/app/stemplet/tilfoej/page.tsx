@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 // for at slaa det til. Har butikken allerede Stemplet, gaar vi bare til overblikket.
 
 const POINTS = [
-  { title: "Stempelkort i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på fem sekunder. Ingen app." },
+  { title: "Stempelkort i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på få sekunder. Ingen app." },
   { title: "Flere gensyn", text: "Et stempel pr. besøg og en belønning, når kortet er fuldt." },
   { title: "Samme kort som Henvisninger", text: "Stempler og henvisningskode står på det samme kort i kundens Wallet." },
 ];
