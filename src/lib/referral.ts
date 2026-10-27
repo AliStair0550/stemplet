@@ -321,6 +321,8 @@ export type VisitResult = {
     type: RewardType;
     value: string;
     expiresAt: string;
+    /** REDEEMED for den nye kundes rabat, naar den gives ved samme besoeg. */
+    status: "AVAILABLE" | "REDEEMED" | "EXPIRED";
   }[];
 };
 
@@ -331,7 +333,7 @@ async function loadVisitResult(
   const rewards = await tx.reward.findMany({
     where: { referralId: referral.id },
     orderBy: { createdAt: "asc" },
-    select: { id: true, cardId: true, type: true, value: true, expiresAt: true },
+    select: { id: true, cardId: true, type: true, value: true, expiresAt: true, status: true },
   });
   return {
     referralId: referral.id,
@@ -367,6 +369,9 @@ export async function recordFirstVisit(
     staffDeviceId?: string | null;
     idempotencyKey?: string;
     now?: Date;
+    /** Vennens rabat bruges ved dette besoeg: indloes den i samme transaktion
+     *  ("Rabat givet" i kassen), saa der kun skal trykkes een gang. */
+    redeemNewCustomerReward?: boolean;
   },
   db: Db = prisma,
 ): Promise<VisitResult> {
@@ -389,6 +394,7 @@ async function visitTx(
     staffDeviceId?: string | null;
     idempotencyKey?: string;
     now?: Date;
+    redeemNewCustomerReward?: boolean;
   },
 ): Promise<VisitResult> {
   const now = opts.now ?? new Date();
@@ -475,6 +481,15 @@ async function visitTx(
       value: plan.newCustomer.value,
       expiresAt,
       createdAt: now,
+      // Rabat givet ved besoeget: indloest med det samme af samme medarbejder.
+      ...(opts.redeemNewCustomerReward
+        ? {
+            status: "REDEEMED" as const,
+            redeemedAt: now,
+            redeemedByStaffUserId: opts.staffUserId ?? null,
+            redeemedByStaffDeviceId: opts.staffDeviceId ?? null,
+          }
+        : {}),
     },
   });
   if (plan.referrer) {

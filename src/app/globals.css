@@ -608,10 +608,47 @@ textarea:focus-visible {
 :root {
   --btn-primary: #a6502e;
   --btn-primary-hover: #8f4326;
-  --section-accent: #a6502e;
 }
 .dash-theme {
   --btn-primary: #1c1917;
   --btn-primary-hover: #000000;
-  --section-accent: #1c1917;
+}
+
+/* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden
+   gentagelse; ingen konfetti for den, der har slaaet animationer fra. */
+@keyframes confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+@keyframes celebrate-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes celebrate-check {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-confetti {
+    display: none;
+  }
 }

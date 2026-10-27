@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { WalletIcon } from "@/components/ui";
+import { Confetti, CheckBurst } from "@/components/Celebrate";
 import { referralShareText, referralShareUrl } from "@/lib/referral-text";
 
 // Henvisningssidens klient-del. Henvisningers egen stil (docs/henvisninger.md):
@@ -36,6 +37,8 @@ export function ReferralFlow(props: {
   initial: Done | null;
 }) {
   const [done, setDone] = useState<Done | null>(props.initial);
+  // Lige tilmeldt (ikke en genkendt kunde): fejr det med flueben og konfetti.
+  const [fresh, setFresh] = useState(false);
 
   return (
     // Fade + let opadglidning under 300 ms (dokumentet). Genbruger stepIn-
@@ -65,7 +68,18 @@ export function ReferralFlow(props: {
           Det er din egen kode. Send den til en ven, så får vennen {props.newCustomerReward} ved første besøg.
         </p>
       ) : null}
-      {done ? <DoneView {...props} done={done} /> : <SignupView {...props} onDone={setDone} />}
+      {fresh ? <Confetti colors={[props.accent, "#1D1D1F", "#C9A24B", "#E2DDD5"]} /> : null}
+      {done ? (
+        <DoneView {...props} done={done} fresh={fresh} />
+      ) : (
+        <SignupView
+          {...props}
+          onDone={(d) => {
+            setDone(d);
+            setFresh(true);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -250,8 +264,15 @@ function CodeEntry({ slug }: { slug: string }) {
 
 // ── Efter tilmelding ─────────────────────────────────────────────────
 
-function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
-  const { done } = props;
+function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done; fresh: boolean }) {
+  const { done, fresh } = props;
+  // Koden/rabatten "popper" frem lige efter tilmelding.
+  const pop = fresh ? { animation: "celebrate-pop 420ms 120ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both" } : undefined;
+  const badge = fresh ? (
+    <div className="mb-4 flex justify-center">
+      <CheckBurst size={56} bg={props.accent} fg={props.accentFg} />
+    </div>
+  ) : null;
   const shareUrl = referralShareUrl(props.appUrl, props.slug, done.code);
   const walletHref = `/api/wallet/claim/${encodeURIComponent(props.slug)}`;
 
@@ -259,10 +280,11 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
     // Ny kunde via en ven: velkomstkortet foerst, egen kode nederst.
     return (
       <div className="flex flex-1 flex-col">
+        {badge}
         <h1 className="text-center text-[28px] font-semibold leading-[1.15] tracking-[-0.02em]">
           Velkommen hos {props.shopName}
         </h1>
-        <div className="mt-6 rounded-[12px] px-5 py-6 text-center" style={{ backgroundColor: SURFACE }}>
+        <div className="mt-6 rounded-[12px] px-5 py-6 text-center" style={{ backgroundColor: SURFACE, ...pop }}>
           <p className="text-[32px] font-semibold tracking-[-0.02em]">{props.newCustomerReward}</p>
           <p className="mt-1 text-[17px]" style={{ color: MUTED }}>
             til dig ved dit første besøg
@@ -285,7 +307,12 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
               Book tid
             </a>
           ) : null}
-          {props.walletEnabled ? <WalletLink href={walletHref} /> : null}
+          {props.walletEnabled ? (
+            <>
+              <WalletLink href={walletHref} />
+              <WalletHint text="Rabatten og din egen kode står på kortet. Vis det ved kassen, så registrerer de dit besøg." />
+            </>
+          ) : null}
         </div>
         <div className="mt-auto border-t pt-5 text-center" style={{ borderColor: LINE }}>
           <p className="text-[14px]" style={{ color: MUTED }}>
@@ -312,10 +339,11 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
           Du er allerede kunde hos {props.shopName}, så rabatten gælder nye kunder. Her er din egen kode.
         </p>
       ) : null}
+      {badge}
       <p className="text-center text-[14px]" style={{ color: MUTED }}>
-        Din kode
+        {fresh ? "Din kode er klar" : "Din kode"}
       </p>
-      <p className="mt-1 text-center text-[44px] font-semibold leading-none tracking-[0.04em]">
+      <p className="mt-1 text-center text-[44px] font-semibold leading-none tracking-[0.04em]" style={pop}>
         {done.code}
       </p>
       <p className="mx-auto mt-4 max-w-[320px] text-center text-[17px] leading-snug" style={{ color: MUTED }}>
@@ -329,7 +357,12 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
           accent={props.accent}
           accentFg={props.accentFg}
         />
-        {props.walletEnabled ? <WalletLink href={walletHref} /> : null}
+        {props.walletEnabled ? (
+          <>
+            <WalletLink href={walletHref} />
+            <WalletHint text="Gem koden på dit kort i Wallet. Så har du den altid med, og du kan se, hvad du har til gode." />
+          </>
+        ) : null}
       </div>
       {props.termsLine ? (
         <p className="mt-5 text-center text-[14px]" style={{ color: MUTED }}>
@@ -337,6 +370,14 @@ function DoneView(props: Parameters<typeof ReferralFlow>[0] & { done: Done }) {
         </p>
       ) : null}
     </div>
+  );
+}
+
+function WalletHint({ text }: { text: string }) {
+  return (
+    <p className="-mt-1 text-center text-[13px] leading-snug" style={{ color: MUTED }}>
+      {text}
+    </p>
   );
 }
 

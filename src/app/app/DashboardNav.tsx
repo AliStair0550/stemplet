@@ -29,6 +29,7 @@ const STEMPLET_LINKS: NavLink[] = [
 
 const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger", label: "Overblik" },
+  { href: "/app/henvisninger/statistik", label: "Statistik" },
   { href: "/app/henvisninger/indstillinger", label: "Indstillinger" },
 ];
 

@@ -318,3 +318,49 @@ test("wallet: ambassadoeren faar besked ved ny beloenning, ikke efter indloesnin
     await cleanup(s.bizId);
   }
 });
+
+// ── Arbejdslisten og "Rabat givet" ───────────────────────────────────
+
+import { getReferralWorklist } from "../../src/lib/referral-desk";
+
+test("arbejdsliste: vennen kan findes paa begge parters navn, og Rabat givet indloeser vennens rabat", async () => {
+  const s = await makeShop();
+  try {
+    const sara = await makeCustomer(s, "Sara Jensen", "+4511111111");
+    const mikkel = await makeCustomer(s, "Mikkel Holm", "+4522222222");
+    const ref = await createReferral({
+      businessId: s.bizId,
+      referrerCardId: sara.id,
+      referredCardId: mikkel.id,
+      source: "LINK",
+    });
+
+    // "Jeg er blevet henvist af Sara" og "jeg hedder Mikkel" finder begge raekken.
+    for (const q of ["sara", "mikkel", "22222222"]) {
+      const w = await getReferralWorklist(s.bizId, q);
+      assert.deepEqual(w.waiting.map((x) => x.referralId), [ref.id], q);
+    }
+    assert.equal((await getReferralWorklist(s.bizId, "findes ikke")).waiting.length, 0);
+
+    const res = await recordFirstVisit({
+      referralId: ref.id,
+      businessId: s.bizId,
+      staffDeviceId: s.deviceId,
+      redeemNewCustomerReward: true,
+    });
+    const newCustomer = res.rewards.find((r) => r.role === "newCustomer")!;
+    assert.equal(newCustomer.status, "REDEEMED");
+    const row = await prisma.reward.findUniqueOrThrow({ where: { id: newCustomer.id } });
+    assert.ok(row.redeemedAt);
+    assert.equal(row.redeemedByStaffDeviceId, s.deviceId);
+
+    // Tilbage paa listen: kun ambassadoerens beloenning, med vennens navn.
+    const after = await getReferralWorklist(s.bizId, "");
+    assert.equal(after.waiting.length, 0);
+    assert.equal(after.owed.length, 1);
+    assert.equal(after.owed[0]!.card.id, sara.id);
+    assert.equal(after.owed[0]!.forReferring, "Mikkel Holm");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

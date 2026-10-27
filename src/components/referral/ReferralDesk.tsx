@@ -6,6 +6,7 @@ import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { rewardPhrase } from "@/lib/referral-text";
 import type { DeskCustomer, DeskHit } from "@/lib/referral-desk";
+import { CelebrationToast } from "@/components/Celebrate";
 
 // Kassens henvisningsvisning (fase 3, docs/henvisninger.md "Kassen"): een
 // soegelinje, scan-knap og et resultatkort med de to handlinger som store
@@ -64,6 +65,8 @@ export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
   const [scanning, setScanning] = useState(false);
   const [customer, setCustomer] = useState<DeskCustomer | null>(null);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
+  // Fejringen efter "Rabat givet" og indloesning (een sætning om, hvad der skete).
+  const [toast, setToast] = useState<{ title: string; text?: string } | null>(null);
 
   // Soegning med en kort pause, saa der ikke fyres et kald pr. tastetryk.
   useEffect(() => {
@@ -99,12 +102,14 @@ export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4">
+      {toast ? <CelebrationToast title={toast.title} text={toast.text} onDone={() => setToast(null)} /> : null}
       {customer ? (
         <CustomerCard
           customer={customer}
           hasPin={hasPin}
           note={note}
           onNote={setNote}
+          onCelebrate={setToast}
           onReload={() => open({ id: customer.id })}
           onDone={reset}
         />
@@ -191,6 +196,7 @@ function CustomerCard({
   hasPin,
   note,
   onNote,
+  onCelebrate,
   onReload,
   onDone,
 }: {
@@ -198,6 +204,7 @@ function CustomerCard({
   hasPin: boolean;
   note: { ok: boolean; text: string } | null;
   onNote: (n: { ok: boolean; text: string } | null) => void;
+  onCelebrate: (t: { title: string; text?: string }) => void;
   onReload: () => Promise<void>;
   onDone: () => void;
 }) {
@@ -216,16 +223,28 @@ function CustomerCard({
     if (!ref || busy) return;
     setBusy("visit");
     onNote(null);
+    // "Rabat givet": registrerer besoeget og indloeser vennens rabat i eet tryk.
     const res = await api(`${BASE}/besoeg`, {
       referralId: ref.id,
       idempotencyKey: visitKey.current,
+      pin: pin || undefined,
     });
     setBusy(null);
     if (res.ok) {
       visitKey.current = newIdemKey();
-      onNote({ ok: true, text: "Første besøg er registreret. Begge belønninger er oprettet." });
+      setPin("");
+      const amb = (res.rewards as { role: string; type: "AMOUNT" | "STAMPS" | "SERVICE"; value: string }[]).find(
+        (r) => r.role === "referrer",
+      );
+      onCelebrate({
+        title: `${customer.name ?? "Kunden"} har fået sin rabat`,
+        text: amb
+          ? `${ref.referrerName ?? "Ambassadøren"} har nu ${rewardPhrase(amb.type, amb.value)} til gode.`
+          : `${ref.referrerName ?? "Ambassadøren"} har nået månedens loft, så der er ingen ny belønning.`,
+      });
       await onReload();
     } else {
+      if (res.code === "PIN") setNeedPin(true);
       onNote({ ok: false, text: res.message ?? "Noget gik galt. Prøv igen." });
     }
   }
@@ -243,7 +262,10 @@ function CustomerCard({
     if (res.ok) {
       redeemKey.current = newIdemKey();
       setPin("");
-      onNote({ ok: true, text: `${capitalize(rewardPhrase(reward.type, reward.value))} er indløst.` });
+      onCelebrate({
+        title: `${capitalize(rewardPhrase(reward.type, reward.value))} er indløst`,
+        text: `${customer.name ?? "Kunden"} har fået sin belønning.`,
+      });
       await onReload();
     } else {
       if (res.code === "PIN") setNeedPin(true);
@@ -293,7 +315,7 @@ function CustomerCard({
         {customer.canLink ? <LinkReferrer customer={customer} onNote={onNote} onLinked={onReload} /> : null}
       </div>
 
-      {reward && needPin ? (
+      {(reward || ref) && needPin ? (
         <input
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
@@ -313,7 +335,7 @@ function CustomerCard({
           disabled={!ref || ref.stale || busy !== null}
           className={btnClass("primary", "lg")}
         >
-          {busy === "visit" ? "Et øjeblik" : "Første besøg gennemført"}
+          {busy === "visit" ? "Et øjeblik" : "Rabat givet"}
         </button>
         <button
           type="button"
