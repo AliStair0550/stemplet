@@ -16,6 +16,15 @@ export function ShopLinkCard({ url }: { url: string }) {
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <span className="min-w-0 flex-1 truncate rounded-full bg-[#F5F5F4] px-4 py-2.5 text-[0.9rem] text-ink">{shown}</span>
         <span className="flex gap-2">
+          {/* Aabn er hovedknappen: butikken skal se siden, kunderne ser. */}
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-[#111] px-6 text-[0.9rem] font-[600] text-white transition-transform active:scale-[0.97] sm:flex-none"
+          >
+            Åbn
+          </a>
           <button
             type="button"
             onClick={async () => {
@@ -27,18 +36,10 @@ export function ShopLinkCard({ url }: { url: string }) {
                 // Kopiering afvist: linket kan stadig markeres.
               }
             }}
-            className="min-h-11 flex-1 rounded-full bg-ink px-5 text-[0.9rem] font-[500] text-parchment transition-transform active:scale-[0.97] sm:flex-none"
+            className="min-h-11 flex-1 rounded-full border border-clay px-5 text-[0.9rem] font-[500] text-ink hover:border-ink sm:flex-none"
           >
             {copied ? "Kopieret" : "Kopiér link"}
           </button>
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-5 text-[0.9rem] font-[500] text-ink hover:border-ink sm:flex-none"
-          >
-            Åbn
-          </a>
         </span>
       </div>
     </section>

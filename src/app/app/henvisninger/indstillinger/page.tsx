@@ -38,7 +38,9 @@ export default async function ReferralSettingsPage() {
           referrerRewardType: rule?.referrerRewardType ?? "AMOUNT",
           referrerRewardValue: rule?.referrerRewardValue ?? "100",
           minPurchaseKr: rule?.minPurchaseKr?.toString() ?? "",
-          maxReferralsPerMonth: rule?.maxReferralsPerMonth?.toString() ?? "5",
+          // Ingen betingelser som standard (Alis valg): intet loft, intet
+          // minimumskoeb og ingen betingelseslinje. Kan saettes her.
+          maxReferralsPerMonth: rule ? (rule.maxReferralsPerMonth?.toString() ?? "") : "",
           rewardExpiryDays: (rule?.rewardExpiryDays ?? 180).toString(),
           termsLine: rule?.termsLine ?? "",
           bookingUrl: business.bookingUrl ?? "",

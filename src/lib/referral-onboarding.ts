@@ -64,7 +64,8 @@ export async function createReferralBusiness(
           newCustomerRewardValue: friend.value,
           referrerRewardType: referrer.type,
           referrerRewardValue: referrer.value,
-          maxReferralsPerMonth: 5,
+          // Ingen betingelser som standard; kan saettes under Indstillinger.
+          maxReferralsPerMonth: null,
           rewardExpiryDays: 180,
         },
         tx as unknown as Db,

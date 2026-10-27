@@ -7,9 +7,10 @@ import { rewardPhrase } from "@/lib/referral-text";
 import { CelebrationToast } from "@/components/Celebrate";
 import type { OwedRow, WaitingRow } from "@/lib/referral-desk";
 
-// Henvisningers Overblik som arbejdsliste: det personalet krydser af. Een knap
-// pr. raekke ("Rabat givet" for vennen, "Indløs" for belønningen), søgning paa
-// begge parters navn, mobil og kode, og en kort fejring efter hvert tryk.
+// Henvisningers Overblik som arbejdsliste: det personalet krydser af. To lister
+// med tydelige roller: nye kunder paa vej ("Rabat givet" ved foerste besoeg) og
+// beloenninger at give (oftest ambassadoerer; "Indløs"). Soegning paa begge
+// parters navn, mobil og kode, og en kort fejring efter hvert tryk.
 
 function newIdemKey(): string {
   try {
@@ -146,11 +147,13 @@ export function ReferralWorklist({
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-[1.1rem] font-[600] text-ink">
-          Venter på første besøg <span className="font-[400] text-slate">{waiting.length}</span>
-        </h2>
+        <SectionTitle
+          title="Nye kunder på vej"
+          count={waiting.length}
+          text="Venner, en kunde har henvist. Giv rabatten ved deres første besøg, og tryk Rabat givet."
+        />
         {waiting.length === 0 ? (
-          <Empty text={query ? "Ingen nye kunder matcher." : "Ingen venter lige nu. Når en ven tilmelder sig via et link, står vedkommende her."} />
+          <Empty text={query ? "Ingen nye kunder matcher." : "Ingen lige nu. Når en ven tilmelder sig via et link, står vedkommende her."} />
         ) : (
           <ul className="flex flex-col gap-2">
             {waiting.map((w) => (
@@ -159,7 +162,10 @@ export function ReferralWorklist({
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-fog bg-white px-5 py-4 shadow-card"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[1.05rem] font-[600] text-ink">{w.referred.name ?? "Ny kunde"}</p>
+                  <p className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-[1.05rem] font-[600] text-ink">{w.referred.name ?? "Ny kunde"}</span>
+                    <Role kind="ny" />
+                  </p>
                   <p className="text-[0.82rem] text-stone">
                     Henvist af <span className="text-ink">{w.referrer.name ?? w.referrer.code}</span>
                     {formatPhone(w.referred.phone) ? ` · ${formatPhone(w.referred.phone)}` : ""} · {relativeDk(w.createdAt)}
@@ -180,11 +186,13 @@ export function ReferralWorklist({
       </section>
 
       <section>
-        <h2 className="mb-3 text-[1.1rem] font-[600] text-ink">
-          Belønninger til gode <span className="font-[400] text-slate">{owed.length}</span>
-        </h2>
+        <SectionTitle
+          title="Belønninger at give"
+          count={owed.length}
+          text="Kunder med en belønning til gode, oftest ambassadører, hvis ven har været her. Tryk Indløs, når de bruger den."
+        />
         {owed.length === 0 ? (
-          <Empty text={query ? "Ingen belønninger matcher." : "Ingen belønninger venter. Når en ven har været her, får ambassadøren sin belønning her."} />
+          <Empty text={query ? "Ingen belønninger matcher." : "Ingen lige nu. Når en ven har været her, står ambassadørens belønning her."} />
         ) : (
           <ul className="flex flex-col gap-2">
             {owed.map((o) => (
@@ -193,7 +201,10 @@ export function ReferralWorklist({
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-fog bg-white px-5 py-4 shadow-card"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[1.05rem] font-[600] text-ink">{o.card.name ?? "Kunde"}</p>
+                  <p className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-[1.05rem] font-[600] text-ink">{o.card.name ?? "Kunde"}</span>
+                    <Role kind={o.forReferring ? "ambassador" : "ny"} />
+                  </p>
                   <p className="text-[0.82rem] text-stone">
                     {o.forReferring ? (
                       <>
@@ -215,6 +226,26 @@ export function ReferralWorklist({
         )}
       </section>
     </div>
+  );
+}
+
+function SectionTitle({ title, count, text }: { title: string; count: number; text: string }) {
+  return (
+    <div className="mb-3">
+      <h2 className="text-[1.2rem] font-[700] tracking-[-0.02em] text-ink">
+        {title} <span className="font-[400] text-slate">{count}</span>
+      </h2>
+      <p className="mt-0.5 text-[0.88rem] text-stone">{text}</p>
+    </div>
+  );
+}
+
+// Hvem er hvem: den nye kunde (vennen) og ambassadoeren (kunden, der henviste).
+function Role({ kind }: { kind: "ny" | "ambassador" }) {
+  return kind === "ny" ? (
+    <span className="shrink-0 rounded-full border border-clay px-2 py-0.5 text-[0.7rem] font-[500] text-stone">Ny kunde</span>
+  ) : (
+    <span className="shrink-0 rounded-full bg-[#111] px-2 py-0.5 text-[0.7rem] font-[500] text-white">Ambassadør</span>
   );
 }
 

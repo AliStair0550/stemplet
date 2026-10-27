@@ -35,6 +35,10 @@ test("oprettelse via Henvisninger: kun Henvisninger, regel fra fri tekst og medl
     assert.equal(b.referralRule?.newCustomerRewardValue, "150");
     assert.equal(b.referralRule?.referrerRewardType, "SERVICE");
     assert.equal(b.referralRule?.referrerRewardValue, "Gratis vask");
+    // Ingen betingelser som standard.
+    assert.equal(b.referralRule?.maxReferralsPerMonth, null);
+    assert.equal(b.referralRule?.minPurchaseKr, null);
+    assert.equal(b.referralRule?.termsLine, null);
 
     // Samme e-mail igen: en venlig fejl, ingen ny butik.
     await assert.rejects(

@@ -10,6 +10,7 @@ import { Scribble } from "@/components/henvisninger-site/Hand";
 import { getReferralWorklist } from "@/lib/referral-desk";
 import { ReferralWorklist } from "./ReferralWorklist";
 import { ShopLinkCard } from "./ShopLinkCard";
+import { AddToHomeButton } from "../AddToHomeButton";
 import { APP_URL } from "@/lib/env";
 
 export const metadata: Metadata = { title: "Henvisninger" };
@@ -69,6 +70,16 @@ export default async function ReferralsPage({
     <>
       <ReferralHeader />
       <ShopLinkCard url={`${APP_URL}/henvisninger/${business.slug}`} />
+      <div className="mb-8">
+        <AddToHomeButton
+          title="Tilføj Henvisninger til hjemmeskærmen"
+          text="Så åbner du listen med ét tryk, når der kommer kunder."
+          icon={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/henvisninger-icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-[10px]" />
+          }
+        />
+      </div>
       <ReferralWorklist waiting={waiting} owed={owed} hasPin={business.staffPin != null} initialQuery={q} />
     </>
   );
