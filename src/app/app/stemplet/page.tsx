@@ -137,7 +137,7 @@ function ActionTile({ action }: { action: Action }) {
         {action.icon}
       </span>
       <span className="min-w-0">
-        <span className="flex items-center gap-1.5 font-[400] text-[1rem] text-ink">
+        <span className="flex items-center gap-1.5 font-[600] text-[1rem] text-ink">
           {action.label}
           <span className="text-terracotta/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-terracotta">
             <CtaArrow />
