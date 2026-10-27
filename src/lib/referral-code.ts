@@ -49,3 +49,21 @@ export function generateReferralCode(
 export function normalizeReferralCode(input: string): string {
   return input.trim().toUpperCase().replace(/\s+/g, "");
 }
+
+/**
+ * Mulige koder ud fra det, en kunde har tastet. Tolerant over for det, telefoner
+ * og mennesker goer: mellemrum ("sara fu"), tankestreger fra iPhone (U+2013 i stedet for "-"),
+ * manglende bindestreg ("sarafu") og smaa bogstaver. Uden adskiller proeves
+ * baade NAVN-XX og NAVN-XXX (reserven ved mange kollisioner).
+ */
+export function referralCodeCandidates(input: string): string[] {
+  const upper = input.trim().toUpperCase();
+  const parts = upper.split(/[^A-Z0-9]+/).filter(Boolean);
+  const out = new Set<string>();
+  if (parts.length === 2) out.add(`${parts[0]}-${parts[1]}`);
+  const flat = parts.join("");
+  for (const n of [2, 3]) {
+    if (flat.length > n) out.add(`${flat.slice(0, -n)}-${flat.slice(-n)}`);
+  }
+  return [...out];
+}

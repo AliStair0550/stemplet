@@ -3,7 +3,7 @@ import { prisma } from "./prisma";
 import { createCardholderAtomically } from "./stamp";
 import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
-import { normalizeReferralCode } from "./referral-code";
+import { referralCodeCandidates } from "./referral-code";
 import { normalizePhone } from "./phone";
 
 // Henvisningssiden /henvisninger/[slug] (fase 2). Een kunde = eet kort pr. butik
@@ -51,10 +51,10 @@ export async function loadReferralShop(slug: string, db: Db = prisma) {
 
 /** Henviseren bag en kode i butikken (kun fornavnet bruges paa siden). */
 export async function findReferrerByCode(businessId: string, code: string, db: Db = prisma) {
-  const normalized = normalizeReferralCode(code);
-  if (!normalized) return null;
+  const candidates = referralCodeCandidates(code);
+  if (candidates.length === 0) return null;
   return db.customerCard.findFirst({
-    where: { businessId, referralCode: normalized },
+    where: { businessId, referralCode: { in: candidates } },
     select: { id: true, name: true, referralCode: true },
   });
 }
