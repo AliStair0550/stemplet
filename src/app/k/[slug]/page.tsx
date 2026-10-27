@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { StampCard } from "@/components/StampCard";
+import { WalletCardPreview } from "@/components/WalletCardPreview";
+import { loadCardPreview } from "@/lib/card-preview";
+import { rewardPhrase } from "@/lib/referral-text";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, shade, rgba, hexToRgb, type StampIconKey } from "@/lib/brand";
@@ -52,10 +55,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const business = await prisma.business.findUnique({ where: { slug } });
   const brandName = business ? cardTitle(business) : "";
-  const title = business ? `Stempelkort hos ${brandName}` : "Stempelkort";
+  const title = business ? `Dit kort hos ${brandName}` : "Kort";
   const description = business
-    ? `Hent dit digitale stempelkort hos ${brandName} direkte i Apple Wallet. Ingen app. Kun navn og e-mail.`
-    : "Digitalt stempelkort i Apple Wallet.";
+    ? `Hent dit kort hos ${brandName} direkte i Apple Wallet. Ingen app. Kun navn og e-mail.`
+    : "Digitalt kort i Apple Wallet.";
   return {
     title,
     description,
@@ -75,15 +78,11 @@ export default async function ClaimPage({
     where: { slug },
     include: {
       cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
+      referralRule: true,
     },
   });
-  if (!business) notFound();
-  // Kun Henvisninger (Stemplet slaaet fra): intet stempelkort, men butikkens
-  // henvisningsside, saa et gammelt QR-link ikke ender blindt.
-  if (!business.stampsEnabled) {
-    if (business.referralsEnabled) redirect(`/henvisninger/${business.slug}`);
-    notFound();
-  }
+  // Een butiksside for kortet og alle dets funktioner (stempler, henvisninger).
+  if (!business || (!business.stampsEnabled && !business.referralsEnabled)) notFound();
   // Lille webp-logo bages ind i den (CDN-cachede) side, saa der ikke er en ekstra
   // netvaerkshentning: konsistent, oejeblikkelig LCP paa mobil.
   const logoSrc = await optimizedLogoDataUri(business.logoUrl);
@@ -108,7 +107,7 @@ export default async function ClaimPage({
             {cardTitle(business)}
           </h1>
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
-            Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken, så
+            Kortet er ikke aktivt lige nu. Spørg personalet i butikken, så
             hjælper de dig.
           </p>
         </div>
@@ -117,6 +116,20 @@ export default async function ClaimPage({
   }
   const card = business.cards[0];
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
+  const rule = business.referralsEnabled ? business.referralRule : null;
+  const referral = rule
+    ? {
+        newCustomerReward: rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue),
+        referrerReward: rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue),
+        termsLine: rule.termsLine,
+      }
+    : null;
+  // Kortet, som det ser ud i Wallet (butikkens design). Et eget billede hentes
+  // som en cachet fil med version, ikke indlejret i siden.
+  const preview = await loadCardPreview(business);
+  const artworkUrl = business.cardArtwork
+    ? `/k/${slug}/kortbillede?v=${createHash("sha1").update(business.cardArtwork).digest("hex").slice(0, 10)}`
+    : null;
 
   // Brand-drevet, levende baggrund udledt af butikkens egne farver. LYSE farver
   // (fx Sand) faar en varm, luftig behandling (mod cremet i toppen, en blOd
@@ -197,31 +210,33 @@ export default async function ClaimPage({
               className="font-[300] text-[1.5rem] leading-tight"
               style={{ color: text }}
             >
-              Dit stempelkort hos {cardTitle(business)}
+              Dit kort hos {cardTitle(business)}
             </h1>
             <p
               className="mx-auto max-w-xs font-[300] text-[0.92rem] leading-relaxed"
               style={{ color: rgba(text, 0.72) }}
             >
-              {card.rewardText}. Ingen app. Kun navn og e-mail.
+              {business.stampsEnabled
+                ? `${card.rewardText}.`
+                : referral
+                  ? `Din ven får ${referral.newCustomerReward} ved første besøg.`
+                  : ""}{" "}
+              Ingen app. Kun navn og e-mail.
             </p>
           </div>
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
         <div className="w-full" style={{ filter: cardShadow }}>
-          <StampCard
-            businessName={cardTitle(business)}
+          <WalletCardPreview
+            os="27"
+            {...preview}
+            artwork={artworkUrl}
             logoUrl={logoSrc}
-            logoScale={capScale}
-            priority
-            primaryColor={business.primaryColor}
-            textColor={business.textColor}
-            stampIcon={card.stampIcon as StampIconKey}
-            stamps={0}
-            required={card.stampsRequired}
-            rewardText={card.rewardText}
-            showPoweredBy={showPoweredBy}
+            actions={[]}
+            sampleStamps={0}
+            sampleCode="Din kode"
+            fresh
           />
         </div>
 
@@ -231,6 +246,7 @@ export default async function ClaimPage({
             walletEnabled={WALLET_ENABLED}
             shopName={cardTitle(business)}
             cardName={cardShortName(business)}
+            referral={referral}
             ctaBg={text}
             ctaFg={primary}
           />
@@ -276,7 +292,7 @@ export default async function ClaimPage({
             style={{ color: rgba(text, 0.55) }}
           >
             Når du henter kortet, gemmer {business.name} dit navn, din e-mail og
-            din stempelhistorik, så du kan optjene stempler og få belønninger.
+            din historik på kortet, så du kan optjene og få dine belønninger.
             Nyheder på mail får du kun, hvis du siger ja tak. Se{" "}
             <a
               href="/privatliv"
@@ -291,8 +307,9 @@ export default async function ClaimPage({
           </p>
         </div>
 
-        {/* Deling: laeg linket videre, saa venner ogsaa faar kortet. Deles
-            linket, viser previewet butikkens stempelkort (OG-billede). */}
+        {/* Deling: laeg linket videre, saa venner ogsaa faar kortet. Med
+            henvisninger deler kunden i stedet sit eget link (i ClaimFlow). */}
+        {referral ? null : (
         <div
           className="flex w-full flex-col items-center border-t pt-6"
           style={{ borderColor: rgba(text, 0.15) }}
@@ -304,13 +321,14 @@ export default async function ClaimPage({
             tone="onDark"
           />
         </div>
+        )}
 
         {showPoweredBy ? (
           <p
             className="text-[0.65rem] font-[300] tracking-[0.08em]"
             style={{ color: rgba(text, 0.45) }}
           >
-            Drevet af Stemplet
+            Drevet af Alius
           </p>
         ) : null}
       </div>

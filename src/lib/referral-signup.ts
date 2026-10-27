@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
-import { createCardholderAtomically } from "./stamp";
+import { createCardholderAtomically, hasActivePickupStamp, applyStamp } from "./stamp";
 import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
 import { referralCodeCandidates } from "./referral-code";
@@ -228,6 +228,16 @@ export async function signupForReferrals(
       // Kortet er oprettet uanset; en afvist henvisning (fx modulet slaaet fra
       // imens) maa ikke vaelte tilmeldingen.
       if (!(e instanceof ReferralError)) throw e;
+    }
+  }
+
+  // Samme som stempelkortets oprettelse: koerer "stempel ved afhentning", faar
+  // det nye kort sit stempel. Best-effort; kortet er oprettet uanset.
+  if (await hasActivePickupStamp(activeCardId)) {
+    try {
+      await applyStamp({ customerCardId: created.id, method: "MANUAL", skipCooldown: true, count: 1 });
+    } catch {
+      /* stempel best-effort */
     }
   }
 

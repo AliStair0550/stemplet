@@ -364,7 +364,7 @@ export async function createReferralBusinessAction(input: {
     slug: created.slug,
     contactName: input.contactName,
     category: "Henvisninger (uden Stemplet)",
-    pageUrl: `${APP_URL}/henvisninger/${created.slug}`,
+    pageUrl: `${APP_URL}/k/${created.slug}`,
     dest: "/app/henvisninger",
   });
   return { ok: true, loginToken };

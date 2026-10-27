@@ -26,7 +26,7 @@ export function firstName(name: string | null | undefined): string | null {
 
 /** Delbart link til butikkens side med kundens kode. */
 export function referralShareUrl(appUrl: string, slug: string, code: string): string {
-  return `${appUrl}/henvisninger/${encodeURIComponent(slug)}?k=${encodeURIComponent(code)}`;
+  return `${appUrl}/k/${encodeURIComponent(slug)}?k=${encodeURIComponent(code)}`;
 }
 
 /** Den faerdige delebesked (Web Share API / kopiér). */

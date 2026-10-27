@@ -143,7 +143,7 @@ async function ReferralRules({ business }: { business: Biz }) {
   const rule = await prisma.referralRule.findUnique({ where: { businessId: business.id } });
   return (
     <RuleForm
-      pageUrl={`${APP_URL}/henvisninger/${business.slug}`}
+      pageUrl={`${APP_URL}/k/${business.slug}`}
       isNew={!rule}
       afterCreate="/app/regler?f=henvisninger"
       initial={{

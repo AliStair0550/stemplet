@@ -122,7 +122,7 @@ export default async function HomePage() {
     loadCardPreview(business),
   ]);
   // Kortets offentlige side: stempelkortet, eller henvisningssiden uden Stemplet.
-  const shareHref = business.stampsEnabled ? `/k/${business.slug}` : `/henvisninger/${business.slug}`;
+  const shareHref = `/k/${business.slug}`;
 
   const now = new Date();
   const dateLabel = new Intl.DateTimeFormat("da-DK", {
