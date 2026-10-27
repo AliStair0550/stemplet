@@ -4,7 +4,8 @@ import { createCardholderAtomically } from "./stamp";
 import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
 import { referralCodeCandidates } from "./referral-code";
-import { normalizePhone } from "./phone";
+import { parseContact } from "./contact";
+import { findEmailOwner, saveContact } from "./contact-save";
 
 // Henvisningssiden /henvisninger/[slug] (fase 2). Een kunde = eet kort pr. butik
 // (docs/henvisninger.md): tilmeldingen genbruger kundens eksisterende kort, ellers
@@ -13,8 +14,9 @@ import { normalizePhone } from "./phone";
 //
 // Aftalte regler (fase 2):
 //  - Kendt kunde (kortet findes i forvejen paa enheden) bliver aldrig henvist.
-//  - Et mobilnummer der tilhoerer et andet kort i butikken afvises uden at afsloere
-//    noget om kortet (uden SMS-bekraeftelse ved vi ikke, om det er kundens nummer).
+//  - En e-mail der tilhoerer et andet kort i butikken afvises uden at afsloere
+//    noget om kortet (uden bekraeftelse ved vi ikke, om det er kundens e-mail).
+//    Tidligere brugte siden mobilnummer; gamle kort kan stadig have et.
 
 type Db = typeof prisma;
 
@@ -65,6 +67,7 @@ const visitorSelect = {
   authToken: true,
   name: true,
   phone: true,
+  contactEmail: true,
   referralCode: true,
   referredByCardId: true,
 } as const;
@@ -106,21 +109,21 @@ export type SignupResult =
     }
   | {
       ok: false;
-      error: "lukket" | "pause" | "stoppet" | "fuld" | "navn" | "mobil" | "mobil_findes";
+      error: "lukket" | "pause" | "stoppet" | "fuld" | "navn" | "mail" | "mail_findes";
     };
 
-const NAME_MAX = 40;
-
 /**
- * Tilmelding paa henvisningssiden: find eller opret kundens kort, gem navn og
- * mobil, giv en kode, og opret en aaben henvisning, hvis kunden kom via en kode
+ * Tilmelding paa henvisningssiden: find eller opret kundens kort, gem navn,
+ * e-mail og evt. samtykke til nyheder, giv en kode, og opret en aaben henvisning, hvis kunden kom via en kode
  * og er ny. Saetter ingen cookies; det goer ruten paa sit svar.
  */
 export async function signupForReferrals(
   input: {
     slug: string;
     name: string;
-    phone: string;
+    email: string;
+    /** Frivilligt flueben: ja tak til nyheder og tilbud paa mail. */
+    consent?: boolean;
     code?: string | null;
     source?: ReferralSource;
     /** Kort-cookien for butikken (navnet afhaenger af butikkens id). */
@@ -129,10 +132,10 @@ export async function signupForReferrals(
   },
   db: Db = prisma,
 ): Promise<SignupResult> {
-  const name = input.name.trim().replace(/\s+/g, " ");
-  if (name.length < 1 || name.length > NAME_MAX) return { ok: false, error: "navn" };
-  const phone = normalizePhone(input.phone);
-  if (!phone) return { ok: false, error: "mobil" };
+  const parsed = parseContact({ name: input.name, email: input.email, consent: input.consent });
+  if (!parsed.ok) return { ok: false, error: parsed.error };
+  const contact = parsed.contact;
+  const name = contact.name;
 
   const shop = await db.business.findUnique({
     where: { slug: input.slug },
@@ -158,10 +161,7 @@ export async function signupForReferrals(
   const activeCardId = shop.cards[0]!.id;
 
   const referrer = input.code ? await findReferrerByCode(shop.id, input.code, db) : null;
-  const phoneOwner = await db.customerCard.findFirst({
-    where: { businessId: shop.id, phone },
-    select: { id: true },
-  });
+  const emailOwner = await findEmailOwner(shop.id, contact.email, db);
 
   // ── Kendt kunde paa enheden: genbrug kortet, aldrig en henvisning ──
   const existing = await findVisitorCard(
@@ -171,10 +171,9 @@ export async function signupForReferrals(
     db,
   );
   if (existing) {
-    if (phoneOwner && phoneOwner.id !== existing.id) return { ok: false, error: "mobil_findes" };
-    if (!existing.phone) {
-      const saved = await savePhone(existing.id, shop.id, phone, db);
-      if (!saved) return { ok: false, error: "mobil_findes" };
+    if (emailOwner && emailOwner.id !== existing.id) return { ok: false, error: "mail_findes" };
+    if (!(await saveContact(existing.id, shop.id, contact, db))) {
+      return { ok: false, error: "mail_findes" };
     }
     const code = await assignReferralCode({ customerCardId: existing.id, name }, db);
     const referred = existing.referredByCardId !== null;
@@ -190,7 +189,7 @@ export async function signupForReferrals(
   }
 
   // ── Ny kunde ──
-  if (phoneOwner) return { ok: false, error: "mobil_findes" };
+  if (emailOwner) return { ok: false, error: "mail_findes" };
   const block = signupBlockReason(shop);
   if (block) return { ok: false, error: block };
 
@@ -205,10 +204,10 @@ export async function signupForReferrals(
   if (!created) return { ok: false, error: "fuld" };
   await maybeFireCardholderThresholds(shop.id);
 
-  // Samtidig tilmelding med samme nummer: unik-indekset vinder, og den anden
-  // faar "mobil_findes" (kortet er stadig enhedens eget og genbruges naeste gang).
-  if (!(await savePhone(created.id, shop.id, phone, db))) {
-    return { ok: false, error: "mobil_findes" };
+  // Samtidig tilmelding med samme e-mail: unik-indekset vinder, og den anden
+  // faar "mail_findes" (kortet er stadig enhedens eget og genbruges naeste gang).
+  if (!(await saveContact(created.id, shop.id, contact, db))) {
+    return { ok: false, error: "mail_findes" };
   }
   const code = await assignReferralCode({ customerCardId: created.id, name }, db);
 
@@ -241,18 +240,4 @@ export async function signupForReferrals(
     alreadyCustomer: false,
     created: true,
   };
-}
-
-/** Gem mobilen, hvis kortet ikke har en. false = nummeret er taget af et andet kort. */
-async function savePhone(cardId: string, businessId: string, phone: string, db: Db) {
-  try {
-    await db.customerCard.updateMany({
-      where: { id: cardId, phone: null },
-      data: { phone, businessId },
-    });
-    return true;
-  } catch (e) {
-    if ((e as { code?: string }).code === "P2002") return false;
-    throw e;
-  }
 }

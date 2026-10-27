@@ -55,6 +55,7 @@ export default async function CustomersPage({
           {
             OR: [
               { name: { contains: q, mode: "insensitive" } },
+              { contactEmail: { contains: q.toLowerCase() } },
               { referralCode: normalizeReferralCode(q) },
               { serial: { startsWith: q } },
               ...(digits.length >= 4 ? [{ phone: { contains: digits } }] : []),
@@ -74,6 +75,7 @@ export default async function CustomersPage({
         id: true,
         serial: true,
         name: true,
+        contactEmail: true,
         phone: true,
         referralCode: true,
         stamps: true,
@@ -129,7 +131,7 @@ export default async function CustomersPage({
         <input
           name="q"
           defaultValue={q}
-          placeholder="Søg på navn, mobil, kode eller kortnummer"
+          placeholder="Søg på navn, e-mail, mobil, kode eller kortnummer"
           aria-label="Søg kunde"
           className="min-h-11 flex-1 rounded-full border border-clay bg-white px-5 text-[0.92rem] text-ink outline-none focus:border-ink"
         />
@@ -158,8 +160,8 @@ export default async function CustomersPage({
                     {c.name ?? "Kortholder"}
                     {!c.name ? <span className="ml-2 text-[0.75rem] text-slate">#{c.serial.slice(0, 6)}</span> : null}
                   </p>
-                  <p className="text-[0.76rem] text-slate">
-                    {[formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
+                  <p className="truncate text-[0.76rem] text-slate">
+                    {[c.contactEmail ?? formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (

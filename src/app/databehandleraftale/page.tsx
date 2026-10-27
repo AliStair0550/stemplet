@@ -63,20 +63,21 @@ export default function DpaPage() {
         <ul className="flex flex-col gap-2.5">
           <Li>et serienummer, der identificerer kortet,</Li>
           <Li>antal stempler, indløsninger og tidspunkter,</Li>
-          <Li>en valgfri e-mail, hvis kunden selv oplyser den,</Li>
+          <Li>kundens navn og e-mail, som kunden selv oplyser, når kortet hentes,</Li>
+          <Li>kundens samtykke til nyheder på mail og tidspunktet for det, hvis kunden giver det,</Li>
           <Li>IP-adresse og en hændelseslog til sikkerhed.</Li>
         </ul>
         <p>Har butikken slået Henvisninger til, behandler vi desuden:</p>
         <ul className="flex flex-col gap-2.5">
-          <Li>kundens navn og mobilnummer, som kunden selv oplyser,</Li>
+          <Li>kundens navn og e-mail (ældre tilmeldinger: mobilnummer), som kunden selv oplyser,</Li>
           <Li>kundens henvisningskode,</Li>
           <Li>hvem der har henvist hvem, og henvisningens status og tidspunkter,</Li>
           <Li>belønninger, deres værdi, udløb og indløsning,</Li>
           <Li>hvilken kasse eller bruger der registrerede besøg og indløsninger.</Li>
         </ul>
         <p>
-          Der behandles ingen følsomme oplysninger. En kunde kan bruge
-          stempelkortet anonymt. Henvisninger kræver navn og mobilnummer.
+          Der behandles ingen følsomme oplysninger. Nye kort og tilmeldinger
+          kræver navn og e-mail; kort hentet før kan være uden.
         </p>
       </LegalSection>
 

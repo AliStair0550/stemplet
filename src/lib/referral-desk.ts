@@ -15,11 +15,13 @@ type Db = typeof prisma;
 export type DeskHit = {
   id: string;
   name: string | null;
+  /** E-mail fra tilmeldingen (nye kunder); aeldre kort har kun mobil. */
+  email: string | null;
   phone: string | null;
   code: string | null;
 };
 
-/** Soeg paa navn, mobil eller kode. Max 8 hits, nyeste foerst. */
+/** Soeg paa navn, e-mail, mobil eller kode. Max 8 hits, nyeste foerst. */
 export async function searchDeskCustomers(
   businessId: string,
   query: string,
@@ -45,19 +47,32 @@ async function searchBy(
       ? { referralCode: q.value }
       : q.kind === "phone"
         ? { phone: { contains: q.value } }
-        : { name: { contains: q.value, mode: "insensitive" as const } };
+        : {
+            // Fri tekst rammer baade navn og e-mail ("sara" og "sara@mail.dk").
+            OR: [
+              { name: { contains: q.value, mode: "insensitive" as const } },
+              { contactEmail: { contains: q.value.toLowerCase() } },
+            ],
+          };
   const rows = await db.customerCard.findMany({
     where: { businessId, ...where },
     orderBy: { createdAt: "desc" },
     take: 8,
-    select: { id: true, name: true, phone: true, referralCode: true },
+    select: { id: true, name: true, contactEmail: true, phone: true, referralCode: true },
   });
-  return rows.map((r) => ({ id: r.id, name: r.name, phone: r.phone, code: r.referralCode }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    email: r.contactEmail,
+    phone: r.phone,
+    code: r.referralCode,
+  }));
 }
 
 export type DeskCustomer = {
   id: string;
   name: string | null;
+  email: string | null;
   phone: string | null;
   code: string | null;
   /** Kunden er henvist, og henvisningen venter paa foerste besoeg. */
@@ -86,6 +101,7 @@ export async function getDeskCustomer(
     select: {
       id: true,
       name: true,
+      contactEmail: true,
       phone: true,
       referralCode: true,
       referredByCardId: true,
@@ -120,6 +136,7 @@ export async function getDeskCustomer(
   return {
     id: cc.id,
     name: cc.name,
+    email: cc.contactEmail,
     phone: cc.phone,
     code: cc.referralCode,
     openReferral:
@@ -235,6 +252,8 @@ export async function referralExportRows(businessId: string, db: Db = prisma) {
     orderBy: { createdAt: "asc" },
     select: {
       name: true,
+      contactEmail: true,
+      marketingConsentAt: true,
       phone: true,
       referralCode: true,
       createdAt: true,
@@ -248,6 +267,8 @@ export async function referralExportRows(businessId: string, db: Db = prisma) {
   });
   return cards.map((c) => ({
     name: c.name,
+    email: c.contactEmail,
+    consentAt: c.marketingConsentAt,
     phone: c.phone,
     code: c.referralCode,
     referredBy: c.referredBy?.referralCode ?? null,
@@ -263,7 +284,7 @@ export type WaitingRow = {
   referralId: string;
   createdAt: string;
   stale: boolean;
-  referred: { id: string; name: string | null; phone: string | null; code: string | null };
+  referred: { id: string; name: string | null; email: string | null; phone: string | null; code: string | null };
   referrer: { id: string; name: string | null; code: string | null };
 };
 
@@ -273,7 +294,7 @@ export type OwedRow = {
   expiresAt: string;
   type: RewardType;
   value: string;
-  card: { id: string; name: string | null; phone: string | null; code: string | null };
+  card: { id: string; name: string | null; email: string | null; phone: string | null; code: string | null };
   /** Den ven, belønningen kom fra (ambassadør), eller null for den nye kundes egen. */
   forReferring: string | null;
 };
@@ -281,7 +302,7 @@ export type OwedRow = {
 /**
  * Det, personalet skal krydse af: nye kunder der venter paa deres foerste besoeg
  * ("Rabat givet") og beloenninger der venter paa at blive indloest. Soegningen
- * rammer BEGGE parters navn, mobil og kode, saa "jeg er blevet henvist af Sara"
+ * rammer BEGGE parters navn, e-mail, mobil og kode, saa "jeg er blevet henvist af Sara"
  * og "jeg hedder Mikkel" begge finder raekken.
  */
 export async function getReferralWorklist(
@@ -298,6 +319,7 @@ export async function getReferralWorklist(
         OR: [
           { name: { contains: q, mode: "insensitive" as const } },
           { referralCode: { contains: code } },
+          { contactEmail: { contains: q.toLowerCase() } },
           ...(digits.length >= 4 ? [{ phone: { contains: digits } }] : []),
         ],
       }
@@ -316,7 +338,9 @@ export async function getReferralWorklist(
       select: {
         id: true,
         createdAt: true,
-        referredCard: { select: { id: true, name: true, phone: true, referralCode: true } },
+        referredCard: {
+          select: { id: true, name: true, contactEmail: true, phone: true, referralCode: true },
+        },
         referrerCard: { select: { id: true, name: true, referralCode: true } },
       },
     }),
@@ -335,7 +359,7 @@ export async function getReferralWorklist(
         expiresAt: true,
         type: true,
         value: true,
-        card: { select: { id: true, name: true, phone: true, referralCode: true } },
+        card: { select: { id: true, name: true, contactEmail: true, phone: true, referralCode: true } },
         referral: { select: { referrerCardId: true, referredCard: { select: { name: true } } } },
       },
     }),
@@ -349,6 +373,7 @@ export async function getReferralWorklist(
       referred: {
         id: r.referredCard.id,
         name: r.referredCard.name,
+        email: r.referredCard.contactEmail,
         phone: r.referredCard.phone,
         code: r.referredCard.referralCode,
       },
@@ -360,7 +385,13 @@ export async function getReferralWorklist(
       expiresAt: w.expiresAt.toISOString(),
       type: w.type,
       value: w.value,
-      card: { id: w.card.id, name: w.card.name, phone: w.card.phone, code: w.card.referralCode },
+      card: {
+        id: w.card.id,
+        name: w.card.name,
+        email: w.card.contactEmail,
+        phone: w.card.phone,
+        code: w.card.referralCode,
+      },
       forReferring:
         w.referral && w.referral.referrerCardId === w.card.id
           ? (w.referral.referredCard.name ?? "en ven")

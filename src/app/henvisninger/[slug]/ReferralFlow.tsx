@@ -181,7 +181,8 @@ function SignupView(
   props: Parameters<typeof ReferralFlow>[0] & { onDone: (d: Done) => void },
 ) {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const withCode = props.referrer !== null;
@@ -197,7 +198,8 @@ function SignupView(
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           name,
-          phone,
+          email,
+          consent,
           code: props.referrer?.code ?? null,
           source: props.source,
         }),
@@ -223,7 +225,7 @@ function SignupView(
     ? `${props.referrer!.firstName ?? "Din ven"} har givet dig ${props.newCustomerReward} hos ${props.shopName}`
     : "Henvis en ven";
   const sub = withCode
-    ? "Skriv dit navn og nummer, så ligger rabatten klar til dit første besøg."
+    ? "Skriv dit navn og din e-mail, så ligger rabatten klar til dit første besøg."
     : `Din ven får ${props.newCustomerReward} ved første besøg. Du får ${props.referrerReward}, når vennen har været der.`;
 
   return (
@@ -256,13 +258,28 @@ function SignupView(
           placeholder="Fornavn"
         />
         <Field
-          label="Mobilnummer"
-          value={phone}
-          onChange={setPhone}
-          autoComplete="tel"
-          inputMode="tel"
-          placeholder="12 34 56 78"
+          label="E-mail"
+          value={email}
+          onChange={setEmail}
+          autoComplete="email"
+          inputMode="email"
+          type="email"
+          placeholder="navn@mail.dk"
         />
+        {/* Frivilligt og ikke afkrydset: samtykke til nyhedsmail (markedsfoeringsloven). */}
+        <label className="flex cursor-pointer items-start gap-3 py-1">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0"
+            style={{ accentColor: props.accent }}
+          />
+          <span className="text-[14px] leading-snug" style={{ color: MUTED }}>
+            Ja tak til nyheder og tilbud fra {props.shopName} på mail. Du kan
+            altid framelde dig igen.
+          </span>
+        </label>
         {error ? (
           <p role="alert" className="text-[14px] text-rust">
             {error}
@@ -284,7 +301,8 @@ function SignupView(
         </p>
       ) : null}
       <p className="mb-6 mt-3 text-center text-[12px] leading-relaxed" style={{ color: MUTED }}>
-        {props.shopName} gemmer dit navn og nummer, så din henvisning kan registreres. Se{" "}
+        {props.shopName} gemmer dit navn og din e-mail, så din henvisning og dit kort
+        kan registreres. Nyheder på mail får du kun, hvis du siger ja tak. Se{" "}
         <a href="/privatliv" target="_blank" rel="noreferrer" className="underline">
           privatlivspolitikken
         </a>
@@ -302,7 +320,8 @@ function Field(props: {
   onChange: (v: string) => void;
   autoComplete: string;
   placeholder: string;
-  inputMode?: "tel";
+  inputMode?: "tel" | "email";
+  type?: "text" | "email";
 }) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -315,6 +334,9 @@ function Field(props: {
         onChange={(e) => props.onChange(e.target.value)}
         autoComplete={props.autoComplete}
         inputMode={props.inputMode}
+        type={props.type ?? "text"}
+        autoCapitalize={props.type === "email" ? "none" : undefined}
+        spellCheck={props.type === "email" ? false : undefined}
         placeholder={props.placeholder}
         required
         className="min-h-[50px] rounded-[12px] px-4 text-[17px] outline-none focus:ring-2"

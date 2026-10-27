@@ -53,7 +53,7 @@ export async function generateMetadata({
   const brandName = business ? cardTitle(business) : "";
   const title = business ? `Stempelkort hos ${brandName}` : "Stempelkort";
   const description = business
-    ? `Hent dit digitale stempelkort hos ${brandName} direkte i Apple Wallet. Ingen app. Ingen tilmelding.`
+    ? `Hent dit digitale stempelkort hos ${brandName} direkte i Apple Wallet. Ingen app. Kun navn og e-mail.`
     : "Digitalt stempelkort i Apple Wallet.";
   return {
     title,
@@ -202,7 +202,7 @@ export default async function ClaimPage({
               className="mx-auto max-w-xs font-[300] text-[0.92rem] leading-relaxed"
               style={{ color: rgba(text, 0.72) }}
             >
-              {card.rewardText}. Ingen app. Ingen tilmelding.
+              {card.rewardText}. Ingen app. Kun navn og e-mail.
             </p>
           </div>
         </div>
@@ -228,6 +228,7 @@ export default async function ClaimPage({
           <ClaimFlow
             slug={slug}
             walletEnabled={WALLET_ENABLED}
+            shopName={cardTitle(business)}
             ctaBg={text}
             ctaFg={primary}
           />
@@ -266,14 +267,15 @@ export default async function ClaimPage({
               </p>
             </details>
           ) : null}
-          {/* GDPR-formaal: gjort klart FOER kortet hentes, at vi gemmer
-              stempelhistorik og hvorfor (belOEnninger + fordele). */}
+          {/* GDPR-formaal: gjort klart FOER kortet hentes, hvad butikken gemmer
+              (navn, e-mail, stempelhistorik) og hvorfor. Nyheder kun med flueben. */}
           <p
             className="max-w-xs text-center text-[0.72rem] font-[300] leading-relaxed"
             style={{ color: rgba(text, 0.55) }}
           >
-            Når du henter kortet, gemmer {business.name} din stempelhistorik, så
-            du kan optjene stempler og få belønninger og fordele. Se{" "}
+            Når du henter kortet, gemmer {business.name} dit navn, din e-mail og
+            din stempelhistorik, så du kan optjene stempler og få belønninger.
+            Nyheder på mail får du kun, hvis du siger ja tak. Se{" "}
             <a
               href="/privatliv"
               target="_blank"

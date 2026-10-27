@@ -9,6 +9,7 @@ import { prisma } from "./prisma";
 import { runOnce } from "./idempotency";
 import { generateReferralCode } from "./referral-code";
 import { normalizePhone } from "./phone";
+import { normalizeEmail } from "./contact";
 
 // Henvisninger: tilstandsmaskinen og reglerne (docs/henvisninger.md, Datamodel).
 // Al henvisningslogik bor her, saa kassepanel, kundeside og cron kalder de samme
@@ -65,11 +66,18 @@ export class ReferralError extends Error {
 
 // ── Ren beslutningslogik ─────────────────────────────────────────────
 
-type CardIdentity = { id: string; phone: string | null };
+type CardIdentity = { id: string; phone: string | null; contactEmail?: string | null };
 
-/** Selvhenvisning: samme kort eller samme (normaliserede) mobilnummer. */
+/**
+ * Selvhenvisning: samme kort, samme (normaliserede) e-mail eller samme mobil-
+ * nummer. Tilmeldingen bruger e-mail; aeldre kort kan stadig have et mobilnummer,
+ * saa det sammenlignes ogsaa, naar begge kort har et.
+ */
 export function isSelfReferral(referrer: CardIdentity, referred: CardIdentity): boolean {
   if (referrer.id === referred.id) return true;
+  const ea = normalizeEmail(referrer.contactEmail);
+  const eb = normalizeEmail(referred.contactEmail);
+  if (ea !== null && ea === eb) return true;
   const a = normalizePhone(referrer.phone);
   const b = normalizePhone(referred.phone);
   return a !== null && a === b;
@@ -267,7 +275,12 @@ export async function createReferral(
       throw new ReferralError("DISABLED", "Henvisninger er ikke slået til.");
     }
 
-    const select = { id: true, phone: true, card: { select: { businessId: true } } } as const;
+    const select = {
+      id: true,
+      phone: true,
+      contactEmail: true,
+      card: { select: { businessId: true } },
+    } as const;
     const [referrer, referred] = await Promise.all([
       tx.customerCard.findUnique({ where: { id: opts.referrerCardId }, select }),
       tx.customerCard.findUnique({ where: { id: opts.referredCardId }, select }),

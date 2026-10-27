@@ -18,11 +18,13 @@ import { captureWalletError, captureServerError } from "@/lib/sentry";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// "Hent mit stempelkort": opretter (eller genfinder) kundens kort og AABNER Apple
+// "Hent mit stempelkort": genfinder kundens kort og AABNER Apple
 // Wallet DIREKTE ved at returnere .pkpass'et i samme svar (paa iPhone). Fordi det
 // er kundens eget tryk paa et rigtigt link, aabner Safari Wallet-arket uden
 // skroebelig JavaScript-navigation (som crashede med "Prøv igen"). Android/desktop
-// har ingen Apple Wallet og sendes til webkortet med QR.
+// har ingen Apple Wallet og sendes til webkortet med QR. Selve oprettelsen (med
+// navn og e-mail) sker i ./kontakt, foer kunden trykker paa dette link; en
+// enhed uden kort sendes tilbage til formularen.
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -64,7 +66,8 @@ export async function GET(
     captureServerError(e, { route: "wallet:claim:resolve", extra: { slug } });
     return back(`/k/${slug}?fejl=serverfejl`);
   }
-  if (!r.ok) return back(`/k/${slug}?fejl=${r.error}`);
+  // Ny kunde uden kontaktdata: tilbage til formularen paa /k (ingen fejl).
+  if (!r.ok) return back(r.error === "kontakt" ? `/k/${slug}` : `/k/${slug}?fejl=${r.error}`);
 
   // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.
   if (r.created) await maybeFireCardholderThresholds(r.businessId);

@@ -22,6 +22,144 @@ const ERRORS: Record<string, string> = {
 // Fejl-koder hvor et nyt forsoeg giver mening (vis en "Prøv igen"-knap).
 const RETRYABLE = new Set(["serverfejl", "optaget"]);
 
+// Kontaktformularen (trin 1 for nye kunder): navn og e-mail er paakraevet, og
+// nyheder paa mail er et frivilligt, ikke-afkrydset flueben. Indsendes med
+// fetch til ./kontakt, som opretter kortet og saetter cookies. Wallet aabnes
+// FOERST bagefter fra det rigtige link (trin 2), saa aabningen forbliver
+// paalidelig.
+function ContactForm({
+  slug,
+  shopName,
+  ctaBg,
+  ctaFg,
+  onReady,
+  onFejl,
+}: {
+  slug: string;
+  shopName: string;
+  ctaBg: string;
+  ctaFg: string;
+  onReady: () => void;
+  onFejl: (code: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/wallet/claim/${encodeURIComponent(slug)}/kontakt`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, email, consent }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { ok: boolean; code?: string; message?: string }
+        | null;
+      if (data?.ok) {
+        onReady();
+        return;
+      }
+      if (data?.message) setError(data.message);
+      else onFejl(data?.code && ERRORS[data.code] ? data.code : "serverfejl");
+    } catch {
+      onFejl("serverfejl");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const inputStyle = {
+    color: ctaBg,
+    background: rgba(ctaBg, 0.08),
+    border: `1px solid ${rgba(ctaBg, 0.28)}`,
+  };
+  const inputCls =
+    "w-full rounded-xl px-4 py-3 text-[1rem] font-[400] outline-none placeholder:opacity-50 focus:ring-2";
+
+  return (
+    <form onSubmit={submit} className="flex w-full flex-col gap-3" noValidate>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[0.78rem] font-[500]" style={{ color: rgba(ctaBg, 0.85) }}>
+          Navn
+        </span>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="name"
+          maxLength={40}
+          required
+          placeholder="Dit navn"
+          className={inputCls}
+          style={inputStyle}
+        />
+      </label>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[0.78rem] font-[500]" style={{ color: rgba(ctaBg, 0.85) }}>
+          E-mail
+        </span>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          maxLength={254}
+          required
+          placeholder="navn@mail.dk"
+          className={inputCls}
+          style={inputStyle}
+        />
+      </label>
+      <label className="flex cursor-pointer items-start gap-3 py-1 text-left">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="mt-0.5 h-5 w-5 shrink-0"
+          style={{ accentColor: ctaBg }}
+        />
+        <span className="text-[0.84rem] font-[300] leading-snug" style={{ color: rgba(ctaBg, 0.85) }}>
+          Ja tak til nyheder og tilbud fra {shopName} på mail. Du kan altid
+          framelde dig igen.
+        </span>
+      </label>
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-rust/40 bg-rust/10 px-4 py-3 text-center text-[0.85rem] font-[300] leading-relaxed text-rust"
+        >
+          {error}
+        </p>
+      ) : null}
+      <div className="relative mt-1 w-full">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-2xl blur-md animate-cta-glow"
+          style={{ background: rgba(ctaBg, 0.3) }}
+        />
+        <button
+          type="submit"
+          disabled={busy}
+          className="relative flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] shadow-lift transition-transform duration-200 active:scale-[0.98] disabled:opacity-70"
+          style={{ backgroundColor: ctaBg, color: ctaFg }}
+        >
+          {busy ? <Spinner /> : null}
+          {busy ? "Et øjeblik" : "Fortsæt"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // Den brandede CTA: creme knap (kortets tekstfarve) med kortfarvet tekst, saa
 // den altid harmonerer med brandet. Valgfri blOd gloed bagved paa hoved-CTA'en.
 function CtaLink({
@@ -74,6 +212,7 @@ function CtaLink({
 export function ClaimFlow({
   slug,
   walletEnabled,
+  shopName,
   // CTA-farver: passer til kortet. Standard = kortets tekstfarve som baggrund og
   // kortfarven som tekst, saa knappen altid harmonerer med brandet.
   ctaBg = "#F6EEE4",
@@ -81,6 +220,7 @@ export function ClaimFlow({
 }: {
   slug: string;
   walletEnabled: boolean;
+  shopName: string;
   ctaBg?: string;
   ctaFg?: string;
 }) {
@@ -88,6 +228,13 @@ export function ClaimFlow({
     "idle" | "opening" | "added" | "usikker"
   >("idle");
   const [fejl, setFejl] = useState<string | null>(null);
+  // Nye kunder udfylder foerst formularen ("form"); har enheden allerede et
+  // kort (eller er formularen sendt), er vi "ready" og viser Wallet-linket.
+  // "checking" er det korte opslag ved indlaesning, saa en returkunde ikke ser
+  // formularen blinke.
+  const [stage, setStage] = useState<"checking" | "form" | "ready">("checking");
+  const [justCreated, setJustCreated] = useState(false);
+  const [ios, setIos] = useState(false);
   // In-app-browser (fx Messenger/Facebook/Instagram) paa iPhone: deres indbyggede
   // browser (WKWebView) kan IKKE overdrage et .pkpass til Apple Wallet, saa
   // "Hent mit stempelkort" aabner ingenting. Vi opdager det og guider til Safari.
@@ -106,6 +253,30 @@ export function ClaimFlow({
     const code = new URLSearchParams(window.location.search).get("fejl");
     if (code && ERRORS[code]) setFejl(code);
   }, []);
+
+  // Har enheden allerede et kort hos butikken? Saa eet tryk som foer.
+  useEffect(() => {
+    setIos(/iPhone|iPad|iPod/i.test(navigator.userAgent || ""));
+    let alive = true;
+    const ctrl = new AbortController();
+    const fallback = setTimeout(() => ctrl.abort(), 6000);
+    fetch(`/api/wallet/claim/${encodeURIComponent(slug)}/kontakt`, {
+      cache: "no-store",
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json())
+      .then((d: { known?: boolean }) => {
+        if (alive) setStage(d?.known ? "ready" : "form");
+      })
+      .catch(() => {
+        if (alive) setStage("form");
+      })
+      .finally(() => clearTimeout(fallback));
+    return () => {
+      alive = false;
+      clearTimeout(fallback);
+    };
+  }, [slug]);
 
   // Opdag kendte in-app-browsere paa iPhone (kun iOS, for det er dér Wallet-
   // overdragelsen fejler). Holder os til de KENDTE apps for ikke at overvarsle
@@ -355,10 +526,47 @@ export function ClaimFlow({
     if (ios && walletEnabled && !inApp) setPhase("opening");
   }
 
+  if (stage === "checking") {
+    return (
+      <div className="flex min-h-[3.25rem] w-full items-center justify-center" style={{ color: rgba(ctaBg, 0.8) }}>
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (stage === "form") {
+    return (
+      <ContactForm
+        slug={slug}
+        shopName={shopName}
+        ctaBg={ctaBg}
+        ctaFg={ctaFg}
+        onReady={() => {
+          setJustCreated(true);
+          setStage("ready");
+        }}
+        onFejl={setFejl}
+      />
+    );
+  }
+
   return (
-    <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
-      <WalletIcon />
-      Hent mit stempelkort
-    </CtaLink>
+    <div className="flex w-full flex-col items-center gap-3">
+      {justCreated ? (
+        <p className="text-center text-[0.9rem] font-[400]" style={{ color: rgba(ctaBg, 0.9) }}>
+          {ios && walletEnabled
+            ? "Dit kort er klar. Læg det i Apple Wallet."
+            : "Dit kort er klar."}
+        </p>
+      ) : null}
+      <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
+        <WalletIcon />
+        {justCreated
+          ? ios && walletEnabled
+            ? "Tilføj til Apple Wallet"
+            : "Åbn mit stempelkort"
+          : "Hent mit stempelkort"}
+      </CtaLink>
+    </div>
   );
 }

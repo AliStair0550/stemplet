@@ -59,23 +59,33 @@ export default function PrivatlivPage() {
             ind og administrere din butik.
           </Li>
           <Li>
-            <strong>Stempelkort (på butikkens vegne):</strong> et serienummer,
-            din stempelhistorik (antal stempler over tid og tidspunkter) og en
-            valgfri e-mail, hvis kunden selv oplyser den. Historikken bruges til
-            at optjene stempler og give dig belønninger og loyalitetsfordele. En
-            kunde kan bruge kortet helt anonymt.
+            <strong>Stempelkort (på butikkens vegne):</strong> dit navn og din
+            e-mail, som du selv oplyser, når du henter kortet, et serienummer og
+            din stempelhistorik (antal stempler over tid og tidspunkter). Navn og
+            e-mail knytter kortet til dig, så butikken kan kende dig og hjælpe,
+            hvis der er noget med kortet. Historikken bruges til at optjene
+            stempler og give dig belønninger og loyalitetsfordele. Kort, der
+            blev hentet før, kan være uden navn og e-mail.
           </Li>
           <Li>
             <strong>Henvisninger (på butikkens vegne, kun hvis butikken har
-            slået det til):</strong> dit navn og mobilnummer, din personlige
+            slået det til):</strong> dit navn og din e-mail, din personlige
             henvisningskode, hvem der har henvist dig, og hvem du har henvist,
             hvornår henvisningen blev oprettet og gennemført, og de
-            belønninger, du har optjent og indløst. Navn og mobilnummer
-            oplyser du selv, når du tilmelder dig. Navnet bruges til din kode
-            og til, at personalet kan finde dig ved kassen. Mobilnummeret
-            bruges til at finde dig ved kassen og til at sikre, at hver kunde
-            kun tilmeldes én gang og ikke kan henvise sig selv. Når du deler
-            din kode, vises dit fornavn for den, der åbner dit link.
+            belønninger, du har optjent og indløst. Navn og e-mail oplyser du
+            selv, når du tilmelder dig. Navnet bruges til din kode og til, at
+            personalet kan finde dig ved kassen. E-mailen bruges til at finde
+            dig ved kassen og til at sikre, at hver kunde kun tilmeldes én gang
+            og ikke kan henvise sig selv. Tidligere tilmeldinger kan have et
+            mobilnummer i stedet. Når du deler din kode, vises dit fornavn for
+            den, der åbner dit link.
+          </Li>
+          <Li>
+            <strong>Nyheder på mail (kun med dit samtykke):</strong> sætter du
+            selv flueben ved &quot;Ja tak til nyheder og tilbud&quot;, gemmer vi
+            dit samtykke og tidspunktet for det, så butikken senere kan sende
+            dig nyheder og tilbud på mail. Uden flueben bruges din e-mail ikke
+            til markedsføring.
           </Li>
           <Li>
             <strong>Teknisk og sikkerhed:</strong> IP-adresse og en hændelseslog
@@ -100,6 +110,11 @@ export default function PrivatlivPage() {
             At registrere henvisninger og give de belønninger, du har tilmeldt
             dig, når du deltager i en butiks henvisninger (opfyldelse af aftale,
             art. 6, stk. 1, litra b).
+          </Li>
+          <Li>
+            At sende dig nyheder og tilbud fra butikken på mail, men kun hvis
+            du har sagt ja tak (samtykke, art. 6, stk. 1, litra a, og
+            markedsføringslovens § 10). Du kan altid trække samtykket tilbage.
           </Li>
           <Li>
             At beskytte tjenesten mod snyd og misbrug (vores og butikkens

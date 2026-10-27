@@ -122,7 +122,7 @@ export default async function Image({
               marginTop: 14,
             }}
           >
-            Ingen app. Ingen tilmelding.
+            Ingen app. Kun navn og e-mail.
           </div>
         </div>
 
