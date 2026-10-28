@@ -283,13 +283,17 @@ async function loadForWallet(id: string) {
   });
 }
 
-test("wallet: rent stempelkort (uden modul eller kode) faar ingen henvisningsfelter", async () => {
+test("wallet: kort uden kode faar en ved opdateringen; uden modulet ingen felter", async () => {
   const s = await makeShop();
   try {
+    // Kortholder fra foer henvisninger blev slaaet til: faar en kode nu.
     const plain = await prisma.customerCard.create({
       data: { cardId: s.cardId, serial: randomUUID().slice(0, 12), authToken: randomUUID() },
     });
-    assert.equal(await loadReferralPassInfo(await loadForWallet(plain.id)), null, "ingen kode");
+    const info = await loadReferralPassInfo(await loadForWallet(plain.id));
+    assert.ok(info?.code, "kode tildelt");
+    const saved = await prisma.customerCard.findUniqueOrThrow({ where: { id: plain.id } });
+    assert.equal(saved.referralCode, info.code, "koden er gemt");
     const sara = await makeCustomer(s, "Sara", "+4511111111");
     await prisma.business.update({ where: { id: s.bizId }, data: { referralsEnabled: false } });
     assert.equal(await loadReferralPassInfo(await loadForWallet(sara.id)), null, "modul slaaet fra");
