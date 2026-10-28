@@ -301,7 +301,7 @@ export default function HenvisningerPage() {
               Folka
             </a>
             . Vi laver også{" "}
-            <Link href="/" className="text-white underline-offset-4 hover:underline">
+            <Link href="/stemplet" className="text-white underline-offset-4 hover:underline">
               Stemplet
             </Link>
             .

@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     { url: base, changeFrequency: "weekly", priority: 1 },
+    { url: `${base}/stemplet`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/hvorfor`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/brancher`, changeFrequency: "monthly", priority: 0.7 },
     ...brancheUrls,
