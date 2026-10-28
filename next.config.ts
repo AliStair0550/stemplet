@@ -24,6 +24,20 @@ const nextConfig: NextConfig = {
     // mobilforbindelse. CSS'en er lille (~11 KB), saa HTML'en vokser kun lidt.
     inlineCss: true,
   },
+  // Appen bor paa kort.folka.dk. Den gamle adresse sender sider videre (fx
+  // trykte QR-koder til /k/...), men /api bliver, hvor den er: Wallet-kort, der
+  // allerede er hentet, kender stemplet.alius.dk som webServiceURL og skal
+  // stadig kunne opdateres. Midlertidig (307), saa den kan rulles tilbage.
+  async redirects() {
+    return [
+      {
+        source: "/:path((?!api/).*)",
+        has: [{ type: "host", value: "stemplet.alius.dk" }],
+        destination: "https://kort.folka.dk/:path",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "utfs.io" },
