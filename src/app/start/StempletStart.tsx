@@ -101,7 +101,7 @@ export function StempletStart() {
   return (
     <div className="min-h-screen bg-white text-[#111] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
-        <Link href="/" aria-label="Stemplet, til forsiden">
+        <Link href="/stemplet" aria-label="Stemplet, til forsiden">
           <StempletLogo className="text-[1.6rem]" />
         </Link>
         <span className="text-[13px] text-[#111]/50">Gratis. Intet kreditkort.</span>

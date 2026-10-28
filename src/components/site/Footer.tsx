@@ -7,7 +7,7 @@ const LINKS = [
   { href: "/login", label: "Log ind" },
   { href: "/hvorfor", label: "Fordele" },
   { href: "/brancher", label: "Brancher" },
-  { href: "/#pris", label: "Pris" },
+  { href: "/stemplet#pris", label: "Pris" },
   { href: "/start", label: "Kom gratis i gang" },
 ];
 
@@ -33,7 +33,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-16">
           {/* Brand + mission */}
           <div className="flex flex-col gap-5">
-            <Wordmark href="/" tone="light" className="text-[1.25rem]" />
+            <Wordmark href="/stemplet" tone="light" className="text-[1.25rem]" />
             <div className="flex max-w-md flex-col gap-3">
               <p className="text-[0.95rem] leading-[1.6] text-parchment">
                 Stempelkortet, der skaber flere gensyn.
