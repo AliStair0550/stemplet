@@ -720,7 +720,8 @@ textarea:focus-visible {
   color: #5f6b7e;
 }
 .dash-theme .text-slate {
-  color: #8d98a8;
+  /* Mindst 4,5:1 mod hvid (WCAG AA), ogsaa i smaa etiketter. */
+  color: #6b7687;
 }
 .dash-theme .text-terracotta {
   color: var(--folka-electric);
@@ -766,8 +767,18 @@ textarea:focus-visible {
 .dash-theme [class*="bg-terracotta/"] {
   background-color: var(--folka-tint);
 }
-.dash-theme [class*="bg-ink/"] {
+/* Gennemsigtige moerke flader beholder deres styrke, men i Folkas moerkeblaa. */
+.dash-theme .bg-ink\/5 {
+  background-color: rgb(6 28 61 / 0.06);
+}
+.dash-theme .bg-ink\/20 {
+  background-color: rgb(6 28 61 / 0.2);
+}
+.dash-theme .bg-ink\/50 {
   background-color: rgb(6 28 61 / 0.5);
+}
+.dash-theme .bg-ink\/95 {
+  background-color: rgb(6 28 61 / 0.95);
 }
 .dash-theme .border-terracotta,
 .dash-theme .border-ink {

@@ -46,9 +46,10 @@ export async function POST(
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Ugyldig forespørgsel.");
 
-  // Samme misbrugsvaern som kort-oprettelse i Stemplet: DB-backet pr. IP.
+  // Samme generoese loft pr. IP som kortets tilmelding (kontakt): en travl cafe
+  // paa een WiFi eller et mobilnet bag faelles IP maa ikke afvise kunder.
   const ip = clientIp(req) ?? "ukendt";
-  if (!(await durableRateLimit("referral-signup", ip, 12, 600).catch(() => true))) {
+  if (!(await durableRateLimit("referral-signup", ip, 200, 3600).catch(() => true))) {
     return apiError("RATE_LIMIT", "Der er travlt lige nu. Prøv igen om lidt.", 429);
   }
 

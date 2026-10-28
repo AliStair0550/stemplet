@@ -27,7 +27,7 @@ export default async function AddReferralsPage() {
         Få nye kunder via dine kunder.
       </h1>
       <p className="mt-2 text-[0.98rem] text-stone">
-        Henvisninger passer perfekt til stempelkortet: nye kunder kommer via en ven, og stempelkortet får dem til at komme
+        Henvisninger passer perfekt til stemplerne: nye kunder kommer via en ven, og stemplerne får dem til at komme
         igen.
       </p>
 

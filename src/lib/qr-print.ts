@@ -5,7 +5,7 @@
 export const QR_PRINT_HEADLINE = "Få vores digitale stempelkort";
 export const QR_PRINT_HELPER = "Scan med kameraet. Ingen app.";
 // Diskret, sekundaer Stemplet-afsender.
-export const QR_PRINT_BRAND = "Lavet med Stemplet";
+export const QR_PRINT_BRAND = "Lavet med Folka";
 
 /** Teksterne paa materialet. Butikker uden stempler faar henvisningsteksten. */
 export function qrPrintText(stampsEnabled: boolean) {

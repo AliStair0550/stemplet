@@ -7,7 +7,7 @@ import { COMPANY } from "@/lib/company";
 export const metadata: Metadata = {
   title: "Databehandleraftale",
   description:
-    "Databehandleraftale mellem butikken (dataansvarlig) og Stemplet (databehandler).",
+    "Databehandleraftale mellem butikken (dataansvarlig) og Kundekort (databehandler).",
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
@@ -27,11 +27,11 @@ export default function DpaPage() {
     <LegalLayout
       title="Databehandleraftale"
       updated="26. oktober 2026"
-      intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Folka (Stemplet) er databehandler."
+      intro="Når din butik bruger Kundekort, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Folka (Kundekort) er databehandler."
     >
       <LegalSection title="1. Rammen">
         <p>
-          Aftalen regulerer Stemplets behandling af personoplysninger på
+          Aftalen regulerer Kundekorts behandling af personoplysninger på
           butikkens vegne og er en del af vilkårene for at bruge tjenesten. Ved
           uoverensstemmelse går denne aftale forud for øvrige vilkår om
           databehandling.
@@ -40,13 +40,13 @@ export default function DpaPage() {
 
       <LegalSection title="2. Behandlingens formål og varighed">
         <p>
-          Formålet er at drive butikkens digitale stempelkort: at udstede kort,
+          Formålet er at drive butikkens digitale kundekort: at udstede kort,
           registrere stempler, indløse belønninger og vise statistik. Har
           butikken slået Henvisninger til, er formålet også at drive butikkens
           henvisninger: at give kunderne en personlig kode, registrere hvem der
           har henvist hvem, give og indløse belønninger og vise statistik over
           henvisningerne. Behandlingen løber, så længe butikken bruger
-          Stemplet.
+          Kundekort.
         </p>
       </LegalSection>
 

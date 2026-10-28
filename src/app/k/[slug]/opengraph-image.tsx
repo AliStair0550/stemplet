@@ -7,7 +7,7 @@ import { cardTitle } from "@/lib/brand";
 // paa iMessage, Facebook, Instagram osv., vises butikkens eget stempelkort med
 // navn og beloenning, saa folk kan trykke og hente kortet direkte.
 export const runtime = "nodejs";
-export const alt = "Dit digitale stempelkort";
+export const alt = "Dit digitale kort";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 // Cache billedet: font-hentning + generering sker een gang pr. dag pr. butik,

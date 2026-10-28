@@ -15,5 +15,5 @@ export async function enableStampsAction() {
     revalidatePath(`/k/${business.slug}`);
   }
   // Videre til designet, saa stempelkortet saettes op med det samme.
-  redirect("/app/kort");
+  redirect("/app/regler?f=stempler");
 }

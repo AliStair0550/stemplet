@@ -31,7 +31,7 @@ export default function CheckMailPage() {
           <p className="text-[17px] leading-relaxed text-[#0B1628]/60">
             Vi har sendt et login-link. Åbn mailen på denne enhed, så er du inde i dashboardet.
           </p>
-          <p className="text-[15px] leading-relaxed text-[#0B1628]/45">
+          <p className="text-[15px] leading-relaxed text-[#0B1628]/60">
             Kan du ikke se den? Tjek din spam-mappe. Ellers{" "}
             <Link href="/login" className="font-medium text-[#0B1628] underline underline-offset-2">
               prøv igen

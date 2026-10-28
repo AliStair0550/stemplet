@@ -14,7 +14,7 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
   return (
     <section className="mb-10 grid gap-7 rounded-[22px] bg-[#061C3D] p-6 text-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.5)] sm:grid-cols-[1fr_auto] sm:items-center sm:p-8">
       <div className="min-w-0">
-        <p className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">Del dit stempelkort.</p>
+        <p className="text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">Del dit kundekort.</p>
         <p className="mt-2 text-[0.98rem] text-white/65">
           Hæng QR-koden op ved kassen, og sæt linket på din hjemmeside. Kunderne henter kortet på få sekunder.
         </p>
@@ -61,7 +61,7 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
         </p>
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={qrDataUrl} alt="QR-kode til dit stempelkort" className="mx-auto h-40 w-40 rounded-[18px] bg-white p-3 sm:h-44 sm:w-44" />
+      <img src={qrDataUrl} alt="QR-kode til dit kundekort" className="mx-auto h-40 w-40 rounded-[18px] bg-white p-3 sm:h-44 sm:w-44" />
     </section>
   );
 }

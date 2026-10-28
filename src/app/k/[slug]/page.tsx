@@ -56,7 +56,8 @@ export async function generateMetadata({
     ? `Hent dit kort hos ${brandName} direkte i Apple Wallet. Ingen app. Kun navn og e-mail.`
     : "Digitalt kort i Apple Wallet.";
   return {
-    title,
+    // Kun butikken i fanen (ikke "- Kundekort"): kunden skal se butikken, ikke os.
+    title: { absolute: title },
     description,
     // noindex: siden er personlig, men link-previews (OG) virker stadig.
     robots: { index: false },

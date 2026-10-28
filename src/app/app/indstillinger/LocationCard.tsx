@@ -115,7 +115,7 @@ export function LocationCard({
           Placering til låseskærm
         </h2>
         <p className="mt-2 max-w-md font-[200] text-[0.85rem] leading-relaxed text-stone">
-          Skriv butikkens adresse, så kundens stempelkort dukker op på deres
+          Skriv butikkens adresse, så kundens kort dukker op på deres
           låseskærm, når de er i nærheden. Din butik minder selv kunden om sig
           selv, helt uden app. Du behøver ikke stå i butikken; det er adressen,
           der tæller.

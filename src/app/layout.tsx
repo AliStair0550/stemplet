@@ -48,12 +48,12 @@ const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Stemplet - det digitale stempelkort",
-    template: "%s - Stemplet",
+    default: "Kundekort fra Folka",
+    template: "%s - Kundekort",
   },
   description:
-    "Dine kunder scanner en QR-kode og har dit stempelkort i Apple Wallet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Folka.",
-  applicationName: "Stemplet",
+    "Ét kundekort i Apple Wallet med stempler og henvisninger. Kunderne scanner en QR-kode og har kortet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Folka.",
+  applicationName: "Kundekort",
   keywords: [
     "stempelkort",
     "digitalt stempelkort",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     "loyalitetsprogram",
     "genbesøg",
     "café loyalitet",
-    "Stemplet",
+    "Kundekort",
     "Folka",
   ],
   authors: [{ name: "Folka", url: "https://folka.dk" }],
@@ -73,23 +73,23 @@ export const metadata: Metadata = {
     : undefined,
   appleWebApp: {
     capable: true,
-    title: "Stemplet",
+    title: "Kundekort",
     statusBarStyle: "default",
   },
   openGraph: {
-    title: "Stemplet - stempelkortet, der skaber flere gensyn",
+    title: "Kundekort fra Folka",
     description:
-      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail. Et produkt fra Folka.",
+      "Stempler og henvisninger på ét kort i kundens Apple Wallet. Ingen app, kun navn og e-mail.",
     url: appUrl,
-    siteName: "Stemplet",
+    siteName: "Kundekort",
     locale: "da_DK",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stemplet - stempelkortet, der skaber flere gensyn",
+    title: "Kundekort fra Folka",
     description:
-      "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail.",
+      "Stempler og henvisninger på ét kort i kundens Apple Wallet. Ingen app, kun navn og e-mail.",
   },
   icons: {
     // Folkas f (samme som folka.dk): kort.folka.dk er Folkas. SVG er skarp paa

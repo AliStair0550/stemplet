@@ -89,7 +89,7 @@ export function KortEditor({
       const dataUrl = await toPng(node, opts);
 
       const a = document.createElement("a");
-      a.download = `stempelkort-${slug}.png`;
+      a.download = `kundekort-${slug}.png`;
       a.href = dataUrl;
       a.click();
     } catch (e) {

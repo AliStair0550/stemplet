@@ -174,6 +174,36 @@ export default async function HomePage() {
         </p>
       </header>
 
+      {/* Ny butik (ingen kortholdere endnu): de tre skridt til det foerste kort. */}
+      {stats.totalCustomers === 0 ? (
+        <section aria-labelledby="kom-i-gang" className="mb-10 rounded-[22px] bg-[#061C3D] p-6 text-white md:p-7">
+          <h2 id="kom-i-gang" className="text-[1.25rem] font-semibold tracking-[-0.02em]">Kom i gang på tre skridt</h2>
+          <p className="mt-1 text-[0.9rem] text-white/70">Så har du din første kunde på kortet i dag.</p>
+          <ol className="mt-5 grid gap-3 md:grid-cols-3">
+            {[
+              { n: 1, title: "Design kortet", text: "Dit navn, dine farver og dit billede.", href: "/app/kortet", cta: "Design kortet" },
+              { n: 2, title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen, klar til print.", href: "/app/plakat", cta: "Lav plakaten" },
+              { n: 3, title: "Prøv det selv", text: "Hent kortet på din egen telefon, og giv dig selv et stempel.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true },
+            ].map((s) => (
+              <li key={s.n} className="flex flex-col rounded-[16px] bg-white/[.07] p-4 ring-1 ring-inset ring-white/10">
+                <span className="text-[0.8rem] font-semibold text-[#7CC4FF]">Trin {s.n}</span>
+                <span className="mt-1 text-[1rem] font-semibold">{s.title}</span>
+                <span className="mt-1 text-[0.85rem] leading-snug text-white/70">{s.text}</span>
+                {s.external ? (
+                  <a href={s.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]">
+                    {s.cta}
+                  </a>
+                ) : (
+                  <Link href={s.href} className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]">
+                    {s.cta}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
+
       {/* Kortet i centrum: kortet til venstre, funktionerne paa kortet til hoejre. */}
       <section className="mb-12 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-10">
         <div className="flex flex-col items-center gap-4 lg:items-stretch">
@@ -261,9 +291,11 @@ export default async function HomePage() {
         <Panel>
           {activity.length === 0 ? (
             <p className="py-1 text-[0.88rem] text-stone">
-              {business.stampsEnabled
-                ? "Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder dagen at tælle."
-                : "Ingen aktivitet endnu. Del linket til din henvisningsside, så begynder det at tælle."}
+              Ingen aktivitet endnu.{" "}
+              <Link href="/app/plakat" className="font-[600] text-ink underline underline-offset-4">
+                Hent QR-koden
+              </Link>{" "}
+              og sæt den op ved kassen, så begynder det at tælle.
             </p>
           ) : (
             <ol className="flex flex-col divide-y divide-fog">

@@ -82,5 +82,5 @@ export async function enableReferralsAction() {
     revalidatePath("/app", "layout");
   }
   // Uden regel viser Overblik "Saet beloenninger op"; ellers arbejdslisten.
-  redirect("/app/henvisninger/indstillinger");
+  redirect("/app/regler?f=henvisninger");
 }

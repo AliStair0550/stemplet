@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 const FEATURES: Record<Feature, { title: string; text: string; offWarning: string; icon: React.ReactNode }> = {
   stempler: {
-    title: "Stempelkort",
+    title: "Stempler",
     text: "Et stempel pr. besøg og en belønning, når kortet er fuldt.",
     offWarning:
       "Slå stempler fra? Kunderne kan ikke få nye stempler, og stemplerne forsvinder fra kortet. Intet slettes: slår du det til igen, er stemplerne der stadig.",

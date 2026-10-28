@@ -26,13 +26,11 @@ const COMMON: NavLink[] = [
 
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
-  { href: "/app/kort", label: "Regler" },
   { href: "/app/statistik", label: "Statistik" },
 ];
 
 const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger", label: "Overblik" },
-  { href: "/app/henvisninger/indstillinger", label: "Regler" },
   { href: "/app/henvisninger/statistik", label: "Statistik" },
 ];
 
