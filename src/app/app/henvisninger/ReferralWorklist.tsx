@@ -120,7 +120,7 @@ export function ReferralWorklist({
   }
 
   const buttonCls =
-    "inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-5 text-[0.92rem] font-[500] text-parchment shadow-card transition-transform hover:bg-black active:scale-[0.97] disabled:opacity-50";
+    "inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-ink px-5 text-[0.92rem] font-[500] text-parchment shadow-card transition-transform hover:bg-[#0A2D5A] active:scale-[0.97] disabled:opacity-50";
 
   return (
     <div className="flex flex-col gap-8">
@@ -276,7 +276,7 @@ function Role({ kind }: { kind: "ny" | "ambassador" }) {
   return kind === "ny" ? (
     <span className="shrink-0 rounded-full border border-clay px-2 py-0.5 text-[0.7rem] font-[500] text-stone">Ny kunde</span>
   ) : (
-    <span className="shrink-0 rounded-full bg-[#111] px-2 py-0.5 text-[0.7rem] font-[500] text-white">Ambassadør</span>
+    <span className="shrink-0 rounded-full bg-[#061C3D] px-2 py-0.5 text-[0.7rem] font-[500] text-white">Ambassadør</span>
   );
 }
 

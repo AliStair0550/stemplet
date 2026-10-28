@@ -603,15 +603,15 @@ textarea:focus-visible {
   }
 }
 
-/* Primaer knapfarve. Terracotta som altid; inde i dashboardet (Folka-rammen med
-   Stemplet og Henvisninger) er knapperne sorte, saa siden virker samlet. */
+/* Primaer knapfarve. Terracotta paa Stemplets sider; i dashboardet (Folka) er
+   knapperne Folkas moerkeblaa, saa siden virker samlet. */
 :root {
   --btn-primary: #a6502e;
   --btn-primary-hover: #8f4326;
 }
 .dash-theme {
-  --btn-primary: #1c1917;
-  --btn-primary-hover: #000000;
+  --btn-primary: #061c3d;
+  --btn-primary-hover: #0a2d5a;
 }
 
 /* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden
@@ -686,48 +686,54 @@ textarea:focus-visible {
   }
 }
 
-/* Dashboardet i samme stil som Henvisningers "Kom i gang" (Alis valg): hvidt,
-   systemskrift, sort tekst, graa felter uden kant, runde kort og fede
-   overskrifter. Kun under .dash-theme (dashboard og kasse), saa Stemplets
-   forside og resten af sitet er uroert. Ulagte regler slaar Tailwinds
-   utilities, og de skal staa EFTER @theme (ellers droppes de). Stemplets
-   ordmaerke beholder sin skrift (font-sans paa StempletLogo). */
+/* Dashboard, oprettelse, login og kasse i Folkas udtryk: Inter, kølig hvid
+   grund, Folkas mørkeblå til handlinger og blå til accenter. Kun under
+   .dash-theme, saa Stemplets forside og kundens butiksside er uroert (kundens
+   kort bruger altid butikkens egne farver via inline styles). Ulagte regler
+   slaar Tailwinds utilities, og de skal staa EFTER @theme (ellers droppes de).
+   Stemplets ordmaerke beholder sin skrift (font-sans paa StempletLogo). */
 .dash-theme {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
-  color: #111;
+  --folka-night: #020b1c;
+  --folka-deep: #061c3d;
+  --folka-ocean: #0a2d5a;
+  --folka-electric: #1b5eae;
+  --folka-tint: #e8f0fb;
+  --folka-ink: #0b1628;
+  font-family: var(--font-kk), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  color: var(--folka-ink);
   -webkit-font-smoothing: antialiased;
 }
 .dash-theme.bg-parchment,
 .dash-theme .bg-parchment {
-  background-color: #fff;
+  background-color: #f7f9fc;
 }
 .dash-theme .bg-parchment\/95 {
-  background-color: rgb(255 255 255 / 0.92);
+  background-color: rgb(247 249 252 / 0.92);
 }
 .dash-theme .bg-sand {
-  background-color: #efeff2;
+  background-color: #eef2f7;
 }
 .dash-theme .text-ink {
-  color: #111;
+  color: var(--folka-ink);
 }
 .dash-theme .text-stone {
-  color: rgb(17 17 17 / 0.6);
+  color: #5f6b7e;
 }
 .dash-theme .text-slate {
-  color: rgb(17 17 17 / 0.45);
+  color: #8d98a8;
 }
 .dash-theme .text-terracotta {
-  color: #111;
+  color: var(--folka-electric);
 }
 .dash-theme .border-fog,
 .dash-theme .divide-fog > :not(:last-child) {
-  border-color: #ececef;
+  border-color: #e2e7ed;
 }
 .dash-theme .border-clay {
-  border-color: #dcdce0;
+  border-color: #cad2dd;
 }
 .dash-theme .shadow-card {
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.03), 0 10px 28px -20px rgb(0 0 0 / 0.14);
+  box-shadow: 0 1px 1px rgb(6 28 61 / 0.04), 0 2px 8px -4px rgb(6 28 61 / 0.1), 0 0 0 1px rgb(6 28 61 / 0.045);
 }
 .dash-theme .rounded-lg {
   border-radius: 14px;
@@ -739,63 +745,75 @@ textarea:focus-visible {
 .dash-theme .font-\[300\] {
   font-weight: 400;
 }
-/* Felter som i "Kom i gang": graa flade uden kant, sort ring ved fokus. */
+/* Felter: kølig graa flade uden kant, blaa kant ved fokus. */
 .dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 .dash-theme textarea,
 .dash-theme select {
-  background-color: #f5f5f7;
+  background-color: #f2f5f9;
   border-color: transparent;
 }
 .dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):focus,
 .dash-theme textarea:focus,
 .dash-theme select:focus {
-  border-color: #111;
+  border-color: var(--folka-electric);
 }
-/* Markeringer i dashboardet er sort/graa, ikke terrakotta (kun Stemplets prik er
-   terrakotta, og den har fast farve). */
-.dash-theme .bg-terracotta {
-  background-color: #111;
+/* Handlinger og markeringer i Folkas moerkeblaa; lyse markeringer i blaa tone
+   (kun Stemplets prik er terrakotta, og den har fast farve). */
+.dash-theme .bg-terracotta,
+.dash-theme .bg-ink {
+  background-color: var(--folka-deep);
 }
 .dash-theme [class*="bg-terracotta/"] {
-  background-color: #f2f2f4;
+  background-color: var(--folka-tint);
 }
-.dash-theme .border-terracotta {
-  border-color: #111;
+.dash-theme [class*="bg-ink/"] {
+  background-color: rgb(6 28 61 / 0.5);
+}
+.dash-theme .border-terracotta,
+.dash-theme .border-ink {
+  border-color: var(--folka-deep);
 }
 .dash-theme [class*=" border-terracotta/"],
 .dash-theme [class^="border-terracotta/"] {
-  border-color: #d4d4d8;
+  border-color: #c8d8e8;
 }
 .dash-theme [class*="text-terracotta/"] {
-  color: rgb(17 17 17 / 0.5);
+  color: rgb(27 94 174 / 0.6);
 }
 .dash-theme .hover\:text-terracotta:hover,
 .dash-theme .hover\:text-terracotta-dark:hover,
 .dash-theme .group:hover .group-hover\:text-terracotta {
-  color: #000;
+  color: var(--folka-deep);
+}
+.dash-theme .hover\:text-ink:hover {
+  color: var(--folka-ink);
 }
 .dash-theme .hover\:border-terracotta:hover,
-.dash-theme .focus\:border-terracotta:focus {
-  border-color: #111;
+.dash-theme .focus\:border-terracotta:focus,
+.dash-theme .hover\:border-ink:hover {
+  border-color: var(--folka-deep);
 }
 .dash-theme .hover\:bg-terracotta-dark:hover,
-.dash-theme .group:hover .group-hover\:bg-terracotta {
-  background-color: #000;
+.dash-theme .hover\:bg-terracotta:hover,
+.dash-theme .group:hover .group-hover\:bg-terracotta,
+.dash-theme .hover\:bg-black:hover,
+.dash-theme [class*="hover:bg-ink/"]:hover {
+  background-color: var(--folka-ocean);
 }
 .dash-theme .accent-terracotta {
-  accent-color: #111;
+  accent-color: var(--folka-deep);
 }
 .dash-theme [class*="ring-terracotta"] {
-  --tw-ring-color: rgb(17 17 17 / 0.35);
+  --tw-ring-color: rgb(27 94 174 / 0.35);
 }
-/* Etiketter i almindelig skrift (som "Kom i gang"), ikke versaler med spatiering. */
+/* Etiketter i almindelig skrift, ikke versaler med spatiering. */
 .dash-theme .uppercase {
   text-transform: none;
   letter-spacing: -0.005em;
   font-weight: 500;
 }
 .dash-theme [class*="bg-parchment/"] {
-  background-color: rgb(255 255 255 / 0.92);
+  background-color: rgb(247 249 252 / 0.92);
 }
 .dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not(.rounded-full),
 .dash-theme textarea,

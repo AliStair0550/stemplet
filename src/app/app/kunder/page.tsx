@@ -105,11 +105,11 @@ export default async function CustomersPage({
       />
 
       {both ? (
-        <nav aria-label="Vis kunder" className="mb-4 inline-flex rounded-full bg-[#f5f5f7] p-1">
+        <nav aria-label="Vis kunder" className="mb-4 inline-flex rounded-full bg-[#F2F5F9] p-1">
           {(
             [
               ["alle", "Alle"],
-              ["stemplet", "Stemplet"],
+              ["stemplet", "Stempler"],
               ["henvisninger", "Henvisninger"],
             ] as const
           ).map(([v, label]) => (
@@ -168,12 +168,11 @@ export default async function CustomersPage({
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
                     {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
-                        <span className="font-sans font-bold tracking-[-0.03em]">Stemplet</span>
-                        <span aria-hidden className="-ml-1 h-[5px] w-[5px] rounded-full" style={{ backgroundColor: "#a6502e" }} />
+                        <span className="font-[600]">Stempler</span>
                       </span>
                     ) : null}
                     {c.referralCode ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#111] px-2.5 py-0.5 text-[0.74rem] text-white">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#061C3D] px-2.5 py-0.5 text-[0.74rem] text-white">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/henvisninger-logo-hvid.svg" alt="Henvisninger" className="h-[0.95rem] w-auto" />
                         <span className="tracking-[0.03em] text-white/75">{c.referralCode}</span>

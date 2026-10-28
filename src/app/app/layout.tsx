@@ -4,7 +4,7 @@ import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
-  title: { default: "Hjem", template: "%s - Folka" },
+  title: { default: "Hjem", template: "%s - Kundekort" },
   robots: { index: false },
   // Eget manifest for dashboardet: foejer butikken det til hjemmeskaermen, aabner
   // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest). Folka-
@@ -42,12 +42,12 @@ export default async function AppLayout({
       <main className="pb-24 md:pb-0 md:pl-60 print:!pl-0 print:!pb-0">
         {support ? (
           // Support-tilstand: tydeligt, at superadmin arbejder i en kundes butik.
-          <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 bg-[#111] px-5 py-2.5 text-[0.85rem] text-white md:px-10 print:hidden">
+          <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 bg-[#061C3D] px-5 py-2.5 text-[0.85rem] text-white md:px-10 print:hidden">
             <span>
               <span className="font-[600]">Support:</span> du arbejder i {support.name} som superadmin.
             </span>
             <form action={endSupport}>
-              <button type="submit" className="rounded-full bg-white px-4 py-1 text-[0.8rem] font-[600] text-[#111]">
+              <button type="submit" className="rounded-full bg-white px-4 py-1 text-[0.8rem] font-[600] text-[#0B1628]">
                 Afslut support
               </button>
             </form>

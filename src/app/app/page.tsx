@@ -4,13 +4,14 @@ import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getRecentActivity, getOverviewPulse } from "@/lib/stats";
 import { getReferralOverview, type ReferralRow } from "@/lib/referral-desk";
 import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
-import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
 import { APP_URL } from "@/lib/env";
 import { AddToHomeButton } from "./AddToHomeButton";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
+
+export const metadata = { title: { absolute: "Hjem - Kundekort" } };
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ function Feature({
           <Link href={rulesHref} className="rounded-full border border-clay px-3.5 py-1.5 text-[0.82rem] font-[500] text-ink hover:border-ink">
             Regler
           </Link>
-          <Link href={href} className="rounded-full bg-ink px-3.5 py-1.5 text-[0.82rem] font-[500] text-white hover:bg-black">
+          <Link href={href} className="rounded-full bg-ink px-3.5 py-1.5 text-[0.82rem] font-[500] text-white hover:bg-[#0A2D5A]">
             Åbn
           </Link>
         </span>
@@ -179,7 +180,7 @@ export default async function HomePage() {
           <p className="w-full max-w-[300px] text-[0.85rem] font-[600] text-stone">Dit kort</p>
           <WalletCardPreview os="27" {...preview} />
           <div className="flex w-full max-w-[300px] gap-2">
-            <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-ink px-4 text-[0.88rem] font-[600] text-white hover:bg-black">
+            <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-ink px-4 text-[0.88rem] font-[600] text-white hover:bg-[#0A2D5A]">
               Design kortet
             </Link>
             <a
@@ -199,7 +200,7 @@ export default async function HomePage() {
             <p className="mt-0.5 text-[0.88rem] text-stone">Funktionerne ligger på det samme kort hos kunden. Tilføj dem, du vil bruge.</p>
           </div>
           {business.stampsEnabled ? (
-            <Feature href="/app/stemplet" rulesHref="/app/regler?f=stempler" logo={<StempletLogo className="text-[1.35rem]" />}>
+            <Feature href="/app/stemplet" rulesHref="/app/regler?f=stempler" logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Stempler</span>}>
               <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
               <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
               <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
@@ -209,7 +210,7 @@ export default async function HomePage() {
             <Feature
               href="/app/henvisninger"
               rulesHref="/app/regler?f=henvisninger"
-              logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
+              logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Henvisninger</span>}
             >
               <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
               <Stat value={formatDkNumber(referrals.doneThisMonth)} label="nye kunder i måneden" />
@@ -226,16 +227,16 @@ export default async function HomePage() {
           {business.stampsEnabled ? null : (
             <AddFeature
               href="/app/regler"
-              logo={<StempletLogo className="text-[1.35rem]" />}
-              title="Tilføj Stemplet"
+              logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Stempler</span>}
+              title="Tilføj stempler"
               text="Stempler på kortet, så kunderne kommer igen."
             />
           )}
           {business.referralsEnabled ? null : (
             <AddFeature
               href="/app/regler"
-              logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
-              title="Tilføj Henvisninger"
+              logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Henvisninger</span>}
+              title="Tilføj henvisninger"
               text="En henvisningskode på kortet, så kunderne skaffer nye kunder."
             />
           )}
@@ -276,7 +277,7 @@ export default async function HomePage() {
                         a.alert ? "bg-rust" : a.product === "stemplet" ? "" : "bg-ink",
                       )}
                       // Stemplets produktfarve (fast, saa dashboardets stil ikke rammer den).
-                      style={!a.alert && a.product === "stemplet" ? { backgroundColor: "#a6502e" } : undefined}
+                      style={!a.alert && a.product === "stemplet" ? { backgroundColor: "#1B5EAE" } : undefined}
                     />
                     <span className={cn("text-[0.9rem]", a.alert ? "text-rust" : "text-ink")}>{a.text}</span>
                   </span>

@@ -21,7 +21,7 @@ export function ShopLinkCard({ url }: { url: string }) {
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-[#111] px-6 text-[0.9rem] font-[600] text-white transition-transform active:scale-[0.97] sm:flex-none"
+            className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-[#061C3D] px-6 text-[0.9rem] font-[600] text-white transition-transform active:scale-[0.97] sm:flex-none"
           >
             Åbn
           </a>

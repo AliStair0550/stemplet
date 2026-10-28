@@ -1,5 +1,6 @@
 import "server-only";
 import type { MailAttachment } from "./emails";
+import { FOLKA_MAIL_LOGO } from "./folka-mail-logo";
 
 // Sender en mail via Resend REST. Uden noegle (lokal udvikling) springes der
 // bare over, saa intet vaelter.
@@ -18,6 +19,10 @@ export async function sendEmail(input: {
   const addr = /<([^>]+)>/.exec(base)?.[1] ?? base.trim();
   // Navnet renses for tegn, der kan bryde "Navn <adresse>"-formatet.
   const from = input.fromName ? `${input.fromName.replace(/[<>"\r\n]/g, "").trim()} <${addr}>` : base;
+  // Mails i Folkas ramme viser logoet som inline-billede (cid); det sendes med
+  // automatisk, saa den enkelte mail ikke skal huske det.
+  const attachments =
+    input.attachments ?? (input.html.includes(`cid:${FOLKA_MAIL_LOGO.content_id}`) ? [FOLKA_MAIL_LOGO] : undefined);
   if (!apiKey) {
     console.log(`[email] Resend ikke konfigureret, springer over: ${input.subject} -> ${input.to}`);
     return false;
@@ -34,7 +39,7 @@ export async function sendEmail(input: {
       subject: input.subject,
       html: input.html,
       text: input.text,
-      ...(input.attachments?.length ? { attachments: input.attachments } : {}),
+      ...(attachments?.length ? { attachments } : {}),
     }),
   });
   if (!res.ok) {

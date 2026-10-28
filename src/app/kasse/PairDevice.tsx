@@ -27,7 +27,7 @@ export function PairDevice({
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
+    <main className="dash-theme flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
       {/* RIGTIG form-POST (top-niveau-navigation) til /kasse/par, saa kasse-
           cookien gemmes paalideligt paa iOS. Ingen server-action-fetch her. */}
       <form

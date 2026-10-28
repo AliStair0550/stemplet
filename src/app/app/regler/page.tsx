@@ -89,7 +89,7 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
       {active ? (
         <section>
           {tabs.length > 1 ? (
-            <div className="mb-6 flex w-fit rounded-full bg-[#f5f5f7] p-1">
+            <div className="mb-6 flex w-fit rounded-full bg-[#F2F5F9] p-1">
               {tabs.map((k) => (
                 <Link
                   key={k}

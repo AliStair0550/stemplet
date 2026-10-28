@@ -1,4 +1,4 @@
-// Brandede mails i Stemplets tone og visuelle stil: professionel, enkel og
+// Brandede mails i Folkas tone og visuelle stil: professionel, enkel og
 // menneskelig. Vi starter direkte, kommer hurtigt til pointen, forklarer
 // vaerdien og slutter med et klart naeste skridt. Bygget med tabel-layout og
 // inline styles, saa det ser ens ud i alle mail-klienter. Ingen lange
@@ -7,18 +7,18 @@
 import { PLATFORM } from "./platform";
 import { FOLKA_MAIL_LOGO } from "./folka-mail-logo";
 
-// Praecis samme palette som sitet (globals.css @theme), saa mails og sider
-// spiller sammen. Kun web-sikre fonts i selve mailen (Instrument Sans kan ikke
-// embeddes paalideligt), men farverne er identiske med brandet.
+// Folkas palette (samme som dashboardet), saa mails og sider spiller sammen.
+// Kun web-sikre fonts i selve mailen. Navnene er historiske: "terracotta" er
+// accenten (Folkas blaa), "tint" den lyse blaa tone til fremhaevede blokke.
 const C = {
-  parchment: "#FAF8F4",
+  parchment: "#F3F5F9",
   card: "#FFFFFF",
-  terracotta: "#A6502E",
-  tint: "#F7EDE7", // lys terracotta-tone til fremhaevede blokke
-  ink: "#1C1917",
-  stone: "#57534E",
-  slate: "#78716C",
-  fog: "#ECEAE5",
+  terracotta: "#1B5EAE",
+  tint: "#E8F0FB",
+  ink: "#0E1726",
+  stone: "#5D6675",
+  slate: "#8D98A8",
+  fog: "#E4E8EF",
 };
 
 /** Inline-billede (cid) til Resend. */
@@ -34,14 +34,14 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
   <tr><td align="center" style="padding:40px 20px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
       <tr><td style="padding:0 4px 20px;">
-        <span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:${C.ink};">Stemplet<span style="display:inline-block;width:6px;height:6px;margin-left:2px;border-radius:50%;background:${C.terracotta};vertical-align:baseline;"></span></span>
+        <img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="86" height="48" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:26px;font-style:italic;color:${PLATFORM.color};">
       </td></tr>
-      <tr><td style="background:${C.card};border:1px solid ${C.fog};border-radius:12px;padding:36px 32px;">
+      <tr><td style="background:${C.card};border-radius:20px;padding:36px 32px;">
         ${inner}
       </td></tr>
       <tr><td style="padding:20px 4px 0;">
         <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-          Stemplet. Stempelkortet, der skaber flere gensyn.
+          Kundekort fra Folka. Stempler og henvisninger i kundens Wallet.
         </p>
         ${footerExtra}
       </td></tr>
@@ -89,7 +89,7 @@ function folkaShell(preheader: string, inner: string, shopName?: string): string
       </td></tr>
       <tr><td align="center" style="padding:22px 16px 0;">
         <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Stemplet og Henvisninger."}
+          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Kundekort."}
         </p>
       </td></tr>
     </table>
@@ -130,7 +130,7 @@ export function loginEmail(url: string): Email {
     "",
     "Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.",
     "",
-    "Folka. Stemplet og Henvisninger.",
+    "Kundekort fra Folka.",
   ].join("\n");
 
   return { subject: "Dit login-link til Folka", html: folkaShell("Log ind på dit dashboard.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
@@ -200,7 +200,7 @@ export function welcomeEmail(url: string): Email {
     "",
     "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.",
     "",
-    "Folka. Stemplet og Henvisninger.",
+    "Kundekort fra Folka.",
   ].join("\n");
 
   return { subject: "Velkommen til Folka", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
@@ -322,7 +322,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
 
   return {
     subject: `Din uge hos ${d.businessName}: ${d.stampsWeek} stempler`,
-    html: shell("Din uge hos Stemplet.", inner, footerExtra),
+    html: shell("Din uge med Kundekort.", inner, footerExtra),
     text,
   };
 }
@@ -365,11 +365,11 @@ export function cardholderWarningEmail(d: CardholderWarningData): Email {
     "Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen her:",
     d.agreementUrl,
     "",
-    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+    "Kundekort fra Folka.",
   ].join("\n");
 
   return {
-    subject: `I nærmer jer ${d.limit} kortholdere hos Stemplet`,
+    subject: `I nærmer jer ${d.limit} kortholdere på Kundekort`,
     html: shell(`${d.businessName} nærmer sig ${d.limit} kortholdere.`, inner),
     text,
   };
@@ -420,7 +420,7 @@ export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
   ].join("\n");
 
   return {
-    subject: `[Stemplet] ${d.businessName} nærmer sig ${d.limit} kortholdere`,
+    subject: `[Kundekort] ${d.businessName} nærmer sig ${d.limit} kortholdere`,
     html: shell(`${d.businessName}: ${d.cardholders} kortholdere.`, inner),
     text,
   };
@@ -496,7 +496,7 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Fakturér: ${d.businessName} har krydset ${d.limit} kortholdere`,
+    subject: `[Kundekort] Fakturér: ${d.businessName} har krydset ${d.limit} kortholdere`,
     html: shell(`${d.businessName} skal faktureres for Pro.`, inner),
     text,
   };
@@ -533,7 +533,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
       Ny butik oprettet: ${d.businessName}.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      Endnu en butik er kommet med på Stemplet.
+      Endnu en butik er kommet med på Kundekort.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:14px 18px;">
@@ -563,7 +563,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Ny butik: ${d.businessName}`,
+    subject: `[Kundekort] Ny butik: ${d.businessName}`,
     html: shell(`Ny butik oprettet: ${d.businessName}.`, inner),
     text,
   };
@@ -595,12 +595,12 @@ export function marketingWelcomeEmail(name?: string | null): Email {
     "",
     "Har du ikke selv skrevet dig op, så skriv til os på hej@folka.dk, så fjerner vi dig med det samme.",
     "",
-    "Stemplet. Stempelkortet, der skaber flere gensyn.",
+    "Kundekort fra Folka.",
   ].join("\n");
 
   return {
-    subject: "Du er skrevet op hos Stemplet",
-    html: shell("Tak, du er skrevet op hos Stemplet.", inner),
+    subject: "Du er skrevet op hos Folka",
+    html: shell("Tak, du er skrevet op hos Folka.", inner),
     text,
   };
 }
@@ -660,8 +660,8 @@ export function superadminMarketingSignupEmail(
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Ny tilmelding: ${d.email}`,
-    html: shell("Ny bekræftet tilmelding til Stemplet.", inner),
+    subject: `[Kundekort] Ny tilmelding: ${d.email}`,
+    html: shell("Ny bekræftet tilmelding til Kundekort.", inner),
     text,
   };
 }
@@ -744,8 +744,8 @@ export function superadminSignupRequestEmail(
   ].join("\n");
 
   return {
-    subject: `[Stemplet] Oprettelsesanmodning${d.referralsOnly ? " (kun Henvisninger)" : d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
-    html: shell("En butik vil gerne oprettes hos Stemplet.", inner),
+    subject: `[Kundekort] Oprettelsesanmodning${d.referralsOnly ? " (kun Henvisninger)" : d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
+    html: shell("En butik vil gerne oprettes på Kundekort.", inner),
     text,
   };
 }

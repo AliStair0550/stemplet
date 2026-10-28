@@ -1,31 +1,32 @@
 import type { MetadataRoute } from "next";
 
-// PWA-manifest. Gælder webkortet, så kunden kan føje det til hjemmeskærmen.
+// PWA-manifest for kort.folka.dk (Folkas f paa moerkeblaat). Dashboard og kasse
+// har hvert sit manifest, saa deres hjemmeskaerm-ikon aabner direkte dér.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Stemplet",
-    short_name: "Stemplet",
-    description: "Dit stempelkort. Altid ved hånden.",
+    name: "Kundekort",
+    short_name: "Kundekort",
+    description: "Dit kundekort. Altid ved hånden.",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAF8F4",
-    theme_color: "#A6502E",
+    background_color: "#F7F9FC",
+    theme_color: "#061C3D",
     lang: "da",
     icons: [
       {
-        src: "/icon-192.png",
+        src: "/app-icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon-512.png",
+        src: "/app-icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon-maskable.png",
+        src: "/app-icon-maskable.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Fraunces } from "next/font/google";
+import { Instrument_Sans, Fraunces, Inter } from "next/font/google";
 import { ScrollReset } from "@/components/ScrollReset";
 import { Analytics } from "@/components/Analytics";
 import { GA_ID } from "@/lib/env";
@@ -26,6 +26,16 @@ const fraunces = Fraunces({
   // saa mobil-forsiden slipper for en unoedig font-download.
   preload: false,
   variable: "--font-fraunces-face",
+});
+
+// Inter er Folkas skrift (Kundekort-forsiden, oprettelse, login og dashboard).
+// Ikke preload: filen hentes kun, naar tekst bruger den, saa kundens butiksside
+// ikke betaler for den.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  variable: "--font-kk",
 });
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk";
@@ -110,7 +120,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da" className={`${instrument.variable} ${fraunces.variable}`}>
+    <html lang="da" className={`${instrument.variable} ${fraunces.variable} ${inter.variable}`}>
       <body className="antialiased">
         <ScrollReset />
         {children}

@@ -114,7 +114,7 @@ export function IntegrationsClient({
       <div className="rounded-lg border border-terracotta/30 bg-terracotta/[0.05] p-6">
         <h2 className="text-[1rem] font-[400] text-ink">Skal du bruge det her?</h2>
         <p className="mt-2 max-w-2xl text-[0.88rem] font-[200] leading-relaxed text-stone">
-          Kun hvis du vil koble Stemplet sammen med et andet system, fx dit
+          Kun hvis du vil koble Kundekort sammen med et andet system, fx dit
           kassesystem eller et værktøj som Zapier. Så kan stempler og belønninger
           køre helt af sig selv. Ellers kan du roligt springe siden over, alt
           virker uden.

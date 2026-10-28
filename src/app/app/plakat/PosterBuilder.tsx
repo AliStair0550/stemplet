@@ -137,7 +137,7 @@ export function PosterBuilder({
             maxLength={MATERIAL_HEADLINE_MAX}
             placeholder={defaultHeadline}
             aria-label="Overskrift"
-            className="w-full rounded-xl border border-fog bg-[#f5f5f7] px-4 py-2.5 text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-ink"
+            className="w-full rounded-xl border border-fog bg-[#F2F5F9] px-4 py-2.5 text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-ink"
           />
           <div className="mt-2 flex flex-wrap gap-2">
             {suggestions.map((h) => (
@@ -155,12 +155,12 @@ export function PosterBuilder({
 
         <Box title="Vis på plakaten">
           <label className="flex items-center gap-3 py-1 text-[0.92rem] text-ink">
-            <input type="checkbox" checked={brand} onChange={(e) => setBrand(e.target.checked)} className="h-5 w-5 accent-[#111]" />
+            <input type="checkbox" checked={brand} onChange={(e) => setBrand(e.target.checked)} className="h-5 w-5 accent-[#061C3D]" />
             Logo eller butiksnavn
           </label>
           {focus === "kort" ? (
             <label className="flex items-center gap-3 py-1 text-[0.92rem] text-ink">
-              <input type="checkbox" checked={grid} onChange={(e) => setGrid(e.target.checked)} className="h-5 w-5 accent-[#111]" />
+              <input type="checkbox" checked={grid} onChange={(e) => setGrid(e.target.checked)} className="h-5 w-5 accent-[#061C3D]" />
               Stemplerne (på A4 og A5)
             </label>
           ) : null}
@@ -168,7 +168,7 @@ export function PosterBuilder({
       </div>
 
       <aside className="flex flex-col gap-3 lg:sticky lg:top-6 lg:self-start">
-        <div className="relative aspect-[210/297] w-full overflow-hidden rounded-[14px] border border-fog bg-[#f5f5f7] shadow-card">
+        <div className="relative aspect-[210/297] w-full overflow-hidden rounded-[14px] border border-fog bg-[#F2F5F9] shadow-card">
           <iframe
             key={previewUrl}
             src={`${previewUrl}#toolbar=0&navpanes=0&view=FitH`}
@@ -185,7 +185,7 @@ export function PosterBuilder({
         <a
           href={url}
           download
-          className="flex min-h-12 items-center justify-center rounded-full bg-ink px-6 text-[0.95rem] font-semibold text-white hover:bg-black"
+          className="flex min-h-12 items-center justify-center rounded-full bg-ink px-6 text-[0.95rem] font-semibold text-white hover:bg-[#0A2D5A]"
         >
           Hent PDF
         </a>

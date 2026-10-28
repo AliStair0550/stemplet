@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
-import { StempletLogo } from "@/components/ProductLogo";
 import { SubmitButton } from "@/components/SubmitButton";
 import { enableStampsAction } from "../actions";
 
-export const metadata: Metadata = { title: "Tilføj Stemplet" };
+export const metadata: Metadata = { title: "Tilføj stempler" };
 export const dynamic = "force-dynamic";
 
 // "+ Stemplet" for en butik med kun Henvisninger: hvad Stemplet er, og eet tryk
@@ -23,7 +22,7 @@ export default async function AddStampsPage() {
 
   return (
     <div className="mx-auto max-w-[560px] py-4">
-      <StempletLogo className="text-[2rem]" />
+      <p className="text-[1.6rem] font-semibold leading-none tracking-[-0.03em] text-ink">Stempler</p>
       <h1 className="mt-6 text-[1.9rem] font-[500] leading-tight tracking-[-0.015em] text-ink">
         Få dine kunder til at komme igen.
       </h1>

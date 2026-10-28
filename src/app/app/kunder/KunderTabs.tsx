@@ -10,7 +10,7 @@ export function KunderTabs({ active, showCampaigns }: { active: "kunder" | "kamp
     { key: "kampagner", href: "/app/kampagner", label: "Kampagner" },
   ] as const;
   return (
-    <nav aria-label="Kunder" className="mb-6 flex w-fit rounded-full bg-[#f5f5f7] p-1">
+    <nav aria-label="Kunder" className="mb-6 flex w-fit rounded-full bg-[#F2F5F9] p-1">
       {tabs.map((t) => (
         <Link
           key={t.key}

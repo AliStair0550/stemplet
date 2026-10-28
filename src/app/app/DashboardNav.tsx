@@ -5,8 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "./actions";
 import { BusinessSwitcher } from "./BusinessSwitcher";
-import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
+import { KundekortMark } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
+
+// Funktionerne paa kortet vises som almindelig tekst under Kundekort (Folka).
+const featureLabel = (t: string) => <span className="text-[0.88rem] font-[500] text-ink">{t}</span>;
 
 // Dashboardets ramme med kundernes kort i centrum. Oeverst det faelles (Scan,
 // Hjem, Kunder), saa DIT KORT: kortets design og funktionerne paa kortet med
@@ -85,7 +88,7 @@ export function DashboardNav({
 
   const stemplet = showStamps ? (
     <ProductGroup
-      logo={<StempletLogo className="text-[1.05rem]" />}
+      logo={featureLabel("Stempler")}
       href="/app/stemplet"
       open={inStemplet}
       links={STEMPLET_LINKS}
@@ -94,14 +97,14 @@ export function DashboardNav({
   ) : (
     <AddProduct
       href="/app/stemplet/tilfoej"
-      label="Tilføj Stemplet"
+      label="Tilføj stempler"
       active={pathname.startsWith("/app/stemplet")}
-      logo={<StempletLogo className="text-[1.05rem]" />}
+      logo={featureLabel("Stempler")}
     />
   );
   const henvisninger = showReferrals ? (
     <ProductGroup
-      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
+      logo={featureLabel("Henvisninger")}
       href="/app/henvisninger"
       open={inHenvisninger}
       links={HENVISNINGER_LINKS}
@@ -110,9 +113,9 @@ export function DashboardNav({
   ) : (
     <AddProduct
       href="/app/henvisninger/tilfoej"
-      label="Tilføj Henvisninger"
+      label="Tilføj henvisninger"
       active={inHenvisninger}
-      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
+      logo={featureLabel("Henvisninger")}
     />
   );
   // Det aktive produkt foerst, tilvalget ("+") nedenunder.
@@ -191,14 +194,17 @@ export function DashboardNav({
   return (
     <>
       {/* Desktop */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-[#f7f7f8] px-4 py-6 md:flex print:hidden">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-white px-4 py-6 md:flex print:hidden">
+        <Link href="/app" aria-label="Kundekort, til Hjem" className="mb-5 px-2">
+          <KundekortMark />
+        </Link>
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
 
         <Link
           href={SCAN.href}
           className={cn(
             "mt-5 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[0.88rem] font-[500] text-parchment transition-colors",
-            isActive(SCAN.href) ? "bg-black" : "bg-ink hover:bg-black",
+            isActive(SCAN.href) ? "bg-[#0A2D5A]" : "bg-ink hover:bg-[#0A2D5A]",
           )}
         >
           <ScanIcon />

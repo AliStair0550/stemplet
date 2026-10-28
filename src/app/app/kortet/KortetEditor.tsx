@@ -186,7 +186,7 @@ export function KortetEditor({
                 >
                   <span className="text-[0.95rem] font-semibold text-ink">{CARD_STYLE_LABEL[s]}</span>
                   <span className="text-[0.78rem] leading-snug text-stone">
-                    {ok ? STYLE_HINT[s] : "Kræver Stemplet"}
+                    {ok ? STYLE_HINT[s] : "Kræver stempler"}
                   </span>
                 </button>
               );
@@ -244,12 +244,12 @@ export function KortetEditor({
             maxLength={CARD_NAME_MAX}
             placeholder={autoName}
             aria-label="Kortets navn"
-            className="mt-4 w-full rounded-xl border border-fog bg-[#f5f5f7] px-4 py-2.5 text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-ink"
+            className="mt-4 w-full rounded-xl border border-fog bg-[#F2F5F9] px-4 py-2.5 text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-ink"
           />
           <p className="mt-2 text-[0.8rem] text-slate">
             Højst {CARD_NAME_MAX} tegn. Lad feltet stå tomt for at bruge &quot;{autoName}&quot;.
           </p>
-          <div className="mt-4 flex justify-center rounded-[14px] bg-[#f5f5f7] p-4">
+          <div className="mt-4 flex justify-center rounded-[14px] bg-[#F2F5F9] p-4">
             <span
               className="flex min-h-11 items-center rounded-2xl px-6 text-[0.92rem] font-medium"
               style={{ background: design.textColor, color: design.primaryColor }}
@@ -313,7 +313,7 @@ export function KortetEditor({
       {/* Forhaandsvisning */}
       <aside className="order-1 md:order-none">
         <div className="flex flex-col items-center gap-3 md:sticky md:top-6">
-          <div className="flex rounded-full bg-[#f5f5f7] p-1">
+          <div className="flex rounded-full bg-[#F2F5F9] p-1">
             {(
               [
                 ["27", "iOS 27"],
