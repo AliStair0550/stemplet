@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "./actions";
@@ -76,6 +76,23 @@ export function DashboardNav({
 
   // "Mere" lukkes, naar man navigerer.
   useEffect(() => setMoreOpen(false), [pathname]);
+  // Arket opfoerer sig som en dialog: fokus flyttes ind, Escape lukker, og
+  // fokus vender tilbage til knappen.
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!moreOpen) return;
+    sheetRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const btn = moreBtnRef.current;
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      btn?.focus();
+    };
+  }, [moreOpen]);
 
   // Overblik-sider matcher kun praecis; resten matcher ogsaa undersider.
   const exact = new Set(["/app", "/app/henvisninger"]);
@@ -256,6 +273,11 @@ export function DashboardNav({
       {moreOpen ? (
         <div className="fixed inset-x-0 bottom-[4.25rem] top-0 z-40 flex flex-col justify-end bg-ink/20 md:hidden" onClick={() => setMoreOpen(false)}>
           <div
+            ref={sheetRef}
+            id="mere-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mere"
             className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
@@ -298,9 +320,11 @@ export function DashboardNav({
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
         </TabLink>
         <button
+          ref={moreBtnRef}
           type="button"
           onClick={() => setMoreOpen((o) => !o)}
           aria-expanded={moreOpen}
+          aria-controls="mere-menu"
           className={cn(
             "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
             moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder") && !isActive(CAMPAIGNS.href))

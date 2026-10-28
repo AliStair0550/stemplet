@@ -35,3 +35,9 @@ export function parseContact(input: ContactInput): { ok: true; contact: Contact 
   if (!email) return { ok: false, error: "mail" };
   return { ok: true, contact: { name, email, consent: input.consent === true } };
 }
+
+/** "emma.holm@gmail.com" -> "em***@gmail.com": nok til at kunden genkender sin mail. */
+export function maskEmail(email: string): string {
+  const [local = "", domain = ""] = email.split("@");
+  return `${local.slice(0, 2)}***@${domain}`;
+}

@@ -320,6 +320,8 @@ test("cron: gammel aaben henvisning og passeret beloenning udloeber, resten roer
     const res = await expireReferralsAndRewards(now);
     assert.ok(res.referralsExpired >= 1);
     assert.ok(res.rewardsExpired >= 1);
+    // Kortet med den udloebne beloenning skal opdateres i Wallet.
+    assert.ok(res.cardIds.includes(s.referrer.id), "beroert kort returneres");
 
     const statusOf = async (id: string) =>
       (await prisma.referral.findUniqueOrThrow({ where: { id } })).status;

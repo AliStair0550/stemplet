@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshShop } from "@/lib/shop-refresh";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
-import { WALLET_ENABLED } from "@/lib/env";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
@@ -29,16 +28,8 @@ export async function setFeatureAction(formData: FormData) {
   if (next.stampsEnabled !== business.stampsEnabled || next.referralsEnabled !== business.referralsEnabled) {
     await prisma.business.update({ where: { id: business.id }, data: next });
     revalidatePath("/app", "layout");
-    // Kundesiderne er cachet: /k sender videre til henvisningssiden uden stempler.
-    revalidatePath(`/k/${business.slug}`);
-    revalidatePath(`/henvisninger/${business.slug}`);
-    // Kortene i kundernes Wallet faar de nye felter via en stille opdatering.
-    if (WALLET_ENABLED) {
-      after(async () => {
-        const { pushAllWalletPasses } = await import("@/lib/wallet/build");
-        await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
-      });
-    }
+    // Butikssiden (cachet) og kortene i kundernes Wallet foelger funktionerne.
+    refreshShop(business);
   }
   redirect(`/app/regler?f=${on ? feature : next.stampsEnabled ? "stempler" : "henvisninger"}`);
 }

@@ -62,7 +62,7 @@ export async function GET(
       // "inline", IKKE "attachment": iOS Safari skal AABNE passet i Wallet.
       // Med attachment forsoeger Safari at downloade det som en fil og siger
       // "Safari kan ikke hente dette arkiv".
-      "content-disposition": `inline; filename="stemplet-${serial}.pkpass"`,
+      "content-disposition": `inline; filename="kort-${serial}.pkpass"`,
       "cache-control": "no-store",
     },
   });

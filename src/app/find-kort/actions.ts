@@ -5,14 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { requestCardRecovery } from "@/lib/card-recovery";
 import { APP_URL } from "@/lib/env";
+import { maskEmail } from "@/lib/contact";
 
 export type FindState = { error?: string; sentTo?: string };
-
-/** "emma.holm@gmail.com" -> "em***@gmail.com" (nok til at kunden genkender den). */
-function maskEmail(email: string): string {
-  const [local = "", domain = ""] = email.split("@");
-  return `${local.slice(0, 2)}***@${domain}`;
-}
 
 // Genfind et kort ud fra serienummeret (staar under stregkoden paa kortet).
 // Serienummeret er IKKE hemmeligt (det staar i stregkoden), saa det giver ikke
