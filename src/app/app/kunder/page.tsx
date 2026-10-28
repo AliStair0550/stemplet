@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { requireBusiness } from "@/lib/session";
 import { KunderTabs } from "./KunderTabs";
+import { DeleteCustomerButton } from "./DeleteCustomerButton";
 import { prisma } from "@/lib/prisma";
 import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
@@ -173,8 +174,7 @@ export default async function CustomersPage({
                     ) : null}
                     {c.referralCode ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#061C3D] px-2.5 py-0.5 text-[0.74rem] text-white">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/henvisninger-logo-hvid.svg" alt="Henvisninger" className="h-[0.95rem] w-auto" />
+                        <span className="font-[600]">Henvisning</span>
                         <span className="tracking-[0.03em] text-white/75">{c.referralCode}</span>
                         {c.referredBy?.name ? <span className="text-white/75">· henvist af {c.referredBy.name}</span> : null}
                       </span>
@@ -194,6 +194,7 @@ export default async function CustomersPage({
                     </span>
                   </div>
                 ) : null}
+                <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
               </li>
             ))}
           </ul>

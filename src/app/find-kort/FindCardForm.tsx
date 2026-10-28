@@ -26,7 +26,13 @@ export function FindCardForm() {
         </span>
       </label>
       {state.error ? (
-        <p className="text-[0.8rem] font-[300] text-rust">{state.error}</p>
+        <p role="alert" className="text-[0.8rem] font-[300] text-rust">{state.error}</p>
+      ) : null}
+      {state.sentTo ? (
+        <p role="status" className="rounded-lg bg-sand px-4 py-3 text-[0.85rem] leading-relaxed text-ink">
+          Vi har sendt et link til {state.sentTo}. Åbn mailen på den telefon, hvor du vil have dit kort. Linket virker i
+          30 minutter.
+        </p>
       ) : null}
       <SubmitButton variant="terracotta" size="lg" pendingText="Finder dit kort...">
         Find mit kort
