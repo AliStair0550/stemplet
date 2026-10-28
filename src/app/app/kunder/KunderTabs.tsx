@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Kunder og Kampagner hoerer sammen: kampagner er maaden, man giver kunderne en
-// grund til at komme igen. Kampagner kraever stempler, saa uden dem ingen faner.
-export function KunderTabs({ active, showCampaigns }: { active: "kunder" | "kampagner"; showCampaigns: boolean }) {
-  if (!showCampaigns) return null;
+// Kunder, Beskeder og Kampagner hoerer sammen: det er maaderne, man taler med
+// kunderne og giver dem en grund til at komme igen. Kampagner kraever stempler.
+export function KunderTabs({
+  active,
+  showCampaigns,
+}: {
+  active: "kunder" | "beskeder" | "kampagner";
+  showCampaigns: boolean;
+}) {
   const tabs = [
     { key: "kunder", href: "/app/kunder", label: "Kunder" },
-    { key: "kampagner", href: "/app/kampagner", label: "Kampagner" },
+    { key: "beskeder", href: "/app/beskeder", label: "Beskeder" },
+    ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner" } as const] : []),
   ] as const;
   return (
     <nav aria-label="Kunder" className="mb-6 flex w-fit rounded-full bg-[#F2F5F9] p-1">

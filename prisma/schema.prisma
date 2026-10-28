@@ -94,6 +94,10 @@ model Business {
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?
+  // Besked fra butikken paa kundernes kort (Beskeder). Ny tekst = notifikation
+  // paa laaseskaermen. newsSentAt bruges til hoejst een besked i doegnet.
+  newsText           String?
+  newsSentAt         DateTime?
   users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
   memberships      Membership[]
   cards            Card[]

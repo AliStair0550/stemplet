@@ -41,6 +41,7 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     longitude: b.longitude,
     referral,
     stampsEnabled: b.stampsEnabled,
+    newsText: b.newsText,
     // Kortet (faelles design) til iOS 27-plakaten; bruges kun med WALLET_POSTER=true.
     look: {
       style: b.cardStyle,
