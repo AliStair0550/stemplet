@@ -368,3 +368,23 @@ test("arbejdsliste: vennen kan findes paa begge parters navn, og Rabat givet ind
     await cleanup(s.bizId);
   }
 });
+
+// ── GDPR: sletning af en kortholder ──────────────────────────────────
+
+test("sletning: kortholder med henvisning og beloenninger slettes helt, vennen bliver", async () => {
+  const s = await makeShop();
+  try {
+    const { sara, mikkel, ref } = await rewardedPair(s);
+    // Samme sletning som "Slet" under Kunder (deleteCustomerAction).
+    await prisma.customerCard.delete({ where: { id: sara.id } });
+
+    assert.equal(await prisma.customerCard.findUnique({ where: { id: sara.id } }), null);
+    assert.equal(await prisma.reward.count({ where: { cardId: sara.id } }), 0, "beloenninger slettet");
+    assert.equal(await prisma.referral.findUnique({ where: { id: ref.id } }), null, "henvisningen slettet");
+    const friend = await prisma.customerCard.findUnique({ where: { id: mikkel.id } });
+    assert.ok(friend, "vennens kort findes stadig");
+    assert.equal(friend.referredByCardId, null, "vennen peger ikke laengere paa det slettede kort");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

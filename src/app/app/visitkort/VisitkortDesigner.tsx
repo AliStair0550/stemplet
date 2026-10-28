@@ -326,7 +326,7 @@ export function VisitkortDesigner({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "stemplet-visitkort.pdf";
+      a.download = "kundekort-visitkort.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
