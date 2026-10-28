@@ -4,8 +4,8 @@
 // inline styles, saa det ser ens ud i alle mail-klienter. Ingen lange
 // bindestreger.
 
-import { APP_URL } from "./env";
 import { PLATFORM } from "./platform";
+import { FOLKA_MAIL_LOGO } from "./folka-mail-logo";
 
 // Praecis samme palette som sitet (globals.css @theme), saa mails og sider
 // spiller sammen. Kun web-sikre fonts i selve mailen (Instrument Sans kan ikke
@@ -21,7 +21,9 @@ const C = {
   fog: "#ECEAE5",
 };
 
-type Email = { subject: string; html: string; text: string };
+/** Inline-billede (cid) til Resend. */
+export type MailAttachment = { filename: string; content: string; content_id: string };
+type Email = { subject: string; html: string; text: string; attachments?: MailAttachment[] };
 
 function shell(preheader: string, inner: string, footerExtra = ""): string {
   return `<!doctype html>
@@ -50,8 +52,10 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
 }
 
 // Login og velkomst er faelles for alle Folka-produkter (Stemplet og
-// Henvisninger), saa de baerer Folka og den nye stil: hvidt, sort, systemfont.
-const A = { bg: "#FFFFFF", ink: "#111111", muted: "#6E6E73", line: "#ECECEF", surface: "#F5F5F7" };
+// Henvisninger), saa de baerer Folka: lys blaagraa baggrund, hvidt kort, Folkas
+// moerkeblaa paa knappen og ordmaerket som inline-billede (cid), saa logoet ogsaa
+// vises, naar appens domaene ikke er offentligt (fx testsiden).
+const A = { bg: "#F3F5F9", card: "#FFFFFF", ink: "#0E1726", muted: "#5D6675", line: "#E4E8EF", surface: "#F3F5F9" };
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 
 /** "Stemplet <login@x.dk>" -> "Folka <login@x.dk>" (kun navnet skiftes). */
@@ -61,21 +65,31 @@ export function folkaSender(from: string | undefined): string | undefined {
   return `${PLATFORM.name} <${addr}>`;
 }
 
-function folkaShell(preheader: string, inner: string): string {
+/**
+ * Rammen om Folka-mails. Uden `shopName` staar Folkas logo oeverst (mails til
+ * butiksejeren); med `shopName` staar butikkens navn (mails til slutkunder,
+ * som skal se butikken og ikke Folka).
+ */
+function folkaShell(preheader: string, inner: string, shopName?: string): string {
+  const header = shopName
+    ? `<span style="font-family:${FONT};font-size:20px;font-weight:700;letter-spacing:-.02em;color:${A.ink};">${shopName}</span>`
+    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="104" height="58" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:30px;font-style:italic;color:${PLATFORM.color};">`;
   return `<!doctype html>
-<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:${A.bg};">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${A.bg};">
-  <tr><td align="center" style="padding:44px 20px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
-      <tr><td style="padding:0 0 28px;">
-        <img src="${APP_URL}/folka-mail-logo.png" width="86" height="48" alt="${PLATFORM.name}" style="display:block;border:0;font-family:${FONT};font-size:22px;font-style:italic;color:${PLATFORM.color};">
+  <tr><td align="center" style="padding:40px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+      <tr><td style="background:${A.card};border-radius:20px;padding:36px 36px 32px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:0 0 28px;">${header}</td></tr>
+          <tr><td>${inner}</td></tr>
+        </table>
       </td></tr>
-      <tr><td>${inner}</td></tr>
-      <tr><td style="padding:32px 0 0;border-top:1px solid ${A.line};">
-        <p style="margin:20px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          Folka. Stemplet og Henvisninger.
+      <tr><td align="center" style="padding:22px 16px 0;">
+        <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
+          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Stemplet og Henvisninger."}
         </p>
       </td></tr>
     </table>
@@ -86,17 +100,16 @@ function folkaShell(preheader: string, inner: string): string {
 
 function folkaButton(url: string, label: string): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-    <td style="border-radius:999px;background:${A.ink};">
-      <a href="${url}" style="display:inline-block;padding:15px 28px;font-family:${FONT};font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:999px;">${label}</a>
+    <td style="border-radius:12px;background:${PLATFORM.color};">
+      <a href="${url}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:16px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:12px;">${label}</a>
     </td></tr></table>`;
 }
 
 function folkaFallback(url: string, note: string): string {
-  return `<p style="margin:28px 0 0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};word-break:break-all;">
-      Virker knappen ikke, så kopiér linket:<br>
-      <a href="${url}" style="color:${A.ink};">${url}</a>
-    </p>
-    <p style="margin:16px 0 32px;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">${note}</p>`;
+  return `<p style="margin:28px 0 0;padding:24px 0 0;border-top:1px solid ${A.line};font-family:${FONT};font-size:13px;line-height:1.6;color:${A.muted};">${note}</p>
+    <p style="margin:12px 0 0;font-family:${FONT};font-size:12px;line-height:1.5;color:${A.muted};word-break:break-all;">
+      Virker knappen ikke? Kopiér linket: <a href="${url}" style="color:${A.muted};">${url}</a>
+    </p>`;
 }
 
 /** Login-link (magic link). Bruges baade ved log ind og efter oprettelse. */
@@ -120,7 +133,7 @@ export function loginEmail(url: string): Email {
     "Folka. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return { subject: "Dit login-link til Folka", html: folkaShell("Log ind på dit dashboard.", inner), text };
+  return { subject: "Dit login-link til Folka", html: folkaShell("Log ind på dit dashboard.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
 /** Gendan kortet: link til kunden, der virker een gang og i 30 minutter. */
@@ -141,7 +154,7 @@ export function cardRecoveryEmail(shopName: string, url: string): Email {
     "",
     "Har du ikke bedt om at gendanne dit kort, kan du roligt ignorere denne mail.",
   ].join("\n");
-  return { subject: `Gendan dit kort hos ${shopName}`, html: folkaShell(`Dit kort hos ${shop}.`, inner), text };
+  return { subject: `Gendan dit kort hos ${shopName}`, html: folkaShell(`Dit kort hos ${shop}.`, inner, shop), text };
 }
 
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
@@ -190,7 +203,7 @@ export function welcomeEmail(url: string): Email {
     "Folka. Stemplet og Henvisninger.",
   ].join("\n");
 
-  return { subject: "Velkommen til Folka", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text };
+  return { subject: "Velkommen til Folka", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
 // ── Ugentlig statistik-mail ──────────────────────────────────────────
