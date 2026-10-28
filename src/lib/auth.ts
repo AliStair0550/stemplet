@@ -110,6 +110,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             subject: mail.subject,
             html: mail.html,
             text: mail.text,
+            attachments: mail.attachments,
           }),
         });
         if (!res.ok) {

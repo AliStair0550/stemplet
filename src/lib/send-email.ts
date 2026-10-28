@@ -1,4 +1,5 @@
 import "server-only";
+import type { MailAttachment } from "./emails";
 
 // Sender en mail via Resend REST. Uden noegle (lokal udvikling) springes der
 // bare over, saa intet vaelter.
@@ -9,6 +10,8 @@ export async function sendEmail(input: {
   text: string;
   /** Afsendernavn (fx butikkens navn); adressen er altid EMAIL_FROM's. */
   fromName?: string;
+  /** Inline-billeder (cid), fx Folka-logoet i login- og velkomstmails. */
+  attachments?: MailAttachment[];
 }): Promise<boolean> {
   const apiKey = process.env.AUTH_RESEND_KEY;
   const base = process.env.EMAIL_FROM || "Stemplet <login@folka.dk>";
@@ -31,6 +34,7 @@ export async function sendEmail(input: {
       subject: input.subject,
       html: input.html,
       text: input.text,
+      ...(input.attachments?.length ? { attachments: input.attachments } : {}),
     }),
   });
   if (!res.ok) {
