@@ -24,23 +24,23 @@ const QR = (() => {
   return cells;
 })();
 
-export function QrCode({ className }: { className?: string }) {
+// Hele moenstret som EEN sti (i stedet for ~300 <rect> pr. kode), saa forsidens
+// mange kort ikke giver tusindvis af elementer, som telefonen skal tegne.
+const QR_PATH = (() => {
   const corners = [
     [0, 0],
     [QR_SIZE - 7, 0],
     [0, QR_SIZE - 7],
   ];
+  const parts = corners.map(([x, y]) => `M${x} ${y}h7v7h-7z M${x + 1} ${y + 1}v5h5v-5z M${x + 2} ${y + 2}h3v3h-3z`);
+  for (const [x, y] of QR) parts.push(`M${x} ${y}h1v1h-1z`);
+  return parts.join("");
+})();
+
+export function QrCode({ className }: { className?: string }) {
   return (
     <svg viewBox={`0 0 ${QR_SIZE} ${QR_SIZE}`} className={cn("h-full w-full fill-[#020B1C]", className)} shapeRendering="crispEdges" aria-hidden>
-      {corners.map(([x, y]) => (
-        <g key={`${x}-${y}`}>
-          <path d={`M${x} ${y}h7v7h-7z M${x + 1} ${y + 1}v5h5v-5z`} fillRule="evenodd" />
-          <rect x={x + 2} y={y + 2} width="3" height="3" />
-        </g>
-      ))}
-      {QR.map(([x, y]) => (
-        <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" />
-      ))}
+      <path d={QR_PATH} fillRule="evenodd" />
     </svg>
   );
 }
