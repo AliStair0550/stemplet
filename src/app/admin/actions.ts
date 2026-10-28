@@ -2,6 +2,7 @@
 
 import type { Plan } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { refreshShop } from "@/lib/shop-refresh";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import {
@@ -69,8 +70,10 @@ const PLANS: Plan[] = ["FREE", "PRO"];
 export async function setPlan(businessId: string, plan: Plan): Promise<void> {
   await requireAdmin();
   if (!PLANS.includes(plan)) throw new Error("Ugyldig plan");
-  await prisma.business.update({ where: { id: businessId }, data: { plan } });
+  const b = await prisma.business.update({ where: { id: businessId }, data: { plan }, select: { id: true, slug: true } });
   revalidatePath("/admin");
+  // Planen styrer bl.a. "Drevet af" paa kortet og butikssiden.
+  refreshShop(b);
 }
 
 /**
@@ -119,11 +122,13 @@ export async function setSignupsPaused(
   paused: boolean,
 ): Promise<void> {
   await requireAdmin();
-  await prisma.business.update({
+  const b = await prisma.business.update({
     where: { id: businessId },
     data: { newSignupsPaused: paused },
+    select: { id: true, slug: true },
   });
   revalidatePath("/admin");
+  refreshShop(b, { wallet: false });
 }
 
 /** Stop/genåbn butikken. Stoppet: ingen nye kort OG ingen nye stempler. */
@@ -132,11 +137,13 @@ export async function setStopped(
   stopped: boolean,
 ): Promise<void> {
   await requireAdmin();
-  await prisma.business.update({
+  const b = await prisma.business.update({
     where: { id: businessId },
     data: { stopped },
+    select: { id: true, slug: true },
   });
   revalidatePath("/admin");
+  refreshShop(b, { wallet: false });
 }
 
 /**
@@ -155,6 +162,8 @@ export async function deleteBusiness(businessId: string): Promise<void> {
   }
   await prisma.business.delete({ where: { id: businessId } });
   revalidatePath("/admin");
+  // Den cachede butiksside skal forsvinde med det samme (ikke efter en time).
+  revalidatePath(`/k/${b.slug}`);
 }
 
 /**
@@ -294,10 +303,12 @@ export async function setBusinessFlag(
           : flag === "stampsEnabled"
             ? { stampsEnabled: value }
             : { weeklyEmailEnabled: value };
-  const b = await prisma.business.update({ where: { id: businessId }, data, select: { slug: true } });
+  const b = await prisma.business.update({ where: { id: businessId }, data, select: { id: true, slug: true } });
   revalidatePath("/admin");
-  // Stemplets QR-side er cachet (ISR); den skal straks foelge Stemplet til/fra.
-  if (flag === "stampsEnabled") revalidatePath(`/k/${b.slug}`);
+  // Butikssiden er cachet (ISR) og skal straks foelge funktionerne; stempler og
+  // henvisninger staar ogsaa paa kortet i Wallet.
+  const onCard = flag === "stampsEnabled" || flag === "referralsEnabled";
+  refreshShop(b, { wallet: onCard });
 }
 
 /**

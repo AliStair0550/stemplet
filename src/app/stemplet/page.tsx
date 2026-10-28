@@ -12,6 +12,20 @@ import {
   RoiCalculatorLazy,
   FaqLazy,
 } from "@/components/marketing/lazy";
+import type { Metadata } from "next";
+
+// Stemplets egen forside (beholdt, mens Kundekort er forsiden paa kort.folka.dk).
+export const metadata: Metadata = {
+  title: { absolute: "Stemplet - det digitale stempelkort" },
+  alternates: { canonical: "/stemplet" },
+  openGraph: {
+    title: "Stemplet - stempelkortet, der skaber flere gensyn",
+    description: "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail. Et produkt fra Folka.",
+    siteName: "Stemplet",
+    locale: "da_DK",
+    type: "website",
+  },
+};
 
 const jsonLd = {
   "@context": "https://schema.org",

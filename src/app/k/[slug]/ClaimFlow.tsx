@@ -12,8 +12,8 @@ import type { ShopStatus } from "@/app/api/k/[slug]/status/route";
 // Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
 const ERRORS: Record<string, string> = {
   lukket: "Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken.",
-  fuld: "Butikken kan ikke tage imod flere stempelkort lige nu. Spørg personalet.",
-  pause: "Butikken tager ikke imod nye stempelkort lige nu. Spørg personalet.",
+  fuld: "Butikken kan ikke tage imod flere kort lige nu. Spørg personalet.",
+  pause: "Butikken tager ikke imod nye kort lige nu. Spørg personalet.",
   stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
   // Forbigaaende serverfejl (fx en kortvarig database-blip): kunden kan bare
   // proeve igen om et oejeblik, saa vi viser en "Proev igen"-knap.
@@ -667,7 +667,7 @@ export function ClaimFlow({
               style={{ color: rgba(ctaBg, 0.9) }}
             >
               Åbn <span className="font-[600]">Safari</span>, indsæt linket og
-              hent dit stempelkort.
+              hent dit kort.
             </p>
           </div>
         </div>
@@ -810,7 +810,7 @@ export function ClaimFlow({
           style={{ color: rgba(ctaBg, 0.8) }}
         >
           Tryk <span className="font-[600]">Tilføj</span> i Apple Wallet for at
-          gemme dit stempelkort.
+          gemme dit kort.
         </span>
       </div>
     );

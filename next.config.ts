@@ -24,6 +24,24 @@ const nextConfig: NextConfig = {
     // mobilforbindelse. CSS'en er lille (~11 KB), saa HTML'en vokser kun lidt.
     inlineCss: true,
   },
+  // Sikkerhedsheadere paa alle svar. Indlejring kun fra egne sider (plakatens
+  // PDF-visning er en iframe paa samme domaene), saa dashboard og kasse ikke kan
+  // laegges i en fremmed side (clickjacking). Kameraet bruges af kassens scanner og
+  // positionen af "Brug min placering" under Butik og adgang.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(self), payment=()" },
+        ],
+      },
+    ];
+  },
   // Appen bor paa kort.folka.dk. Den gamle adresse sender sider videre (fx
   // trykte QR-koder til /k/...), men /api bliver, hvor den er: Wallet-kort, der
   // allerede er hentet, kender stemplet.alius.dk som webServiceURL og skal

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { saveReferralRule, ReferralError } from "@/lib/referral";
+import { refreshShop } from "@/lib/shop-refresh";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -68,9 +69,9 @@ export async function saveReferralSettings(input: RuleInput): Promise<Result> {
     data: { bookingUrl: d.bookingUrl || null },
   });
   revalidatePath("/app/henvisninger");
-  revalidatePath("/app/henvisninger/indstillinger");
   revalidatePath("/app/regler");
-  revalidatePath(`/k/${business.slug}`);
+  // Beloenninger, betingelser og booking-link staar paa kortet og butikssiden.
+  refreshShop(business);
   return { ok: true };
 }
 
@@ -80,7 +81,9 @@ export async function enableReferralsAction() {
   if (!business.referralsEnabled) {
     await prisma.business.update({ where: { id: business.id }, data: { referralsEnabled: true } });
     revalidatePath("/app", "layout");
+    // Koden kommer paa de eksisterende kort (gives ved opdateringen).
+    refreshShop(business);
   }
   // Uden regel viser Overblik "Saet beloenninger op"; ellers arbejdslisten.
-  redirect("/app/henvisninger/indstillinger");
+  redirect("/app/regler?f=henvisninger");
 }

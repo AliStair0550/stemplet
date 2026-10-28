@@ -57,7 +57,7 @@ export function PairDevice({
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
             {standalone === true
               ? "Du er inde i kasse-appen. Indtast koden herunder, så er kassen klar og husker sig selv."
-              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Stempel). Ingen login bagefter."}
+              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Butik og adgang). Ingen login bagefter."}
           </p>
         </div>
 

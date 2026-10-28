@@ -104,7 +104,7 @@ export function StempletStart() {
         <Link href="/" aria-label="Kundekort, til forsiden">
           <KundekortMark />
         </Link>
-        <span className="text-[13px] text-[#0B1628]/50">Gratis. Intet kreditkort.</span>
+        <span className="text-[13px] text-[#0B1628]/60">Gratis. Intet kreditkort.</span>
       </header>
 
       {loginToken ? (
@@ -208,7 +208,7 @@ export function StempletStart() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-2 text-[14px] text-[#0B1628]/50">Farver og logo vælger du bagefter under Design.</p>
+                <p className="mt-2 text-[14px] text-[#0B1628]/60">Farver og logo vælger du bagefter under Design.</p>
               </fieldset>
 
               <fieldset>
@@ -272,14 +272,11 @@ export function StempletStart() {
                   disabled={busy}
                   className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#061C3D] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-[#0A2D5A] active:scale-[0.98] disabled:opacity-60 sm:w-auto"
                 >
-                  {busy ? "Opretter" : "Opret min butik"}
+                  {busy ? "Opretter din butik..." : "Opret min butik"}
                 </button>
-                <p className="mt-3 text-[13px] text-[#0B1628]/45">Vi bruger dine oplysninger til at sætte din butik op.</p>
+                <p className="mt-3 text-[13px] text-[#0B1628]/60">Vi bruger dine oplysninger til at sætte din butik op.</p>
                 <p className="mt-6 text-[15px] text-[#0B1628]/60">
-                  Vil du hellere have dine kunder til at henvise dig?{" "}
-                  <Link href="/start?produkt=henvisninger" className="font-medium text-[#0B1628] underline underline-offset-2">
-                    Kom i gang med Henvisninger
-                  </Link>
+                  Henvisninger kan du slå til bagefter under Regler, på det samme kort.
                 </p>
               </div>
             </form>
@@ -290,7 +287,7 @@ export function StempletStart() {
               <Phone>
                 <div className="flex flex-1 flex-col bg-[#F2F5F9] px-3.5 pb-8 pt-14">
                   <p className="text-center text-[13px] font-semibold">{businessName.trim() || "Din butik"}</p>
-                  <p className="mb-4 text-center text-[11px] text-[#0B1628]/50">Dit stempelkort</p>
+                  <p className="mb-4 text-center text-[11px] text-[#0B1628]/60">Dit kundekort</p>
                   {/* Kortet er tegnet til fuld bredde; zoom saa det passer i telefonen. */}
                   <div style={{ zoom: 0.72 }}>
                     <StampCard
@@ -306,7 +303,7 @@ export function StempletStart() {
                   </div>
                 </div>
               </Phone>
-              <p className="mt-6 text-center text-[15px] text-[#0B1628]/50">Sådan ser kunderne det</p>
+              <p className="mt-6 text-center text-[15px] text-[#0B1628]/60">Sådan ser kunderne det</p>
             </div>
           </aside>
         </main>

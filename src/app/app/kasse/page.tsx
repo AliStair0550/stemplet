@@ -10,7 +10,7 @@ import {
   kasseViewFor,
 } from "@/components/referral/KasseViewSwitch";
 
-export const metadata: Metadata = { title: "Stempel" };
+export const metadata: Metadata = { title: "Scan" };
 export const dynamic = "force-dynamic";
 
 export default async function KassePage({
@@ -40,7 +40,7 @@ export default async function KassePage({
   return (
     <>
       <PageHeading
-        title={view === "henvisninger" ? "Henvisninger" : "Stempel"}
+        title={view === "henvisninger" ? "Henvisninger" : "Scan"}
         subtitle={
           view === "henvisninger"
             ? "Søg eller scan kunden. Registrér første besøg eller indløs en belønning."

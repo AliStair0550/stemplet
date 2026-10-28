@@ -283,13 +283,17 @@ async function loadForWallet(id: string) {
   });
 }
 
-test("wallet: rent stempelkort (uden modul eller kode) faar ingen henvisningsfelter", async () => {
+test("wallet: kort uden kode faar en ved opdateringen; uden modulet ingen felter", async () => {
   const s = await makeShop();
   try {
+    // Kortholder fra foer henvisninger blev slaaet til: faar en kode nu.
     const plain = await prisma.customerCard.create({
       data: { cardId: s.cardId, serial: randomUUID().slice(0, 12), authToken: randomUUID() },
     });
-    assert.equal(await loadReferralPassInfo(await loadForWallet(plain.id)), null, "ingen kode");
+    const info = await loadReferralPassInfo(await loadForWallet(plain.id));
+    assert.ok(info?.code, "kode tildelt");
+    const saved = await prisma.customerCard.findUniqueOrThrow({ where: { id: plain.id } });
+    assert.equal(saved.referralCode, info.code, "koden er gemt");
     const sara = await makeCustomer(s, "Sara", "+4511111111");
     await prisma.business.update({ where: { id: s.bizId }, data: { referralsEnabled: false } });
     assert.equal(await loadReferralPassInfo(await loadForWallet(sara.id)), null, "modul slaaet fra");
@@ -360,6 +364,26 @@ test("arbejdsliste: vennen kan findes paa begge parters navn, og Rabat givet ind
     assert.equal(after.owed.length, 1);
     assert.equal(after.owed[0]!.card.id, sara.id);
     assert.equal(after.owed[0]!.forReferring, "Mikkel Holm");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});
+
+// ── GDPR: sletning af en kortholder ──────────────────────────────────
+
+test("sletning: kortholder med henvisning og beloenninger slettes helt, vennen bliver", async () => {
+  const s = await makeShop();
+  try {
+    const { sara, mikkel, ref } = await rewardedPair(s);
+    // Samme sletning som "Slet" under Kunder (deleteCustomerAction).
+    await prisma.customerCard.delete({ where: { id: sara.id } });
+
+    assert.equal(await prisma.customerCard.findUnique({ where: { id: sara.id } }), null);
+    assert.equal(await prisma.reward.count({ where: { cardId: sara.id } }), 0, "beloenninger slettet");
+    assert.equal(await prisma.referral.findUnique({ where: { id: ref.id } }), null, "henvisningen slettet");
+    const friend = await prisma.customerCard.findUnique({ where: { id: mikkel.id } });
+    assert.ok(friend, "vennens kort findes stadig");
+    assert.equal(friend.referredByCardId, null, "vennen peger ikke laengere paa det slettede kort");
   } finally {
     await cleanup(s.bizId);
   }

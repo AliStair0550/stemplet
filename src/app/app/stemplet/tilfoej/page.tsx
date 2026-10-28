@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 // for at slaa det til. Har butikken allerede Stemplet, gaar vi bare til overblikket.
 
 const POINTS = [
-  { title: "Stempelkort i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på få sekunder. Ingen app." },
+  { title: "Stempler i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på få sekunder. Ingen app." },
   { title: "Flere gensyn", text: "Et stempel pr. besøg og en belønning, når kortet er fuldt." },
   { title: "Samme kort som Henvisninger", text: "Stempler og henvisningskode står på det samme kort i kundens Wallet." },
 ];
@@ -27,8 +27,8 @@ export default async function AddStampsPage() {
         Få dine kunder til at komme igen.
       </h1>
       <p className="mt-2 text-[0.98rem] text-stone">
-        Stemplet er det digitale stempelkort. Det passer perfekt til Henvisninger: nye kunder kommer via en ven, og
-        stempelkortet får dem til at komme igen.
+        Stempler giver kunden et stempel pr. besøg og en belønning, når kortet er fuldt. Det passer perfekt til henvisninger: nye kunder kommer via en ven, og
+        stemplerne får dem til at komme igen.
       </p>
 
       <ul className="mt-8 flex flex-col gap-3">

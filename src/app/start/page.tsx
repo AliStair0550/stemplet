@@ -13,7 +13,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   }
   return {
     title: { absolute: "Kom gratis i gang - Kundekort" },
-    description: "Lav dit digitale stempelkort, så er det klar på et minut. Gratis og uden kreditkort.",
+    description: "Lav dit digitale kundekort, så er det klar på et minut. Gratis og uden kreditkort.",
   };
 }
 

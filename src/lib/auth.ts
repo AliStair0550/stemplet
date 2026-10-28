@@ -53,6 +53,10 @@ const adapter = {
   },
 };
 
+// Velkomstmailen (i stedet for login-mailen) sendes kun i den foerste tid efter
+// oprettelsen.
+const WELCOME_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
   session: { strategy: "jwt" },
@@ -89,9 +93,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const u = await prisma.user.findUnique({
             where: { email: identifier.toLowerCase() },
-            select: { emailVerified: true },
+            select: { emailVerified: true, business: { select: { createdAt: true } } },
           });
-          firstTime = !!u && u.emailVerified === null;
+          // Kun lige efter oprettelsen: auto-login fra /start saetter ikke
+          // emailVerified, saa uden tidsgraensen fik ejeren velkomsten igen ved
+          // naeste login.
+          const fresh = !!u && Date.now() - u.business.createdAt.getTime() < WELCOME_WINDOW_MS;
+          firstTime = !!u && u.emailVerified === null && fresh;
         } catch {
           // DB-blip: fald tilbage til den almindelige login-mail.
         }

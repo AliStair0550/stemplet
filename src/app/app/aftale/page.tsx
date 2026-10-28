@@ -71,7 +71,7 @@ export default async function AftalePage() {
             />
           </div>
           <p className="mt-3 font-[300] text-[0.82rem] leading-relaxed text-slate">
-            En kortholder er ét stempelkort hos jer. Gratis op til {v.limit}.
+            En kortholder er ét kundekort hos jer. Gratis op til {v.limit}.
           </p>
         </section>
 

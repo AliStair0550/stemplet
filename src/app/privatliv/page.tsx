@@ -6,7 +6,7 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
-  description: "Sådan behandler Stemplet og Henvisninger personoplysninger.",
+  description: "Sådan behandler Kundekort personoplysninger.",
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
@@ -27,11 +27,11 @@ export default function PrivatlivPage() {
     <LegalLayout
       title="Privatlivspolitik"
       updated="26. oktober 2026"
-      intro="Stemplet er et digitalt stempelkort fra Folka, og Henvisninger er en tilføjelse, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
+      intro="Kundekort er et digitalt kundekort fra Folka med stempler og henvisninger, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
     >
       <LegalSection title="1. Hvem er ansvarlig">
         <p>
-          Stemplet drives af Folka. Har du spørgsmål om dine oplysninger, eller
+          Kundekort drives af Folka. Har du spørgsmål om dine oplysninger, eller
           vil du gøre brug af dine rettigheder, kan du skrive til os på{" "}
           <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
@@ -41,7 +41,7 @@ export default function PrivatlivPage() {
         <LegalCompanyInfo />
         <p>
           For en butiks egne kunder er det <strong>butikken</strong>, der er
-          dataansvarlig for kundeoplysningerne. Stemplet er butikkens
+          dataansvarlig for kundeoplysningerne. Kundekort er butikkens
           databehandler og behandler kun oplysningerne efter butikkens
           instruks. Se vores{" "}
           <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
@@ -52,7 +52,7 @@ export default function PrivatlivPage() {
       </LegalSection>
 
       <LegalSection title="2. Hvilke oplysninger vi behandler">
-        <p>Afhængigt af, hvordan du bruger Stemplet:</p>
+        <p>Afhængigt af, hvordan du bruger Kundekort:</p>
         <ul className="flex flex-col gap-2.5">
           <Li>
             <strong>Virksomhedskonto:</strong> navn og e-mail, så du kan logge
@@ -130,7 +130,7 @@ export default function PrivatlivPage() {
       <LegalSection title="4. Cookies">
         <p>
           Vi bruger kun de cookies, der får tjenesten til at virke: en cookie,
-          der genkender kundens stempelkort på telefonen, og en login-session
+          der genkender kundens kort på telefonen, og en login-session
           for butiksejere. Vi bruger ingen cookies til reklame eller sporing på
           tværs af sider.
         </p>

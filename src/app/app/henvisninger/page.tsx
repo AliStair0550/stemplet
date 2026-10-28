@@ -51,7 +51,7 @@ export default async function ReferralsPage({
           <p className="mt-1 text-[0.88rem] text-stone">
             Bestem hvad den nye kunde og ambassadøren får. Indtil da er henvisningssiden lukket.
           </p>
-          <Link href="/app/henvisninger/indstillinger" className={`${btnClass("primary")} mt-5`}>
+          <Link href="/app/regler?f=henvisninger" className={`${btnClass("primary")} mt-5`}>
             Sæt belønninger op
           </Link>
         </Panel>

@@ -84,7 +84,7 @@ export function HenvisningerStart() {
         <Link href="/" aria-label="Kundekort, til forsiden">
           <KundekortMark />
         </Link>
-        <span className="text-[13px] text-[#0B1628]/50">Gratis. Intet kreditkort.</span>
+        <span className="text-[13px] text-[#0B1628]/60">Gratis. Intet kreditkort.</span>
       </header>
 
       {loginToken ? (
@@ -149,7 +149,7 @@ export function HenvisningerStart() {
                     />
                   </label>
                 </div>
-                <p className="mt-2 text-[14px] text-[#0B1628]/50">Du bestemmer selv, og det kan ændres når som helst.</p>
+                <p className="mt-2 text-[14px] text-[#0B1628]/60">Du bestemmer selv, og det kan ændres når som helst.</p>
               </fieldset>
 
               <fieldset>
@@ -215,7 +215,7 @@ export function HenvisningerStart() {
                 >
                   {busy ? "Opretter" : "Opret min butik"}
                 </button>
-                <p className="mt-3 text-[13px] text-[#0B1628]/45">
+                <p className="mt-3 text-[13px] text-[#0B1628]/60">
                   Vi bruger dine oplysninger til at sætte din butik op.
                 </p>
               </div>
