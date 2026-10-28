@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "./actions";
 import { BusinessSwitcher } from "./BusinessSwitcher";
-import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
+import { KundekortMark } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
+
+// Funktionerne paa kortet vises som almindelig tekst under Kundekort (Folka).
+const featureLabel = (t: string) => <span className="text-[0.88rem] font-[500] text-ink">{t}</span>;
 
 // Dashboardets ramme med kundernes kort i centrum. Oeverst det faelles (Scan,
 // Hjem, Kunder), saa DIT KORT: kortets design og funktionerne paa kortet med
@@ -23,13 +26,11 @@ const COMMON: NavLink[] = [
 
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
-  { href: "/app/kort", label: "Regler" },
   { href: "/app/statistik", label: "Statistik" },
 ];
 
 const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger", label: "Overblik" },
-  { href: "/app/henvisninger/indstillinger", label: "Regler" },
   { href: "/app/henvisninger/statistik", label: "Statistik" },
 ];
 
@@ -75,6 +76,23 @@ export function DashboardNav({
 
   // "Mere" lukkes, naar man navigerer.
   useEffect(() => setMoreOpen(false), [pathname]);
+  // Arket opfoerer sig som en dialog: fokus flyttes ind, Escape lukker, og
+  // fokus vender tilbage til knappen.
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!moreOpen) return;
+    sheetRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const btn = moreBtnRef.current;
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      btn?.focus();
+    };
+  }, [moreOpen]);
 
   // Overblik-sider matcher kun praecis; resten matcher ogsaa undersider.
   const exact = new Set(["/app", "/app/henvisninger"]);
@@ -85,7 +103,7 @@ export function DashboardNav({
 
   const stemplet = showStamps ? (
     <ProductGroup
-      logo={<StempletLogo className="text-[1.05rem]" />}
+      logo={featureLabel("Stempler")}
       href="/app/stemplet"
       open={inStemplet}
       links={STEMPLET_LINKS}
@@ -94,14 +112,14 @@ export function DashboardNav({
   ) : (
     <AddProduct
       href="/app/stemplet/tilfoej"
-      label="Tilføj Stemplet"
+      label="Tilføj stempler"
       active={pathname.startsWith("/app/stemplet")}
-      logo={<StempletLogo className="text-[1.05rem]" />}
+      logo={featureLabel("Stempler")}
     />
   );
   const henvisninger = showReferrals ? (
     <ProductGroup
-      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
+      logo={featureLabel("Henvisninger")}
       href="/app/henvisninger"
       open={inHenvisninger}
       links={HENVISNINGER_LINKS}
@@ -110,9 +128,9 @@ export function DashboardNav({
   ) : (
     <AddProduct
       href="/app/henvisninger/tilfoej"
-      label="Tilføj Henvisninger"
+      label="Tilføj henvisninger"
       active={inHenvisninger}
-      logo={<HenvisningerLogo lines className="h-[1.35rem]" />}
+      logo={featureLabel("Henvisninger")}
     />
   );
   // Det aktive produkt foerst, tilvalget ("+") nedenunder.
@@ -191,14 +209,17 @@ export function DashboardNav({
   return (
     <>
       {/* Desktop */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-[#f7f7f8] px-4 py-6 md:flex print:hidden">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-white px-4 py-6 md:flex print:hidden">
+        <Link href="/app" aria-label="Kundekort, til Hjem" className="mb-5 px-2">
+          <KundekortMark />
+        </Link>
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
 
         <Link
           href={SCAN.href}
           className={cn(
             "mt-5 flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[0.88rem] font-[500] text-parchment transition-colors",
-            isActive(SCAN.href) ? "bg-black" : "bg-ink hover:bg-black",
+            isActive(SCAN.href) ? "bg-[#0A2D5A]" : "bg-ink hover:bg-[#0A2D5A]",
           )}
         >
           <ScanIcon />
@@ -252,6 +273,11 @@ export function DashboardNav({
       {moreOpen ? (
         <div className="fixed inset-x-0 bottom-[4.25rem] top-0 z-40 flex flex-col justify-end bg-ink/20 md:hidden" onClick={() => setMoreOpen(false)}>
           <div
+            ref={sheetRef}
+            id="mere-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mere"
             className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
@@ -294,9 +320,11 @@ export function DashboardNav({
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
         </TabLink>
         <button
+          ref={moreBtnRef}
           type="button"
           onClick={() => setMoreOpen((o) => !o)}
           aria-expanded={moreOpen}
+          aria-controls="mere-menu"
           className={cn(
             "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
             moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder") && !isActive(CAMPAIGNS.href))

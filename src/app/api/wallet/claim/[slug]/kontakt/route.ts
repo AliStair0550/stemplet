@@ -38,22 +38,6 @@ const MESSAGES: Record<string, string> = {
   mail_findes: "E-mailen er allerede brugt til et kort hos butikken. Spørg personalet.",
 };
 
-/** Har enheden allerede et kort hos butikken? Saa springes formularen over. */
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const { slug } = await params;
-  const did = (await cookies()).get(DEVICE_ID_COOKIE)?.value ?? null;
-  try {
-    const r = await resolveOrCreateCard(slug, did, null);
-    return NextResponse.json({ known: r.ok }, { headers: { "cache-control": "no-store" } });
-  } catch {
-    // Ukendt: vis formularen. Kendte kunder genfindes alligevel ved indsendelse.
-    return NextResponse.json({ known: false }, { headers: { "cache-control": "no-store" } });
-  }
-}
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> },

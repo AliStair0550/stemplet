@@ -5,8 +5,6 @@ import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
-import { HenvisningerLogo } from "@/components/ProductLogo";
-import { Scribble } from "@/components/henvisninger-site/Hand";
 import { getReferralWorklist } from "@/lib/referral-desk";
 import { ReferralWorklist } from "./ReferralWorklist";
 import { ShopLinkCard } from "./ShopLinkCard";
@@ -24,10 +22,7 @@ export const dynamic = "force-dynamic";
 function ReferralHeader() {
   return (
     <header className="mb-10">
-      <h1 className="relative inline-block pb-[0.9rem] text-ink">
-        <HenvisningerLogo className="-ml-1 h-[2.9rem]" />
-        <Scribble className="absolute bottom-0 left-[14%] h-[1rem] w-[90%]" />
-      </h1>
+      <h1 className="text-[2.1rem] font-semibold leading-none tracking-[-0.035em] text-ink">Henvisninger</h1>
       <p className="mt-3 text-[1rem] text-stone">
         Din henvisningskasse. Find kunden, giv rabatten, og indløs belønninger.
       </p>
@@ -56,7 +51,7 @@ export default async function ReferralsPage({
           <p className="mt-1 text-[0.88rem] text-stone">
             Bestem hvad den nye kunde og ambassadøren får. Indtil da er henvisningssiden lukket.
           </p>
-          <Link href="/app/henvisninger/indstillinger" className={`${btnClass("primary")} mt-5`}>
+          <Link href="/app/regler?f=henvisninger" className={`${btnClass("primary")} mt-5`}>
             Sæt belønninger op
           </Link>
         </Panel>

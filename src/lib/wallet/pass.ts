@@ -371,7 +371,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     pass.backFields.push({
       key: "poweredby",
       label: "Drevet af",
-      value: `Stemplet - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
+      value: `Kundekort fra ${PLATFORM.name}. ${APP_HOST}`,
     });
   }
 
@@ -452,7 +452,7 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
     pass.backFields.push({
       key: "poweredby",
       label: "Drevet af",
-      value: `Henvisninger - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
+      value: `Kundekort fra ${PLATFORM.name}. ${APP_HOST}`,
     });
   }
 

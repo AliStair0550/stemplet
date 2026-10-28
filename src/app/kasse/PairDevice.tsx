@@ -27,7 +27,7 @@ export function PairDevice({
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
+    <main className="dash-theme flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-12">
       {/* RIGTIG form-POST (top-niveau-navigation) til /kasse/par, saa kasse-
           cookien gemmes paalideligt paa iOS. Ingen server-action-fetch her. */}
       <form
@@ -57,7 +57,7 @@ export function PairDevice({
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
             {standalone === true
               ? "Du er inde i kasse-appen. Indtast koden herunder, så er kassen klar og husker sig selv."
-              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Stempel). Ingen login bagefter."}
+              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Butik og adgang). Ingen login bagefter."}
           </p>
         </div>
 

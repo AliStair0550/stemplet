@@ -75,7 +75,7 @@ export function ShareCardSection({
     setBusy("card");
     try {
       const dataUrl = await makePng(cardRef.current);
-      saveDataUrl(dataUrl, `stempelkort-${slug}.png`);
+      saveDataUrl(dataUrl, `kundekort-${slug}.png`);
     } catch {
       setMsg({ ok: false, text: "Kunne ikke lave billedet. Prøv igen." });
     } finally {
@@ -89,7 +89,7 @@ export function ShareCardSection({
     setBusy("post");
     try {
       const dataUrl = await makePng(shareRef.current, "#FAF8F4");
-      saveDataUrl(dataUrl, `stempelkort-til-opslag-${slug}.png`);
+      saveDataUrl(dataUrl, `kundekort-til-opslag-${slug}.png`);
     } catch {
       setMsg({ ok: false, text: "Kunne ikke lave billedet. Prøv igen." });
     } finally {
@@ -99,7 +99,7 @@ export function ShareCardSection({
 
   // QR-koden alene som PNG.
   function downloadQr() {
-    saveDataUrl(qrDataUrl, `stemplet-qr-${slug}.png`);
+    saveDataUrl(qrDataUrl, `kundekort-qr-${slug}.png`);
     setMsg({ ok: true, text: "QR-kode hentet." });
   }
 
@@ -107,19 +107,19 @@ export function ShareCardSection({
     setMsg(null);
     setBusy("share");
     try {
-      const text = `Hent dit digitale stempelkort hos ${businessName}: ${cardUrl}`;
+      const text = `Hent dit digitale kundekort hos ${businessName}: ${cardUrl}`;
       const dataUrl = await makePng(shareRef.current, "#FAF8F4");
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], `stempelkort-${slug}.png`, {
+      const file = new File([blob], `kundekort-${slug}.png`, {
         type: "image/png",
       });
       const nav = navigator as Navigator & {
         canShare?: (d?: unknown) => boolean;
       };
       if (nav.canShare?.({ files: [file] }) && navigator.share) {
-        await navigator.share({ title: `${businessName} stempelkort`, text, files: [file] });
+        await navigator.share({ title: `${businessName} kundekort`, text, files: [file] });
       } else if (navigator.share) {
-        await navigator.share({ title: `${businessName} stempelkort`, text, url: cardUrl });
+        await navigator.share({ title: `${businessName} kundekort`, text, url: cardUrl });
       } else {
         await navigator.clipboard.writeText(cardUrl);
         setMsg({ ok: true, text: "Deling understøttes ikke her. Link kopieret." });

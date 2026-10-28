@@ -68,7 +68,7 @@ export function FeatureSwitch({
       <span
         className={cn(
           "flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px]",
-          on ? "bg-ink text-white" : "bg-[#f5f5f7] text-stone",
+          on ? "bg-ink text-white" : "bg-[#F2F5F9] text-stone",
         )}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden>

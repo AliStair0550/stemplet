@@ -67,7 +67,7 @@ test("kilde-etiket: forside/footer/branche-slug", () => {
 // ── Mails ─────────────────────────────────────────────────────────────
 test("velkomstmail: med og uden navn, ingen lange bindestreger", () => {
   const withName = marketingWelcomeEmail("Ali");
-  assert.equal(withName.subject, "Du er skrevet op hos Stemplet");
+  assert.equal(withName.subject, "Du er skrevet op hos Folka");
   assert.ok(withName.html.includes("Hej Ali."));
   const noName = marketingWelcomeEmail(null);
   assert.ok(noName.html.includes("Hej."));

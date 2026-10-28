@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
-import { StempletLogo } from "@/components/ProductLogo";
 import { SubmitButton } from "@/components/SubmitButton";
 import { enableStampsAction } from "../actions";
 
-export const metadata: Metadata = { title: "Tilføj Stemplet" };
+export const metadata: Metadata = { title: "Tilføj stempler" };
 export const dynamic = "force-dynamic";
 
 // "+ Stemplet" for en butik med kun Henvisninger: hvad Stemplet er, og eet tryk
 // for at slaa det til. Har butikken allerede Stemplet, gaar vi bare til overblikket.
 
 const POINTS = [
-  { title: "Stempelkort i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på få sekunder. Ingen app." },
+  { title: "Stempler i Apple Wallet", text: "Kunden scanner din QR-kode og har kortet på få sekunder. Ingen app." },
   { title: "Flere gensyn", text: "Et stempel pr. besøg og en belønning, når kortet er fuldt." },
   { title: "Samme kort som Henvisninger", text: "Stempler og henvisningskode står på det samme kort i kundens Wallet." },
 ];
@@ -23,13 +22,13 @@ export default async function AddStampsPage() {
 
   return (
     <div className="mx-auto max-w-[560px] py-4">
-      <StempletLogo className="text-[2rem]" />
+      <p className="text-[1.6rem] font-semibold leading-none tracking-[-0.03em] text-ink">Stempler</p>
       <h1 className="mt-6 text-[1.9rem] font-[500] leading-tight tracking-[-0.015em] text-ink">
         Få dine kunder til at komme igen.
       </h1>
       <p className="mt-2 text-[0.98rem] text-stone">
-        Stemplet er det digitale stempelkort. Det passer perfekt til Henvisninger: nye kunder kommer via en ven, og
-        stempelkortet får dem til at komme igen.
+        Stempler giver kunden et stempel pr. besøg og en belønning, når kortet er fuldt. Det passer perfekt til henvisninger: nye kunder kommer via en ven, og
+        stemplerne får dem til at komme igen.
       </p>
 
       <ul className="mt-8 flex flex-col gap-3">

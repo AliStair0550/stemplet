@@ -13,7 +13,6 @@ import { Panel, SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { cn, relativeDk } from "@/lib/utils";
 import { AddToHomeTile } from "../AddToHomeButton";
-import { StempletLogo } from "@/components/ProductLogo";
 import { summaryLine } from "@/lib/overview-text";
 import {
   CtaArrow,
@@ -27,7 +26,7 @@ import {
   IconUsers,
 } from "../icons";
 
-export const metadata = { title: "Stemplet" };
+export const metadata = { title: "Stempler" };
 export const dynamic = "force-dynamic";
 
 const ACTION_LABEL: Record<string, string> = {
@@ -225,9 +224,7 @@ export default async function StempletOverviewPage() {
     <>
       {/* Øverst: produktets logo og dagens status i klar tekst. */}
       <header className="mb-8 border-b border-fog pb-6 animate-step">
-        <h1>
-          <StempletLogo className="text-[2.1rem]" />
-        </h1>
+        <h1 className="text-[2.1rem] font-semibold leading-none tracking-[-0.035em] text-ink">Stempler</h1>
         <p className="mt-3 max-w-lg font-[300] text-[0.95rem] leading-relaxed text-stone">
           {summary}
         </p>

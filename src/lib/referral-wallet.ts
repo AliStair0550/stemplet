@@ -3,6 +3,7 @@ import { prisma } from "./prisma";
 import { APP_URL } from "./env";
 import { referralShareUrl, rewardPhrase } from "./referral-text";
 import type { ReferralPassInfo } from "./wallet/referral-fields";
+import { assignReferralCode } from "./referral";
 
 type Db = typeof prisma;
 
@@ -21,7 +22,12 @@ export async function loadReferralPassInfo(
   db: Db = prisma,
 ): Promise<ReferralPassInfo | null> {
   const b = cc.card.business;
-  if (!b.referralsEnabled || !cc.referralCode) return null;
+  if (!b.referralsEnabled) return null;
+  // Kortholdere fra foer henvisninger blev slaaet til har ingen kode endnu. Giv
+  // dem en nu, saa koden kommer paa kortet ved den opdatering, der netop sker
+  // (ellers foerst naar kunden selv aabner butikssiden).
+  const code = cc.referralCode ?? (await assignReferralCode({ customerCardId: cc.id }, db).catch(() => null));
+  if (!code) return null;
 
   const [rule, rewards, lastRedeemed, referralsDone] = await Promise.all([
     db.referralRule.findUnique({
@@ -52,8 +58,8 @@ export async function loadReferralPassInfo(
   const redeemed = lastRedeemed?.redeemedAt?.getTime() ?? 0;
 
   return {
-    code: cc.referralCode,
-    shareUrl: referralShareUrl(APP_URL, b.slug, cc.referralCode),
+    code,
+    shareUrl: referralShareUrl(APP_URL, b.slug, code),
     pageUrl: `${APP_URL}/k/${b.slug}?del=1`,
     termsLine: rule?.termsLine ?? null,
     newCustomerReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "rabat",

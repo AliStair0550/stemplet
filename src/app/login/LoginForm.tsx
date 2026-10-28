@@ -5,9 +5,18 @@ import { useActionState, useEffect, useState } from "react";
 import { requestMagicLink, type LoginState } from "./actions";
 import { useFormStatus } from "react-dom";
 
-function SubmitLabel() {
+// Knappen er spaerret, mens linket sendes, saa et dobbelttryk ikke sender to mails.
+function SubmitButton() {
   const { pending } = useFormStatus();
-  return <>{pending ? "Sender link" : "Send login-link"}</>;
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#061C3D] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-[#0A2D5A] active:scale-[0.98] disabled:opacity-60"
+    >
+      {pending ? "Sender link..." : "Send login-link"}
+    </button>
+  );
 }
 
 // Vi husker selv den sidst brugte e-mail. Magic-link-login har ingen adgangskode,
@@ -35,7 +44,7 @@ export function LoginForm() {
   return (
     <form action={action} className="flex w-full flex-col gap-4">
       <label htmlFor="login-email" className="flex flex-col gap-1.5">
-        <span className="text-[14px] font-medium text-[#111]/60">E-mail</span>
+        <span className="text-[14px] font-medium text-[#0B1628]/60">E-mail</span>
         <input
           id="login-email"
           type="email"
@@ -57,18 +66,18 @@ export function LoginForm() {
             }
           }}
           placeholder="din@mail.dk"
-          className="min-h-[52px] rounded-[14px] bg-[#F5F5F7] px-4 text-[17px] text-[#111] outline-none placeholder:text-[#111]/35 focus:ring-2 focus:ring-[#111]"
+          className="min-h-[52px] rounded-[14px] bg-[#F2F5F9] px-4 text-[17px] text-[#0B1628] outline-none placeholder:text-[#0B1628]/35 focus:ring-2 focus:ring-[#1B5EAE]"
         />
       </label>
       {state.error ? (
-        <p className="text-[15px] text-rust">
+        <p role="alert" className="text-[15px] text-rust">
           {state.error}
           {state.notFound ? (
             <>
               {" "}
               <Link
                 href="/start"
-                className="font-medium text-[#111] underline underline-offset-2"
+                className="font-medium text-[#0B1628] underline underline-offset-2"
               >
                 Opret din butik gratis
               </Link>
@@ -77,12 +86,7 @@ export function LoginForm() {
           ) : null}
         </p>
       ) : null}
-      <button
-        type="submit"
-        className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#111] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-black active:scale-[0.98] disabled:opacity-60"
-      >
-        <SubmitLabel />
-      </button>
+      <SubmitButton />
     </form>
   );
 }

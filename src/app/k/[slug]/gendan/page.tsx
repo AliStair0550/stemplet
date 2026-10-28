@@ -6,7 +6,7 @@ import { cardTitle, rgba } from "@/lib/brand";
 import { recoveryTokenValid } from "@/lib/card-recovery";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Gendan dit kort", robots: { index: false } };
+export const metadata: Metadata = { title: { absolute: "Gendan dit kort" }, robots: { index: false } };
 
 // Siden, linket i gendannelses-mailen aabner. Selve gendannelsen sker foerst,
 // naar kunden trykker paa knappen (POST), saa mail-programmers link-scannere

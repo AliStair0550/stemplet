@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
-import { HenvisningerLogo } from "@/components/ProductLogo";
 import { SubmitButton } from "@/components/SubmitButton";
-import { Scribble } from "@/components/henvisninger-site/Hand";
 import { enableReferralsAction } from "../actions";
 
 export const metadata: Metadata = { title: "Tilføj Henvisninger" };
@@ -15,7 +13,7 @@ export const dynamic = "force-dynamic";
 const POINTS = [
   { title: "Kunderne henviser deres venner", text: "Hver kunde får sit eget link. Vennen får rabat ved første besøg." },
   { title: "Du bestemmer belønningen", text: "Fx 100 kr. til vennen og et gratis klip til kunden, når vennen har været der." },
-  { title: "Samme kort som Stemplet", text: "Henvisningskoden står på det samme kort i kundens Wallet." },
+  { title: "Samme kort som stemplerne", text: "Henvisningskoden står på det samme kort i kundens Wallet." },
 ];
 
 export default async function AddReferralsPage() {
@@ -24,15 +22,12 @@ export default async function AddReferralsPage() {
 
   return (
     <div className="mx-auto max-w-[560px] py-4">
-      <span className="relative inline-block pb-[0.9rem] text-ink">
-        <HenvisningerLogo className="h-[2.6rem]" />
-        <Scribble className="absolute bottom-0 left-[14%] h-[1rem] w-[90%]" />
-      </span>
+      <p className="text-[1.6rem] font-semibold leading-none tracking-[-0.03em] text-ink">Henvisninger</p>
       <h1 className="mt-6 text-[1.9rem] font-bold leading-tight tracking-[-0.03em] text-ink">
         Få nye kunder via dine kunder.
       </h1>
       <p className="mt-2 text-[0.98rem] text-stone">
-        Henvisninger passer perfekt til Stemplet: nye kunder kommer via en ven, og stempelkortet får dem til at komme
+        Henvisninger passer perfekt til stemplerne: nye kunder kommer via en ven, og stemplerne får dem til at komme
         igen.
       </p>
 

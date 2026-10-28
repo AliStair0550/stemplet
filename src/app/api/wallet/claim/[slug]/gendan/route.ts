@@ -25,11 +25,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     return NextResponse.json({ ok: false, message: "Skriv en gyldig e-mailadresse." });
   }
 
-  // Loft pr. IP og pr. e-mail, saa ingen kan oversvoemme en indbakke.
+  // Loft pr. IP og pr. e-mail, saa ingen kan oversvoemme en indbakke. Lukker ved
+  // databasefejl (sender hellere ingen mail end ubegraenset mange).
   const ip = clientIp(req) ?? "ukendt";
   const allowed =
-    (await durableRateLimit("recover-ip", ip, 20, 3600).catch(() => true)) &&
-    (await durableRateLimit("recover-mail", `${slug}:${email}`, 5, 3600).catch(() => true));
+    (await durableRateLimit("recover-ip", ip, 20, 3600).catch(() => false)) &&
+    (await durableRateLimit("recover-mail", `${slug}:${email}`, 5, 3600).catch(() => false));
   if (!allowed) {
     return NextResponse.json({ ok: false, message: "Der er sendt mange links. Prøv igen om lidt." });
   }

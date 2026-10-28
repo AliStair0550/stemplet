@@ -119,7 +119,7 @@ export const FRISOERER: BrancheContent = {
     {
       heading: "Kom i gang på få minutter",
       paragraphs: [
-        "Kunden scanner en QR kode én gang og har kortet i Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "Kunden scanner en QR kode én gang og har kortet i Apple Wallet på under et minut. Ingen app. Kun navn og e-mail.",
         "Du eller dine medarbejdere stempler med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
@@ -204,7 +204,7 @@ export const KAFFEBARER: BrancheContent = {
     {
       heading: "Kom i gang inden næste kaffepause",
       paragraphs: [
-        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Kun navn og e-mail.",
         "Baristaen stempler kundens kort med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
@@ -284,7 +284,7 @@ export const NEGLESALONER: BrancheContent = {
     {
       heading: "Kom i gang på få minutter",
       paragraphs: [
-        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Ingen oprettelse.",
+        "QR-koden printes og stilles ved kassen. Kunden scanner én gang og har kortet direkte i sin Apple Wallet på under et minut. Ingen app. Kun navn og e-mail.",
         "Du eller dine medarbejdere stempler med den telefon eller tablet, I allerede har. Intet ekstra udstyr. Intet nyt kassesystem. Kun flere grunde til, at kunderne kommer igen.",
       ],
     },
@@ -364,7 +364,7 @@ export const PIZZERIAER: BrancheContent = {
       heading: "Kom i gang på få minutter",
       paragraphs: [
         "Kunden scanner én QR kode og har stempelkortet direkte i Apple Wallet.",
-        "Ingen app. Ingen oprettelse.",
+        "Ingen app. Kun navn og e-mail.",
         "I stempler med den telefon, I allerede har. Ingen ekstra udstyr. Bare flere grunde til, at kunderne vælger jer, næste gang de får lyst til pizza.",
       ],
     },
@@ -443,7 +443,7 @@ export const BAGERIER: BrancheContent = {
       heading: "Kom i gang før morgenkøen",
       paragraphs: [
         "QR koden står ved kassen. Kunden scanner, mens kaffen bliver lavet, og har kortet direkte i Apple Wallet på under et minut.",
-        "Ingen app. Ingen oprettelse.",
+        "Ingen app. Kun navn og e-mail.",
         "I stempler fra den telefon, I allerede har. Ingen ekstra udstyr.",
         "Bare en enkel måde at gøre flere kunder til faste kunder.",
       ],
@@ -519,7 +519,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
       heading: "Kom i gang inden næste buket",
       paragraphs: [
         "QR koden står ved disken. Kunden scanner, mens buketten bliver bundet, og har kortet direkte i Apple Wallet på under et minut.",
-        "Ingen app. Ingen oprettelse. I stempler fra den telefon, I allerede har.",
+        "Ingen app. Kun navn og e-mail. I stempler fra den telefon, I allerede har.",
         "Bare en enkel måde at gøre flere kunder til faste kunder.",
       ],
     },
@@ -614,7 +614,7 @@ export const CAFEER: BrancheContent = {
       heading: "Kom i gang på få minutter",
       paragraphs: [
         "QR koden står ved kassen eller på bordet. Kunden scanner én gang og har kortet direkte i Apple Wallet.",
-        "Ingen app. Ingen oprettelse. I stempler fra den telefon, I allerede har.",
+        "Ingen app. Kun navn og e-mail. I stempler fra den telefon, I allerede har.",
         "En enkel måde at få flere gæster til at vælge jer igen og igen.",
       ],
     },
@@ -703,7 +703,7 @@ export const ISBUTIKKER: BrancheContent = {
       paragraphs: [
         "Det klassiske papkort forsvinder ofte sammen med sommeren.",
         "Et digitalt stempelkort ligger direkte i kundens Apple Wallet. Når solen kommer tilbage næste år, ligger jeres butik stadig hos kunden med alle stempler bevaret.",
-        "Ingen app. Ingen oprettelse.",
+        "Ingen app. Kun navn og e-mail.",
         "Bare en enkel måde at gøre sommergæster til stamkunder.",
       ],
     },
@@ -814,7 +814,7 @@ export const BARER: BrancheContent = {
       heading: "Kom i gang før fredagsbaren",
       paragraphs: [
         "QR koden står på baren og bordene. Kunden scanner, mens der bliver skænket.",
-        "Ingen app. Ingen oprettelse.",
+        "Ingen app. Kun navn og e-mail.",
         "I stempler fra den telefon, I allerede har.",
         "En enkel måde at gøre gæster til stamgæster.",
       ],

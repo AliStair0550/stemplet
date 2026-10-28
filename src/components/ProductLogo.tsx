@@ -68,3 +68,14 @@ export function FolkaLogo({ className }: { className?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
   return <img src="/folka-logo.svg" alt="Folka" width={189} height={105} className={cn("h-9 w-auto", className)} />;
 }
+
+/** Folka + "Kundekort": produktets maerke i oprettelse og dashboard. */
+export function KundekortMark({ className }: { className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center gap-3", className)}>
+      <FolkaLogo className="h-8" />
+      <span aria-hidden className="h-5 w-px bg-[#CAD2DD]" />
+      <span className="text-[15px] font-medium text-[#5F6B7E]">Kundekort</span>
+    </span>
+  );
+}
