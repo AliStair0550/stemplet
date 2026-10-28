@@ -35,16 +35,12 @@ function iconTileDataUri(markup: string, stroke: string): string {
 // /api/wallet/claim/[slug], som "Hent mit stempelkort"-linket peger paa.
 export const revalidate = 3600;
 
-// Pre-renderer de kendte butikker ved build, saa deres tilmeldings-side er ren
-// statisk (CDN, ingen cold start) fra allerfoerste scan. Nye butikker rendres
-// on-demand og caches derefter (ISR).
+// Ingen sider bygges paa forhaand: hver butiksside laves foerste gang, den
+// aabnes, og caches derefter (ISR, se revalidate). Saa roerer bygget ikke
+// databasen; med prod-databasens ene forbindelse fik forudbygningen af alle
+// butikker bygget til at fejle (P2024, timeout paa forbindelsen).
 export async function generateStaticParams() {
-  try {
-    const shops = await prisma.business.findMany({ select: { slug: true } });
-    return shops.map((s) => ({ slug: s.slug }));
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export async function generateMetadata({
