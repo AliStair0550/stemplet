@@ -7,6 +7,7 @@ import { redisKeepAlive } from "@/lib/redis";
 import { checkWalletCertExpiry } from "@/lib/wallet/cert-monitor";
 import { bearerAuthorized } from "@/lib/secret";
 import { expireReferralsAndRewards } from "@/lib/referral";
+import { pushReferralWallet } from "@/lib/referral-kasse";
 import { captureServerError } from "@/lib/sentry";
 
 export const runtime = "nodejs";
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
   if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const [emails, invariant, keepalive, certs, referrals] = await Promise.all([
+  const [emails, invariant, keepalive, certs, expiry] = await Promise.all([
     sweepPendingThresholdEmails(),
     checkStampInvariant(),
     redisKeepAlive(),
@@ -41,6 +42,9 @@ export async function GET(req: NextRequest) {
       return { referralExpiryFailed: true };
     }),
   ]);
+  // Kort med en netop udloebet beloenning opdateres i Wallet.
+  const { cardIds = [], ...referrals } = expiry as { cardIds?: string[] } & Record<string, unknown>;
+  pushReferralWallet(cardIds);
   return Response.json({
     ...emails,
     ...invariant,

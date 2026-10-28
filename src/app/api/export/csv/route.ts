@@ -99,7 +99,7 @@ export async function GET() {
   return new Response(stream, {
     headers: {
       "content-type": "text/csv; charset=utf-8",
-      "content-disposition": 'attachment; filename="stemplet-kunder.csv"',
+      "content-disposition": 'attachment; filename="kundekort-kunder.csv"',
     },
   });
 }

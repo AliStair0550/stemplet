@@ -831,3 +831,11 @@ textarea:focus-visible {
 .dash-theme select {
   border-radius: 12px;
 }
+/* Tydeligt fokus ved tastatur (ikke ved klik/tryk) paa alle links og knapper. */
+.dash-theme a:focus-visible,
+.dash-theme button:focus-visible,
+.dash-theme [role="button"]:focus-visible,
+.dash-theme summary:focus-visible {
+  outline: 2px solid var(--folka-electric);
+  outline-offset: 2px;
+}

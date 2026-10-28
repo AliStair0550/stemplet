@@ -108,7 +108,7 @@ export async function GET(
     headers: {
       "content-type": "application/vnd.apple.pkpass",
       // "inline", IKKE "attachment": iOS Safari skal AABNE passet i Wallet.
-      "content-disposition": `inline; filename="stemplet-${r.serial}.pkpass"`,
+      "content-disposition": `inline; filename="kort-${r.serial}.pkpass"`,
       "cache-control": "no-store",
     },
   });

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeEmail, normalizeName, parseContact, CONTACT_NAME_MAX } from "../src/lib/contact";
+import { normalizeEmail, normalizeName, parseContact, CONTACT_NAME_MAX, maskEmail } from "../src/lib/contact";
 
 // Kontaktdata ved kortet: navn og e-mail er paakraevet, samtykke er frivilligt.
 
@@ -31,4 +31,10 @@ test("parseContact: samtykke kun ved et aktivt flueben", () => {
   assert.ok(yes.ok && yes.contact.consent);
   assert.deepEqual(parseContact({ name: "", email: "sara@test.dk" }), { ok: false, error: "navn" });
   assert.deepEqual(parseContact({ name: "Sara", email: "nej" }), { ok: false, error: "mail" });
+});
+
+test("maskEmail: viser kun starten af mailen (Find kort)", () => {
+  assert.equal(maskEmail("emma.holm@gmail.com"), "em***@gmail.com");
+  assert.equal(maskEmail("a@b.dk"), "a***@b.dk");
+  assert.ok(!maskEmail("hemmelig.person@firma.dk").includes("hemmelig"));
 });
