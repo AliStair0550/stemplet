@@ -19,8 +19,8 @@ const STEPS: Record<Role, { title: string; body: string }[]> = {
   kunde: [
     { title: "Scan butikkens QR", body: "Med kameraet. Ingen app skal hentes." },
     {
-      title: 'Tryk "Hent mit stempelkort"',
-      body: "Ét tryk. Ingen tilmelding, ingen formularer.",
+      title: "Skriv navn og e-mail",
+      body: "To felter, så er kortet dit. Ingen app, ingen adgangskode.",
     },
     {
       title: "Tilføj til Apple Wallet",

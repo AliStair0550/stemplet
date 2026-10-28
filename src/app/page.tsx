@@ -1,74 +1,22 @@
-import Nav from "@/components/site/Nav";
-import Footer from "@/components/site/Footer";
-import { Divider } from "@/components/ui";
-import Hero from "@/components/marketing/Hero";
-import Problem from "@/components/marketing/Problem";
-import TryItYourself from "@/components/marketing/TryItYourself";
-import LoyaltySteps from "@/components/marketing/LoyaltySteps";
-import NoCheating from "@/components/marketing/NoCheating";
-import StatsPreview from "@/components/marketing/StatsPreview";
-import Pricing from "@/components/marketing/Pricing";
-import {
-  RoiCalculatorLazy,
-  FaqLazy,
-} from "@/components/marketing/lazy";
+import type { Metadata } from "next";
+import { KundekortPage } from "@/components/kundekort/KundekortPage";
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Stemplet",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web, iOS",
+// Forsiden paa kort.folka.dk: Kundekort fra Folka. Stemplets egen forside
+// ligger paa /stemplet og Henvisningers paa /henvisninger.
+export const metadata: Metadata = {
+  title: { absolute: "Kundekort fra Folka: stempler og henvisninger i Apple Wallet" },
   description:
-    "Digitalt stempelkort i Apple Wallet til caféer, barberer og bagere. Kunderne scanner en QR-kode og har kortet på fem sekunder. Ingen app, ingen tilmelding.",
-  url: "https://stemplet.alius.dk",
-  inLanguage: "da-DK",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "DKK" },
-  publisher: { "@type": "Organization", name: "Alius", url: "https://alius.dk" },
+    "Ét kundekort med dit navn og dine farver i kundens Apple Wallet. Stempler, henvisninger og belønninger samlet. Ingen app, kun navn og e-mail. Gratis op til 100 kortholdere.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Kundekort fra Folka",
+    description: "Kunderne kommer igen. Kortet sørger for det. Stempler og henvisninger i Apple Wallet.",
+    siteName: "Kundekort",
+    locale: "da_DK",
+    type: "website",
+  },
 };
 
 export default function Page() {
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <Nav />
-      <main>
-        <Hero />
-        {/* Under-fold: de tunge klient-komponenter (RoiCalculator, Faq,
-            statistik-grafen) lazy-loades foerst naar man scroller naer dem, saa
-            forsidens foerste load kun omfatter hero'en. Server-sektionerne SSR'es
-            stadig, men med content-visibility saa deres paint udskydes.
-            Raekkefoelge: Proev det selv, saa Loyalitet gjort enkelt (som samler
-            fanerne + den animerede scan-til-fast-gaest-demo). */}
-        <div className="cv-section">
-          <TryItYourself />
-        </div>
-        <div className="cv-section">
-          <LoyaltySteps />
-        </div>
-        <Divider />
-        <div className="cv-section">
-          <Problem />
-        </div>
-        <Divider />
-        <div className="cv-section">
-          <NoCheating />
-        </div>
-        <div className="cv-section">
-          <StatsPreview />
-        </div>
-        <div className="cv-section">
-          <Pricing />
-        </div>
-        <Divider />
-        <RoiCalculatorLazy />
-        <Divider />
-        <FaqLazy />
-      </main>
-      <Footer />
-    </>
-  );
+  return <KundekortPage />;
 }

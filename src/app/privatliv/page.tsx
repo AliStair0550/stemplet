@@ -6,7 +6,7 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
-  description: "Sådan behandler Stemplet personoplysninger.",
+  description: "Sådan behandler Stemplet og Henvisninger personoplysninger.",
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
@@ -26,12 +26,12 @@ export default function PrivatlivPage() {
   return (
     <LegalLayout
       title="Privatlivspolitik"
-      updated="12. juli 2026"
-      intro="Stemplet er et digitalt stempelkort fra Alius. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
+      updated="26. oktober 2026"
+      intro="Stemplet er et digitalt stempelkort fra Folka, og Henvisninger er en tilføjelse, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
     >
       <LegalSection title="1. Hvem er ansvarlig">
         <p>
-          Stemplet drives af Alius. Har du spørgsmål om dine oplysninger, eller
+          Stemplet drives af Folka. Har du spørgsmål om dine oplysninger, eller
           vil du gøre brug af dine rettigheder, kan du skrive til os på{" "}
           <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
             {CONTACT}
@@ -59,11 +59,33 @@ export default function PrivatlivPage() {
             ind og administrere din butik.
           </Li>
           <Li>
-            <strong>Stempelkort (på butikkens vegne):</strong> et serienummer,
-            din stempelhistorik (antal stempler over tid og tidspunkter) og en
-            valgfri e-mail, hvis kunden selv oplyser den. Historikken bruges til
-            at optjene stempler og give dig belønninger og loyalitetsfordele. En
-            kunde kan bruge kortet helt anonymt.
+            <strong>Stempelkort (på butikkens vegne):</strong> dit navn og din
+            e-mail, som du selv oplyser, når du henter kortet, et serienummer og
+            din stempelhistorik (antal stempler over tid og tidspunkter). Navn og
+            e-mail knytter kortet til dig, så butikken kan kende dig og hjælpe,
+            hvis der er noget med kortet. Historikken bruges til at optjene
+            stempler og give dig belønninger og loyalitetsfordele. Kort, der
+            blev hentet før, kan være uden navn og e-mail.
+          </Li>
+          <Li>
+            <strong>Henvisninger (på butikkens vegne, kun hvis butikken har
+            slået det til):</strong> dit navn og din e-mail, din personlige
+            henvisningskode, hvem der har henvist dig, og hvem du har henvist,
+            hvornår henvisningen blev oprettet og gennemført, og de
+            belønninger, du har optjent og indløst. Navn og e-mail oplyser du
+            selv, når du tilmelder dig. Navnet bruges til din kode og til, at
+            personalet kan finde dig ved kassen. E-mailen bruges til at finde
+            dig ved kassen og til at sikre, at hver kunde kun tilmeldes én gang
+            og ikke kan henvise sig selv. Tidligere tilmeldinger kan have et
+            mobilnummer i stedet. Når du deler din kode, vises dit fornavn for
+            den, der åbner dit link.
+          </Li>
+          <Li>
+            <strong>Nyheder på mail (kun med dit samtykke):</strong> sætter du
+            selv flueben ved &quot;Ja tak til nyheder og tilbud&quot;, gemmer vi
+            dit samtykke og tidspunktet for det, så butikken senere kan sende
+            dig nyheder og tilbud på mail. Uden flueben bruges din e-mail ikke
+            til markedsføring.
           </Li>
           <Li>
             <strong>Teknisk og sikkerhed:</strong> IP-adresse og en hændelseslog
@@ -83,6 +105,16 @@ export default function PrivatlivPage() {
             At levere tjenesten, herunder at give og indløse stempler
             (opfyldelse af aftale, databeskyttelsesforordningens art. 6, stk. 1,
             litra b).
+          </Li>
+          <Li>
+            At registrere henvisninger og give de belønninger, du har tilmeldt
+            dig, når du deltager i en butiks henvisninger (opfyldelse af aftale,
+            art. 6, stk. 1, litra b).
+          </Li>
+          <Li>
+            At sende dig nyheder og tilbud fra butikken på mail, men kun hvis
+            du har sagt ja tak (samtykke, art. 6, stk. 1, litra a, og
+            markedsføringslovens § 10). Du kan altid trække samtykket tilbage.
           </Li>
           <Li>
             At beskytte tjenesten mod snyd og misbrug (vores og butikkens
@@ -107,7 +139,9 @@ export default function PrivatlivPage() {
       <LegalSection title="5. Hvor længe vi gemmer">
         <p>
           Vi gemmer oplysningerne, så længe kontoen eller kortet er aktivt.
-          Hændelseslog og tekniske oplysninger opbevares kun kortvarigt af
+          Henvisninger, der ikke bliver gennemført, og belønninger, der ikke
+          bliver indløst, udløber efter den periode, butikken har valgt, men
+          historikken gemmes sammen med kortet. Hændelseslog og tekniske oplysninger opbevares kun kortvarigt af
           sikkerhedshensyn. Du kan altid bede os om at slette dine oplysninger.
         </p>
       </LegalSection>

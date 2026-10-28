@@ -6,7 +6,7 @@ import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
   { href: "/hvorfor", label: "Fordele" },
-  { href: "/#pris", label: "Pris" },
+  { href: "/stemplet#pris", label: "Pris" },
 ];
 
 function MenuIcon({ open }: { open: boolean }) {
@@ -63,7 +63,7 @@ export default function Nav() {
       }`}
     >
       <div className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between px-6 md:px-8">
-        <Wordmark href="/" className="text-[1.35rem]" />
+        <Wordmark href="/stemplet" className="text-[1.35rem]" />
 
         {/* Desktop: Fordele, Brancher, Pris + Log ind ved siden af primaer CTA */}
         <div className="hidden items-center gap-8 md:flex">

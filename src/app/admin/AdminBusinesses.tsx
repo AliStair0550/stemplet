@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { startSupport } from "./actions";
 import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
 import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
 import {
@@ -51,6 +52,12 @@ export type Row = {
   lastInvoicedAt: Date | null;
   newSignupsPaused: boolean;
   stopped: boolean;
+  // Henvisninger (modul): slaaet til, og antal henvisninger i alt / gennemfoert.
+  referralsEnabled: boolean;
+  /** Stemplet slaaet til (fra = kun Henvisninger). */
+  stampsEnabled: boolean;
+  referrals: number;
+  referralsRewarded: number;
 };
 
 type Filter = "all" | "over" | "near" | "pending" | "paused" | "stopped";
@@ -332,6 +339,15 @@ function BusinessDetail({ r }: { r: Row }) {
             : " · Vilkår ikke registreret"}
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          {/* Support: aabn butikkens dashboard som superadmin og ret for dem. */}
+          <form action={startSupport.bind(null, r.id)}>
+            <button
+              type="submit"
+              className="rounded-full bg-ink px-4 py-1.5 text-[0.78rem] font-[500] text-parchment hover:bg-black"
+            >
+              Åbn dashboard
+            </button>
+          </form>
           <PlanSelect businessId={r.id} plan={r.plan} />
           <ResetStampsButton businessId={r.id} />
           <DeleteButton businessId={r.id} name={r.name} />
@@ -457,6 +473,24 @@ function BusinessDetail({ r }: { r: Row }) {
             value={r.weeklyEmail}
             label="Ugebrev"
           />
+          <FlagToggle
+            businessId={r.id}
+            flag="stampsEnabled"
+            value={r.stampsEnabled}
+            label="Stemplet"
+          />
+          <FlagToggle
+            businessId={r.id}
+            flag="referralsEnabled"
+            value={r.referralsEnabled}
+            label="Henvisninger"
+          />
+          {r.referralsEnabled || r.referrals > 0 ? (
+            <span className="text-[0.76rem] font-[300] text-stone">
+              {formatDkNumber(r.referrals)} henvisninger,{" "}
+              {formatDkNumber(r.referralsRewarded)} gennemført
+            </span>
+          ) : null}
         </div>
       </div>
     </div>

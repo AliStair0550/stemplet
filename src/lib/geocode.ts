@@ -17,7 +17,7 @@ export async function geocodeAddress(address: string): Promise<GeoHit | null> {
       `https://photon.komoot.io/api/?limit=1&lang=default&bbox=${DK_BBOX}&q=` +
       encodeURIComponent(address);
     const res = await fetch(url, {
-      headers: { "User-Agent": "Stemplet/1.0 (+https://stemplet.alius.dk)" },
+      headers: { "User-Agent": "Stemplet/1.0 (+https://kort.folka.dk)" },
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) return null;

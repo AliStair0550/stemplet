@@ -137,7 +137,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+      <span className="text-[0.85rem] font-[400] text-ink">
         {label}
       </span>
       {children}
@@ -145,26 +145,38 @@ function Field({
   );
 }
 
-// Gruppe-overskrift, saa designeren laeses som faa klare afsnit i stedet for
-// en lang liste af felter. Samme terracotta-streg som dashboardets sektioner.
-function GroupHeader({ title, hint }: { title: string; hint?: string }) {
+// Et afsnit i designeren: overskrift, een forklarende linje og felterne.
+// boxed = hver sin hvide kasse (Design-siden i dashboardet); ellers enkle blokke
+// adskilt af en hårfin linje (oprettelsen, der selv ligger i en kasse).
+function Section({
+  title,
+  hint,
+  boxed,
+  first = false,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  boxed: boolean;
+  first?: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span
-        aria-hidden
-        className="h-[1.05rem] w-[3px] shrink-0 rounded-full bg-terracotta"
-      />
-      <div>
-        <h3 className="text-[0.95rem] font-[500] leading-tight text-ink">
-          {title}
-        </h3>
-        {hint ? (
-          <p className="mt-0.5 text-[0.75rem] font-[300] leading-tight text-stone">
-            {hint}
-          </p>
-        ) : null}
-      </div>
-    </div>
+    <section
+      className={cn(
+        boxed
+          ? "rounded-xl border border-fog bg-white p-5 shadow-card md:p-6"
+          : first
+            ? ""
+            : "border-t border-fog pt-6",
+      )}
+    >
+      <h3 className="text-[1rem] font-[500] leading-tight text-ink">{title}</h3>
+      {hint ? (
+        <p className="mt-1 text-[0.8rem] font-[300] leading-relaxed text-stone">{hint}</p>
+      ) : null}
+      <div className="mt-4 flex flex-col gap-4">{children}</div>
+    </section>
   );
 }
 
@@ -175,6 +187,8 @@ export function CardDesigner({
   allowLogo = false,
   showPoweredBy = false,
   hidePreview = false,
+  boxed = false,
+  parts = "all",
 }: {
   value: CardDesign;
   onChange: (next: CardDesign) => void;
@@ -184,7 +198,14 @@ export function CardDesigner({
   // Skjul CardDesigners eget preview (fx naar forlaelderen viser eet vedvarende
   // preview ved siden af). Saa staar der kun kontrollerne.
   hidePreview?: boolean;
+  // Hvert afsnit i sin egen kasse (Design-siden). Standard: enkle blokke.
+  boxed?: boolean;
+  // Hvilke afsnit: "look" = udseende (farver, ikon, navn og logo; Design),
+  // "rules" = stempelregler (antal, beloenning, betingelser; Regler).
+  parts?: "all" | "look" | "rules";
 }) {
+  const showLook = parts !== "rules";
+  const showRules = parts !== "look";
   const [uploading, setUploading] = useState(false);
   const [logoError, setLogoError] = useState<string | null>(null);
   // Betingelser: til/fra + en kladde, saa teksten ikke tabes, hvis man slaar
@@ -238,13 +259,13 @@ export function CardDesigner({
       <div
         className={
           hidePreview
-            ? "flex w-full flex-col gap-7"
-            : "order-2 flex flex-col gap-7 md:order-none"
+            ? cn("flex w-full flex-col", boxed ? "gap-4" : "gap-7")
+            : cn("order-2 flex flex-col md:order-none", boxed ? "gap-4" : "gap-7")
         }
       >
         {/* Belønning: kernen i kortet */}
-        <div className="flex flex-col gap-4">
-          <GroupHeader title="Belønning" hint="Det, kunderne sparer op til" />
+        {showRules ? (
+        <Section boxed={boxed} first title="Belønning" hint="Det, kunderne sparer op til.">
           <Field label={`Antal stempler (${value.stampsRequired})`}>
             <input
               type="range"
@@ -259,7 +280,7 @@ export function CardDesigner({
           <div className="flex flex-col gap-2">
             <label className="flex flex-col gap-1.5">
               <span className="flex items-baseline justify-between gap-2">
-                <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                <span className="text-[0.85rem] font-[400] text-ink">
                   Belønningstekst
                 </span>
                 <span
@@ -303,18 +324,16 @@ export function CardDesigner({
               ))}
             </div>
           </div>
-        </div>
+        </Section>
+        ) : null}
 
-        {/* Kortets udtryk: tema, farver og stempel */}
-        <div className="flex flex-col gap-5 border-t border-fog pt-6">
-          <GroupHeader
-            title="Kortets udtryk"
-            hint="Farverne og stemplet, kunden ser i sin Wallet"
-          />
+        {/* Farver: tema eller egne farver */}
+        {showLook ? (
+        <Section boxed={boxed} title="Farver" hint="Kortets farve og tekstfarve, som kunden ser i Wallet.">
 
           <div className="flex flex-col gap-2.5">
             <div className="flex items-baseline justify-between">
-              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              <span className="text-[0.85rem] font-[400] text-ink">
                 Farvetema
               </span>
               <span className="text-[0.72rem] font-[300] text-slate">
@@ -451,10 +470,13 @@ export function CardDesigner({
             ) : null}
           </div>
 
+        </Section>
+        ) : null}
+
+        {/* Ikon: hoerer til udseendet (stempelfelter, moenster og logo-felt). */}
+        {showLook ? (
+        <Section boxed={boxed} title="Ikon" hint="Bruges i stempelfelterne og i mønsteret på kortet.">
           <div className="flex flex-col gap-2">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Stempel-ikon
-            </span>
             <div className="flex flex-wrap gap-2">
               {STAMP_ICONS.map((icon) => (
                 <button
@@ -474,13 +496,14 @@ export function CardDesigner({
               ))}
             </div>
           </div>
-        </div>
+        </Section>
+        ) : null}
 
         {/* Navn og logo */}
-        <div className="flex flex-col gap-5 border-t border-fog pt-6">
-          <GroupHeader title="Navn og logo" />
+        {showLook ? (
+        <Section boxed={boxed} title="Navn og logo" hint="Det, der står øverst på kortet.">
           <div className="flex flex-col gap-2">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+            <span className="text-[0.85rem] font-[400] text-ink">
               Butiksnavn
             </span>
             <input
@@ -498,7 +521,7 @@ export function CardDesigner({
 
           {allowLogo ? (
             <div className="flex flex-col gap-2">
-              <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+              <span className="text-[0.85rem] font-[400] text-ink">
                 Logo
               </span>
               <div className="flex items-center gap-3">
@@ -536,7 +559,7 @@ export function CardDesigner({
               {value.logoUrl ? (
                 <label className="mt-2 flex flex-col gap-1.5 border-t border-fog pt-4">
                   <span className="flex items-baseline justify-between gap-2">
-                    <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+                    <span className="text-[0.85rem] font-[400] text-ink">
                       Logo-størrelse
                     </span>
                     {Math.abs((value.logoScale ?? 1) - 1) > 0.001 ? (
@@ -565,15 +588,15 @@ export function CardDesigner({
               ) : null}
             </div>
           ) : null}
-        </div>
+        </Section>
+        ) : null}
 
         {/* Betingelser (valgfri): til/fra + kort tekst. Vises IKKE paa kortet,
             men diskret under "Hent mit stempelkort" for kunden. */}
-        <div className="flex flex-col gap-2 border-t border-fog pt-6">
+        {showRules ? (
+        <Section boxed={boxed} title="Betingelser" hint="Valgfrit. Fx hvilke produkter kortet gælder for.">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-              Betingelser (valgfri)
-            </span>
+            <span className="text-[0.85rem] font-[400] text-ink">Vis betingelser</span>
             <Switch
               checked={termsOn}
               label="Vis betingelser"
@@ -619,14 +642,15 @@ export function CardDesigner({
               kortet i Wallet.
             </p>
           )}
-        </div>
+        </Section>
+        ) : null}
       </div>
 
       {/* Live preview: paa mobil oeverst (order-1), paa desktop klaebende til hoejre.
           Skjules, hvis forlaelderen viser sit eget preview. */}
       {hidePreview ? null : (
         <div className="order-1 md:order-none md:sticky md:top-6 md:self-start md:pl-4">
-          <p className="mb-3 text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
+          <p className="mb-3 text-[0.85rem] font-[400] text-ink">
             Sådan ser kortet ud
           </p>
           <StampCard

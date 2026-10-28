@@ -6,7 +6,7 @@ const CUSTOMER = [
   "Bliver aldrig væk, det ligger altid i Wallet.",
   "Klar ved kassen på et øjeblik. Intet papkort at lede efter.",
   "De ser præcis, hvor tæt de er på næste gratis.",
-  "Helt anonymt, hvis de vil. Data ligger i EU.",
+  "Kun navn og e-mail. Data ligger i EU.",
 ];
 
 const BUSINESS = [

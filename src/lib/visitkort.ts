@@ -121,6 +121,8 @@ export function defaultDesign(b: {
   primaryColor: string;
   textColor: string;
   slug: string;
+  /** Fra = kun Henvisninger: bagsiden handler om at henvise, ikke stempler. */
+  stampsEnabled?: boolean;
 }): VisitkortDesign {
   // Standard: butikkens EGNE brandfarver, saa kortet aabner med butikkens
   // identitet (ikke et neutralt hvidt kort). textColor er valgt til at vaere
@@ -154,10 +156,10 @@ export function defaultDesign(b: {
     nameBold: true,
     taglineBold: false,
     backContent: "qr",
-    backHeadline: "Saml stempler.",
-    backHeadlineAccent: "Få belønninger.",
+    backHeadline: b.stampsEnabled === false ? "Henvis en ven." : "Saml stempler.",
+    backHeadlineAccent: b.stampsEnabled === false ? "Få en belønning." : "Få belønninger.",
     backLine1: "Direkte i Apple Wallet",
-    backLine2: "Ingen app. Ingen tilmelding.",
+    backLine2: "Ingen app. Kun navn og e-mail.",
     headlineBold: true,
     line1Bold: true,
     line2Bold: false,

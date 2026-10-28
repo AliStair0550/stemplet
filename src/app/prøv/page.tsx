@@ -7,7 +7,7 @@ import { DemoExperience } from "./DemoExperience";
 export const metadata: Metadata = {
   title: "Prøv Stemplet i din egen Wallet",
   description:
-    "Læg et rigtigt digitalt stempelkort i din Apple Wallet på fem sekunder. Ingen app, ingen tilmelding. Præcis som dine kunder vil opleve det.",
+    "Læg et rigtigt digitalt stempelkort i din Apple Wallet på få sekunder. Ingen app. Præcis som dine kunder vil opleve det.",
   robots: { index: false },
 };
 // Statisk skal (branding + layout bages ind ved build) = hurtig foerste load.

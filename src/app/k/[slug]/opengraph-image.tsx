@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { cardShortName, claimCta } from "@/lib/card-name";
 import { prisma } from "@/lib/prisma";
 import { cardTitle } from "@/lib/brand";
 
@@ -112,7 +113,7 @@ export default async function Image({
               marginTop: 26,
             }}
           >
-            Hent dit stempelkort direkte i Apple Wallet.
+            {business ? `${claimCta(cardShortName(business))} direkte i Apple Wallet.` : "Hent dit kort direkte i Apple Wallet."}
           </div>
           <div
             style={{
@@ -122,7 +123,7 @@ export default async function Image({
               marginTop: 14,
             }}
           >
-            Ingen app. Ingen tilmelding.
+            Ingen app. Kun navn og e-mail.
           </div>
         </div>
 

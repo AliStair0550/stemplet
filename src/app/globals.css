@@ -602,3 +602,203 @@ textarea:focus-visible {
     opacity: 1;
   }
 }
+
+/* Primaer knapfarve. Terracotta som altid; inde i dashboardet (Folka-rammen med
+   Stemplet og Henvisninger) er knapperne sorte, saa siden virker samlet. */
+:root {
+  --btn-primary: #a6502e;
+  --btn-primary-hover: #8f4326;
+}
+.dash-theme {
+  --btn-primary: #1c1917;
+  --btn-primary-hover: #000000;
+}
+
+/* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden
+   gentagelse; ingen konfetti for den, der har slaaet animationer fra. */
+/* Konfetti (Henvisninger): den ydre brik flyver (op og saa ned med tyngdekraft),
+   den midterste svajer og drejer, den inderste vender sig som papir. */
+@keyframes confetti-fly {
+  0% {
+    transform: translate(-50%, -50%);
+    animation-timing-function: cubic-bezier(0.2, 0.75, 0.35, 1);
+  }
+  28% {
+    transform: translate(calc(-50% + var(--peak-x)), calc(-50% + var(--peak-y)));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.8, 0.6);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y)));
+  }
+}
+@keyframes confetti-flutter {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(var(--sway)) rotate(calc(var(--spin) * 0.5));
+  }
+  70% {
+    transform: translateX(calc(var(--sway) * -1)) rotate(calc(var(--spin) * 0.8));
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(var(--sway) * 0.5)) rotate(var(--spin));
+    opacity: 0;
+  }
+}
+@keyframes confetti-flip {
+  0% {
+    transform: rotateY(0deg) rotateX(0deg);
+  }
+  50% {
+    transform: rotateY(180deg) rotateX(40deg);
+  }
+  100% {
+    transform: rotateY(360deg) rotateX(0deg);
+  }
+}
+@keyframes celebrate-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes celebrate-check {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-confetti {
+    display: none;
+  }
+}
+
+/* Dashboardet i samme stil som Henvisningers "Kom i gang" (Alis valg): hvidt,
+   systemskrift, sort tekst, graa felter uden kant, runde kort og fede
+   overskrifter. Kun under .dash-theme (dashboard og kasse), saa Stemplets
+   forside og resten af sitet er uroert. Ulagte regler slaar Tailwinds
+   utilities, og de skal staa EFTER @theme (ellers droppes de). Stemplets
+   ordmaerke beholder sin skrift (font-sans paa StempletLogo). */
+.dash-theme {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+}
+.dash-theme.bg-parchment,
+.dash-theme .bg-parchment {
+  background-color: #fff;
+}
+.dash-theme .bg-parchment\/95 {
+  background-color: rgb(255 255 255 / 0.92);
+}
+.dash-theme .bg-sand {
+  background-color: #efeff2;
+}
+.dash-theme .text-ink {
+  color: #111;
+}
+.dash-theme .text-stone {
+  color: rgb(17 17 17 / 0.6);
+}
+.dash-theme .text-slate {
+  color: rgb(17 17 17 / 0.45);
+}
+.dash-theme .text-terracotta {
+  color: #111;
+}
+.dash-theme .border-fog,
+.dash-theme .divide-fog > :not(:last-child) {
+  border-color: #ececef;
+}
+.dash-theme .border-clay {
+  border-color: #dcdce0;
+}
+.dash-theme .shadow-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.03), 0 10px 28px -20px rgb(0 0 0 / 0.14);
+}
+.dash-theme .rounded-lg {
+  border-radius: 14px;
+}
+.dash-theme .rounded-xl,
+.dash-theme .rounded-2xl {
+  border-radius: 18px;
+}
+.dash-theme .font-\[300\] {
+  font-weight: 400;
+}
+/* Felter som i "Kom i gang": graa flade uden kant, sort ring ved fokus. */
+.dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+.dash-theme textarea,
+.dash-theme select {
+  background-color: #f5f5f7;
+  border-color: transparent;
+}
+.dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):focus,
+.dash-theme textarea:focus,
+.dash-theme select:focus {
+  border-color: #111;
+}
+/* Markeringer i dashboardet er sort/graa, ikke terrakotta (kun Stemplets prik er
+   terrakotta, og den har fast farve). */
+.dash-theme .bg-terracotta {
+  background-color: #111;
+}
+.dash-theme [class*="bg-terracotta/"] {
+  background-color: #f2f2f4;
+}
+.dash-theme .border-terracotta {
+  border-color: #111;
+}
+.dash-theme [class*=" border-terracotta/"],
+.dash-theme [class^="border-terracotta/"] {
+  border-color: #d4d4d8;
+}
+.dash-theme [class*="text-terracotta/"] {
+  color: rgb(17 17 17 / 0.5);
+}
+.dash-theme .hover\:text-terracotta:hover,
+.dash-theme .hover\:text-terracotta-dark:hover,
+.dash-theme .group:hover .group-hover\:text-terracotta {
+  color: #000;
+}
+.dash-theme .hover\:border-terracotta:hover,
+.dash-theme .focus\:border-terracotta:focus {
+  border-color: #111;
+}
+.dash-theme .hover\:bg-terracotta-dark:hover,
+.dash-theme .group:hover .group-hover\:bg-terracotta {
+  background-color: #000;
+}
+.dash-theme .accent-terracotta {
+  accent-color: #111;
+}
+.dash-theme [class*="ring-terracotta"] {
+  --tw-ring-color: rgb(17 17 17 / 0.35);
+}
+/* Etiketter i almindelig skrift (som "Kom i gang"), ikke versaler med spatiering. */
+.dash-theme .uppercase {
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-weight: 500;
+}
+.dash-theme [class*="bg-parchment/"] {
+  background-color: rgb(255 255 255 / 0.92);
+}
+.dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not(.rounded-full),
+.dash-theme textarea,
+.dash-theme select {
+  border-radius: 12px;
+}

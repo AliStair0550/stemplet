@@ -14,9 +14,13 @@ function Label({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function StartRequestForm() {
+export function StartRequestForm({ initialReferrals = false }: { initialReferrals?: boolean }) {
   const [businessName, setBusinessName] = useState("");
   const [reward, setReward] = useState("");
+  // Produktvalg: stempelkort alene eller med Henvisninger oven i. Forvalgt, naar
+  // man kommer fra Henvisningers forside (/start?produkt=henvisninger).
+  const [wantsReferrals, setWantsReferrals] = useState(initialReferrals);
+  const [referralReward, setReferralReward] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -27,8 +31,12 @@ export function StartRequestForm() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!businessName.trim() || !reward.trim() || !email.trim()) {
-      setError("Udfyld virksomhed, ønsket belønning og e-mail.");
+    if (!businessName.trim() || !email.trim()) {
+      setError("Udfyld virksomhed og e-mail.");
+      return;
+    }
+    if (wantsReferrals ? !referralReward.trim() : !reward.trim()) {
+      setError(wantsReferrals ? "Beskriv kort, hvad vennen og ambassadøren får." : "Beskriv kort den ønskede belønning.");
       return;
     }
     setBusy(true);
@@ -36,7 +44,15 @@ export function StartRequestForm() {
       const res = await fetch("/api/start-request", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ businessName, reward, contactName, email, phone }),
+        body: JSON.stringify({
+          businessName,
+          reward,
+          wantsReferrals,
+          referralReward: wantsReferrals ? referralReward : undefined,
+          contactName,
+          email,
+          phone,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.ok) {
@@ -63,8 +79,9 @@ export function StartRequestForm() {
           Tak, vi har modtaget det
         </h1>
         <p className="mx-auto mt-3 max-w-sm font-[300] text-[0.95rem] leading-relaxed text-stone">
-          Vi laver et udkast til dit stempelkort og vender tilbage på {email.trim()}.
-          Har du spørgsmål i mellemtiden, så skriv til hej@alius.dk.
+          Vi laver et udkast til {wantsReferrals ? "din opsætning" : "dit stempelkort"} og vender tilbage på{" "}
+          {email.trim()}.
+          Har du spørgsmål i mellemtiden, så skriv til hej@folka.dk.
         </p>
       </div>
     );
@@ -95,8 +112,50 @@ export function StartRequestForm() {
           />
         </label>
 
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="mb-1.5">
+            <Label>Hvad vil du have?</Label>
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { value: false, title: "Stempelkort", sub: "Flere gensyn" },
+              { value: true, title: "Stempelkort + Henvisninger", sub: "Flere nye kunder" },
+            ].map((o) => (
+              <label
+                key={o.title}
+                className={`flex cursor-pointer flex-col gap-0.5 border px-3.5 py-3 transition-colors ${
+                  wantsReferrals === o.value ? "border-ink bg-white" : "border-clay bg-white/60 hover:border-stone"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="produkt"
+                  className="sr-only"
+                  checked={wantsReferrals === o.value}
+                  onChange={() => setWantsReferrals(o.value)}
+                />
+                <span className="text-[0.9rem] font-[500] leading-snug text-ink">{o.title}</span>
+                <span className="text-[0.78rem] font-[300] text-stone">{o.sub}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {wantsReferrals ? (
+          <label className="flex flex-col gap-1.5">
+            <Label>Belønninger for henvisninger</Label>
+            <textarea
+              className={`${inputCls} min-h-[5.5rem] resize-y`}
+              value={referralReward}
+              maxLength={300}
+              onChange={(e) => setReferralReward(e.target.value)}
+              placeholder="Fx: Vennen får 100 kr. ved første besøg. Den, der henviste, får et gratis klip."
+            />
+          </label>
+        ) : null}
+
         <label className="flex flex-col gap-1.5">
-          <Label>Ønsket belønning</Label>
+          <Label>{wantsReferrals ? "Stempelkortets belønning (valgfrit)" : "Ønsket belønning"}</Label>
           <textarea
             className={`${inputCls} min-h-[5.5rem] resize-y`}
             value={reward}
@@ -150,7 +209,7 @@ export function StartRequestForm() {
           {busy ? "Sender..." : "Send anmodning"}
         </button>
         <p className="text-center text-[0.75rem] font-[300] leading-relaxed text-slate">
-          Vi bruger kun dine oplysninger til at kontakte dig om dit stempelkort.
+          Vi bruger kun dine oplysninger til at kontakte dig om {wantsReferrals ? "din opsætning" : "dit stempelkort"}.
         </p>
       </form>
     </div>

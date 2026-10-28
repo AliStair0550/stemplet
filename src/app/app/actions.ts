@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { requireBusiness, ACTIVE_BUSINESS_COOKIE } from "@/lib/session";
+import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
 import { getStripe, proPriceId } from "@/lib/stripe";
-import { APP_URL } from "@/lib/env";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
+import { after } from "next/server";
 import { hashPin } from "@/lib/security";
 import { generateApiKey } from "@/lib/integrations";
 import { isBusinessCategory } from "@/lib/categories";
@@ -30,11 +31,15 @@ export async function switchBusiness(businessId: string): Promise<Result> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, error: "Ikke logget ind." };
+  // Support-butikken (superadmin) er allerede aktiv; intet at skifte.
+  if ((await getSupportBusiness())?.id === businessId) return { ok: true };
   const m = await prisma.membership.findUnique({
     where: { userId_businessId: { userId, businessId } },
     select: { id: true },
   });
   if (!m) return { ok: false, error: "Du har ikke adgang til den butik." };
+  // Skift til en af egne butikker afslutter en eventuel support-session.
+  (await cookies()).delete(SUPPORT_BUSINESS_COOKIE);
   (await cookies()).set(ACTIVE_BUSINESS_COOKIE, businessId, {
     httpOnly: true,
     sameSite: "lax",
@@ -212,10 +217,18 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
   ]);
 
   revalidatePath("/app/kort");
+  revalidatePath("/app/regler");
   revalidatePath("/app");
   // Kundens hente-side er ISR-cachet pr. butik: revalidér den, saa aendret
   // design (farver, beloenning, betingelser) slaar igennem med det samme.
   revalidatePath(`/k/${business.slug}`);
+  // Regler (fx beloenningsteksten) staar paa kortet: opdatér kort i Wallet stille.
+  if (WALLET_ENABLED) {
+    after(async () => {
+      const { pushAllWalletPasses } = await import("@/lib/wallet/build");
+      await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+    });
+  }
   return { ok: true };
 }
 

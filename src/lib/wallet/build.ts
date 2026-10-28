@@ -3,7 +3,9 @@ import { timingSafeEqual } from "node:crypto";
 import { prisma } from "../prisma";
 import { PLAN_LIMITS } from "../plans";
 import { cardTitle } from "../brand";
+import { APP_URL } from "../env";
 import { buildPass } from "./pass";
+import { loadReferralPassInfo } from "../referral-wallet";
 
 /** Loader kundekort med alt, Wallet-passet skal bruge. */
 export function loadCCForWallet(serial: string) {
@@ -15,8 +17,10 @@ export function loadCCForWallet(serial: string) {
 
 type LoadedCC = NonNullable<Awaited<ReturnType<typeof loadCCForWallet>>>;
 
-export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
+export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
   const b = cc.card.business;
+  // Henvisninger (null for et rent stempelkort, som saa bygges praecis som foer).
+  const referral = await loadReferralPassInfo(cc);
   return buildPass({
     serial: cc.serial,
     authToken: cc.authToken,
@@ -35,6 +39,16 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     showPoweredBy: PLAN_LIMITS[b.plan].showPoweredBy,
     latitude: b.latitude,
     longitude: b.longitude,
+    referral,
+    stampsEnabled: b.stampsEnabled,
+    // Kortet (faelles design) til iOS 27-plakaten; bruges kun med WALLET_POSTER=true.
+    look: {
+      style: b.cardStyle,
+      artwork: b.cardArtwork,
+      actions: b.cardActions,
+      bookingUrl: b.bookingUrl,
+      cardPageUrl: `${APP_URL}/k/${b.slug}`,
+    },
   });
 }
 
@@ -45,8 +59,10 @@ export function buildPkpass(cc: LoadedCC): Promise<Buffer> {
  * aendring af header/farver, hvor der ikke er sket en stempling til at trigge push.
  * Returnerer antal kort, der blev forsoegt pushet.
  */
-export async function pushAllWalletPasses(): Promise<{ pushed: number }> {
+export async function pushAllWalletPasses(opts: { businessId?: string } = {}): Promise<{ pushed: number }> {
   const regs = await prisma.walletRegistration.findMany({
+    // Kun een butiks kort (fx efter en aendring af Kortet), ellers alle.
+    where: opts.businessId ? { customerCard: { card: { businessId: opts.businessId } } } : undefined,
     select: { customerCardId: true },
     distinct: ["customerCardId"],
   });

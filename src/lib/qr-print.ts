@@ -3,9 +3,16 @@
 // altid viser det samme.
 
 export const QR_PRINT_HEADLINE = "Få vores digitale stempelkort";
-export const QR_PRINT_HELPER = "Scan med kameraet, ingen app eller tilmelding";
+export const QR_PRINT_HELPER = "Scan med kameraet. Ingen app.";
 // Diskret, sekundaer Stemplet-afsender.
 export const QR_PRINT_BRAND = "Lavet med Stemplet";
+
+/** Teksterne paa materialet. Butikker uden stempler faar henvisningsteksten. */
+export function qrPrintText(stampsEnabled: boolean) {
+  return stampsEnabled
+    ? { headline: QR_PRINT_HEADLINE, helper: QR_PRINT_HELPER, brand: QR_PRINT_BRAND }
+    : { headline: "Henvis en ven, og få en belønning", helper: QR_PRINT_HELPER, brand: "Lavet med Folka" };
+}
 
 export type QrFormat = "visitkort" | "a4";
 export type QrOrient = "portrait" | "landscape";

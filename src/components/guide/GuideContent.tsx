@@ -4,6 +4,7 @@
 // guiden altid afspejler den faktiske adfaerd. Ingen tekniske ord i teksten.
 // ─────────────────────────────────────────────────────────────────────
 import type { GuideData } from "@/lib/guide";
+import { APP_HOST } from "@/lib/platform";
 import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "@/lib/system-config";
 import { formatMinutes, formatDkDate } from "@/lib/utils";
 
@@ -235,7 +236,7 @@ export function GuideContent({ data }: { data: GuideData }) {
           <div className="flex flex-col gap-4">
             <QA
               q="Kunden har ikke et kort endnu"
-              a="Bed kunden scanne skiltet med QR ved disken. Det tager fem sekunder at oprette kortet, og bagefter viser de bare kortet til dig."
+              a="Bed kunden scanne skiltet med QR ved disken. Kunden skriver navn og e-mail, og så er kortet oprettet, og bagefter viser de bare kortet til dig."
             />
             <QA
               q="Kunden siger jeg fik ikke stempel"
@@ -247,7 +248,7 @@ export function GuideContent({ data }: { data: GuideData }) {
             />
             <QA
               q="Kunden har ny telefon eller kan ikke finde kortet"
-              a="Har kunden kortet i Apple Wallet, følger det med. Ellers kan de selv hente det igen på stemplet.alius.dk/find-kort ved at skrive serienummeret fra kortet. Kender de ikke nummeret, kan du slå kortet op under Scan kort."
+              a={`Har kunden kortet i Apple Wallet, følger det med. Ellers kan de selv hente det igen på ${APP_HOST}/find-kort ved at skrive serienummeret fra kortet. Kender de ikke nummeret, kan du slå kortet op under Scan kort.`}
             />
           </div>
         </div>

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BRANCHER } from "@/lib/brancher";
 
-const base = process.env.NEXT_PUBLIC_APP_URL || "https://stemplet.alius.dk";
+const base = process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk";
 
 // Kun offentlige, indekserbare sider. Dashboard, kunde-kort og API er udeladt.
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -15,9 +15,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     { url: base, changeFrequency: "weekly", priority: 1 },
+    { url: `${base}/stemplet`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/hvorfor`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/brancher`, changeFrequency: "monthly", priority: 0.7 },
     ...brancheUrls,
+    { url: `${base}/henvisninger`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/start`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/login`, changeFrequency: "yearly", priority: 0.3 },
     {

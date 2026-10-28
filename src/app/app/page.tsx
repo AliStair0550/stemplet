@@ -1,257 +1,128 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireBusiness } from "@/lib/session";
-import {
-  getBusinessStats,
-  getRecentActivity,
-  getOverviewPulse,
-} from "@/lib/stats";
+import { getBusinessStats, getRecentActivity, getOverviewPulse } from "@/lib/stats";
+import { getReferralOverview, type ReferralRow } from "@/lib/referral-desk";
+import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
+import { StempletLogo, HenvisningerLogo } from "@/components/ProductLogo";
 import { Panel, SectionHeader } from "@/components/dash";
-import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { WalletCardPreview } from "@/components/WalletCardPreview";
+import { loadCardPreview } from "@/lib/card-preview";
+import { APP_URL } from "@/lib/env";
+import { AddToHomeButton } from "./AddToHomeButton";
 import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
-import { AddToHomeTile } from "./AddToHomeButton";
-import {
-  CtaArrow,
-  IconChart,
-  IconGift,
-  IconKey,
-  IconQr,
-  IconSpark,
-  IconStamp,
-  IconStampMark,
-  IconUsers,
-} from "./icons";
 
 export const dynamic = "force-dynamic";
 
-const ACTION_LABEL: Record<string, string> = {
+// Hjem: kundernes kort i centrum. Til venstre butikkens kort, som det ser ud i
+// Wallet (design under Kortet); til hoejre de funktioner, der ligger paa kortet
+// (Stemplet, Henvisninger og dem, der kommer), hver med dagens tal og regler, og
+// "Tilfoej" for dem, butikken ikke har endnu. Nederst een aktivitetsliste paa
+// tvaers, hvor prikken viser funktionen (Stemplet terrakotta, Henvisninger sort).
+
+const STAMP_LABEL: Record<string, string> = {
   STAMP: "Stempel givet",
   REDEEM: "Belønning indløst",
   PIN_FAIL: "Forkert PIN",
   FLAGGED: "Mistænkelig aktivitet",
 };
 
-// Hilsen efter tid paa dagen (dansk tid). en-GB giver 00-23 uden lokale-quirks.
-function greetingFor(now: Date): string {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
-      timeZone: "Europe/Copenhagen",
-      hour: "2-digit",
-      hour12: false,
-    }).format(now),
-  );
-  if (hour < 10) return "Godmorgen";
-  if (hour < 12) return "God formiddag";
-  if (hour < 18) return "God eftermiddag";
-  return "Godaften";
+type Activity = {
+  id: string;
+  at: Date;
+  text: string;
+  product: "stemplet" | "henvisninger";
+  alert?: boolean;
+};
+
+function referralText(r: ReferralRow): string {
+  const referrer = r.referrer.name ?? r.referrer.code ?? "En kunde";
+  const referred = r.referred.name ?? "en ny kunde";
+  switch (r.status) {
+    case "REWARDED":
+      return `${referred} kom via ${referrer}. Første besøg registreret.`;
+    case "CREATED":
+    case "VISITED":
+      return `${referrer} har henvist ${referred}.`;
+    case "EXPIRED":
+      return `Henvisningen af ${referred} er udløbet.`;
+    default:
+      return `Henvisningen af ${referred} er annulleret.`;
+  }
 }
 
-// Én sætning i almindeligt dansk: hvordan går dagen? Bygget af dagens tal, saa
-// ejeren forstaar situationen paa faa sekunder uden at laese noegletal.
-function summaryLine(p: {
-  totalCustomers: number;
-  activeCustomers: number;
-  visitorsToday: number;
-  returningToday: number;
-}): string {
-  if (p.totalCustomers === 0) {
-    return "Velkommen. I er klar til at tage imod jeres første kunde.";
-  }
-  if (p.visitorsToday === 0) {
-    // "Aktiv" bruges KUN om kortholdere der faktisk har faaet et stempel for
-    // nylig (activeCustomers = stemplet inden for 60 dage). Har ingen et stempel
-    // endnu, siger vi neutralt "kortholdere, klar til det foerste stempel", saa
-    // et tomt kort ikke fremstaar som en engageret kunde.
-    if (p.activeCustomers > 0) {
-      return `Ingen stempler endnu i dag. I har ${formatDkNumber(
-        p.activeCustomers,
-      )} ${
-        p.activeCustomers === 1 ? "aktiv kortholder" : "aktive kortholdere"
-      }, klar til et genbesøg.`;
-    }
-    return `Ingen stempler endnu i dag. I har ${formatDkNumber(
-      p.totalCustomers,
-    )} ${
-      p.totalCustomers === 1 ? "kortholder" : "kortholdere"
-    }, klar til det første stempel.`;
-  }
-  if (p.returningToday === 0) {
-    return `${formatDkNumber(p.visitorsToday)} ${
-      p.visitorsToday === 1 ? "ny kunde har" : "nye kunder har"
-    } besøgt jer i dag.`;
-  }
-  return `${formatDkNumber(p.visitorsToday)} ${
-    p.visitorsToday === 1 ? "kunde har" : "kunder har"
-  } besøgt jer i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
-}
-
-// Sammenligning med i gaar, skrevet ud, saa ejeren slipper for at regne.
-function deltaLabel(
-  today: number,
-  yesterday: number,
-): { text: string; dir: "up" | "down" | "flat" } {
-  const d = today - yesterday;
-  if (d > 0) return { text: `${d} flere end i går`, dir: "up" };
-  if (d < 0) return { text: `${Math.abs(d)} færre end i går`, dir: "down" };
-  return { text: "som i går", dir: "flat" };
-}
-
-// Ét noegletal med dagens tal, sammenligning til i gaar og en kort forklaring.
-function PulseTile({
-  label,
-  value,
-  yesterday,
-  icon,
-}: {
-  label: string;
-  value: number;
-  yesterday: number;
-  icon: ReactNode;
-}) {
-  const d = deltaLabel(value, yesterday);
-  const showDelta = value !== 0 || yesterday !== 0;
+function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-label font-[400] uppercase tracking-[0.14em] text-stone">
-          {label}
-        </span>
-        <span className="text-terracotta/60 transition-colors group-hover:text-terracotta">
-          {icon}
+    <span>
+      <span className="block text-[1.9rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-ink">{value}</span>
+      <span className="mt-1.5 block text-[0.78rem] text-slate">{label}</span>
+    </span>
+  );
+}
+
+
+
+
+function Feature({
+  logo,
+  href,
+  rulesHref,
+  children,
+}: {
+  logo: ReactNode;
+  href: string;
+  rulesHref: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
+      <div className="flex items-center justify-between gap-3">
+        <Link href={href} className="min-w-0">
+          {logo}
+        </Link>
+        <span className="flex items-center gap-2">
+          <Link href={rulesHref} className="rounded-full border border-clay px-3.5 py-1.5 text-[0.82rem] font-[500] text-ink hover:border-ink">
+            Regler
+          </Link>
+          <Link href={href} className="rounded-full bg-ink px-3.5 py-1.5 text-[0.82rem] font-[500] text-white hover:bg-black">
+            Åbn
+          </Link>
         </span>
       </div>
-      <div className="mt-3 font-[300] text-[2rem] leading-none text-ink tabular-nums">
-        <AnimatedNumber value={value} />
-      </div>
-      {showDelta ? (
-        <div className="mt-2">
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.68rem] font-[400]",
-              d.dir === "up"
-                ? "bg-terracotta/10 text-terracotta"
-                : "bg-fog/70 text-slate",
-            )}
-          >
-            <span aria-hidden>
-              {d.dir === "up" ? "↑" : d.dir === "down" ? "↓" : "•"}
-            </span>
-            {d.text}
-          </span>
-        </div>
-      ) : null}
+      <div className="mt-5 grid grid-cols-3 gap-3">{children}</div>
     </div>
   );
 }
 
-// Genvejene i Overblik. EEN kilde til titel, undertekst, maal og ikon, saa
-// gridet er let at pleje. "Adgang" sender ind til adgang-sektionen i
-// indstillinger (login-mails + kasse-enheder).
-type Action = {
-  href: string;
-  label: string;
-  sub: string;
-  icon: ReactNode;
-  // Aabner i en ny fane (fx kundesiden, der ligger uden for dashboardet).
-  external?: boolean;
-};
-
-const ACTIONS: Action[] = [
-  {
-    href: "/app/indstillinger#adgang",
-    label: "Adgang",
-    sub: "Medarbejdere og kasse-enheder",
-    icon: <IconKey />,
-  },
-  {
-    href: "/app/kampagner",
-    label: "Kampagner",
-    sub: "Påmindelser og tilbud",
-    icon: <IconGift />,
-  },
-  {
-    href: "/app/statistik",
-    label: "Statistik",
-    sub: "Besøg, genbesøg og belønninger",
-    icon: <IconChart />,
-  },
-];
-
-// Alle genveje som et rent, luftigt kort-grid i samme boks-stil.
-const tileClass =
-  "group relative flex flex-col gap-3 overflow-hidden rounded-lg border border-fog bg-gradient-to-b from-white to-sand/40 p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-clay hover:shadow-lift";
-
-function ActionTile({ action }: { action: Action }) {
-  const inner = (
-    <>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-terracotta/10 text-terracotta transition-colors group-hover:bg-terracotta group-hover:text-parchment">
-        {action.icon}
-      </span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-1.5 font-[400] text-[1rem] text-ink">
-          {action.label}
-          <span className="text-terracotta/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-terracotta">
-            <CtaArrow />
-          </span>
-        </span>
-        <span className="mt-0.5 block font-[300] text-[0.8rem] leading-relaxed text-stone">
-          {action.sub}
-        </span>
-      </span>
-    </>
-  );
-  // Kundesiden ligger uden for dashboardet: aabn i ny fane, saa ejeren beholder
-  // Overblik. De interne genveje bruger Next-Link.
-  if (action.external) {
-    return (
-      <a href={action.href} target="_blank" rel="noreferrer" className={tileClass}>
-        {inner}
-      </a>
-    );
-  }
+function AddFeature({ href, logo, title, text }: { href: string; logo: ReactNode; title: string; text: string }) {
   return (
-    <Link href={action.href} className={tileClass}>
-      {inner}
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-4 rounded-[18px] border border-dashed border-clay bg-white/60 p-5 transition-colors hover:border-ink hover:bg-white"
+    >
+      <span className="min-w-0">
+        <span className="block opacity-50 transition-opacity group-hover:opacity-100">{logo}</span>
+        <span className="mt-2 block text-[0.95rem] font-[600] text-ink">{title}</span>
+        <span className="block text-[0.85rem] text-stone">{text}</span>
+      </span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-clay text-[1.2rem] leading-none text-stone transition-colors group-hover:border-ink group-hover:text-ink">
+        +
+      </span>
     </Link>
   );
 }
 
-function ActionGrid({ customerUrl }: { customerUrl: string }) {
-  // "Giv et stempel" foerst (det man goer oftest), saa kundekortet, som
-  // kunderne ser det. Hjemmeskaerm-boksen skjuler sig selv i den installerede app.
-  const actions: Action[] = [
-    {
-      href: "/app/kasse",
-      label: "Giv et stempel",
-      sub: "Åbn kassen og stempel en kunde",
-      icon: <IconStampMark />,
-    },
-    {
-      href: customerUrl,
-      label: "Se kundekort",
-      sub: "Kortet, som kunderne ser det",
-      icon: <IconQr />,
-      external: true,
-    },
-    ...ACTIONS,
-  ];
-  return (
-    <section className="grid grid-cols-2 gap-3 animate-step sm:gap-4 lg:grid-cols-3">
-      {actions.map((a) => (
-        <ActionTile key={a.href} action={a} />
-      ))}
-      <AddToHomeTile className={tileClass} />
-    </section>
-  );
-}
-
-export default async function OverviewPage() {
+export default async function HomePage() {
   const { business } = await requireBusiness();
-  const [stats, activity, pulse] = await Promise.all([
+  const [stats, pulse, stampActivity, referrals, preview] = await Promise.all([
     getBusinessStats(business.id),
-    getRecentActivity(business.id, 6),
     getOverviewPulse(business.id),
+    getRecentActivity(business.id, 6),
+    business.referralsEnabled ? getReferralOverview(business.id) : Promise.resolve(null),
+    loadCardPreview(business),
   ]);
+  // Kortets offentlige side: stempelkortet, eller henvisningssiden uden Stemplet.
+  const shareHref = `/k/${business.slug}`;
 
   const now = new Date();
   const dateLabel = new Intl.DateTimeFormat("da-DK", {
@@ -260,139 +131,162 @@ export default async function OverviewPage() {
     day: "numeric",
     month: "long",
   }).format(now);
-  const greeting = greetingFor(now);
-  const summary = summaryLine({
-    totalCustomers: stats.totalCustomers,
-    activeCustomers: stats.activeCustomers,
-    visitorsToday: pulse.visitorsToday,
-    returningToday: pulse.returningToday,
-  });
 
-  const isNew = stats.stampsTotal === 0;
-
-  const stampsToday = stats.perDay.at(-1)?.count ?? 0;
-  const stampsYesterday = stats.perDay.at(-2)?.count ?? 0;
-  const newToday = stats.newPerDay.at(-1)?.count ?? 0;
-  const newYesterday = stats.newPerDay.at(-2)?.count ?? 0;
+  const activity: Activity[] = [
+    ...stampActivity.map((a) => ({
+      id: a.id,
+      at: a.createdAt,
+      text: STAMP_LABEL[a.action] ?? a.action,
+      product: "stemplet" as const,
+      alert: a.action === "FLAGGED" || a.action === "PIN_FAIL",
+    })),
+    ...(referrals?.recent ?? []).slice(0, 6).map((r) => ({
+      id: r.id,
+      at: new Date(r.createdAt),
+      text: referralText(r),
+      product: "henvisninger" as const,
+    })),
+  ]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, 6);
 
   return (
     <>
-      {/* Øverst: personlig hilsen og dagens status i klar tekst. */}
-      <header className="mb-6 animate-step">
-        <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">
-          {dateLabel}
-        </p>
-        <h1 className="mt-2 font-[300] text-[1.9rem] leading-tight tracking-[0.01em] text-ink">
-          {greeting}, {business.name}
+      <header className="mb-8 animate-step">
+        <p className="text-label font-[400] uppercase tracking-[0.14em] text-slate">{dateLabel}</p>
+        <h1 className="mt-2 text-[2rem] font-bold leading-[1.05] tracking-[-0.035em] text-ink md:text-[2.4rem]">
+          {greetingFor(now)}, {business.name}
         </h1>
-        <p className="mt-1.5 max-w-lg font-[300] text-[0.95rem] leading-relaxed text-stone">
-          {summary}
+        <p className="mt-1.5 max-w-xl font-[300] text-[0.95rem] leading-relaxed text-stone">
+          {!business.stampsEnabled && referrals
+            ? referralSummaryLine({
+                totalCustomers: stats.totalCustomers,
+                newThisMonth: referrals.doneThisMonth,
+                waiting: referrals.open,
+              })
+            : summaryLine({
+                totalCustomers: stats.totalCustomers,
+                activeCustomers: stats.activeCustomers,
+                visitorsToday: pulse.visitorsToday,
+                returningToday: pulse.returningToday,
+              })}
         </p>
       </header>
 
-      {/* Hjertet i Overblik: genveje til de vigtigste handlinger. */}
-      <ActionGrid customerUrl={`/k/${business.slug}`} />
-
-      {isNew ? null : (
-        <div className="mt-10 flex flex-col gap-9">
-          {/* Dernaest: faa centrale noegletal, hver med sammenligning til i gaar */}
-          <div>
-            <SectionHeader
-              title="I dag"
-              action={
-                <Link
-                  href="/app/statistik"
-                  className="inline-flex items-center gap-1.5 text-[0.74rem] font-[400] uppercase tracking-[0.08em] text-terracotta transition-opacity hover:opacity-70"
-                >
-                  Se al statistik
-                  <CtaArrow />
-                </Link>
-              }
-            />
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              <PulseTile
-                label="Stempler i dag"
-                value={stampsToday}
-                yesterday={stampsYesterday}
-                icon={<IconStamp />}
-              />
-              <PulseTile
-                label="Nye kortholdere"
-                value={newToday}
-                yesterday={newYesterday}
-                icon={<IconSpark />}
-              />
-              <PulseTile
-                label="Genbesøg"
-                value={pulse.returningToday}
-                yesterday={pulse.returningYesterday}
-                icon={<IconUsers />}
-              />
-              <PulseTile
-                label="Indløst i dag"
-                value={pulse.redemptionsToday}
-                yesterday={pulse.redemptionsYesterday}
-                icon={<IconGift />}
-              />
-            </div>
-          </div>
-
-          {/* Dernaest: seneste aktivitet som en let laesbar tidslinje */}
-          <div>
-            <SectionHeader title="Seneste aktivitet" />
-            <Panel>
-              {activity.length === 0 ? (
-                <p className="py-2 font-[300] text-[0.86rem] text-slate">
-                  Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder
-                  dagen at tælle.
-                </p>
-              ) : (
-                <ol className="flex flex-col">
-                  {activity.map((a, i) => {
-                    const isAlert =
-                      a.action === "FLAGGED" || a.action === "PIN_FAIL";
-                    const isLast = i === activity.length - 1;
-                    return (
-                      <li
-                        key={a.id}
-                        className="relative flex items-start gap-3 pl-5 pb-4 last:pb-0"
-                      >
-                        {!isLast ? (
-                          <span
-                            aria-hidden
-                            className="absolute left-[3px] top-3 h-full w-px bg-fog"
-                          />
-                        ) : null}
-                        <span
-                          aria-hidden
-                          className={cn(
-                            "absolute left-0 top-[7px] h-[7px] w-[7px] rounded-full",
-                            isAlert ? "bg-rust" : "bg-terracotta",
-                          )}
-                        />
-                        <div className="flex flex-1 items-baseline justify-between gap-3">
-                          <span
-                            className={cn(
-                              "text-[0.86rem] font-[300]",
-                              isAlert ? "text-rust" : "text-ink",
-                            )}
-                          >
-                            {ACTION_LABEL[a.action] ?? a.action}
-                          </span>
-                          <span className="shrink-0 text-[0.72rem] font-[300] text-slate">
-                            {relativeDk(a.createdAt)}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
-            </Panel>
+      {/* Kortet i centrum: kortet til venstre, funktionerne paa kortet til hoejre. */}
+      <section className="mb-12 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-10">
+        <div className="flex flex-col items-center gap-4 lg:items-stretch">
+          <p className="w-full max-w-[300px] text-[0.85rem] font-[600] text-stone">Dit kort</p>
+          <WalletCardPreview os="27" {...preview} />
+          <div className="flex w-full max-w-[300px] gap-2">
+            <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-ink px-4 text-[0.88rem] font-[600] text-white hover:bg-black">
+              Design kortet
+            </Link>
+            <a
+              href={`${APP_URL}${shareHref}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-4 text-[0.88rem] font-[500] text-ink hover:border-ink"
+            >
+              Se kortet
+            </a>
           </div>
         </div>
-      )}
 
+        <div className="flex min-w-0 flex-col gap-3">
+          <div>
+            <h2 className="text-[1.3rem] font-bold tracking-[-0.025em] text-ink">På dit kort</h2>
+            <p className="mt-0.5 text-[0.88rem] text-stone">Funktionerne ligger på det samme kort hos kunden. Tilføj dem, du vil bruge.</p>
+          </div>
+          {business.stampsEnabled ? (
+            <Feature href="/app/stemplet" rulesHref="/app/regler?f=stempler" logo={<StempletLogo className="text-[1.35rem]" />}>
+              <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
+              <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
+              <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
+            </Feature>
+          ) : null}
+          {referrals ? (
+            <Feature
+              href="/app/henvisninger"
+              rulesHref="/app/regler?f=henvisninger"
+              logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
+            >
+              <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
+              <Stat value={formatDkNumber(referrals.doneThisMonth)} label="nye kunder i måneden" />
+              <Stat
+                value={
+                  referrals.pendingAmountKr > 0
+                    ? `${formatDkNumber(referrals.pendingAmountKr)} kr.`
+                    : formatDkNumber(referrals.pendingRewards)
+                }
+                label="til gode"
+              />
+            </Feature>
+          ) : null}
+          {business.stampsEnabled ? null : (
+            <AddFeature
+              href="/app/regler"
+              logo={<StempletLogo className="text-[1.35rem]" />}
+              title="Tilføj Stemplet"
+              text="Stempler på kortet, så kunderne kommer igen."
+            />
+          )}
+          {business.referralsEnabled ? null : (
+            <AddFeature
+              href="/app/regler"
+              logo={<HenvisningerLogo lines className="h-[1.9rem]" />}
+              title="Tilføj Henvisninger"
+              text="En henvisningskode på kortet, så kunderne skaffer nye kunder."
+            />
+          )}
+          <p className="px-1 pt-1 text-[0.8rem] text-slate">Flere funktioner er på vej. De lægges på det samme kort.</p>
+        </div>
+      </section>
+
+      {/* Dashboardet som app paa hjemmeskaermen (skjules, naar det allerede er). */}
+      <div className="mb-12">
+        <AddToHomeButton
+          title="Tilføj Folka til hjemmeskærmen"
+          text="Så åbner du dit dashboard med ét tryk, som en app."
+          icon={
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/app-icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-[10px]" />
+          }
+        />
+      </div>
+
+      <section>
+        <SectionHeader title="Seneste aktivitet" />
+        <Panel>
+          {activity.length === 0 ? (
+            <p className="py-1 text-[0.88rem] text-stone">
+              {business.stampsEnabled
+                ? "Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder dagen at tælle."
+                : "Ingen aktivitet endnu. Del linket til din henvisningsside, så begynder det at tælle."}
+            </p>
+          ) : (
+            <ol className="flex flex-col divide-y divide-fog">
+              {activity.map((a) => (
+                <li key={`${a.product}-${a.id}`} className="flex items-baseline justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <span className="flex items-baseline gap-3">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "inline-block h-[7px] w-[7px] shrink-0 rounded-full",
+                        a.alert ? "bg-rust" : a.product === "stemplet" ? "" : "bg-ink",
+                      )}
+                      // Stemplets produktfarve (fast, saa dashboardets stil ikke rammer den).
+                      style={!a.alert && a.product === "stemplet" ? { backgroundColor: "#a6502e" } : undefined}
+                    />
+                    <span className={cn("text-[0.9rem]", a.alert ? "text-rust" : "text-ink")}>{a.text}</span>
+                  </span>
+                  <span className="shrink-0 text-[0.75rem] text-slate">{relativeDk(a.at)}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
+      </section>
     </>
   );
 }

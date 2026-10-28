@@ -1,7 +1,7 @@
 import type { StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 
-// Tynde line-art ikoner i Alius-stil. Bruger currentColor, saa foraelderen
+// Tynde line-art ikoner i Folka-stil. Bruger currentColor, saa foraelderen
 // styrer farven (kortets tekstfarve). Stierne kommer fra den delte kilde
 // (stamp-icon-paths), saa kort, Wallet-strip og hero altid viser det samme ikon.
 export function StampIcon({

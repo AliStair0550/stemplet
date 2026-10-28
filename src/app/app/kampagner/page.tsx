@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import QRCode from "qrcode";
-import { requireBusiness } from "@/lib/session";
+import { requireStampsBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
+import { KunderTabs } from "../kunder/KunderTabs";
 import { CampaignManager } from "./CampaignManager";
 import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
 
 export default async function KampagnerPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireStampsBusiness();
 
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },
@@ -45,9 +46,10 @@ export default async function KampagnerPage() {
 
   return (
     <>
+      <KunderTabs active="kampagner" showCampaigns />
       <PageHeading
         title="Kampagner"
-        subtitle="Del dit kort og giv ekstra stempler i en periode."
+        subtitle="Giv dine kunder en grund til at komme igen: velkomststempel, ekstra stempler i en periode, eller del dit kort."
       />
       <ShareCardSection
         design={design}

@@ -1,13 +1,23 @@
 import "server-only";
 import sharp from "sharp";
-import { PKPass } from "passkit-generator";
+import { PKPass, PassType } from "passkit-generator";
+import { posterEnabled, posterFields, featuredActionsFor } from "./poster";
+import { renderPosterArtwork } from "./artwork";
+import { effectiveStyle, normalizeActions } from "../card-look";
 import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
 import path from "node:path";
 import { walletIds, walletCertificates } from "./config";
 import { buildStripImages } from "./strip";
+import {
+  referralFrontFields,
+  referralBackFields,
+  referralOnlyFrontFields,
+  type ReferralPassInfo,
+} from "./referral-fields";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
+import { PLATFORM, APP_HOST } from "../platform";
 import {
   hexToRgb,
   contrastText,
@@ -38,6 +48,21 @@ type PassInput = {
   showPoweredBy: boolean;
   latitude: number | null;
   longitude: number | null;
+  /** Henvisninger (kun naar butikken har modulet og kunden har en kode). Uden
+   *  dette bygges passet praecis som et rent stempelkort. */
+  referral?: ReferralPassInfo | null;
+  /** Stemplet slaaet til for butikken (standard). Fra + henvisninger = et rent
+   *  henvisningskort uden stempelgitter (buildReferralOnlyPass). */
+  stampsEnabled?: boolean;
+  /** Kortet (butikkens faelles design) til iOS 27-plakaten. Bruges kun, naar
+   *  WALLET_POSTER=true; ellers bygges kortet praecis som foer. */
+  look?: {
+    style: string;
+    artwork: string | null;
+    actions: string[];
+    bookingUrl: string | null;
+    cardPageUrl: string;
+  } | null;
 };
 
 function rgbString(hex: string): string {
@@ -182,6 +207,10 @@ async function loadIcon(): Promise<Buffer> {
 
 /** Bygger et .pkpass (storeCard) for et kundekort. */
 export async function buildPass(input: PassInput): Promise<Buffer> {
+  // Kun Henvisninger: eget, enkelt kort. Alle andre kort bygges som foer herunder.
+  if (input.stampsEnabled === false && input.referral) {
+    return buildReferralOnlyPass({ ...input, referral: input.referral });
+  }
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
 
@@ -278,7 +307,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     value: input.rewardText,
     textAlignment: "PKTextAlignmentLeft",
   });
-  if (input.lifetimeStamps > 0) {
+  if (input.referral) {
+    // Henvisninger: kode og "til gode" i stedet for "Samlet i alt" (der staar
+    // stadig paa bagsiden under "Din historik"), saa raekken ikke bliver trang.
+    pass.secondaryFields.push(...referralFrontFields(input.referral));
+  } else if (input.lifetimeStamps > 0) {
     pass.secondaryFields.push({
       key: "lifetime",
       label: "Samlet i alt",
@@ -318,6 +351,10 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     });
   }
 
+  if (input.referral) {
+    pass.backFields.push(...referralBackFields(input.referral));
+  }
+
   // Historik/stamkunde-tekst paa bagsiden: samlet antal stempler + fyldte kort.
   if (input.lifetimeStamps > 0) {
     pass.backFields.push({
@@ -334,9 +371,11 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
     pass.backFields.push({
       key: "poweredby",
       label: "Drevet af",
-      value: "Stemplet - et produkt fra Alius. stemplet.alius.dk",
+      value: `Stemplet - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
     });
   }
+
+  if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
 
   pass.setBarcodes({
     format: "PKBarcodeFormatQR",
@@ -364,4 +403,130 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   }
 
   return pass.getAsBuffer();
+}
+
+/**
+ * Henvisningskort for en butik uden Stemplet: ingen stempler og intet gitter.
+ * Forsiden viser kundens kode stort og hvad vennen faar og kunden har til gode;
+ * bagsiden de samme henvisningsfelter som paa et stempelkort. Samme logo, farver,
+ * passTypeIdentifier og opdateringer (webServiceURL), saa kortet stakker og
+ * opdateres praecis som et stempelkort.
+ */
+async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPassInfo }): Promise<Buffer> {
+  const { passTypeIdentifier, teamIdentifier } = walletIds();
+  const certificates = walletCertificates();
+  const [iconBuf, logoBuf] = await Promise.all([loadIcon(), loadLogo(input.logoUrl, input.logoScale ?? 1)]);
+  const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(
+    input.primaryColor,
+    input.textColor,
+  );
+
+  const images: Record<string, Buffer> = { "icon.png": iconBuf, "icon@2x.png": iconBuf };
+  if (logoBuf) {
+    images["logo.png"] = logoBuf;
+    images["logo@2x.png"] = logoBuf;
+    images["logo@3x.png"] = logoBuf;
+  }
+
+  const pass = new PKPass(images, certificates, {
+    passTypeIdentifier,
+    teamIdentifier,
+    organizationName: input.businessName,
+    description: `Henvisninger - ${input.businessName}`,
+    serialNumber: input.serial,
+    foregroundColor: fg,
+    backgroundColor: bg,
+    labelColor: labelCol,
+    ...(logoBuf ? {} : { logoText: input.businessName }),
+    webServiceURL: `${APP_URL}/api/wallet`,
+    authenticationToken: input.authToken,
+    sharingProhibited: true,
+  });
+  pass.type = "storeCard";
+
+  const front = referralOnlyFrontFields(input.referral);
+  pass.primaryFields.push(...front.primary);
+  pass.secondaryFields.push(...front.secondary);
+  pass.backFields.push(...referralBackFields(input.referral));
+  if (input.showPoweredBy) {
+    pass.backFields.push({
+      key: "poweredby",
+      label: "Drevet af",
+      value: `Henvisninger - et produkt fra ${PLATFORM.name}. ${APP_HOST}`,
+    });
+  }
+
+  if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
+
+  pass.setBarcodes({
+    format: "PKBarcodeFormatQR",
+    message: input.serial,
+    messageEncoding: "iso-8859-1",
+    altText: input.serial,
+  });
+  if (
+    typeof input.latitude === "number" &&
+    typeof input.longitude === "number" &&
+    Number.isFinite(input.latitude) &&
+    Number.isFinite(input.longitude)
+  ) {
+    pass.setLocations({
+      latitude: input.latitude,
+      longitude: input.longitude,
+      relevantText: `Velkommen tilbage hos ${input.businessName}`,
+    });
+  }
+  return pass.getAsBuffer();
+}
+
+/**
+ * iOS 27-plakaten ("posterGeneric") ved siden af det klassiske kort, som
+ * allerede ligger som foerste korttype. Wallet vaelger plakaten paa iOS 27 og
+ * det klassiske kort paa aeldre iPhones. Bagsiden genbruges fra det klassiske.
+ */
+async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null): Promise<void> {
+  const look = input.look!;
+  const stampsEnabled = input.stampsEnabled !== false;
+  const ctx = { stampsEnabled, referralsEnabled: !!input.referral, bookingUrl: look.bookingUrl };
+  const style = effectiveStyle(look.style, ctx, !!look.artwork);
+
+  const art = await renderPosterArtwork({
+    style,
+    primaryColor: input.primaryColor,
+    textColor: input.textColor,
+    stampIcon: input.stampIcon,
+    stamps: input.stamps,
+    required: input.required,
+    photo: look.artwork,
+  });
+  pass.addBuffer("artwork.png", art.x1);
+  pass.addBuffer("artwork@2x.png", art.x2);
+  pass.addBuffer("artwork@3x.png", art.x3);
+  if (logoBuf) {
+    pass.addBuffer("primaryLogo.png", logoBuf);
+    pass.addBuffer("primaryLogo@2x.png", logoBuf);
+    pass.addBuffer("primaryLogo@3x.png", logoBuf);
+  }
+
+  const fields = posterFields({
+    stamps: input.stamps,
+    required: input.required,
+    rewardText: input.rewardText,
+    stampsEnabled,
+    referral: input.referral ?? null,
+  });
+  const poster = new PassType("posterGeneric");
+  poster.headerFields.push(...fields.header);
+  poster.primaryFields.push(...fields.primary);
+  poster.footerFields.push(...fields.footer);
+  poster.backFields.push(...pass.types[0]!.backFields);
+  pass.types.push(poster);
+
+  const actions = featuredActionsFor({
+    actions: normalizeActions(look.actions, ctx),
+    bookingUrl: look.bookingUrl,
+    referralPageUrl: input.referral?.pageUrl ?? null,
+    cardPageUrl: look.cardPageUrl,
+  });
+  if (actions.length > 0) pass.featuredActions = actions;
 }

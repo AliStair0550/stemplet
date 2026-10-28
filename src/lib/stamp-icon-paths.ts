@@ -4,7 +4,7 @@ import type { StampIconKey } from "./brand";
 // stroke = currentColor, fill none medmindre en form eksplicit saetter fill).
 // Bruges af StampIcon (kortet + designeren), Wallet-strip'en og hero-animationen,
 // saa ikon-sproget er 100 % identisk overalt og aldrig kan komme ud af sync.
-// Tynde, runde line-art figurer i Alius-stil, tegnet til at vaere laesbare helt
+// Tynde, runde line-art figurer i Folka-stil, tegnet til at vaere laesbare helt
 // ned til ~20 px (stemplerne paa kortet).
 export const STAMP_ICON_PATHS: Record<StampIconKey, string> = {
   coffee:

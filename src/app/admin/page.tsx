@@ -15,6 +15,8 @@ import { AdminUnlock } from "./AdminUnlock";
 import { AdminShell } from "./AdminShell";
 import { ClearDemoButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
+import { AdminCreateBusiness } from "./AdminCreateBusiness";
+import { APP_HOST } from "@/lib/platform";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -28,6 +30,8 @@ type RowMetrics = {
   stamps: number;
   redemptions: number;
   lastActive: Date | null;
+  referrals: number;
+  referralsRewarded: number;
 };
 
 // Ren mapping: tallene er allerede aggregeret pr. butik i AdminPage (se nedenfor),
@@ -55,6 +59,8 @@ function buildRow(
     lastInvoicedAt: Date | null;
     newSignupsPaused: boolean;
     stopped: boolean;
+    referralsEnabled: boolean;
+    stampsEnabled: boolean;
     memberships: {
       user: {
         id: string;
@@ -98,6 +104,10 @@ function buildRow(
     lastInvoicedAt: b.lastInvoicedAt,
     newSignupsPaused: b.newSignupsPaused,
     stopped: b.stopped,
+    referralsEnabled: b.referralsEnabled,
+    stampsEnabled: b.stampsEnabled,
+    referrals: m.referrals,
+    referralsRewarded: m.referralsRewarded,
   };
 }
 
@@ -210,7 +220,7 @@ export default async function AdminPage() {
   const since7 = new Date();
   since7.setTime(since7.getTime() - 7 * 86_400_000);
 
-  const [stampAgg, cardCounts, newCardCounts, redemptionRows] =
+  const [stampAgg, cardCounts, newCardCounts, redemptionRows, referralAgg] =
     await Promise.all([
     prisma.stamp.groupBy({
       by: ["businessId"],
@@ -239,7 +249,20 @@ export default async function AdminPage() {
           GROUP BY c."businessId"
         `)
       : Promise.resolve([] as { businessId: string; count: number }[]),
+    // Henvisninger pr. butik og status (een grupperet query).
+    prisma.referral.groupBy({
+      by: ["businessId", "status"],
+      where: { businessId: { in: businessIds } },
+      _count: { _all: true },
+    }),
   ]);
+  const referralsByBiz = new Map<string, { all: number; rewarded: number }>();
+  for (const g of referralAgg) {
+    const cur = referralsByBiz.get(g.businessId) ?? { all: 0, rewarded: 0 };
+    cur.all += g._count._all;
+    if (g.status === "REWARDED") cur.rewarded += g._count._all;
+    referralsByBiz.set(g.businessId, cur);
+  }
 
   const stampsByBiz = new Map<string, number>();
   const lastByBiz = new Map<string, Date | null>();
@@ -272,6 +295,8 @@ export default async function AdminPage() {
       stamps: stampsByBiz.get(b.id) ?? 0,
       redemptions: redemptionsByBiz.get(b.id) ?? 0,
       lastActive: lastByBiz.get(b.id) ?? null,
+      referrals: referralsByBiz.get(b.id)?.all ?? 0,
+      referralsRewarded: referralsByBiz.get(b.id)?.rewarded ?? 0,
     }),
   );
   const real = rows.filter((r) => !r.isDemo);
@@ -363,7 +388,7 @@ export default async function AdminPage() {
         <section>
           <SectionHead
             title={'Demo-forsøg ("Prøv det selv")'}
-            desc="Folk der har hentet demo-kortet på stemplet.alius.dk. De er ikke rigtige kunder og tæller ikke med i Overblik."
+            desc={`Folk der har hentet demo-kortet på ${APP_HOST}. De er ikke rigtige kunder og tæller ikke med i Overblik.`}
           />
           <div className="mt-4 rounded-lg border border-fog bg-white p-5 shadow-card">
             {demo ? (
@@ -420,6 +445,9 @@ export default async function AdminPage() {
             >
               Eksportér kontakter (CSV)
             </a>
+          </div>
+          <div className="mt-4">
+            <AdminCreateBusiness />
           </div>
           {real.length === 0 ? (
             <p className="mt-4 rounded-lg border border-fog bg-white p-6 font-[300] text-[0.9rem] text-slate shadow-card">

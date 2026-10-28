@@ -26,8 +26,8 @@ export default function DpaPage() {
   return (
     <LegalLayout
       title="Databehandleraftale"
-      updated="12. juli 2026"
-      intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Alius (Stemplet) er databehandler."
+      updated="26. oktober 2026"
+      intro="Når din butik bruger Stemplet, behandler vi dine kunders oplysninger på dine vegne. Denne aftale beskriver, hvordan vi gør det, og gælder automatisk, når du opretter en butik. Butikken er dataansvarlig, og Folka (Stemplet) er databehandler."
     >
       <LegalSection title="1. Rammen">
         <p>
@@ -41,8 +41,12 @@ export default function DpaPage() {
       <LegalSection title="2. Behandlingens formål og varighed">
         <p>
           Formålet er at drive butikkens digitale stempelkort: at udstede kort,
-          registrere stempler, indløse belønninger og vise statistik.
-          Behandlingen løber, så længe butikken bruger Stemplet.
+          registrere stempler, indløse belønninger og vise statistik. Har
+          butikken slået Henvisninger til, er formålet også at drive butikkens
+          henvisninger: at give kunderne en personlig kode, registrere hvem der
+          har henvist hvem, give og indløse belønninger og vise statistik over
+          henvisningerne. Behandlingen løber, så længe butikken bruger
+          Stemplet.
         </p>
       </LegalSection>
 
@@ -59,12 +63,21 @@ export default function DpaPage() {
         <ul className="flex flex-col gap-2.5">
           <Li>et serienummer, der identificerer kortet,</Li>
           <Li>antal stempler, indløsninger og tidspunkter,</Li>
-          <Li>en valgfri e-mail, hvis kunden selv oplyser den,</Li>
+          <Li>kundens navn og e-mail, som kunden selv oplyser, når kortet hentes,</Li>
+          <Li>kundens samtykke til nyheder på mail og tidspunktet for det, hvis kunden giver det,</Li>
           <Li>IP-adresse og en hændelseslog til sikkerhed.</Li>
         </ul>
+        <p>Har butikken slået Henvisninger til, behandler vi desuden:</p>
+        <ul className="flex flex-col gap-2.5">
+          <Li>kundens navn og e-mail (ældre tilmeldinger: mobilnummer), som kunden selv oplyser,</Li>
+          <Li>kundens henvisningskode,</Li>
+          <Li>hvem der har henvist hvem, og henvisningens status og tidspunkter,</Li>
+          <Li>belønninger, deres værdi, udløb og indløsning,</Li>
+          <Li>hvilken kasse eller bruger der registrerede besøg og indløsninger.</Li>
+        </ul>
         <p>
-          Der behandles ingen følsomme oplysninger. En kunde kan bruge kortet
-          anonymt.
+          Der behandles ingen følsomme oplysninger. Nye kort og tilmeldinger
+          kræver navn og e-mail; kort hentet før kan være uden.
         </p>
       </LegalSection>
 

@@ -1,6 +1,5 @@
 import { Document, Page, View, Text, Image, Svg, Rect } from "@react-pdf/renderer";
 import type { QrFormat, QrOrient } from "@/lib/qr-print";
-import { QR_PRINT_BRAND } from "@/lib/qr-print";
 
 // Fonten "Instrument Sans" registreres i route.ts (samme react-pdf-instans som
 // renderToBuffer), saa den altid er indlejret i PDF'en.
@@ -17,6 +16,7 @@ type DocProps = {
   businessName: string;
   headline: string;
   helper: string;
+  brand: string;
   logoUrl: string | null;
   primaryColor: string;
   textColor: string;
@@ -224,7 +224,7 @@ function VisitkortDoc(props: DocProps) {
                 marginTop: 3 * MM,
               }}
             >
-              {QR_PRINT_BRAND}
+              {props.brand}
             </Text>
           </View>
         </View>
@@ -313,7 +313,7 @@ function PosterDoc(props: DocProps) {
                 marginTop: 6 * MM,
               }}
             >
-              {QR_PRINT_BRAND}
+              {props.brand}
             </Text>
           </View>
         </View>

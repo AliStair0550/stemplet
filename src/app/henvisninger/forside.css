@@ -1,0 +1,532 @@
+/* Henvisningers forside: smaa scener, der loeber i loop (Screens.tsx). Alle
+   klasser har praefikset hv-, saa intet andet paa siden paavirkes. Scenerne staar
+   stille, naar de er ude af syne (data-play="false") og ved reduceret bevaegelse;
+   standardvaerdierne her er den stillestaaende tilstand. */
+
+.hv-scene[data-play="false"],
+.hv-scene[data-play="false"] * {
+  animation-play-state: paused !important;
+}
+
+/* Standard (stillestaaende) tilstand */
+.hv-success,
+.hv-dim,
+.hv-toast,
+.hv-burst,
+.hv-cursor,
+.hv-count-new {
+  opacity: 0;
+}
+.hv-sheet {
+  transform: translateY(105%);
+}
+.hv-dots {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+/* Hero: vennen skriver, trykker og bliver budt velkommen (7 s) */
+.hv-type-name {
+  animation: hv-type-name 7s infinite;
+}
+@keyframes hv-type-name {
+  0%,
+  8% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(4, end);
+  }
+  18%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.hv-type-phone {
+  animation: hv-type-phone 7s infinite;
+}
+@keyframes hv-type-phone {
+  0%,
+  22% {
+    clip-path: inset(0 100% 0 0);
+    animation-timing-function: steps(11, end);
+  }
+  38%,
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.hv-press {
+  animation: hv-press 7s infinite;
+}
+@keyframes hv-press {
+  0%,
+  42% {
+    transform: scale(1);
+  }
+  44% {
+    transform: scale(0.95);
+    background: #000;
+  }
+  47%,
+  100% {
+    transform: scale(1);
+  }
+}
+.hv-success {
+  animation: hv-success 7s infinite;
+}
+@keyframes hv-success {
+  0%,
+  47% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  51%,
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+.hv-check {
+  stroke-dasharray: 1;
+  animation: hv-check 7s infinite;
+}
+@keyframes hv-check {
+  0%,
+  51% {
+    stroke-dashoffset: 1;
+  }
+  57%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Trin 1: Del, og delingsmenuen glider op (6 s) */
+.hv-share-btn {
+  animation: hv-share-btn 6s infinite;
+}
+@keyframes hv-share-btn {
+  0%,
+  16% {
+    transform: scale(1);
+  }
+  19% {
+    transform: scale(0.95);
+  }
+  22%,
+  100% {
+    transform: scale(1);
+  }
+}
+.hv-sheet {
+  animation: hv-sheet 6s infinite;
+}
+@keyframes hv-sheet {
+  0%,
+  22% {
+    transform: translateY(105%);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  32%,
+  84% {
+    transform: translateY(0);
+    animation-timing-function: ease-in;
+  }
+  92%,
+  100% {
+    transform: translateY(105%);
+  }
+}
+.hv-dim {
+  animation: hv-dim 6s infinite;
+}
+@keyframes hv-dim {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  32%,
+  84% {
+    opacity: 0.25;
+  }
+  92%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Trin 2: Sara skriver, og beskeden tikker ind (6 s) */
+.hv-dots {
+  animation: hv-dots 6s infinite;
+}
+@keyframes hv-dots {
+  0%,
+  4% {
+    opacity: 0;
+    max-height: 0;
+  }
+  8%,
+  18% {
+    opacity: 1;
+    max-height: 40px;
+  }
+  21%,
+  100% {
+    opacity: 0;
+    max-height: 0;
+  }
+}
+.hv-b1 {
+  animation: hv-bubble-1 6s infinite;
+}
+.hv-b2 {
+  animation: hv-bubble-2 6s infinite;
+}
+@keyframes hv-bubble-1 {
+  0%,
+  20% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  26%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+@keyframes hv-bubble-2 {
+  0%,
+  36% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  42%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/* Trin 1: rabatordningen aendres (+ trykkes, vaerdien skifter) og gemmes (6 s) */
+.hv-val-new {
+  opacity: 0;
+}
+.hv-val-old {
+  animation: hv-val-old 6s infinite;
+}
+.hv-val-new {
+  animation: hv-val-new 6s infinite;
+}
+@keyframes hv-val-old {
+  0%,
+  26% {
+    opacity: 1;
+    transform: none;
+  }
+  30%,
+  90% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  95%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hv-val-new {
+  0%,
+  27% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  32%,
+  89% {
+    opacity: 1;
+    transform: none;
+  }
+  94%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.hv-plus {
+  animation: hv-plus 6s infinite;
+}
+@keyframes hv-plus {
+  0%,
+  22% {
+    background: transparent;
+  }
+  25% {
+    background: #d1d1d6;
+  }
+  29%,
+  100% {
+    background: transparent;
+  }
+}
+.hv-save {
+  animation: hv-save 6s infinite;
+}
+@keyframes hv-save {
+  0%,
+  62% {
+    transform: scale(1);
+  }
+  65% {
+    transform: scale(0.95);
+    background: #000;
+  }
+  68%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Disken: markoer, tryk, raekken forsvinder, toast og ny beloenning (7 s) */
+.hv-cursor {
+  animation: hv-cursor 7s infinite;
+}
+@keyframes hv-cursor {
+  0%,
+  6% {
+    opacity: 0;
+    transform: translate(120px, 90px);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(120px, 90px);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+  26% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  29% {
+    transform: translate(0, 0) scale(0.82);
+  }
+  32% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  38%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+}
+.hv-row-out {
+  animation: hv-row-out 7s infinite;
+}
+@keyframes hv-row-out {
+  0%,
+  33% {
+    opacity: 1;
+    max-height: 90px;
+  }
+  38% {
+    opacity: 0;
+    max-height: 90px;
+  }
+  44%,
+  90% {
+    opacity: 0;
+    max-height: 0;
+  }
+  95% {
+    opacity: 0;
+    max-height: 90px;
+  }
+  100% {
+    opacity: 1;
+    max-height: 90px;
+  }
+}
+.hv-row-in {
+  animation: hv-row-in 7s infinite;
+}
+@keyframes hv-row-in {
+  0%,
+  42% {
+    opacity: 0;
+    max-height: 0;
+    padding-bottom: 0;
+  }
+  48% {
+    opacity: 0;
+    max-height: 90px;
+    padding-bottom: 8px;
+  }
+  54%,
+  90% {
+    opacity: 1;
+    max-height: 90px;
+    padding-bottom: 8px;
+  }
+  96%,
+  100% {
+    opacity: 0;
+    max-height: 0;
+    padding-bottom: 0;
+  }
+}
+.hv-toast {
+  animation: hv-toast 7s infinite;
+}
+@keyframes hv-toast {
+  0%,
+  33% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  38%,
+  76% {
+    opacity: 1;
+    transform: none;
+  }
+  82%,
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.hv-toast-check {
+  stroke-dasharray: 1;
+  animation: hv-toast-check 7s infinite;
+}
+@keyframes hv-toast-check {
+  0%,
+  37% {
+    stroke-dashoffset: 1;
+  }
+  43%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.hv-burst {
+  animation: hv-burst 7s infinite;
+}
+@keyframes hv-burst {
+  0%,
+  37% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  39% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  50% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y)));
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.hv-count-old {
+  animation: hv-count-old 7s infinite;
+}
+.hv-count-new {
+  animation: hv-count-new 7s infinite;
+}
+@keyframes hv-count-old {
+  0%,
+  38% {
+    opacity: 1;
+  }
+  42%,
+  92% {
+    opacity: 0;
+  }
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hv-count-new {
+  0%,
+  38% {
+    opacity: 0;
+  }
+  42%,
+  92% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Booking-systemerne glider forbi */
+.hv-marquee {
+  animation: hv-marquee 30s linear infinite;
+}
+@keyframes hv-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Haandskrift (Hand.tsx): streger og pile tegnes, noten toner frem. Inde i en
+   Play-scene starter det foerst, naar scenen er synlig. Koerer een gang. */
+.hv-ink path {
+  stroke-dasharray: 1;
+  animation: hv-draw 900ms 250ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hv-ink path + path {
+  animation-delay: 900ms;
+  animation-duration: 350ms;
+}
+.hv-ink-text {
+  animation: hv-ink-text 500ms 150ms ease-out both;
+}
+@keyframes hv-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hv-ink-text {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hv-scene *,
+  .hv-marquee,
+  .hv-ink path,
+  .hv-ink-text {
+    animation: none !important;
+  }
+}

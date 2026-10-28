@@ -6,6 +6,11 @@ import type { StampIconKey } from "@/lib/brand";
 import { PairDevice } from "./PairDevice";
 import { UnpairButton } from "./UnpairButton";
 import { InstallHomeScreen } from "./InstallHomeScreen";
+import { ReferralDesk } from "@/components/referral/ReferralDesk";
+import {
+  KasseViewSwitch,
+  kasseViewFor,
+} from "@/components/referral/KasseViewSwitch";
 
 export const metadata: Metadata = {
   title: "Kasse",
@@ -24,9 +29,9 @@ const PAIR_ERRORS: Record<string, string> = {
 export default async function KasseRegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kode?: string; fejl?: string }>;
+  searchParams: Promise<{ kode?: string; fejl?: string; visning?: string }>;
 }) {
-  const { kode, fejl } = await searchParams;
+  const { kode, fejl, visning } = await searchParams;
   const access = await kasseAccess(false);
 
   if (!access) {
@@ -48,6 +53,8 @@ export default async function KasseRegisterPage({
     return <PairDevice presetCode={typeof kode === "string" ? kode : ""} error={null} />;
   }
   const card = business.cards[0];
+  // Henvisninger (kun naar modulet er slaaet til). Uden modulet er siden uaendret.
+  const { view, showSwitch } = kasseViewFor(business, visning);
   const kioskCard: KioskCard = {
     businessName: business.name,
     logoUrl: business.logoUrl,
@@ -59,7 +66,7 @@ export default async function KasseRegisterPage({
   };
 
   return (
-    <main className="min-h-screen bg-parchment">
+    <main className="dash-theme min-h-screen bg-parchment">
       <header className="flex items-center justify-between border-b border-fog px-6 py-4">
         <span className="font-[400] text-[1.05rem] tracking-[0.02em] text-ink">
           {business.name}
@@ -73,11 +80,18 @@ export default async function KasseRegisterPage({
         </div>
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
-        <Kassemodus
-          card={kioskCard}
-          selfScan={business.selfScanEnabled}
-          hasPin={business.staffPin != null}
-        />
+        {showSwitch ? (
+          <KasseViewSwitch basePath="/kasse" view={view} />
+        ) : null}
+        {view === "henvisninger" ? (
+          <ReferralDesk hasPin={business.staffPin != null} />
+        ) : (
+          <Kassemodus
+            card={kioskCard}
+            selfScan={business.selfScanEnabled}
+            hasPin={business.staffPin != null}
+          />
+        )}
       </div>
     </main>
   );

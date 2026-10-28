@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import QRCode from "qrcode";
-import { requireBusiness } from "@/lib/session";
+import { requireStampsBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
@@ -8,11 +8,11 @@ import { KortEditor } from "./KortEditor";
 import type { StampIconKey } from "@/lib/brand";
 import type { CardDesign } from "@/components/CardDesigner";
 
-export const metadata: Metadata = { title: "Design" };
+export const metadata: Metadata = { title: "Regler for stempelkortet" };
 export const dynamic = "force-dynamic";
 
 export default async function KortPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireStampsBusiness();
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },
     orderBy: { createdAt: "asc" },
@@ -39,8 +39,8 @@ export default async function KortPage() {
   return (
     <>
       <PageHeading
-        title="Design"
-        subtitle="Design dit unikke stempelkort, download det og fortæl dine kunder om det."
+        title="Regler"
+        subtitle="Antal stempler, belønningen og betingelser. Udseendet laver du under Design."
       />
       <KortEditor
         initial={initial}

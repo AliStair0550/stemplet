@@ -52,7 +52,7 @@ export function ShareCard({
             Scan og få dit kort
           </p>
           <p className="mt-1 font-[200] text-[0.88rem] leading-relaxed text-stone">
-            På fem sekunder. Ingen app, ingen tilmelding.
+            På få sekunder. Ingen app, kun navn og e-mail.
           </p>
         </div>
       </div>
