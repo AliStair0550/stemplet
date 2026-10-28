@@ -82,13 +82,13 @@ export const metadata: Metadata = {
       "Digitalt stempelkort i Apple Wallet. Ingen app, kun navn og e-mail.",
   },
   icons: {
-    // Nyt logo: rust prik (selve stemplet). SVG er skarp paa alle skaerme;
-    // apple-touch-icon er rust-kvadratet med hvid prik.
+    // Folkas f (samme som folka.dk): kort.folka.dk er Folkas. SVG er skarp paa
+    // alle skaerme; PNG og apple-touch-icon er det samme f paa moerkeblaat.
     icon: [
-      { url: "/stemplet-prik.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/folka-favicon.svg", type: "image/svg+xml" },
+      { url: "/app-icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: "/app-apple-touch-icon.png",
   },
 };
 
