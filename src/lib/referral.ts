@@ -634,7 +634,7 @@ export async function redeemReward(
 export async function expireReferralsAndRewards(
   now: Date = new Date(),
   db: Db = prisma,
-): Promise<{ referralsExpired: number; rewardsExpired: number }> {
+): Promise<{ referralsExpired: number; rewardsExpired: number; cardIds: string[] }> {
   const referralsExpired = await db.$executeRaw`
     UPDATE "Referral" r
     SET "status" = 'EXPIRED'
@@ -645,9 +645,10 @@ export async function expireReferralsAndRewards(
   `;
   // (Prisma gemmer DateTime som timestamp uden zone i UTC; AT TIME ZONE 'UTC'
   // goer sammenligningen uafhaengig af forbindelsens tidszone.)
-  const rewards = await db.reward.updateMany({
-    where: { status: "AVAILABLE", expiresAt: { lt: now } },
-    data: { status: "EXPIRED" },
-  });
-  return { referralsExpired, rewardsExpired: rewards.count };
+  // Kortene med en udloebet beloenning skal opdateres i Wallet (ellers viser de
+  // stadig "til gode"), saa vi noterer dem, foer de markeres.
+  const where = { status: "AVAILABLE" as const, expiresAt: { lt: now } };
+  const affected = await db.reward.findMany({ where, select: { cardId: true }, distinct: ["cardId"] });
+  const rewards = await db.reward.updateMany({ where, data: { status: "EXPIRED" } });
+  return { referralsExpired, rewardsExpired: rewards.count, cardIds: affected.map((r) => r.cardId) };
 }

@@ -7,6 +7,8 @@ import { cardCookieName, DEVICE_ID_COOKIE } from "@/lib/cookies";
 import { findVisitorCard, findReferrerByCode } from "@/lib/referral-signup";
 import { assignReferralCode } from "@/lib/referral";
 import { firstName, referralShareUrl, rewardPhrase } from "@/lib/referral-text";
+import { durableRateLimit } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,6 +32,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
   const { slug } = await params;
   const k = req.nextUrl.searchParams.get("k")?.trim().slice(0, 40) || null;
   const none: ShopStatus = { known: false, me: null, friend: null, invalidCode: false, own: false };
+
+  // Let loft pr. IP: koder er korte (NAVN-XX) og afsloerer henviserens fornavn.
+  // Generoest, fordi siden kaldes ved hvert besoeg (travl cafe paa een WiFi).
+  if (!(await durableRateLimit("shop-status", clientIp(req) ?? "ukendt", 600, 3600).catch(() => true))) {
+    return json(none);
+  }
 
   const shop = await withDbRetry(() =>
     prisma.business.findUnique({

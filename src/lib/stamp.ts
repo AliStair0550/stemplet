@@ -31,8 +31,11 @@ export async function createCardholderAtomically(
   deviceId: string | null = null,
 ): Promise<{ id: string; serial: string; authToken: string } | null> {
   const select = { id: true, serial: true, authToken: true } as const;
+  // businessId saettes altid (ogsaa ved selv-scan), saa kortet kan findes i
+  // kassens soegning, til gendannelse og i henvisninger.
   const newData = () => ({
     cardId,
+    businessId,
     serial: generateSerial(),
     authToken: generateAuthToken(),
     deviceId,

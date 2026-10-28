@@ -278,7 +278,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
 
   const inner = `
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      Her er din uge hos ${d.businessName}.
+      Her er din uge hos ${esc(d.businessName)}.
     </p>
     ${stats}
     ${loyaltyBlock}
@@ -350,7 +350,7 @@ export function cardholderWarningEmail(d: CardholderWarningData): Email {
       I nærmer jer ${d.limit} kortholdere.
     </p>
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      ${d.businessName} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.
+      ${esc(d.businessName)} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.
     </p>
     <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
       Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen, når det passer jer.
@@ -370,7 +370,7 @@ export function cardholderWarningEmail(d: CardholderWarningData): Email {
 
   return {
     subject: `I nærmer jer ${d.limit} kortholdere på Kundekort`,
-    html: shell(`${d.businessName} nærmer sig ${d.limit} kortholdere.`, inner),
+    html: shell(`${esc(d.businessName)} nærmer sig ${d.limit} kortholdere.`, inner),
     text,
   };
 }
@@ -394,14 +394,14 @@ export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
 
   const inner = `
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      ${d.businessName} nærmer sig ${d.limit} kortholdere.
+      ${esc(d.businessName)} nærmer sig ${d.limit} kortholdere.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;">
       ${statRow("Kortholdere", d.cardholders, `af ${d.limit}`)}
     </table>
     <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
-      Butik: ${d.businessName} (${d.slug})<br>
-      Ejer: ${d.ownerEmails}
+      Butik: ${esc(d.businessName)} (${d.slug})<br>
+      Ejer: ${esc(d.ownerEmails)}
     </p>
     <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
       Ejeren har fået varsel og et link til at godkende Pro-aftalen. Sæt evt. en individuel pris i admin, før de krydser ${d.limit}.
@@ -421,7 +421,7 @@ export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
 
   return {
     subject: `[Kundekort] ${d.businessName} nærmer sig ${d.limit} kortholdere`,
-    html: shell(`${d.businessName}: ${d.cardholders} kortholdere.`, inner),
+    html: shell(`${esc(d.businessName)}: ${d.cardholders} kortholdere.`, inner),
     text,
   };
 }
@@ -458,12 +458,12 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
   const detailRow = (label: string, value: string) => `
     <tr>
       <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `
     <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      ${d.businessName} har krydset ${d.limit} kortholdere.
+      ${esc(d.businessName)} har krydset ${d.limit} kortholdere.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
       Det er faktureringstidspunktet. Her er alt, du skal bruge til Billy-fakturaen.
@@ -497,7 +497,7 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
 
   return {
     subject: `[Kundekort] Fakturér: ${d.businessName} har krydset ${d.limit} kortholdere`,
-    html: shell(`${d.businessName} skal faktureres for Pro.`, inner),
+    html: shell(`${esc(d.businessName)} skal faktureres for Pro.`, inner),
     text,
   };
 }
@@ -525,12 +525,12 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
   const detailRow = (label: string, value: string) => `
     <tr>
       <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `
     <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      Ny butik oprettet: ${d.businessName}.
+      Ny butik oprettet: ${esc(d.businessName)}.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
       Endnu en butik er kommet med på Kundekort.
@@ -564,7 +564,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
 
   return {
     subject: `[Kundekort] Ny butik: ${d.businessName}`,
-    html: shell(`Ny butik oprettet: ${d.businessName}.`, inner),
+    html: shell(`Ny butik oprettet: ${esc(d.businessName)}.`, inner),
     text,
   };
 }
@@ -579,7 +579,7 @@ export function marketingWelcomeEmail(name?: string | null): Email {
 
   const inner = `
     <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      ${hej} Du er skrevet op.
+      ${esc(hej)} Du er skrevet op.
     </p>
     <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
       Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.
@@ -626,7 +626,7 @@ export function superadminMarketingSignupEmail(
   const detailRow = (label: string, value: string) => `
     <tr>
       <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${value}</td>
+      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `

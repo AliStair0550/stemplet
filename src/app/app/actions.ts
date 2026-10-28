@@ -14,6 +14,7 @@ import { generateApiKey } from "@/lib/integrations";
 import { isBusinessCategory } from "@/lib/categories";
 import { slugify } from "@/lib/utils";
 import { geocodeAddress, roundCoord } from "@/lib/geocode";
+import { refreshShop } from "@/lib/shop-refresh";
 import {
   cardDesignSchema,
   businessSettingsSchema,
@@ -252,6 +253,8 @@ export async function saveSettings(formData: FormData): Promise<Result> {
     },
   });
   revalidatePath("/app/indstillinger");
+  // Navnet staar paa kortet (logoText) og i butikssidens overskrift.
+  if (parsed.data.name !== business.name) refreshShop(business);
   return { ok: true };
 }
 
