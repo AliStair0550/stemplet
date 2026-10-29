@@ -12,7 +12,7 @@ export function AdminUnlock() {
   });
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-parchment px-6">
+    <main className="dash-theme flex min-h-screen items-center justify-center bg-parchment px-6">
       <form
         action={formAction}
         className="w-full max-w-sm rounded-2xl border border-fog bg-white p-8 shadow-card"
