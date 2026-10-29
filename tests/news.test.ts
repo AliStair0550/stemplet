@@ -33,3 +33,18 @@ test("samme tekst som paa kortene nu giver ingen notifikation og fanges", () => 
   assert.equal(sameAsCurrent("Dobbelt stempel", "Nye åbningstider"), false);
   assert.equal(sameAsCurrent("Dobbelt stempel", null), false);
 });
+
+import { newsBackFields } from "../src/lib/news";
+
+test("kunden kan slaa pushbeskeder fra: intet beskedfelt, men et link til at slaa dem til", () => {
+  const url = "https://kort.folka.dk/pushbeskeder/x";
+  const on = newsBackFields({ newsText: "Dobbelt stempel", newsOptOut: false, newsOptOutUrl: url });
+  assert.deepEqual(on.map((f) => f.key), ["news", "news-settings"]);
+  assert.match(on[1].value, /Slå dem fra her/);
+  const off = newsBackFields({ newsText: "Dobbelt stempel", newsOptOut: true, newsOptOutUrl: url });
+  assert.deepEqual(off.map((f) => f.key), ["news-settings"], "ingen besked = ingen notifikation");
+  assert.equal(off[0].changeMessage, undefined, "skiftet giver ingen notifikation");
+  assert.match(off[0].value, /Slå dem til igen/);
+  // Ingen besked sendt endnu og ikke fravalgt: intet rod paa bagsiden.
+  assert.deepEqual(newsBackFields({ newsText: null, newsOptOut: false, newsOptOutUrl: url }), []);
+});

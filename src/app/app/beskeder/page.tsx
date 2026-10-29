@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import { cardTitle } from "@/lib/brand";
 import { nextNewsAllowedAt } from "@/lib/news";
-import { walletCardCount } from "@/lib/news-reach";
+import { newsOptOutCount, walletCardCount } from "@/lib/news-reach";
 import { KunderTabs } from "../kunder/KunderTabs";
 import { NewsComposer } from "./NewsComposer";
 
@@ -13,8 +13,9 @@ export const dynamic = "force-dynamic";
 
 export default async function BeskederPage() {
   const { business } = await requireBusiness();
-  const [inWallet, cardholders, history] = await Promise.all([
+  const [inWallet, optedOut, cardholders, history] = await Promise.all([
     walletCardCount(business.id),
+    newsOptOutCount(business.id),
     prisma.customerCard.count({ where: { card: { businessId: business.id } } }),
     prisma.newsMessage.findMany({
       where: { businessId: business.id },
@@ -38,6 +39,7 @@ export default async function BeskederPage() {
         sentAt={business.newsSentAt?.toISOString() ?? null}
         nextAllowedAt={next?.toISOString() ?? null}
         inWallet={inWallet}
+        optedOut={optedOut}
         cardholders={cardholders}
         history={history.map((h) => ({ id: h.id, text: h.text, recipients: h.recipients, sentAt: h.sentAt.toISOString() }))}
       />

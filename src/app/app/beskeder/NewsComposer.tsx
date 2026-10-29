@@ -51,6 +51,7 @@ export function NewsComposer({
   sentAt,
   nextAllowedAt,
   inWallet,
+  optedOut,
   cardholders,
   history,
 }: {
@@ -59,6 +60,7 @@ export function NewsComposer({
   sentAt: string | null;
   nextAllowedAt: string | null;
   inWallet: number;
+  optedOut: number;
   cardholders: number;
   history: Sent[];
 }) {
@@ -257,7 +259,9 @@ export function NewsComposer({
 
         <p className="text-[0.82rem] leading-relaxed text-stone">
           Én pushbesked i døgnet, så kunderne bliver glade for dem og beholder kortet. Brug dem til nyheder om butikken,
-          tilbud og åbningstider. Pushbeskeder når kort i Apple Wallet på iPhone.
+          tilbud og åbningstider. Pushbeskeder når kort i Apple Wallet på iPhone. Kunderne kan altid slå dem fra via
+          linket på bagsiden af kortet
+          {optedOut > 0 ? `, og ${optedOut} har gjort det` : ""}.
         </p>
       </div>
 

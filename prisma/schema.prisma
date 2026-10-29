@@ -281,6 +281,9 @@ model CustomerCard {
   // Taelles atomisk op ved hver stempling; backfilles fra sum(Stamp.multiplier).
   // Fundament for milepaele, stamkunde-status og win-back senere.
   lifetimeStamps Int                  @default(0)
+  // Kunden har slaaet butikkens pushbeskeder fra (link paa kortets bagside).
+  // Kortet faar saa ikke beskedfeltet, og dermed ingen notifikationer.
+  newsOptOut     Boolean              @default(false)
   contactEmail   String? // kundens e-mail (normaliseret: trimmet, smaa bogstaver)
   // Udtrykkeligt samtykke til nyheder og tilbud paa mail fra butikken (frivilligt
   // flueben ved oprettelse). Null = intet samtykke. Tidspunktet er dokumentationen.

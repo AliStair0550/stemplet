@@ -18,7 +18,7 @@ import {
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
 import { PLATFORM, APP_HOST } from "../platform";
-import { newsField } from "../news";
+import { newsBackFields } from "../news";
 import {
   hexToRgb,
   contrastText,
@@ -58,6 +58,10 @@ type PassInput = {
   /** Besked fra butikken (Beskeder). Ny tekst giver en notifikation paa
    *  laaseskaermen; null = intet felt. */
   newsText?: string | null;
+  /** Kunden har slaaet pushbeskeder fra: intet beskedfelt (ingen notifikation). */
+  newsOptOut?: boolean;
+  /** Link paa bagsiden til at slaa pushbeskeder fra eller til. */
+  newsOptOutUrl?: string | null;
   /** Kortet (butikkens faelles design) til iOS 27-plakaten. Bruges kun, naar
    *  WALLET_POSTER=true; ellers bygges kortet praecis som foer. */
   look?: {
@@ -325,7 +329,7 @@ export async function buildPass(input: PassInput): Promise<Buffer> {
   }
 
   // Butikkens besked oeverst paa bagsiden; en ny tekst vises som notifikation.
-  if (input.newsText) pass.backFields.push(newsField(input.newsText));
+  pass.backFields.push(...newsBackFields(input));
   pass.backFields.push(
     {
       key: "progress",
@@ -453,7 +457,7 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
   const front = referralOnlyFrontFields(input.referral);
   pass.primaryFields.push(...front.primary);
   pass.secondaryFields.push(...front.secondary);
-  if (input.newsText) pass.backFields.push(newsField(input.newsText));
+  pass.backFields.push(...newsBackFields(input));
   pass.backFields.push(...referralBackFields(input.referral));
   if (input.showPoweredBy) {
     pass.backFields.push({

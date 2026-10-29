@@ -176,7 +176,7 @@ export function Scanner({
               type="button"
               autoFocus
               onClick={onClose}
-              className="rounded-full border border-parchment/30 px-6 py-2.5 text-[0.78rem] font-[400] uppercase tracking-[0.12em] text-parchment/90 transition-colors hover:bg-parchment/10"
+              className="rounded-full border border-white/40 bg-transparent px-6 py-2.5 text-[0.78rem] font-[400] uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/10"
             >
               Luk
             </button>

@@ -33,3 +33,27 @@ export function nextNewsAllowedAt(lastSentAt: Date | null | undefined, now: Date
 export function newsField(text: string) {
   return { key: "news", label: "BESKED FRA BUTIKKEN", value: text, changeMessage: "%@" };
 }
+
+/** Felt paa bagsiden, hvor kunden slaar pushbeskeder fra (eller til igen).
+ *  Wallet goer linket trykbart. Ingen changeMessage: aendringen giver ingen
+ *  notifikation. */
+export function newsSettingsField(optedOut: boolean, url: string) {
+  return {
+    key: "news-settings",
+    label: "PUSHBESKEDER",
+    value: optedOut
+      ? `Du har slået beskeder fra butikken fra. Slå dem til igen: ${url}`
+      : `Vil du ikke have beskeder fra butikken? Slå dem fra her: ${url}`,
+  };
+}
+
+/** Bagsidens beskedfelter: selve beskeden (hvis kunden vil have dem) og linket
+ *  til at slaa dem fra eller til. */
+export function newsBackFields(input: { newsText?: string | null; newsOptOut?: boolean; newsOptOutUrl?: string | null }) {
+  const fields: { key: string; label: string; value: string; changeMessage?: string }[] = [];
+  if (input.newsText && !input.newsOptOut) fields.push(newsField(input.newsText));
+  if (input.newsOptOutUrl && (input.newsText || input.newsOptOut)) {
+    fields.push(newsSettingsField(!!input.newsOptOut, input.newsOptOutUrl));
+  }
+  return fields;
+}
