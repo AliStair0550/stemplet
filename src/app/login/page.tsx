@@ -17,13 +17,16 @@ const FONT = 'var(--font-kk), -apple-system, BlinkMacSystemFont, "SF Pro Text", 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fejl?: string }>;
+  searchParams: Promise<{ fejl?: string; error?: string }>;
 }) {
-  const { fejl } = await searchParams;
+  const { fejl, error } = await searchParams;
+  // error=Verification: Auth.js' fejl for et brugt eller udloebet login-link.
   const notice =
     fejl === "onboarding"
       ? "Din butik er oprettet. Log ind her, så kommer du ind i dashboardet."
-      : null;
+      : error === "Verification"
+        ? "Linket er brugt eller udløbet. Skriv din e-mail, så sender vi et nyt."
+        : null;
 
   return (
     <main className="dash-theme flex min-h-screen flex-col bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>

@@ -94,6 +94,10 @@ model Business {
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?
+  // Pushbesked fra butikken paa kundernes kort. Ny tekst = notifikation
+  // paa laaseskaermen. newsSentAt bruges til hoejst een besked i doegnet.
+  newsText           String?
+  newsSentAt         DateTime?
   users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
   memberships      Membership[]
   cards            Card[]
@@ -104,7 +108,21 @@ model Business {
   referralRule     ReferralRule?
   referrals        Referral[]
   rewards          Reward[]
+  newsMessages     NewsMessage[]
   createdAt        DateTime   @default(now())
+}
+
+// Historik over sendte pushbeskeder (den aktuelle tekst bor paa Business.newsText).
+// recipients = antal kort i Wallet, da beskeden blev sendt.
+model NewsMessage {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  text       String
+  recipients Int
+  sentAt     DateTime @default(now())
+
+  @@index([businessId, sentAt])
 }
 
 // Medlemskab: hvilke butikker en bruger (mail) har adgang til. Een mail kan
@@ -263,6 +281,9 @@ model CustomerCard {
   // Taelles atomisk op ved hver stempling; backfilles fra sum(Stamp.multiplier).
   // Fundament for milepaele, stamkunde-status og win-back senere.
   lifetimeStamps Int                  @default(0)
+  // Kunden har slaaet butikkens pushbeskeder fra (link paa kortets bagside).
+  // Kortet faar saa ikke beskedfeltet, og dermed ingen notifikationer.
+  newsOptOut     Boolean              @default(false)
   contactEmail   String? // kundens e-mail (normaliseret: trimmet, smaa bogstaver)
   // Udtrykkeligt samtykke til nyheder og tilbud paa mail fra butikken (frivilligt
   // flueben ved oprettelse). Null = intet samtykke. Tidspunktet er dokumentationen.

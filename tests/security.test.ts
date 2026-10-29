@@ -130,3 +130,14 @@ test("/s/[token]-siden stempler ikke i server-komponenten (ingen sideeffekt)", (
   // Stempling delegeres til klientens POST via StampConfirm.
   assert.match(src, /StampConfirm/);
 });
+
+import { newsOptOutToken, verifyNewsOptOutToken } from "../src/lib/news-optout";
+
+test("fravalgs-linket for pushbeskeder kan ikke forfalskes", () => {
+  process.env.AUTH_SECRET ||= "test-secret";
+  const t = newsOptOutToken("ABC123");
+  assert.equal(verifyNewsOptOutToken(t), "ABC123");
+  assert.equal(verifyNewsOptOutToken("ABC123.forkert"), null);
+  assert.equal(verifyNewsOptOutToken(t.replace("ABC123", "XYZ999")), null, "andet kort, samme signatur");
+  assert.equal(verifyNewsOptOutToken("ABC123"), null);
+});

@@ -7,6 +7,7 @@ import { folkaSender, loginEmail, welcomeEmail } from "./emails";
 import { isSuperadminEmail } from "./superadmin-emails";
 import { DEMO_SLUG } from "./demo";
 import { verifyOnboardingToken } from "./onboarding-token";
+import { generateLoginCode, LOGIN_CODE_TTL_SECONDS } from "./login-code";
 
 // Auth.js med magic link via Resend. Kun virksomheder logger ind.
 // Kunder logger ALDRIG ind - de identificeres via device-cookie og serial.
@@ -66,15 +67,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM || "Stemplet <login@folka.dk>",
       name: "E-mail",
+      // Token'et er en 6-cifret kode, der baade sidder i linket og kan skrives
+      // ind paa "Tjek din mail" (se login-code.ts). Kort levetid, fordi koden er
+      // kort.
+      maxAge: LOGIN_CODE_TTL_SECONDS,
+      generateVerificationToken: generateLoginCode,
       // Vi sender ALTID vores egen brandede mail (Folka, se emails.ts).
       // Uden Resend-noegle (lokal udvikling) logges linket i terminalen.
       sendVerificationRequest: async ({
         identifier,
         url,
+        token,
         provider,
       }: {
         identifier: string;
         url: string;
+        token: string;
         provider: { apiKey?: string; from?: string };
       }) => {
         const apiKey = provider.apiKey;
@@ -83,7 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (process.env.NODE_ENV === "production") {
             throw new Error("AUTH_RESEND_KEY mangler i produktion.");
           }
-          console.log(`\n🔗 Login-link til ${identifier}:\n${url}\n`);
+          console.log(`\n🔗 Login til ${identifier}: kode ${token}\n${url}\n`);
           return;
         }
         // Foerste login efter oprettelse (emailVerified == null) faar en
@@ -103,7 +111,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch {
           // DB-blip: fald tilbage til den almindelige login-mail.
         }
-        const mail = firstTime ? welcomeEmail(url) : loginEmail(url);
+        const mail = firstTime ? welcomeEmail(url, token) : loginEmail(url, token);
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {

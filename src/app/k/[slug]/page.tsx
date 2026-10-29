@@ -290,7 +290,8 @@ export default async function ClaimPage({
           >
             Når du henter kortet, gemmer {business.name} dit navn, din e-mail og
             din historik på kortet, så du kan optjene og få dine belønninger.
-            Nyheder på mail får du kun, hvis du siger ja tak. Se{" "}
+            Nyheder på mail får du kun, hvis du siger ja tak. Korte beskeder
+            på kortet i Wallet kan du slå fra på kortets bagside. Se{" "}
             <a
               href="/privatliv"
               target="_blank"

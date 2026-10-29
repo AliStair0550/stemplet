@@ -6,6 +6,7 @@ import { cardTitle } from "../brand";
 import { APP_URL } from "../env";
 import { buildPass } from "./pass";
 import { loadReferralPassInfo } from "../referral-wallet";
+import { newsOptOutUrl } from "../news-optout";
 
 /** Loader kundekort med alt, Wallet-passet skal bruge. */
 export function loadCCForWallet(serial: string) {
@@ -41,6 +42,9 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     longitude: b.longitude,
     referral,
     stampsEnabled: b.stampsEnabled,
+    newsText: b.newsText,
+    newsOptOut: cc.newsOptOut,
+    newsOptOutUrl: newsOptOutUrl(cc.serial),
     // Kortet (faelles design) til iOS 27-plakaten; bruges kun med WALLET_POSTER=true.
     look: {
       style: b.cardStyle,
