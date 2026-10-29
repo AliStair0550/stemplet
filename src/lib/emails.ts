@@ -6,6 +6,7 @@
 
 import { PLATFORM } from "./platform";
 import { FOLKA_MAIL_LOGO } from "./folka-mail-logo";
+import { formatLoginCode, LOGIN_CODE_TTL_SECONDS } from "./login-code";
 
 // Folkas palette (samme som dashboardet), saa mails og sider spiller sammen.
 // Kun web-sikre fonts i selve mailen. Navnene er historiske: "terracotta" er
@@ -73,7 +74,7 @@ export function folkaSender(from: string | undefined): string | undefined {
 function folkaShell(preheader: string, inner: string, shopName?: string): string {
   const header = shopName
     ? `<span style="font-family:${FONT};font-size:20px;font-weight:700;letter-spacing:-.02em;color:${A.ink};">${shopName}</span>`
-    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="104" height="58" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:30px;font-style:italic;color:${PLATFORM.color};">`;
+    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="68" height="38" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
   return `<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:${A.bg};">
@@ -83,7 +84,7 @@ function folkaShell(preheader: string, inner: string, shopName?: string): string
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
       <tr><td style="background:${A.card};border-radius:20px;padding:36px 36px 32px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-          <tr><td style="padding:0 0 28px;">${header}</td></tr>
+          <tr><td style="padding:0 0 24px;">${header}</td></tr>
           <tr><td>${inner}</td></tr>
         </table>
       </td></tr>
@@ -112,28 +113,74 @@ function folkaFallback(url: string, note: string): string {
     </p>`;
 }
 
-/** Login-link (magic link). Bruges baade ved log ind og efter oprettelse. */
-export function loginEmail(url: string): Email {
+// Smaa ideer i login-mailen, saa den giver lidt mere end et link. Een pr. dag
+// (samme idé hele dagen, ny i morgen).
+const TIPS = [
+  "Spørg ved kassen: »Har du vores kundekort?« Det er den hurtigste vej til nye stamkunder.",
+  "Hæng QR-koden, hvor kunderne venter. Ved kassen eller på bordet virker bedst.",
+  "Et velkomststempel gør første besøg til en lille gevinst. Slå det til under Regler.",
+  "Kig på Statistik: hvem kommer oftest? De er værd at sige tak til.",
+  "Kunder, der henviser en ven, er dine bedste ambassadører. Nævn det, når de betaler.",
+  "En belønning, der er let at nå, får kunderne til at komme igen. 8 til 10 stempler er et godt sted at starte.",
+];
+
+export function tipOfTheDay(now: Date = new Date()): string {
+  const day = Math.floor(now.getTime() / 86_400_000);
+  return TIPS[day % TIPS.length];
+}
+
+const CODE_MINUTES = Math.round(LOGIN_CODE_TTL_SECONDS / 60);
+
+/** Koden stort og tydeligt, til at skrive ind paa login-siden. */
+function folkaCode(code: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td align="center" style="background:${A.surface};border-radius:16px;padding:22px 16px 20px;">
+        <p style="margin:0 0 6px;font-family:${FONT};font-size:13px;font-weight:600;color:${A.muted};">Din kode</p>
+        <p style="margin:0;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:34px;line-height:1.1;font-weight:700;letter-spacing:.12em;color:${A.ink};">${formatLoginCode(code)}</p>
+      </td></tr>
+    </table>`;
+}
+
+function folkaTip(tip: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 0;">
+      <tr><td style="border-left:3px solid ${C.terracotta};padding:2px 0 2px 14px;">
+        <p style="margin:0 0 4px;font-family:${FONT};font-size:13px;font-weight:600;color:${C.terracotta};">Dagens idé</p>
+        <p style="margin:0;font-family:${FONT};font-size:15px;line-height:1.55;color:${A.ink};">${tip}</p>
+      </td></tr>
+    </table>`;
+}
+
+/** Login: kode og link i samme mail (samme engangs-login). */
+export function loginEmail(url: string, code: string): Email {
+  const tip = tipOfTheDay();
   const inner = `
-    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Log ind</h1>
-    <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
-      Du er ét klik fra dit dashboard.
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen tilbage</h1>
+    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Dine stamkunder venter. Skriv koden på login-siden, eller log ind med ét tryk.
     </p>
+    ${folkaCode(code)}
     ${folkaButton(url, "Log ind")}
-    ${folkaFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.")}`;
+    ${folkaTip(tip)}
+    ${folkaFallback(url, `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.`)}`;
 
   const text = [
-    "Log ind",
+    "Velkommen tilbage",
     "",
-    "Du er ét klik fra dit dashboard (linket virker i kort tid og kun én gang):",
+    `Din kode: ${formatLoginCode(code)}`,
+    "",
+    "Skriv koden på login-siden, eller åbn linket:",
     url,
     "",
-    "Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.",
+    `Dagens idé: ${tip}`,
+    "",
+    `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.`,
     "",
     "Kundekort fra Folka.",
   ].join("\n");
 
-  return { subject: "Dit login-link til Folka", html: folkaShell("Log ind på dit dashboard.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
+  // Koden i emnet: iPhone foreslaar den selv i kodefeltet, og den kan ses uden
+  // at aabne mailen.
+  return { subject: `Din login-kode: ${code}`, html: folkaShell(`Din kode er ${formatLoginCode(code)}.`, inner), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
 /** Gendan kortet: link til kunden, der virker een gang og i 30 minutter. */
@@ -160,7 +207,7 @@ export function cardRecoveryEmail(shopName: string, url: string): Email {
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
 // Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (lige
 // efter oprettelsen, hvor emailVerified endnu er null). Samme magiske link.
-export function welcomeEmail(url: string): Email {
+export function welcomeEmail(url: string, code: string): Email {
   const steps = [
     "Sæt linket til din side på din hjemmeside.",
     "Hæng QR-koden op ved kassen.",
@@ -176,10 +223,11 @@ export function welcomeEmail(url: string): Email {
     .join("");
 
   const inner = `
-    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen</h1>
-    <p style="margin:0 0 28px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
-      Din butik er klar. Du logger ind uden adgangskode.
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka</h1>
+    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Din butik er klar. Om lidt har dine kunder dit kort i lommen, og hvert besøg bliver en grund til at komme igen.
     </p>
+    ${folkaCode(code)}
     ${folkaButton(url, "Gå til dit dashboard")}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 0;background:${A.surface};border-radius:16px;">
       <tr><td style="padding:18px 20px;">
@@ -187,18 +235,22 @@ export function welcomeEmail(url: string): Email {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
       </td></tr>
     </table>
-    ${folkaFallback(url, "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.")}`;
+    ${folkaFallback(url, `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.`)}`;
 
   const text = [
-    "Velkommen",
+    "Velkommen til Folka",
     "",
-    "Din butik er klar. Du logger ind uden adgangskode:",
+    "Din butik er klar. Om lidt har dine kunder dit kort i lommen.",
+    "",
+    `Din kode: ${formatLoginCode(code)}`,
+    "",
+    "Skriv koden på login-siden, eller åbn linket:",
     url,
     "",
     "Kom godt fra start:",
     ...steps.map((t, i) => `${i + 1}. ${t}`),
     "",
-    "Linket virker i kort tid og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.",
+    `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.`,
     "",
     "Kundekort fra Folka.",
   ].join("\n");

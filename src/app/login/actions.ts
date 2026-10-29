@@ -1,12 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { emailSchema } from "@/lib/validation";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
+import { LOGIN_CODE_TTL_SECONDS, LOGIN_EMAIL_COOKIE } from "@/lib/login-code";
 
 export type LoginState = { error?: string; notFound?: boolean };
 
@@ -62,6 +63,16 @@ export async function requestMagicLink(
           "Vi kan ikke finde en konto med den e-mail. Har du oprettet din butik endnu?",
       };
     }
+
+    // "Tjek din mail" skal vide, hvem koden hoerer til (koden er kun gyldig
+    // sammen med e-mailen). Lever lige saa laenge som koden.
+    (await cookies()).set(LOGIN_EMAIL_COOKIE, email, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: LOGIN_CODE_TTL_SECONDS,
+    });
 
     // signIn sender magic link og redirecter til /app ved succes (den redirect
     // boble op via unstable_rethrow nedenfor).
