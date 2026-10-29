@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Kunder, Beskeder og Kampagner hoerer sammen: det er maaderne, man taler med
+// Kunder, Pushbeskeder og Kampagner hoerer sammen: det er maaderne, man taler med
 // kunderne og giver dem en grund til at komme igen. Kampagner kraever stempler.
 export function KunderTabs({
   active,
@@ -12,7 +12,7 @@ export function KunderTabs({
 }) {
   const tabs = [
     { key: "kunder", href: "/app/kunder", label: "Kunder" },
-    { key: "beskeder", href: "/app/beskeder", label: "Beskeder" },
+    { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder" },
     ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner" } as const] : []),
   ] as const;
   return (

@@ -37,8 +37,8 @@ const HENVISNINGER_LINKS: NavLink[] = [
 // Kampagner hoerer til kunderne (velkomst, dobbelt-stempler m.m.), ikke til et
 // enkelt produkt; de kraever dog stempler.
 const CAMPAIGNS: NavLink = { href: "/app/kampagner", label: "Kampagner" };
-// Beskeder til kundernes kort (alle butikker, uanset funktioner).
-const NEWS: NavLink = { href: "/app/beskeder", label: "Beskeder" };
+// Pushbeskeder til kundernes kort (alle butikker, uanset funktioner).
+const NEWS: NavLink = { href: "/app/beskeder", label: "Pushbeskeder" };
 
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
@@ -285,7 +285,7 @@ export function DashboardNav({
             onClick={(e) => e.stopPropagation()}
           >
             {[
-              { ...NEWS, label: "Beskeder til dine kunder" },
+              { ...NEWS, label: "Pushbeskeder til dine kunder" },
               ...(showStamps ? [{ ...CAMPAIGNS, label: "Kampagner til dine kunder" }] : []),
             ].map((l) => (
               <Link

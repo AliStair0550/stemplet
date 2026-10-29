@@ -758,6 +758,12 @@ textarea:focus-visible {
 .dash-theme select:focus {
   border-color: var(--folka-electric);
 }
+/* Fokusringen paa felter i Folkas blaa (den globale regel er Stemplets terrakotta). */
+.dash-theme input:focus-visible,
+.dash-theme textarea:focus-visible,
+.dash-theme select:focus-visible {
+  outline-color: var(--folka-electric);
+}
 /* Handlinger og markeringer i Folkas moerkeblaa; lyse markeringer i blaa tone
    (kun Stemplets prik er terrakotta, og den har fast farve). */
 .dash-theme .bg-terracotta,

@@ -1,4 +1,4 @@
-// Beskeder: en kort nyhed fra butikken, der staar paa kundernes kort i Wallet.
+// Pushbeskeder: en kort nyhed fra butikken, der staar paa kundernes kort i Wallet.
 // Naar teksten aendres, viser iPhone en notifikation paa laaseskaermen (Wallets
 // changeMessage). Ren logik, saa den kan enhedstestes og bruges baade i passet
 // og i dashboardet.
@@ -14,6 +14,12 @@ export function parseNews(input: string | null | undefined): { ok: true; value: 
   if (!v) return { ok: false, error: "Skriv en besked." };
   if (v.length > NEWS_MAX) return { ok: false, error: `Beskeden kan højst være ${NEWS_MAX} tegn.` };
   return { ok: true, value: v };
+}
+
+/** Wallet viser kun en notifikation, naar teksten AENDRER sig. Samme tekst som
+ *  den, der staar paa kortene nu, ville blive sendt uden at nogen faar besked. */
+export function sameAsCurrent(text: string, current: string | null | undefined): boolean {
+  return !!current && text.trim().toLowerCase() === current.trim().toLowerCase();
 }
 
 /** Hvornaar butikken maa sende igen, eller null hvis den maa nu. */

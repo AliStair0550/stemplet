@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { NEWS_COOLDOWN_MS, NEWS_MAX, newsField, nextNewsAllowedAt, parseNews } from "../src/lib/news";
+import { NEWS_COOLDOWN_MS, NEWS_MAX, newsField, nextNewsAllowedAt, parseNews, sameAsCurrent } from "../src/lib/news";
 
 // Beskeder fra butikken: tekst paa kortet, notifikation paa laaseskaermen.
 
@@ -26,4 +26,10 @@ test("feltet paa kortet giver en notifikation med selve beskeden", () => {
   assert.equal(f.key, "news");
   assert.equal(f.value, "Dobbelt stempel i weekenden");
   assert.equal(f.changeMessage, "%@");
+});
+
+test("samme tekst som paa kortene nu giver ingen notifikation og fanges", () => {
+  assert.equal(sameAsCurrent("Dobbelt stempel", "dobbelt stempel "), true);
+  assert.equal(sameAsCurrent("Dobbelt stempel", "Nye åbningstider"), false);
+  assert.equal(sameAsCurrent("Dobbelt stempel", null), false);
 });

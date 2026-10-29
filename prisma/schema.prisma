@@ -94,7 +94,7 @@ model Business {
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?
-  // Besked fra butikken paa kundernes kort (Beskeder). Ny tekst = notifikation
+  // Pushbesked fra butikken paa kundernes kort. Ny tekst = notifikation
   // paa laaseskaermen. newsSentAt bruges til hoejst een besked i doegnet.
   newsText           String?
   newsSentAt         DateTime?
@@ -108,7 +108,21 @@ model Business {
   referralRule     ReferralRule?
   referrals        Referral[]
   rewards          Reward[]
+  newsMessages     NewsMessage[]
   createdAt        DateTime   @default(now())
+}
+
+// Historik over sendte pushbeskeder (den aktuelle tekst bor paa Business.newsText).
+// recipients = antal kort i Wallet, da beskeden blev sendt.
+model NewsMessage {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  text       String
+  recipients Int
+  sentAt     DateTime @default(now())
+
+  @@index([businessId, sentAt])
 }
 
 // Medlemskab: hvilke butikker en bruger (mail) har adgang til. Een mail kan

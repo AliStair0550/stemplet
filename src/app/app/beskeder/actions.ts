@@ -4,32 +4,44 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness } from "@/lib/session";
 import { refreshShop } from "@/lib/shop-refresh";
-import { nextNewsAllowedAt, parseNews } from "@/lib/news";
+import { nextNewsAllowedAt, parseNews, sameAsCurrent } from "@/lib/news";
+import { walletCardCount } from "@/lib/news-reach";
 
-export type NewsResult = { ok: true } | { ok: false; error: string };
+export type NewsResult = { ok: true; recipients: number } | { ok: false; error: string };
 
 /**
- * Send en besked til kundernes kort: teksten laegges paa kortet, og alle kort i
- * Wallet opdateres, saa iPhone viser den som notifikation paa laaseskaermen.
- * Hoejst een besked i doegnet (kontrolleres her, ikke kun i formularen).
+ * Send en pushbesked: teksten laegges paa kundernes kort, og alle kort i Wallet
+ * opdateres, saa iPhone viser den som notifikation paa laaseskaermen. Hoejst een
+ * besked i doegnet (kontrolleres her, ikke kun i formularen).
  */
 export async function sendNewsAction(text: string): Promise<NewsResult> {
   const { business } = await requireBusiness();
   const parsed = parseNews(text);
   if (!parsed.ok) return parsed;
-  const wait = nextNewsAllowedAt(business.newsSentAt);
-  if (wait) return { ok: false, error: "Du kan sende én besked i døgnet. Prøv igen senere." };
+  if (nextNewsAllowedAt(business.newsSentAt)) {
+    return { ok: false, error: "Du kan sende én pushbesked i døgnet. Prøv igen senere." };
+  }
+  if (sameAsCurrent(parsed.value, business.newsText)) {
+    return { ok: false, error: "Det er den samme besked, som står på kortene nu. Skriv en ny, så kunderne får besked." };
+  }
+  const recipients = await walletCardCount(business.id);
+  if (recipients === 0) return { ok: false, error: "Ingen kunder har kortet i Wallet endnu." };
 
   // Atomisk: kun hvis ingen anden besked er sendt i mellemtiden (dobbelttryk).
-  const updated = await prisma.business.updateMany({
-    where: { id: business.id, newsSentAt: business.newsSentAt ?? null },
-    data: { newsText: parsed.value, newsSentAt: new Date() },
+  const sent = await prisma.$transaction(async (tx) => {
+    const updated = await tx.business.updateMany({
+      where: { id: business.id, newsSentAt: business.newsSentAt ?? null },
+      data: { newsText: parsed.value, newsSentAt: new Date() },
+    });
+    if (updated.count === 0) return false;
+    await tx.newsMessage.create({ data: { businessId: business.id, text: parsed.value, recipients } });
+    return true;
   });
-  if (updated.count === 0) return { ok: false, error: "Beskeden er allerede sendt." };
+  if (!sent) return { ok: false, error: "Beskeden er allerede sendt." };
 
   revalidatePath("/app/beskeder");
   refreshShop(business);
-  return { ok: true };
+  return { ok: true, recipients };
 }
 
 /** Fjern beskeden fra kortene (ingen notifikation; feltet forsvinder bare). */
@@ -38,5 +50,5 @@ export async function clearNewsAction(): Promise<NewsResult> {
   await prisma.business.update({ where: { id: business.id }, data: { newsText: null } });
   revalidatePath("/app/beskeder");
   refreshShop(business);
-  return { ok: true };
+  return { ok: true, recipients: 0 };
 }
