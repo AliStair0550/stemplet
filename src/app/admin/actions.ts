@@ -41,7 +41,8 @@ export async function unlockAdmin(
 ): Promise<{ error: string | null }> {
   const admin = await getSuperadminEmail();
   if (!admin) return { error: "Ikke tilladt." };
-  const code = String(formData.get("code") ?? "");
+  // Mellemrum foer/efter (fx fra autoudfyld) skal ikke afvise en rigtig kode.
+  const code = String(formData.get("code") ?? "").trim();
   if (!verifyAdminCode(code)) return { error: "Forkert kode." };
   const jar = await cookies();
   jar.set(UNLOCK_COOKIE_NAME, makeUnlockToken(), {

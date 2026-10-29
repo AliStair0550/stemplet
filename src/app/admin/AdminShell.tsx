@@ -24,7 +24,7 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-parchment px-6 py-12">
+    <main className="dash-theme min-h-screen bg-parchment px-6 py-12">
       <div className="mx-auto max-w-5xl">
         {/* Sidehoved */}
         <div className="flex flex-wrap items-end justify-between gap-4">
