@@ -76,9 +76,31 @@ import { folkaSender, loginEmail, welcomeEmail } from "../src/lib/emails";
 test("login og velkomst baerer Folka, ikke Stemplet", () => {
   assert.equal(folkaSender("Stemplet <login@folka.dk>"), "Folka <login@folka.dk>");
   assert.equal(folkaSender("login@folka.dk"), "Folka <login@folka.dk>");
-  for (const m of [loginEmail("https://x/l"), welcomeEmail("https://x/l")]) {
-    assert.match(m.subject, /Folka/);
+  for (const m of [loginEmail("https://x/l", "042917"), welcomeEmail("https://x/l", "042917")]) {
+    assert.match(m.html, /Folka/);
     assert.doesNotMatch(m.html + m.text, /Stemplet\. Stempelkortet/);
     assert.match(m.html, /https:\/\/x\/l/);
+    // Koden staar i baade HTML og tekst (let at laese: "042 917").
+    assert.match(m.html, /042 917/);
+    assert.match(m.text, /042 917/);
   }
+  // Koden i emnet, saa iPhone kan foreslaa den i kodefeltet.
+  assert.match(loginEmail("https://x/l", "042917").subject, /042917/);
+});
+
+import { generateLoginCode, normalizeLoginCode, formatLoginCode } from "../src/lib/login-code";
+import { tipOfTheDay } from "../src/lib/emails";
+
+test("login-kode: 6 cifre, taaler mellemrum, vises i to dele", () => {
+  for (let i = 0; i < 200; i++) assert.match(generateLoginCode(), /^\d{6}$/);
+  assert.equal(normalizeLoginCode(" 042 917 "), "042917");
+  assert.equal(normalizeLoginCode("042-917"), "042917");
+  assert.equal(normalizeLoginCode(null), "");
+  assert.equal(formatLoginCode("042917"), "042 917");
+});
+
+test("dagens idé skifter fra dag til dag og er ens samme dag", () => {
+  const d = new Date("2026-10-29T08:00:00Z");
+  assert.equal(tipOfTheDay(d), tipOfTheDay(new Date("2026-10-29T20:00:00Z")));
+  assert.notEqual(tipOfTheDay(d), tipOfTheDay(new Date("2026-10-30T08:00:00Z")));
 });

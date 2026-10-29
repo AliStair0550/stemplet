@@ -10,6 +10,17 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/materials/*": ["src/fonts/*.ttf"],
   },
+  // Prisma-klienten har WebAssembly-motorer til alle databaser (MySQL, SQLite,
+  // SQL Server, CockroachDB ...), ca. 45 MB, og de kom med i HVER funktion. Vi
+  // bruger kun den native Postgres-motor (libquery_engine-*.so.node), saa de
+  // skaeres fra. Det holder Vercels Function Storage nede.
+  outputFileTracingExcludes: {
+    "**": [
+      "node_modules/@prisma/client/runtime/*.wasm-base64.*",
+      "node_modules/@prisma/client/runtime/*.wasm",
+      "node_modules/.prisma/client/*.wasm",
+    ],
+  },
   // Generér ogsaa KLIENT-source maps, saa fejl i browseren faar laesbare stack
   // traces i Sentry (server-maps laves i forvejen). Sentry uploader dem ved
   // build og fjerner dem igen fra klienten (deleteSourcemapsAfterUpload), saa de
