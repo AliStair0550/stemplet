@@ -7,7 +7,7 @@ import { cardCookieName, DEVICE_ID_COOKIE } from "@/lib/cookies";
 import { findVisitorCard, findReferrerByCode } from "@/lib/referral-signup";
 import { assignReferralCode } from "@/lib/referral";
 import { firstName, referralShareUrl, rewardPhrase } from "@/lib/referral-text";
-import { durableRateLimit } from "@/lib/rate-limit";
+import { apiWriteRateLimit } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -37,7 +37,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
   // Let loft pr. IP: koder er korte (NAVN-XX) og afsloerer henviserens fornavn.
   // Generoest, fordi siden kaldes ved hvert besoeg (travl cafe paa een WiFi).
-  if (!(await durableRateLimit("shop-status", clientIp(req) ?? "ukendt", 600, 3600).catch(() => true))) {
+  // Redis foerst (ingen DB-skrivning paa den travleste rute), DB som backstop.
+  if (!(await apiWriteRateLimit("shop-status", clientIp(req) ?? "ukendt", 600, "1 h", 3600).catch(() => true))) {
     return json(none);
   }
 

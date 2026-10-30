@@ -22,6 +22,7 @@ export function DemoExperience({
   rewardText,
   required,
   walletEnabled,
+  qrDataUrl,
 }: {
   slug: string;
   businessName: string;
@@ -32,12 +33,17 @@ export function DemoExperience({
   rewardText: string;
   required: number;
   walletEnabled: boolean;
+  qrDataUrl: string;
 }) {
   const [card, setCard] = useState<Card | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(
     "loading",
   );
+  const [desktop, setDesktop] = useState(false);
   const icon = stampIcon as StampIconKey;
+  useEffect(() => {
+    setDesktop(!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !(navigator.maxTouchPoints > 1));
+  }, []);
   const storeKey = `stmpl_${slug}`;
 
   const knownToken = useCallback(() => {
@@ -91,10 +97,10 @@ export function DemoExperience({
   if (status === "unavailable") {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-fog bg-white p-8 text-center shadow-card">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-terracotta/10 text-terracotta">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F0FB] text-[#1B5EAE]">
           <StampIcon icon={icon} className="h-7 w-7" />
         </span>
-        <p className="font-[300] text-[0.95rem] text-stone">
+        <p className="text-[0.95rem] text-[#5F6B7E]">
           Demoen er lige nu ikke tilgængelig. Prøv igen om lidt.
         </p>
       </div>
@@ -118,12 +124,18 @@ export function DemoExperience({
         />
       </div>
 
-      <p className="text-center font-[300] text-[0.9rem] leading-relaxed text-stone">
-        Læg kortet i din Wallet, så er du klar til at få stempler ved kassen.
-      </p>
+      {desktop ? (
+        <div className="flex flex-col items-center gap-3 rounded-2xl bg-white p-5 shadow-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} alt="QR-kode til prøvekortet" width={180} height={180} className="h-[180px] w-[180px]" />
+          <p className="max-w-[16rem] text-center text-[0.9rem] text-[#5F6B7E]">Scan med din telefon for at hente prøvekortet.</p>
+        </div>
+      ) : (
+        <p className="text-center text-[0.9rem] leading-relaxed text-[#5F6B7E]">Læg kortet i din Wallet. Så er du klar til stempler ved kassen.</p>
+      )}
 
       <div className="flex w-full flex-col items-center gap-3">
-        {walletEnabled ? (
+        {walletEnabled && !desktop ? (
           <CtaGlow className="w-full">
             <a
               href={card ? `/api/wallet/pass/${card.serial}` : undefined}
@@ -137,7 +149,7 @@ export function DemoExperience({
             </a>
           </CtaGlow>
         ) : null}
-        {card ? (
+        {card && !desktop ? (
           <a
             href={`/kort/${card.serial}?vis=1`}
             className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"

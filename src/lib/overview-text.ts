@@ -28,7 +28,7 @@ export function summaryLine(p: {
   returningToday: number;
 }): string {
   if (p.totalCustomers === 0) {
-    return "Velkommen. I er klar til at tage imod jeres første kunde.";
+    return "Velkommen. Du er klar til din første kunde.";
   }
   if (p.visitorsToday === 0) {
     // "Aktiv" bruges KUN om kortholdere der faktisk har faaet et stempel for
@@ -36,13 +36,13 @@ export function summaryLine(p: {
     // endnu, siger vi neutralt "kortholdere, klar til det foerste stempel", saa
     // et tomt kort ikke fremstaar som en engageret kunde.
     if (p.activeCustomers > 0) {
-      return `Ingen stempler endnu i dag. I har ${formatDkNumber(
+      return `Ingen stempler endnu i dag. Du har ${formatDkNumber(
         p.activeCustomers,
       )} ${
         p.activeCustomers === 1 ? "aktiv kortholder" : "aktive kortholdere"
       }, klar til et genbesøg.`;
     }
-    return `Ingen stempler endnu i dag. I har ${formatDkNumber(
+    return `Ingen stempler endnu i dag. Du har ${formatDkNumber(
       p.totalCustomers,
     )} ${
       p.totalCustomers === 1 ? "kortholder" : "kortholdere"
@@ -51,11 +51,11 @@ export function summaryLine(p: {
   if (p.returningToday === 0) {
     return `${formatDkNumber(p.visitorsToday)} ${
       p.visitorsToday === 1 ? "ny kunde har" : "nye kunder har"
-    } besøgt jer i dag.`;
+    } besøgt dig i dag.`;
   }
   return `${formatDkNumber(p.visitorsToday)} ${
     p.visitorsToday === 1 ? "kunde har" : "kunder har"
-  } besøgt jer i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
+  } besøgt dig i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
 }
 
 /** Hjem-linjen for en butik med kun Henvisninger (ingen stempler at taelle). */
@@ -64,7 +64,7 @@ export function referralSummaryLine(p: { totalCustomers: number; newThisMonth: n
     return "Velkommen. Del linket til din henvisningsside, så kommer de første kunder.";
   }
   const n = formatDkNumber(p.newThisMonth);
-  const base = `I har ${formatDkNumber(p.totalCustomers)} ${p.totalCustomers === 1 ? "kunde" : "kunder"}. ${n} ${
+  const base = `Du har ${formatDkNumber(p.totalCustomers)} ${p.totalCustomers === 1 ? "kunde" : "kunder"}. ${n} ${
     p.newThisMonth === 1 ? "ny kunde" : "nye kunder"
   } via henvisninger denne måned.`;
   return p.waiting > 0 ? `${base} ${formatDkNumber(p.waiting)} venter på første besøg.` : base;

@@ -58,7 +58,7 @@ function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/login" className="hidden rounded-full px-4 py-2 text-[14px] font-medium text-white/80 transition-colors hover:text-white sm:block">
+          <Link href="/login" className="rounded-full px-3 py-2 text-[13px] font-medium text-white/80 transition-colors hover:text-white sm:px-4 sm:text-[14px]">
             Log ind
           </Link>
           <Link
@@ -154,7 +154,7 @@ function Trades() {
       <div className="kk-marquee overflow-hidden">
         <div className="kk-track gap-10" style={{ "--t": "50s" } as React.CSSProperties}>
           {list.map((t, i) => (
-            <span key={i} className="whitespace-nowrap text-[15px] font-medium text-white/45">
+            <span key={i} aria-hidden={i >= TRADES.length || undefined} className="whitespace-nowrap text-[15px] font-medium text-white/45">
               {t}
             </span>
           ))}
@@ -294,7 +294,7 @@ function Security() {
   const items = [
     ["Kan ikke kopieres", "Hvert stempel er signeret og virker én gang."],
     ["Kun dine folk stempler", "Et stempel kræver, at personalet scanner kortet."],
-    ["PIN ved belønning", "Belønninger frigives kun med personalets PIN."],
+    ["PIN ved belønning", "Slå personale-PIN til, så kun dine folk kan frigive en belønning."],
   ];
   return (
     <section className="kk-dark py-24 sm:py-32">
@@ -331,7 +331,7 @@ function Pricing() {
   ];
   return (
     <section id="pris" className="scroll-mt-4 bg-white py-24 sm:py-32">
-      <SectionHead title="Tre måneder gratis. Derefter 49 kr. om måneden." text="Alle tre moduler er med. Ubegrænset antal kortholdere." />
+      <SectionHead title="Tre måneder gratis. Derefter 49 kr. om måneden." text="Stempler, henvisninger og beskeder er med. Ubegrænset antal kortholdere." />
       <div className="mx-auto mt-14 max-w-[560px] px-4 sm:px-6">
         <div className="kk-reveal kk-dark rounded-[28px] p-8 sm:p-10">
           <Lights />
@@ -340,7 +340,7 @@ function Pricing() {
             <span className="text-[3.4rem] font-semibold leading-none tracking-[-0.04em]">49 kr.</span>
             <span className="text-[15px] text-white/60">om måneden</span>
           </p>
-          <p className="mt-2 text-[14px] text-white/60">De første tre måneder er gratis.</p>
+          <p className="mt-2 text-[14px] text-white/60">De første tre måneder er gratis. Prisen er ekskl. moms.</p>
           <ul className="mt-7 grid gap-2.5 text-[0.98rem] text-white/85">
             {included.map((f) => (
               <li key={f} className="flex gap-2.5">
@@ -355,7 +355,7 @@ function Pricing() {
           >
             Opret dit kort gratis
           </Link>
-          <p className="mt-4 text-center text-[13px] text-white/55">Ingen binding, ingen opstartsgebyr, intet kort på forhånd.</p>
+          <p className="mt-4 text-center text-[13px] text-white/55">Ingen binding. Intet opstartsgebyr. Intet betalingskort.</p>
         </div>
       </div>
     </section>
@@ -368,17 +368,17 @@ function FinalCta() {
       <Lights />
       <div className="mx-auto max-w-[44rem] px-4 sm:px-6">
         <h2 className="kk-reveal text-[clamp(2.2rem,5.4vw,4rem)] font-semibold leading-[1.02] tracking-[-0.045em]">
-          Prøv kortet på din egen telefon.
+          Dit kort kan være klar i dag.
         </h2>
         <p className="mx-auto mt-5 max-w-[30rem] text-[1.06rem] leading-relaxed text-white/65">
-          Hent et prøvekort, og se det lande i din Wallet. Når du er klar, er dit eget kort oppe på et par minutter.
+          Lav dit kort på et minut. Hæng QR-koden op, og de første kunder har det i Wallet samme dag.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link href="/prøv" className="rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold text-[#061C3D] transition-transform hover:scale-[1.03] active:scale-[0.98]">
-            Hent et prøvekort
-          </Link>
-          <Link href="/start" className="kk-glass-pill px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/15">
+          <Link href="/start" className="rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold text-[#061C3D] transition-transform hover:scale-[1.03] active:scale-[0.98]">
             Opret dit kort gratis
+          </Link>
+          <Link href="/prøv" className="kk-glass-pill px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/15">
+            Prøv kortet først
           </Link>
         </div>
         <p className="mt-6 text-[14px] text-white/55">
@@ -400,8 +400,8 @@ function Footer() {
         ["/start", "Opret dit kort"],
         ["/login", "Log ind"],
         ["/prøv", "Prøv kortet"],
-        ["/stemplet", "Stempelkortet"],
-        ["/henvisninger", "Henvisninger"],
+        ["/brancher", "Brancher"],
+        ["/#historien", "Sådan virker det"],
       ],
     ],
     [

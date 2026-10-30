@@ -10,6 +10,7 @@ import { referralShareText, firstName } from "@/lib/referral-text";
 import { formatDkDate } from "@/lib/utils";
 import { offerIsLive } from "@/lib/member-offers";
 import { StampIcon } from "@/components/StampIcon";
+import { Confetti } from "@/components/Celebrate";
 import { ShareReferral } from "./ShareReferral";
 
 export const dynamic = "force-dynamic";
@@ -101,9 +102,10 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
 
         {b.stampsEnabled ? (
           <section className="relative overflow-hidden rounded-[26px] p-5" style={{ ...panel, ...rise(section++) }}>
+            {full ? <Confetti colors={[fg, rgba(fg, 0.5), shade(bg, -0.25), "#FFFFFF"]} originY="40%" /> : null}
             <div className="flex items-end justify-between gap-3">
               <span className={label} style={muted}>
-                Dit stempelkort
+                {full ? "Kortet er fuldt" : "Dine stempler"}
               </span>
               <span className="text-[2rem] font-bold leading-none tabular-nums tracking-[-0.04em]">
                 {stamps}
@@ -147,7 +149,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
                 );
               })}
             </div>
-            <p className="mt-5 text-[1.05rem] font-semibold leading-snug">
+            <p className={full ? "mt-5 text-[1.3rem] font-bold leading-snug tracking-[-0.02em]" : "mt-5 text-[1.05rem] font-semibold leading-snug"}>
               {full
                 ? `Din belønning er klar: ${reward}. Vis kortet ved kassen.`
                 : left === 1

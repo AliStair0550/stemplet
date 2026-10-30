@@ -306,7 +306,7 @@ export function StampCard({
             className="text-center text-[0.6rem] font-[300] tracking-[0.08em]"
             style={{ color: rgba(textColor, 0.5) }}
           >
-            Drevet af Stemplet
+            Drevet af Folka
           </div>
         ) : null}
       </div>

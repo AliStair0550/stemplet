@@ -39,7 +39,7 @@ export default async function VisitkortPage() {
     <>
       <PageHeading
         title="Visitkort"
-        subtitle="Design et visitkort med for- og bagside, og hent en tryk-klar PDF til Vistaprint. Forsiden er dine oplysninger, bagsiden er QR-koden til dit kort."
+        subtitle="For- og bagside med QR-kode. Hent som tryk-klar PDF."
       />
       <VisitkortDesigner
         initial={design}

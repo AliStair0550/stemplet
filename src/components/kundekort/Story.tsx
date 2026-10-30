@@ -169,8 +169,9 @@ export function Story() {
           if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.i));
         }
       },
-      // Et kapitel er aktivt, naar det krydser midten af skaermen.
-      { rootMargin: "-45% 0px -45% 0px" },
+      // Et kapitel er aktivt, naar det krydser midten af skaermen. Paa mobil
+      // daekker den klaebende telefon toppen, saa vi maaler under den.
+      { rootMargin: window.matchMedia("(min-width: 1024px)").matches ? "-45% 0px -45% 0px" : "-58% 0px -22% 0px" },
     );
     refs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();

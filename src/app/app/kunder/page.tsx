@@ -99,6 +99,29 @@ export default async function CustomersPage({
       .then((c) => c?.stampsRequired ?? 10),
   ]);
 
+  // Ingen kunder endnu: ingen soegning, kun naeste skridt.
+  if (total === 0) {
+    return (
+      <>
+        <PageHeading title="Kunder" />
+        <Panel>
+          <div className="flex flex-col items-start gap-4 py-2">
+            <p className="text-[1.05rem] font-[600] text-ink">Ingen kunder endnu.</p>
+            <p className="-mt-2 text-[0.9rem] text-stone">Hæng QR-koden op, så kommer de første.</p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/app/regler?f=kundekort" className={btnClass("primary")}>
+                Vis QR-kode
+              </Link>
+              <Link href="/app/plakat" className={btnClass("outline")}>
+                Lav plakat
+              </Link>
+            </div>
+          </div>
+        </Panel>
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeading

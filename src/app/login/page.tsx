@@ -4,7 +4,7 @@ import { KundekortMark } from "@/components/ProductLogo";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
-  title: { absolute: "Log ind - Kundekort" },
+  title: { absolute: "Log ind - Folka Kort" },
   // Samme dashboard-manifest: foejer man login til hjemmeskaermen, aabner ikonet
   // i dashboardet (start_url /app), ikke forsiden.
   manifest: "/app-manifest",
@@ -31,7 +31,7 @@ export default async function LoginPage({
   return (
     <main className="dash-theme flex min-h-screen flex-col bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 w-full max-w-[1120px] items-center px-4 sm:px-6">
-        <Link href="/" aria-label="Kundekort, til forsiden">
+        <Link href="/" aria-label="Folka Kort, til forsiden">
           <KundekortMark />
         </Link>
       </header>
@@ -49,7 +49,7 @@ export default async function LoginPage({
             <p className="text-[15px] text-[#0B1628]/55">
               Ny her?{" "}
               <Link href="/start" className="font-semibold text-[#061C3D] underline-offset-4 hover:underline">
-                Opret dit kundekort gratis
+                Opret dit kort gratis
               </Link>
             </p>
           </div>

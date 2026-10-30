@@ -4,7 +4,7 @@ import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
 
 export const metadata: Metadata = {
-  title: { default: "Hjem", template: "%s - Kundekort" },
+  title: { default: "Hjem", template: "%s - Folka Kort" },
   robots: { index: false },
   // Eget manifest for dashboardet: foejer butikken det til hjemmeskaermen, aabner
   // ikonet direkte i /app (ikke forsiden som kundens webkort-manifest). Folka-

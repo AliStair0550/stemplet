@@ -7,12 +7,12 @@ type Search = { produkt?: string };
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Search> }): Promise<Metadata> {
   if ((await searchParams).produkt === "henvisninger") {
     return {
-      title: { absolute: "Kom i gang med henvisninger - Kundekort" },
+      title: { absolute: "Kom i gang med henvisninger - Folka Kort" },
       description: "Lav din rabatordning, så er din henvisningsside klar på et minut. Gratis og uden kreditkort.",
     };
   }
   return {
-    title: { absolute: "Kom gratis i gang - Kundekort" },
+    title: { absolute: "Opret dit kort - Folka Kort" },
     description: "Lav dit digitale kundekort, så er det klar på et minut. Gratis og uden kreditkort.",
   };
 }

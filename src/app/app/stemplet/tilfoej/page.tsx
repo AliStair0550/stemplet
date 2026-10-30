@@ -40,10 +40,10 @@ export default async function AddStampsPage() {
         ))}
       </ul>
 
-      <p className="mt-6 text-[0.88rem] text-stone">Samme pris. Stemplet er med, uden tillæg.</p>
+      <p className="mt-6 text-[0.88rem] text-stone">Samme pris. Stempler er med uden tillæg.</p>
       <form action={enableStampsAction} className="mt-5">
         <SubmitButton size="lg" pendingText="Slår til">
-          Slå Stemplet til
+          Slå stempler til
         </SubmitButton>
       </form>
     </div>

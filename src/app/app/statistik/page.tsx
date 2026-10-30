@@ -7,6 +7,8 @@ import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { LoyaltyPanel } from "@/components/LoyaltyPanel";
 import { formatDkNumber } from "@/lib/utils";
+import Link from "next/link";
+import { btnClass } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Statistik" };
 export const dynamic = "force-dynamic";
@@ -100,17 +102,18 @@ export default async function StatistikPage() {
           </div>
         </div>
       ) : (
-        <div className="mb-6 rounded-lg border border-terracotta/30 bg-terracotta/5 px-5 py-4">
-          <p className="text-[0.9rem] font-[300] text-terracotta">
-            Her kommer dit overblik, så snart de første kort er hentet.
-          </p>
-          <p className="mt-1 text-[0.82rem] font-[200] leading-relaxed text-stone">
-            Sæt din QR-kode op ved kassen. Så snart kunderne henter kortet og
-            får stempler, fyldes konklusion, nøgletal og grafer automatisk.
-          </p>
-        </div>
+        <Panel>
+          <div className="flex flex-col items-start gap-4 py-2">
+            <p className="text-[1.05rem] font-[600] text-ink">Statistik starter ved første stempel.</p>
+            <Link href="/app/regler?f=kundekort" className={btnClass("primary")}>
+              Vis QR-kode
+            </Link>
+          </div>
+        </Panel>
       )}
 
+      {started ? (
+      <>
       {/* Nøgletal med tydelige, selvforklarende etiketter */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
@@ -138,6 +141,8 @@ export default async function StatistikPage() {
       <div className="mt-6">
         <FullStats stats={stats} />
       </div>
+      </>
+      ) : null}
 
       <div className="mt-10">
         <RecentActivity activity={activity} />

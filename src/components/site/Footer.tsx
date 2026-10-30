@@ -5,9 +5,9 @@ import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const LINKS = [
   { href: "/login", label: "Log ind" },
-  { href: "/hvorfor", label: "Fordele" },
+  { href: "/#funktioner", label: "Funktioner" },
   { href: "/brancher", label: "Brancher" },
-  { href: "/stemplet#pris", label: "Pris" },
+  { href: "/#pris", label: "Pris" },
   { href: "/start", label: "Kom gratis i gang" },
 ];
 
@@ -33,7 +33,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr] md:gap-16">
           {/* Brand + mission */}
           <div className="flex flex-col gap-5">
-            <Wordmark href="/stemplet" tone="light" className="text-[1.25rem]" />
+            <Wordmark href="/" tone="light" className="text-[1.25rem]" />
             <div className="flex max-w-md flex-col gap-3">
               <p className="text-[0.95rem] leading-[1.6] text-parchment">
                 Stempelkortet, der skaber flere gensyn.
@@ -46,7 +46,7 @@ export default function Footer() {
             </div>
             <Image
               src="/stemplet-prik.svg"
-              alt="Stemplet"
+              alt="Folka Kort"
               width={40}
               height={40}
               className="mt-1 h-10 w-10"
@@ -78,7 +78,7 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-parchment/10 pt-6">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <span className="text-[0.75rem] text-parchment/45">© 2026 Stemplet</span>
+            <span className="text-[0.75rem] text-parchment/45">© 2026 Folka</span>
             <Link
               href="/handelsbetingelser"
               className="text-[0.75rem] text-parchment/45 transition-colors hover:text-parchment"

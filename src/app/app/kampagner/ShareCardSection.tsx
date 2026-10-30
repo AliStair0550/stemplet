@@ -160,9 +160,8 @@ export function ShareCardSection({
               Del dit kort
             </h2>
             <p className="mt-2 max-w-md font-[300] text-[0.9rem] leading-relaxed text-stone">
-              Læg kortet på Instagram eller Facebook, så kunderne henter det
-              hjem og har det klar i Wallet til næste besøg. Billedet indeholder
-              en QR, de bare scanner.
+              Del billedet på din hjemmeside eller i et nyhedsbrev. Kunderne
+              scanner QR-koden.
             </p>
           </div>
 

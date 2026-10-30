@@ -81,10 +81,10 @@ export function HenvisningerStart() {
   return (
     <div className="dash-theme min-h-screen bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
-        <Link href="/" aria-label="Kundekort, til forsiden">
+        <Link href="/" aria-label="Folka Kort, til forsiden">
           <KundekortMark />
         </Link>
-        <span className="text-[13px] text-[#0B1628]/60">Gratis. Intet kreditkort.</span>
+        <span className="text-[13px] text-[#0B1628]/60">Tre måneder gratis.</span>
       </header>
 
       {loginToken ? (
@@ -213,7 +213,7 @@ export function HenvisningerStart() {
                   disabled={busy}
                   className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#061C3D] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-[#0A2D5A] active:scale-[0.98] disabled:opacity-60 sm:w-auto"
                 >
-                  {busy ? "Opretter" : "Opret min butik"}
+                  {busy ? "Opretter" : "Opret mit kort"}
                 </button>
                 <p className="mt-3 text-[13px] text-[#0B1628]/60">
                   Vi bruger dine oplysninger til at sætte din butik op.

@@ -415,12 +415,15 @@ export async function applyStamp(opts: {
     };
   });
 
-  // Bivirkninger efter commit.
-  await flagIfAnomalous(
-    result.businessId,
-    opts.customerCardId,
-    opts.ip ?? null,
-    result.serial,
+  // Bivirkninger efter commit. Anomali-tjekket (flere Redis-kald) maa ikke
+  // forsinke kassen: det paavirker ikke svaret, saa det koerer bagefter.
+  runAfterResponse(() =>
+    flagIfAnomalous(
+      result.businessId,
+      opts.customerCardId,
+      opts.ip ?? null,
+      result.serial,
+    ),
   );
   runAfterResponse(() =>
     fireWebhook(

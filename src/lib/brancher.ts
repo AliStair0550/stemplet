@@ -46,7 +46,7 @@ export type BrancheContent = {
   stampIcon: BrancheIcon | BrancheIcon[];
   /** Levende opsaetnings-eksempler, maalrettet branchen (vises ved CTA'en). */
   examples: BrancheExample[];
-  /** Praecis meta-title (inkl. "| Stemplet"). */
+  /** Praecis meta-title (inkl. "| Folka Kort"). */
   title: string;
   /** Meta-description. */
   metaDescription: string;
@@ -89,7 +89,7 @@ export const FRISOERER: BrancheContent = {
     { target: "10 stempler", reward: "Gratis vask og styling" },
   ],
   title:
-    "Stempelkort til frisører. Gør dine produkter til vane | Stemplet",
+    "Stempelkort til frisører. Gør dine produkter til vane | Folka Kort",
   metaDescription:
     "Dine kunder elsker resultatet, men køber plejeprodukter i Matas. Et digitalt stempelkort kan få kunder til at købe produkter hos dig.",
   eyebrow: "Stempelkort til frisører",
@@ -111,7 +111,7 @@ export const FRISOERER: BrancheContent = {
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Et papkort fortæller ingenting. Folka Kort giver dig data.",
         "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Du kan se, hvor mange kunder der kommer igen som fast besøgende, og du får indblik i, hvis stamkunder pludselig bliver væk. Det giver dig mulighed for at reagere, før stolen står tom.",
         "Kortet tæller også kundens antal samlede stempler totalt set. Det gør det nemt at belønne milepæle som 50 eller 100 besøg og skabe stamkunder, der med tiden bliver ambassadører for din salon.",
       ],
@@ -153,7 +153,7 @@ export const FRISOERER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/frisor-scene.png",
-    alt: "Kunde i frisørsalonen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
+    alt: "Kunde i frisørsalonen scanner QR-koden og har sit stempelkort i Apple Wallet på telefonen.",
     caption:
       "Kunden scanner i salonen og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -169,13 +169,13 @@ export const KAFFEBARER: BrancheContent = {
     { target: "Køb af bønner", reward: "+1 stempel" },
   ],
   title:
-    "Stempelkort til kaffebarer. 10. kop gratis, uden pap | Stemplet",
+    "Stempelkort til kaffebarer. 10. kop gratis, uden pap | Folka Kort",
   metaDescription:
     "Giv kunderne en ekstra grund til at vælge din kaffebar, hver gang. Også når kaffetrangen melder sig ved de spontane besøg.",
   eyebrow: "Stempelkort til kaffebarer",
   h1: "Gør kaffekunder til stamgæster.",
   intro: [
-    "Kunderne elsker kaffen og oplevelsen hos jer. Men konkurrencen er kun ét gadehjørne væk. Udfordringen er at give dem en grund til at tilvælge jeres kaffebar - gerne hver gang. Stemplet gør dine kaffeglade kunder til stamgæster ved at holde relationen levende mellem besøgene.",
+    "Kunderne elsker kaffen og oplevelsen hos jer. Men konkurrencen er kun ét gadehjørne væk. Udfordringen er at give dem en grund til at tilvælge jeres kaffebar - gerne hver gang. Folka Kort gør dine kaffeglade kunder til stamgæster ved at holde relationen levende mellem besøgene.",
   ],
   sections: [
     {
@@ -197,7 +197,7 @@ export const KAFFEBARER: BrancheContent = {
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Et papkort fortæller ingenting. Folka Kort giver dig data.",
         "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Over tid kan du se værdifulde købsmønstre i dine kunders rytme: Hvornår kommer de? Hvor ofte vender de tilbage? Hvornår mister du loyale stamkunder? Det giver dig mulighed for at træffe bedre beslutninger om alt fra bemanding i baren under morgentravlheden, til at skabe kampagner der faktisk rammer dine kunder.",
       ],
     },
@@ -238,7 +238,7 @@ export const KAFFEBARER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/kaffebar-scene.png",
-    alt: "Kunde scanner Stemplet-koden på kaffebaren og har sit stempelkort med kaffe-stempler klar i Apple Wallet på telefonen.",
+    alt: "Kunde scanner QR-koden på kaffebaren og har sit stempelkort med kaffe-stempler klar i Apple Wallet på telefonen.",
     caption:
       "Kunden scanner ved disken og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -255,7 +255,7 @@ export const NEGLESALONER: BrancheContent = {
     { target: "50 besøg", reward: "Noget særligt" },
   ],
   title:
-    "Stempelkort til neglesaloner. 25 % på hver 5. behandling | Stemplet",
+    "Stempelkort til neglesaloner. 25 % på hver 5. behandling | Folka Kort",
   metaDescription:
     "Når det er tid til næste behandling, skal valget være nemt. Et digitalt stempelkort giver kunderne en ekstra grund til at vende tilbage til din salon.",
   eyebrow: "Stempelkort til neglesaloner",
@@ -276,7 +276,7 @@ export const NEGLESALONER: BrancheContent = {
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet giver dig data.",
+        "Et papkort fortæller ingenting. Folka Kort giver dig data.",
         "Hver uge modtager du statistik på kortholdere, bl.a. antal stempler givet og indløste belønninger. Du kan se, hvor ofte dine kunder besøger dig og opdage, når faste kunder springer behandlinger over. Det giver dig mulighed for at reagere, bl.a. ved at skabe kampagner der faktisk rammer dine stamkunder.",
         "Kortet tæller også kundens antal samlede stempler totalt set. Det gør det nemt at belønne særlige milepæle som 25 eller 50 besøg. En lille gestus kan gøre hele forskellen for en loyal kunde, der anbefaler salonen til andre bekendte.",
       ],
@@ -318,7 +318,7 @@ export const NEGLESALONER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/neglesalon-scene.png",
-    alt: "Kunde i neglesalonen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
+    alt: "Kunde i neglesalonen scanner QR-koden og har sit stempelkort i Apple Wallet på telefonen.",
     caption:
       "Kunden scanner ved kassen og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -334,7 +334,7 @@ export const PIZZERIAER: BrancheContent = {
     { target: "4 pizzaer", reward: "4 stempler" },
     { target: "Tirsdag", reward: "Dobbelt stempel" },
   ],
-  title: "Stempelkort til pizzeriaer. Fire pizzaer, fire stempler | Stemplet",
+  title: "Stempelkort til pizzeriaer. Fire pizzaer, fire stempler | Folka Kort",
   metaDescription:
     "Klassikeren 10. pizza gratis, uden papkort. Og familien med den store ordre får endelig alle sine stempler.",
   eyebrow: "Stempelkort til pizzeriaer",
@@ -355,7 +355,7 @@ export const PIZZERIAER: BrancheContent = {
     {
       heading: "Skab flere stamkunder og fyld de stille dage",
       paragraphs: [
-        "Et papkort fortæller ingenting. Stemplet gør.",
+        "Et papkort fortæller ingenting. Folka Kort gør.",
         "Hver uge får I indsigt i nye kortholdere, antal stempler og indløste belønninger. I kan se, hvilke kunder der kommer igen, og hvilke dage der har brug for lidt ekstra trafik.",
         "Har tirsdagene brug for et løft? Giv dobbelt stempel den dag. Vil I belønne de mest loyale familier? Overrask dem med en ekstra gave, når de når 50 eller 100 stempler. De små gestus er ofte dem, kunderne husker og fortæller videre.",
       ],
@@ -394,7 +394,7 @@ export const PIZZERIAER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/pizzeria-scene.png",
-    alt: "Kunde i pizzeriaet scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
+    alt: "Kunde i pizzeriaet scanner QR-koden og har sit stempelkort i Apple Wallet på telefonen.",
     caption:
       "Kunden scanner ved bestillingen og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -410,7 +410,7 @@ export const BAGERIER: BrancheContent = {
     { target: "Kaffe eller kage", reward: "+1 stempel" },
     { target: "Stille formiddag", reward: "Dobbelt stempel" },
   ],
-  title: "Stempelkort til bagerier. Den daglige rutine tæller | Stemplet",
+  title: "Stempelkort til bagerier. Den daglige rutine tæller | Folka Kort",
   metaDescription:
     "Morgenbrødskunden kommer igen og igen, året rundt. Giv den daglige rutine et digitalt stempelkort, der aldrig ryger i vasketøjet.",
   eyebrow: "Stempelkort til bagerier",
@@ -418,7 +418,7 @@ export const BAGERIER: BrancheContent = {
   intro: [
     "Morgenbrødskunden er noget af det mest værdifulde, en bager kan have. Den samme kunde kommer igen og igen. Samme tidspunkt. Samme bestilling. Den samme lille pause i hverdagen.",
     "Men vaner er usynlige. Kunden siger sjældent farvel, hvis de begynder at købe morgenbrød et andet sted.",
-    "Stemplet gør loyaliteten synlig og giver kunderne endnu en grund til at vælge jer.",
+    "Folka Kort gør loyaliteten synlig og giver kunderne endnu en grund til at vælge jer.",
   ],
   sections: [
     {
@@ -433,7 +433,7 @@ export const BAGERIER: BrancheContent = {
     {
       heading: "Få indsigt i dine stamkunder",
       paragraphs: [
-        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Stemplet fortæller meget mere.",
+        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Folka Kort fortæller meget mere.",
         "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvornår kunderne kommer, hvilke køb der skaber loyalitet, og hvor der er mulighed for at skabe mere trafik.",
         "Har I en stille søndag? Lav dobbelt stempel i en periode. Vil I belønne jeres bedste kunder? Giv noget ekstra, når de når 50 eller 100 stempler.",
         "Kunden, der har samlet 100 stempler, er ikke bare en kunde. Det er en stamkunde, der har valgt jer igen og igen. En lille personlig hilsen eller en pose brød på husets regning kan skabe en historie, der bliver fortalt videre.",
@@ -485,7 +485,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
     { target: "Mors dag", reward: "Dobbelt stempel" },
   ],
   title:
-    "Stempelkort til blomsterbutikker. Fredagsbuketten belønnet | Stemplet",
+    "Stempelkort til blomsterbutikker. Fredagsbuketten belønnet | Folka Kort",
   metaDescription:
     "Dine faste kunder går forbi tre andre blomsterbutikker på vejen til din. Giv dem en grund til at blive ved. Digitalt stempelkort i Apple Wallet.",
   eyebrow: "Stempelkort til blomsterbutikker",
@@ -493,7 +493,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
   intro: [
     "Blomster kan ligne et impulskøb. Men de bedste kunder er ofte vanekunder.",
     "Fredagsbuketten. Fødselsdagen. Søndagsbordet. Den månedlige buket til én, de holder af.",
-    "De vælger ikke bare blomster. De vælger en butik, de stoler på. Stemplet hjælper med at gøre den relation endnu stærkere og giver kunderne en ekstra grund til at komme tilbage.",
+    "De vælger ikke bare blomster. De vælger en butik, de stoler på. Folka Kort hjælper med at gøre den relation endnu stærkere og giver kunderne en ekstra grund til at komme tilbage.",
   ],
   sections: [
     {
@@ -509,7 +509,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
     {
       heading: "Få indsigt i jeres stamkunder",
       paragraphs: [
-        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Stemplet giver jer indsigt i relationen.",
+        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Folka Kort giver jer indsigt i relationen.",
         "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvor mange kunder der vender tilbage, og hvornår loyaliteten vokser.",
         "Op til mors dag, valentinsdag eller andre store anledninger kan I bruge ekstra stempler til at få kunderne til at vælge jer frem for supermarkedets hurtige løsning.",
         "Når en kunde rammer 100 stempler, er det mere end et tal. Det er mange års tillid og mange små øjeblikke, hvor de har valgt jer. En særlig buket eller en personlig hilsen kan gøre en god kunde til en ambassadør.",
@@ -549,7 +549,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/blomster-scene.png",
-    alt: "Kunde i blomsterbutikken scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
+    alt: "Kunde i blomsterbutikken scanner QR-koden og har sit stempelkort i Apple Wallet på telefonen.",
     caption:
       "Kunden scanner i butikken og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -571,7 +571,7 @@ export const CAFEER: BrancheContent = {
     },
     { target: "Frokostmenuen", reward: "Et stempel. Den 10. er gratis" },
   ],
-  title: "Stempelkort til caféer. Kaffe, vin og øl på samme kort | Stemplet",
+  title: "Stempelkort til caféer. Kaffe, vin og øl på samme kort | Folka Kort",
   metaDescription:
     "Din café lever hele dagen: kaffen om morgenen, vinen om aftenen. Ét digitalt stempelkort, der tæller det hele.",
   eyebrow: "Stempelkort til caféer",
@@ -580,7 +580,7 @@ export const CAFEER: BrancheContent = {
     "En god café bliver en del af kundens hverdag.",
     "Det er kaffen på vej til arbejde. Den hurtige frokost med en kollega. Eftermiddagen med en ven. Vinen eller øllen, når dagen skal afsluttes.",
     "De bedste caféer har ikke bare gæster. De har mennesker, der vælger dem igen og igen.",
-    "Stemplet gør den vane synlig og giver kunderne en ekstra grund til at komme tilbage.",
+    "Folka Kort gør den vane synlig og giver kunderne en ekstra grund til at komme tilbage.",
   ],
   sections: [
     {
@@ -604,7 +604,7 @@ export const CAFEER: BrancheContent = {
     {
       heading: "Brug data til at skabe flere besøg",
       paragraphs: [
-        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Stemplet giver jer indsigt i jeres gæsters vaner.",
+        "Et fysisk kort fortæller kun, at kunden har samlet stempler. Folka Kort giver jer indsigt i jeres gæsters vaner.",
         "Hver uge får I overblik over nye kortholdere, antal stempler og indløste belønninger. I kan se, hvornår jeres gæster kommer, og hvor der er mulighed for at skabe mere aktivitet.",
         "Er eftermiddagen stille? Lav dobbelt stempel mellem 14 og 16. Vil I belønne jeres mest loyale gæster? Giv noget ekstra, når de rammer 50 eller 100 stempler.",
         "De bedste kunder skal ikke bare genkendes. De skal mærke, at de betyder noget.",
@@ -644,7 +644,7 @@ export const CAFEER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/cafe-scene.png",
-    alt: "Kunde på caféen scanner Stemplet-koden og har sit stempelkort i Apple Wallet på telefonen.",
+    alt: "Kunde på caféen scanner QR-koden og har sit stempelkort i Apple Wallet på telefonen.",
     caption:
       "Gæsten scanner ved bordet og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -660,7 +660,7 @@ export const ISBUTIKKER: BrancheContent = {
     { target: "5 stempler", reward: "Et gratis scoop eller topping" },
     { target: "Hele sæsonen", reward: "Ekstra ved 50 og 100 stempler" },
   ],
-  title: "Stempelkort til isbutikker. Hvert scoop tæller | Stemplet",
+  title: "Stempelkort til isbutikker. Hvert scoop tæller | Folka Kort",
   metaDescription:
     "Et stempel per scoop, det femte er gratis, og kortet overlever vinteren. Digitalt stempelkort i Apple Wallet til isbutikker.",
   eyebrow: "Stempelkort til isbutikker",
@@ -668,7 +668,7 @@ export const ISBUTIKKER: BrancheContent = {
   intro: [
     "En god isbutik sælger ikke bare is. Den bliver en del af sommerens små øjeblikke.",
     "Turen efter aftensmaden. Søndagen ved stranden. Den spontane tur efter skole. De bedste kunder kommer ikke kun én gang, de skaber traditioner omkring jer.",
-    "Stemplet hjælper jer med at gøre de små besøg til en vane.",
+    "Folka Kort hjælper jer med at gøre de små besøg til en vane.",
   ],
   sections: [
     {
@@ -751,7 +751,7 @@ export const BARER: BrancheContent = {
     { target: "Den 10.", reward: "På husets regning" },
     { target: "Events", reward: "Dobbelt stempel" },
   ],
-  title: "Stempelkort til barer. Den 10. genstand er gratis | Stemplet",
+  title: "Stempelkort til barer. Den 10. genstand er gratis | Folka Kort",
   metaDescription:
     "Klippekortet kender dine gæster allerede. Nu ligger det i Apple Wallet og bliver aldrig glemt hjemme. Et stempel pr. øl eller vin, den tiende er gratis.",
   eyebrow: "Stempelkort til barer",
@@ -759,13 +759,13 @@ export const BARER: BrancheContent = {
   intro: [
     "En god bar sælger ikke kun øl og vin. Den skaber et sted, folk vender tilbage til.",
     "Det er de faste pladser ved baren. Vennerne, der mødes hver fredag. Gæsten, der altid prøver noget nyt på listen. De mennesker, der vælger jer for stemningen lige så meget som for drinken.",
-    "Stemplet gør den relation synlig og giver stamgæsterne noget at samle på.",
+    "Folka Kort gør den relation synlig og giver stamgæsterne noget at samle på.",
   ],
   sections: [
     {
       heading: "Gør hvert besøg til en del af historien",
       paragraphs: [
-        "Klippekortet har altid passet godt til barer. Stemplet gør det bare digitalt.",
+        "Klippekortet har altid passet godt til barer. Folka Kort gør det bare digitalt.",
         "Giv eksempelvis ét stempel pr. genstand, øl som vin, og lad den 10. være på husets regning.",
         "Kunden scanner én QR kode, kortet ligger direkte i Apple Wallet, og bartenderen stempler på få sekunder.",
         "Ingen papkort bag baren. Ingen kort, der bliver glemt derhjemme.",
@@ -799,7 +799,7 @@ export const BARER: BrancheContent = {
     {
       heading: "Brug data fra jeres egen bar",
       paragraphs: [
-        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Stemplet viser, hvordan jeres gæster faktisk bruger stedet.",
+        "Et fysisk kort fortæller kun, at nogen har samlet stempler. Folka Kort viser, hvordan jeres gæster faktisk bruger stedet.",
         "Hver uge får I overblik over nye kortholdere, stempler og indløste belønninger.",
         "Over tid kan I se:",
       ],
@@ -849,7 +849,7 @@ export const BARER: BrancheContent = {
   },
   sceneImage: {
     src: "/brancher/bar-scene.png",
-    alt: "Gæst ved baren scanner Stemplet-koden og har sit stempelkort med i Apple Wallet på telefonen.",
+    alt: "Gæst ved baren scanner QR-koden og har sit stempelkort med i Apple Wallet på telefonen.",
     caption:
       "Gæsten scanner ved baren og tilføjer kortet til Apple Wallet på få sekunder.",
   },
@@ -875,7 +875,7 @@ export const BRANCHER: BrancheContent[] = [
 /** Metadata til en branchesides `export const metadata`. */
 export function brancheMetadata(b: BrancheContent): Metadata {
   return {
-    // absolute: brug den praecise title (inkl. "| Stemplet") uden layout-templaten.
+    // absolute: brug den praecise title (inkl. "| Folka Kort") uden layout-templaten.
     title: { absolute: b.title },
     description: b.metaDescription,
     alternates: { canonical: b.slug },

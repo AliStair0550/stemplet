@@ -30,7 +30,7 @@ export default async function BeskederPage() {
       <KommunikationTabs active="beskeder" showCampaigns={business.stampsEnabled} />
       <PageHeading
         title="Pushbeskeder"
-        subtitle="Send en kort nyhed direkte til dine kunders iPhone. Den vises på låseskærmen, ligesom en besked fra en app, og står på kortet bagefter."
+        subtitle="Send en nyhed til kundernes låseskærm. Én om dagen."
       />
       <NewsComposer
         shopName={cardTitle(business)}

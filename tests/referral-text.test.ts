@@ -168,7 +168,7 @@ import { referralSummaryLine } from "../src/lib/overview-text";
 test("hjem uden Stemplet: linjen taler om nye kunder, ikke stempler", () => {
   assert.match(referralSummaryLine({ totalCustomers: 0, newThisMonth: 0, waiting: 0 }), /henvisningsside/);
   const line = referralSummaryLine({ totalCustomers: 14, newThisMonth: 1, waiting: 2 });
-  assert.equal(line, "I har 14 kunder. 1 ny kunde via henvisninger denne måned. 2 venter på første besøg.");
+  assert.equal(line, "Du har 14 kunder. 1 ny kunde via henvisninger denne måned. 2 venter på første besøg.");
   assert.doesNotMatch(line, /stempel/i);
 });
 

@@ -9,7 +9,7 @@ import { LOGIN_EMAIL_COOKIE } from "@/lib/login-code";
 // Forbigaaende kvitteringsside uden SEO-vaerdi. Crawlbar (ikke i robots-
 // disallow), saa Google ser noindex og holder den ude af indekset.
 export const metadata: Metadata = {
-  title: { absolute: "Tjek din mail - Kundekort" },
+  title: { absolute: "Tjek din mail - Folka Kort" },
   robots: { index: false },
 };
 
@@ -36,7 +36,7 @@ export default async function CheckMailPage({
   return (
     <main className="dash-theme flex min-h-screen flex-col bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 w-full max-w-[1120px] items-center px-4 sm:px-6">
-        <Link href="/" aria-label="Kundekort, til forsiden">
+        <Link href="/" aria-label="Folka Kort, til forsiden">
           <KundekortMark />
         </Link>
       </header>
