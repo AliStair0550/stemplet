@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { StampIcon } from "@/components/StampIcon";
-import { QrCode } from "./MemberCard";
+import { ArtLayer, QrCode } from "./MemberCard";
 
 // Historien om Emma: fra foerste scanning til den gratis kop. Telefonen staar
 // fast, mens man scroller gennem kapitlerne, og kortet i den skifter tilstand.
@@ -70,8 +69,8 @@ const CHAPTERS: Chapter[] = [
 function PhoneCard({ c }: { c: Chapter }) {
   return (
     <div className="relative aspect-[1/1.42] overflow-hidden rounded-[22px] bg-[#14110F] text-white kk-shadow-3">
-      <Image src="/kundekort/cafe.webp" alt="" fill sizes="320px" className="object-cover object-[60%_50%]" />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#14110F]/70 via-[#14110F]/10 to-[#14110F]/95" />
+      <ArtLayer id="kk-story" art="aurora" bg="#14110F" fg="#FFFFFF" accent="#C8743A" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#14110F]/0 via-[#14110F]/10 to-[#14110F]/95" />
       <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full bg-white text-[#14110F]">

@@ -408,7 +408,7 @@ export function EditBilling({
       <input type="hidden" name="businessId" value={businessId} />
       <label className="flex flex-col gap-0.5">
         <span className="text-[0.58rem] font-[400] uppercase tracking-[0.1em] text-slate">
-          Pro-pris (kr./md.)
+          Pris (kr./md. ekskl. moms)
         </span>
         <input
           name="proPriceKr"

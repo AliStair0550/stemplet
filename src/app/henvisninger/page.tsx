@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Henvisninger: få flere kunder via dine kunder",
     description:
-      "Motivér dine kunder til at henvise dig, og få flere nye kunder. Gratis op til 100 kortholdere.",
+      "Motivér dine kunder til at henvise dig, og få flere nye kunder. Tre måneder gratis.",
     type: "website",
     locale: "da_DK",
   },
@@ -171,7 +171,7 @@ export default function HenvisningerPage() {
               </p>
               <div className="mt-9 flex flex-col items-center gap-3 md:items-start">
                 <CTA />
-                <p className="text-[15px] text-[#111]/55">Gratis op til 100 kortholdere</p>
+                <p className="text-[15px] text-[#111]/55">Tre måneder gratis</p>
               </div>
             </Play>
             <Play className="relative mx-auto h-[560px] w-[320px] sm:w-[380px]">
@@ -269,10 +269,10 @@ export default function HenvisningerPage() {
           <Play className="text-center">
             <p className={`${hand.className} text-[96px] leading-none md:text-[150px]`}>Gratis</p>
             <Scribble className="mx-auto -mt-2 block h-4 w-[260px] md:w-[400px]" />
-            <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">op til 100 kortholdere.</p>
+            <p className="mt-6 text-[22px] font-medium tracking-[-0.01em] text-[#111]/55">de første tre måneder.</p>
             <p className="mt-10 text-[17px]">
-              Derefter <span className="font-semibold">99 kr./md.</span>{" "}
-              <span className="text-[#111]/55">ekskl. moms. Stemplet er med.</span>
+              Derefter <span className="font-semibold">49 kr./md.</span>{" "}
+              <span className="text-[#111]/55">ekskl. moms. Stempler og beskeder er med.</span>
             </p>
           </Play>
         </Section>

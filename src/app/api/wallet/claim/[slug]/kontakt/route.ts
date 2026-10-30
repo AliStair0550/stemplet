@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { resolveOrCreateCard } from "@/lib/claim";
 import { parseContact } from "@/lib/contact";
-import { maybeFireCardholderThresholds } from "@/lib/billing";
+import { maybeFireTrialMilestones } from "@/lib/billing";
 import {
   cardCookieName,
   cardCookieOptions,
@@ -77,7 +77,7 @@ export async function POST(
   if (r.ok) {
     out.cookies.set(cardCookieName(r.businessId), r.authToken, cardCookieOptions());
     // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.
-    if (r.created) await maybeFireCardholderThresholds(r.businessId);
+    if (r.created) await maybeFireTrialMilestones(r.businessId);
   }
   return out;
 }

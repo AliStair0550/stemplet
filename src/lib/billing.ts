@@ -3,18 +3,21 @@ import { after } from "next/server";
 import { prisma } from "./prisma";
 import { APP_URL } from "./env";
 import { DEMO_SLUG } from "./demo";
-import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "./plans";
+import { PRO_PRICE_DKK, TRIAL_MONTHS, TRIAL_WARN_DAYS, trialEndsAt } from "./plans";
 import { sendEmail } from "./send-email";
 import { superadminRecipients } from "./superadmin-emails";
 import {
-  cardholderWarningEmail,
-  superadminThresholdEmail,
+  trialEndingEmail,
+  superadminTrialEndingEmail,
   superadminInvoiceEmail,
 } from "./emails";
 import { captureServerError } from "./sentry";
 
-// Prismodel + manuel fakturering (Billy). Ingen automatik lukker noget - kun
-// superadmin. Kortholder-definitionen EER kanonisk her og genbruges overalt.
+// Prismodel + manuel fakturering (Billy). Tre maaneder gratis fra oprettelsen,
+// derefter 49 kr./md. ekskl. moms (plans.ts). Ingen automatik lukker noget, kun
+// superadmin. Milepaelene er datoer: varsel TRIAL_WARN_DAYS foer, og faktura-
+// trigger naar proeveperioden er slut. De gemmes i de eksisterende fire-once-
+// felter: cardholderWarnedAt = varsel givet, reached100At = fakturering startet.
 
 // Injicerbare afhaengigheder, saa taerskel-logikken kan enhedstestes med en
 // in-memory DB og en fake mailer (samme moenster som redis-injektionen i tokens/
@@ -37,12 +40,8 @@ export async function countCardholders(
   return db.customerCard.count({ where: { cardId: { in: cardIds } } });
 }
 
-/** Tærskler: varsel ved 80, Pro fra 100. Genbruger de eksisterende konstanter. */
-export const CARDHOLDER_WARN = FREE_CUSTOMER_WARN; // 80
-export const CARDHOLDER_LIMIT = FREE_CUSTOMER_LIMIT; // 100
-
 /** Effektiv maanedspris i kr. En specialpris (fx founding member) gaelder indtil
- *  proPriceUntil; derefter falder butikken tilbage til standardprisen (99). */
+ *  proPriceUntil; derefter falder butikken tilbage til standardprisen (49). */
 export function effectiveProPriceKr(b: {
   proPriceKr: number;
   proPriceUntil: Date | null;
@@ -79,65 +78,48 @@ function runAfterResponse(task: () => Promise<void>) {
 }
 
 /**
- * Kaldes efter at et NYT kortholder-kort er oprettet. Registrerer (kun EEN gang
- * per butik) 80-taersklen og 100-krydsningen, hver som en atomisk fire-once, og
- * beder saa om at faa den tilhoerende mail sendt. Selve afsendelsen er skilt ud,
- * saa en daglig sweep kan gensende, hvis mailen fejler. Koeres efter svaret.
+ * Tjekker proeveperiodens milepaele for en butik (varsel og faktura-start).
+ * Kaldes efter et nyt kortholder-kort (billigt) og fra den daglige cron.
+ * Koeres efter svaret.
  */
-export async function maybeFireCardholderThresholds(
-  businessId: string,
-): Promise<void> {
-  runAfterResponse(() => processCardholderThresholds(businessId));
+export async function maybeFireTrialMilestones(businessId: string): Promise<void> {
+  runAfterResponse(() => processTrialMilestones(businessId));
 }
 
 /**
- * Kernen bag taersklerne, udtrukket fra maybeFire, saa den kan AFVENTES i tests.
- * Registrerer 80/100 hver som en atomisk fire-once (guardet updateMany) og beder
- * kun VINDEREN om at sende mailen. To samtidige krydsninger giver derfor praecis
- * eet varsel: begge kan naa if-tjekket, men kun een vinder updateMany.
+ * Kernen bag milepaelene, saa den kan AFVENTES i tests. Hver milepael er en
+ * atomisk fire-once (guardet updateMany), og kun VINDEREN sender mailen, saa to
+ * samtidige kald giver praecis eet varsel.
  */
-export async function processCardholderThresholds(
+export async function processTrialMilestones(
   businessId: string,
   db: Db = prisma,
   sendMail: Mailer = sendEmail,
+  now: Date = new Date(),
 ): Promise<void> {
   const biz = await db.business.findUnique({
     where: { id: businessId },
-    select: {
-      slug: true,
-      cardholderWarnedAt: true,
-      reached100At: true,
-      cards: { select: { id: true } },
-    },
+    select: { slug: true, createdAt: true, cardholderWarnedAt: true, reached100At: true },
   });
   if (!biz || biz.slug === DEMO_SLUG) return; // demo taeller ikke med
-  const cardIds = biz.cards.map((c) => c.id);
-  if (cardIds.length === 0) return;
-  const count = await db.customerCard.count({
-    where: { cardId: { in: cardIds } },
-  });
+  const ends = trialEndsAt(biz.createdAt);
+  const warnFrom = new Date(ends.getTime() - TRIAL_WARN_DAYS * 86_400_000);
 
-  // 100-krydsning: registrér KENDSGERNINGEN atomisk (fire-once). Vinderen af
-  // opdateringen sender faktura-trigger-mailen.
-  if (count >= CARDHOLDER_LIMIT && !biz.reached100At) {
+  // Varsel til ejeren (og superadmin): TRIAL_WARN_DAYS foer, eller med det samme,
+  // hvis perioden allerede er slut.
+  if (now >= warnFrom && !biz.cardholderWarnedAt) {
     const won = await db.business
-      .updateMany({
-        where: { id: businessId, reached100At: null },
-        data: { reached100At: new Date() },
-      })
+      .updateMany({ where: { id: businessId, cardholderWarnedAt: null }, data: { cardholderWarnedAt: now } })
       .catch(() => ({ count: 0 }));
-    if (won.count === 1) await sendInvoiceTriggerEmail(businessId, db, sendMail);
+    if (won.count === 1) await sendTrialWarnEmails(businessId, db, sendMail, now);
   }
 
-  // 80-varsel: samme atomiske fire-once. Vinderen sender varsel-mailene.
-  if (count >= CARDHOLDER_WARN && !biz.cardholderWarnedAt) {
+  // Faktura-start: proeveperioden er slut.
+  if (now >= ends && !biz.reached100At) {
     const won = await db.business
-      .updateMany({
-        where: { id: businessId, cardholderWarnedAt: null },
-        data: { cardholderWarnedAt: new Date() },
-      })
+      .updateMany({ where: { id: businessId, reached100At: null }, data: { reached100At: now } })
       .catch(() => ({ count: 0 }));
-    if (won.count === 1) await sendCardholderWarnEmails(businessId, db, sendMail);
+    if (won.count === 1) await sendInvoiceTriggerEmail(businessId, db, sendMail);
   }
 }
 
@@ -157,6 +139,8 @@ async function trySend(
   }
 }
 
+const dkDate = new Intl.DateTimeFormat("da-DK", { timeZone: "Europe/Copenhagen", dateStyle: "long" });
+
 const dkDateTime = new Intl.DateTimeFormat("da-DK", {
   timeZone: "Europe/Copenhagen",
   dateStyle: "long",
@@ -164,55 +148,51 @@ const dkDateTime = new Intl.DateTimeFormat("da-DK", {
 });
 
 /**
- * Sender 80-varslet (ejer + superadmin) og saetter cardholderWarnEmailSentAt ved
- * BEKRAEFTET levering. Fejler en mail, fanges det i Sentry, og flaget forbliver
- * null, saa den daglige sweep proever igen. Fire-once-flaget (cardholderWarnedAt)
- * er uroert. Returnerer true, hvis alt kom af sted.
+ * Sender varslet om proeveperiodens slutning (ejer + superadmin) og saetter
+ * cardholderWarnEmailSentAt ved BEKRAEFTET levering. Fejler en mail, fanges det
+ * i Sentry, og flaget forbliver null, saa den daglige sweep proever igen.
  */
-export async function sendCardholderWarnEmails(
+export async function sendTrialWarnEmails(
   businessId: string,
   db: Db = prisma,
   sendMail: Mailer = sendEmail,
+  now: Date = new Date(),
 ): Promise<boolean> {
   const biz = await db.business.findUnique({
     where: { id: businessId },
     select: {
       slug: true,
       name: true,
+      createdAt: true,
       proPriceKr: true,
       proPriceUntil: true,
       memberships: { select: { user: { select: { email: true } } } },
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;
-  const cardholders = await countCardholders(businessId, db);
-  const priceKr = effectiveProPriceKr(biz);
-  const ownerEmails = biz.memberships
-    .map((m) => m.user.email)
-    .filter((e): e is string => Boolean(e));
-
+  const ends = trialEndsAt(biz.createdAt);
+  const endsOn = dkDate.format(ends);
+  const ownerEmails = biz.memberships.map((m) => m.user.email).filter((e): e is string => Boolean(e));
   let allOk = true;
 
-  // Til ejeren: venligt varsel + link til godkendelsessiden.
-  const ownerMail = cardholderWarningEmail({
+  const ownerMail = trialEndingEmail({
     businessName: biz.name,
-    cardholders,
-    limit: CARDHOLDER_LIMIT,
-    priceKr,
+    endsOn,
+    ended: now >= ends,
+    priceKr: effectiveProPriceKr(biz),
     agreementUrl: `${APP_URL}/app/aftale`,
   });
   for (const to of ownerEmails) {
     if (!(await trySend(to, ownerMail, sendMail))) allOk = false;
   }
 
-  // Til superadmin(erne): hvem er paa vej over.
   const recipients = superadminRecipients();
   if (recipients.length > 0) {
-    const adminMail = superadminThresholdEmail({
+    const adminMail = superadminTrialEndingEmail({
       businessName: biz.name,
       slug: biz.slug,
-      cardholders,
-      limit: CARDHOLDER_LIMIT,
+      endsOn,
+      cardholders: await countCardholders(businessId, db),
       ownerEmails: ownerEmails.join(", ") || "(ingen)",
       adminUrl: `${APP_URL}/admin`,
     });
@@ -222,26 +202,20 @@ export async function sendCardholderWarnEmails(
   }
 
   if (allOk) {
-    await db.business
-      .update({
-        where: { id: businessId },
-        data: { cardholderWarnEmailSentAt: new Date() },
-      })
-      .catch(() => {});
+    await db.business.update({ where: { id: businessId }, data: { cardholderWarnEmailSentAt: new Date() } }).catch(() => {});
     return true;
   }
-  captureServerError(
-    new Error("Kortholder-varsel: en eller flere mails kunne ikke leveres"),
-    { route: "billing:cardholder-warn", businessId },
-  );
+  captureServerError(new Error("Varsel om proeveperiode: en eller flere mails kunne ikke leveres"), {
+    route: "billing:trial-warn",
+    businessId,
+  });
   return false;
 }
 
 /**
- * Sender faktura-trigger-mailen til superadmin ved 100-krydsning og saetter
- * reached100EmailSentAt ved BEKRAEFTET levering. Samme sweep-baserede resiliens
- * som 80-varslet. 100-krydsningen ER faktureringstidspunktet, saa mailen samler
- * alt til Billy-fakturaen. Returnerer true, hvis den kom af sted.
+ * Sender faktura-trigger-mailen til superadmin, naar proeveperioden er slut, og
+ * saetter reached100EmailSentAt ved BEKRAEFTET levering. Samme sweep-baserede
+ * resiliens som varslet. Mailen samler alt til Billy-fakturaen.
  */
 export async function sendInvoiceTriggerEmail(
   businessId: string,
@@ -253,6 +227,7 @@ export async function sendInvoiceTriggerEmail(
     select: {
       slug: true,
       name: true,
+      createdAt: true,
       proPriceKr: true,
       proPriceUntil: true,
       proApprovedAt: true,
@@ -269,12 +244,12 @@ export async function sendInvoiceTriggerEmail(
       businessName: biz.name,
       slug: biz.slug,
       cardholders,
-      limit: CARDHOLDER_LIMIT,
+      trialEndedOn: dkDate.format(trialEndsAt(biz.createdAt)),
       priceKr: effectiveProPriceKr(biz),
       standardPriceKr: PRO_PRICE_DKK,
       approvedLabel: biz.proApprovedAt
         ? dkDateTime.format(biz.proApprovedAt)
-        : "Ikke godkendt endnu",
+        : "Ikke bekræftet endnu",
       ownerEmails:
         biz.memberships
           .map((m) => m.user.email)
@@ -304,18 +279,31 @@ export async function sendInvoiceTriggerEmail(
 }
 
 /**
- * Daglig sweep (cron): gensend taerskel-mails, der aldrig blev leveret, saa et
- * Resend-blip eller en servergenstart ikke taber varslet. Finder butikker, hvor
- * taersklen er krydset (Warned/reached100At sat), men mailen endnu ikke bekraeftet
- * leveret (EmailSentAt null). Demo ekskluderet.
+ * Daglig sweep (cron). Foerst: butikker, hvis milepael er naaet (varsel eller
+ * faktura-start), men endnu ikke registreret, behandles. Dernaest gensendes mails,
+ * der aldrig blev leveret, saa et Resend-blip ikke taber varslet. Demo ekskluderet.
  */
 export async function sweepPendingThresholdEmails(
   db: Db = prisma,
   sendMail: Mailer = sendEmail,
+  now: Date = new Date(),
 ): Promise<{
   warns: number;
   invoices: number;
 }> {
+  // Oprettet foer denne dato = varsel-tidspunktet er naaet.
+  const warnCutoff = new Date(now.getTime() + TRIAL_WARN_DAYS * 86_400_000);
+  warnCutoff.setUTCMonth(warnCutoff.getUTCMonth() - TRIAL_MONTHS);
+  const due = await db.business.findMany({
+    where: {
+      slug: { not: DEMO_SLUG },
+      createdAt: { lte: warnCutoff },
+      OR: [{ cardholderWarnedAt: null }, { reached100At: null }],
+    },
+    select: { id: true },
+  });
+  for (const b of due) await processTrialMilestones(b.id, db, sendMail, now);
+
   const [pendingWarns, pendingInvoices] = await Promise.all([
     db.business.findMany({
       where: {
@@ -337,7 +325,7 @@ export async function sweepPendingThresholdEmails(
 
   let warns = 0;
   for (const b of pendingWarns) {
-    if (await sendCardholderWarnEmails(b.id, db, sendMail)) warns += 1;
+    if (await sendTrialWarnEmails(b.id, db, sendMail, now)) warns += 1;
   }
   let invoices = 0;
   for (const b of pendingInvoices) {
@@ -393,37 +381,33 @@ export async function checkStampInvariant(
 
 export type AgreementView = {
   cardholders: number;
-  warn: number;
-  limit: number;
+  /** Sidste dag i de gratis maaneder. */
+  trialEndsAt: Date;
+  trialDaysLeft: number;
+  inTrial: boolean;
   priceKr: number; // effektiv pris (specialpris eller standard)
   standardPriceKr: number;
   approved: boolean;
   approvedAt: Date | null;
-  overLimit: boolean; // har krydset 100
-  warned: boolean; // varslet (eller allerede over 80)
 };
 
-/** Tilstanden til /app/aftale: foer varsel, efter varsel, efter godkendelse, efter 100. */
-export async function getAgreementView(businessId: string): Promise<AgreementView> {
+/** Tilstanden til /app/aftale: i proeveperioden, efter, og om abonnementet er bekraeftet. */
+export async function getAgreementView(businessId: string, now: Date = new Date()): Promise<AgreementView> {
   const biz = await prisma.business.findUnique({
     where: { id: businessId },
-    select: {
-      cardholderWarnedAt: true,
-      proApprovedAt: true,
-      proPriceKr: true,
-      proPriceUntil: true,
-    },
+    select: { createdAt: true, proApprovedAt: true, proPriceKr: true, proPriceUntil: true },
   });
   const cardholders = await countCardholders(businessId);
+  const ends = trialEndsAt(biz?.createdAt ?? now);
+  const left = Math.max(0, Math.ceil((ends.getTime() - now.getTime()) / 86_400_000));
   return {
     cardholders,
-    warn: CARDHOLDER_WARN,
-    limit: CARDHOLDER_LIMIT,
+    trialEndsAt: ends,
+    trialDaysLeft: left,
+    inTrial: now < ends,
     priceKr: biz ? effectiveProPriceKr(biz) : PRO_PRICE_DKK,
     standardPriceKr: PRO_PRICE_DKK,
     approved: Boolean(biz?.proApprovedAt),
     approvedAt: biz?.proApprovedAt ?? null,
-    overLimit: cardholders >= CARDHOLDER_LIMIT,
-    warned: Boolean(biz?.cardholderWarnedAt) || cardholders >= CARDHOLDER_WARN,
   };
 }

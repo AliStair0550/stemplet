@@ -22,11 +22,8 @@ export default async function AppLayout({
   const { business } = await requireBusiness();
   const businesses = await getMyBusinesses();
   const support = await getSupportBusiness();
-  // Vis "Pro-aftale" i menuen naar butikken er varslet (>=80) eller har godkendt.
-  // Billige flags fra business, ingen ekstra query; foer varsel er den skjult.
-  const showAgreement = Boolean(
-    business.cardholderWarnedAt || business.proApprovedAt,
-  );
+  // "Abonnement" i menuen: altid, saa ejeren kan se de gratis maaneder og prisen.
+  const showAgreement = true;
 
   return (
     // dash-theme: sorte knapper i hele dashboardet (se globals.css).

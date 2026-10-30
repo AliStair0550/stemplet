@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
-/** Ejeren godkender Pro-aftalen. Logges med tidspunkt + bruger. Idempotent:
+/** Ejeren bekraefter abonnementet. Logges med tidspunkt + bruger. Idempotent:
  *  kun den FOERSTE godkendelse taeller (senere klik aendrer ikke tidsstemplet). */
 export async function approveProAgreement(): Promise<{ ok: boolean }> {
   const { business, userId } = await requireBusiness();

@@ -160,7 +160,7 @@ const POINTS: { icon: string; title: string; body: string }[] = [
   {
     icon: "gift",
     title: "Kom i gang uden risiko",
-    body: "Gratis op til 100 kortholdere. Derefter kun 99 kr. om måneden. Uendelige kortholdere. Ingen binding.",
+    body: "Tre måneder gratis. Derefter 49 kr. om måneden ekskl. moms. Ubegrænset antal kortholdere. Ingen binding.",
   },
 ];
 

@@ -7,7 +7,7 @@ import { fireWebhook } from "./integrations";
 import { WALLET_ENABLED } from "./env";
 import { generateSerial, generateAuthToken } from "./ids";
 import { canCreateCustomer, PLAN_LIMITS } from "./plans";
-import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
+import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
 
 // Advisory-laas-navnerum for kortholder-loftet (fast tal, saa det ikke kolliderer
 // med andre advisory-laase).
@@ -133,7 +133,7 @@ export async function createCustomerCard(
   );
   if (!created) return { ok: false, reason: "full" };
   // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
-  await maybeFireCardholderThresholds(businessId);
+  await maybeFireTrialMilestones(businessId);
   return {
     ok: true,
     id: created.id,

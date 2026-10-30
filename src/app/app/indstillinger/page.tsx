@@ -11,11 +11,9 @@ import { AccessManager } from "./AccessManager";
 import { LocationCard } from "./LocationCard";
 import { DeleteProfile } from "./DeleteProfile";
 import { soleBusinessesOf } from "@/lib/profile-delete";
-import { SubmitButton } from "@/components/SubmitButton";
-import { startCheckout, openPortal } from "../actions";
-import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
-import { stripeConfigured } from "@/lib/stripe";
-import { formatDkDateTime } from "@/lib/utils";
+import { PRO_PRICE_DKK, trialDaysLeft, trialEndsAt } from "@/lib/plans";
+import Link from "next/link";
+import { formatDkDate, formatDkDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Indstillinger" };
 export const dynamic = "force-dynamic";
@@ -34,7 +32,7 @@ export default async function IndstillingerPage({
 }) {
   const { business, userId, email } = await requireBusiness();
   const { betaling, fejl } = await searchParams;
-  const stripeOn = stripeConfigured();
+  const trialLeft = trialDaysLeft(business.createdAt);
 
   const [logs, devices, memberships, sole] = await Promise.all([
     prisma.auditLog.findMany({
@@ -180,42 +178,17 @@ export default async function IndstillingerPage({
           <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-[300] text-[1rem] text-ink">
-                {business.plan === "PRO" ? "Pro" : "Gratis"}
+                {trialLeft > 0 ? `Gratis til og med ${formatDkDate(trialEndsAt(business.createdAt))}` : "Folka Kort"}
               </p>
               <p className="font-[200] text-[0.82rem] text-stone">
-                {business.plan === "PRO"
-                  ? `${PRO_PRICE_DKK} kr./md. Ubegrænset antal kunder.`
-                  : `Alle funktioner, op til ${FREE_CUSTOMER_LIMIT} kunder. Opgrader for ubegrænset antal.`}
+                {trialLeft > 0
+                  ? `Derefter ${PRO_PRICE_DKK} kr. om måneden ekskl. moms. Ubegrænset antal kortholdere.`
+                  : `${PRO_PRICE_DKK} kr. om måneden ekskl. moms. Ubegrænset antal kortholdere.`}
               </p>
             </div>
-            {business.plan === "PRO" ? (
-              business.stripeCustomerId ? (
-                <form action={openPortal}>
-                  <SubmitButton variant="outline" pendingText="Åbner...">
-                    Administrer abonnement
-                  </SubmitButton>
-                </form>
-              ) : (
-                // Pro tildelt manuelt (ingen Stripe-kunde): vis en klar besked i
-                // stedet for en knap, der bare ville genindlaese siden.
-                <p className="max-w-[15rem] text-right font-[200] text-[0.8rem] leading-relaxed text-stone">
-                  Din Pro-plan styres af os. Skriv til{" "}
-                  <a
-                    href="mailto:hej@folka.dk"
-                    className="text-terracotta underline underline-offset-2 hover:text-terracotta-dark"
-                  >
-                    hej@folka.dk
-                  </a>{" "}
-                  for ændringer.
-                </p>
-              )
-            ) : stripeOn ? (
-              <form action={startCheckout}>
-                <SubmitButton variant="terracotta" pendingText="Åbner Stripe...">
-                  Opgrader til Pro
-                </SubmitButton>
-              </form>
-            ) : null}
+            <Link href="/app/aftale" className="text-[0.85rem] font-[500] text-ink underline underline-offset-4">
+              Se abonnement
+            </Link>
           </div>
         </Panel>
       </div>
