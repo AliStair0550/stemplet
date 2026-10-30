@@ -215,6 +215,8 @@ export default async function ClaimPage({
           <WalletCardPreview
             os="27"
             {...preview}
+            // Henvisningskoden vises foerst, naar kunden har kortet: her handler det om at hente det.
+            product={business.stampsEnabled ? "stemplet" : preview.product}
             artwork={artworkUrl}
             logoUrl={logoSrc}
             actions={[]}

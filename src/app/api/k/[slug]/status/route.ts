@@ -24,6 +24,8 @@ export type ShopStatus = {
   invalidCode: boolean;
   /** Kundens eget link aabnet paa egen telefon. */
   own: boolean;
+  /** Kortet ligger i Apple Wallet (enheden har registreret det hos os). */
+  inWallet: boolean;
 };
 
 const json = (s: ShopStatus) => NextResponse.json(s, { headers: { "cache-control": "no-store" } });
@@ -31,7 +33,7 @@ const json = (s: ShopStatus) => NextResponse.json(s, { headers: { "cache-control
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const k = req.nextUrl.searchParams.get("k")?.trim().slice(0, 40) || null;
-  const none: ShopStatus = { known: false, me: null, friend: null, invalidCode: false, own: false };
+  const none: ShopStatus = { known: false, me: null, friend: null, invalidCode: false, own: false, inWallet: false };
 
   // Let loft pr. IP: koder er korte (NAVN-XX) og afsloerer henviserens fornavn.
   // Generoest, fordi siden kaldes ved hvert besoeg (travl cafe paa een WiFi).
@@ -78,8 +80,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     };
   }
 
+  const inWallet = visitor ? (await prisma.walletRegistration.count({ where: { customerCardId: visitor.id } })) > 0 : false;
+
   return json({
     known: !!visitor,
+    inWallet,
     me,
     friend: referrer && !own ? { firstName: firstName(referrer.name) } : null,
     invalidCode: !!k && referrals && !referrer,

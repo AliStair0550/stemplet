@@ -22,6 +22,12 @@ const ERRORS: Record<string, string> = {
   optaget: "Der er lidt travlt lige nu. Prøv igen om et øjeblik.",
 };
 
+// Indtastningsfelter: naesten taet flade i kortets tekstfarve (ctaBg) med tekst
+// i kortfarven (ctaFg), saa de staar tydeligt frem paa baggrunden.
+function fieldStyle(ctaBg: string, ctaFg: string): React.CSSProperties {
+  return { color: ctaFg, background: rgba(ctaBg, 0.94), border: `1px solid ${rgba(ctaBg, 0.5)}` };
+}
+
 // Fejl-koder hvor et nyt forsoeg giver mening (vis en "Prøv igen"-knap).
 const RETRYABLE = new Set(["serverfejl", "optaget"]);
 
@@ -99,11 +105,7 @@ function ContactForm({
     }
   }
 
-  const inputStyle = {
-    color: ctaBg,
-    background: rgba(ctaBg, 0.08),
-    border: `1px solid ${rgba(ctaBg, 0.28)}`,
-  };
+  const inputStyle = fieldStyle(ctaBg, ctaFg);
   const inputCls =
     "w-full rounded-xl px-4 py-3 text-[1rem] font-[400] outline-none placeholder:opacity-50 focus:ring-2";
 
@@ -276,7 +278,7 @@ function RecoverForm({
         aria-label="E-mail"
         placeholder="navn@mail.dk"
         className="w-full rounded-xl px-4 py-3 text-[1rem] font-[400] outline-none placeholder:opacity-50 focus:ring-2"
-        style={{ color: ctaBg, background: rgba(ctaBg, 0.08), border: `1px solid ${rgba(ctaBg, 0.28)}` }}
+        style={fieldStyle(ctaBg, ctaFg)}
       />
       {error ? (
         <p role="alert" className="rounded-lg border border-rust/40 bg-rust/10 px-4 py-3 text-center text-[0.85rem] font-[300] text-rust">
@@ -386,7 +388,7 @@ function ReferralPanel({
 
 // "Har du en kode fra en ven?": aabner siden med koden (?k=), saa vennens
 // rabat vises og tilmeldingen registrerer henvisningen.
-function CodeEntry({ ctaBg }: { ctaBg: string }) {
+function CodeEntry({ ctaBg, ctaFg }: { ctaBg: string; ctaFg: string }) {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
   if (!open) {
@@ -417,7 +419,7 @@ function CodeEntry({ ctaBg }: { ctaBg: string }) {
         autoCapitalize="characters"
         maxLength={20}
         className="min-w-0 flex-1 rounded-xl px-4 py-3 text-[1rem] outline-none"
-        style={{ color: ctaBg, background: rgba(ctaBg, 0.08), border: `1px solid ${rgba(ctaBg, 0.28)}` }}
+        style={fieldStyle(ctaBg, ctaFg)}
       />
       <button type="submit" className="rounded-xl px-4 text-[0.9rem] font-medium" style={{ border: `1px solid ${rgba(ctaBg, 0.4)}`, color: ctaBg }}>
         Brug
@@ -697,6 +699,31 @@ export function ClaimFlow({
   // vender TILBAGE fra arket (siden blev skjult og saa synlig igen). Aabnede
   // arket sig aldrig (typisk et cold start, der stadig arbejder), viser vi ikke
   // en falsk kvittering, men en "prøv igen" efter en romelig faldback.
+  // Sikkert svar: ligger kortet i Wallet? Wallet-arket paa iPhone skjuler ikke
+  // altid siden, saa vi spoerger ogsaa serveren (enheden registrerer kortet,
+  // naar det er lagt i Wallet). Stopper efter et minut.
+  useEffect(() => {
+    if (phase !== "opening" && phase !== "usikker") return;
+    let alive = true;
+    const started = Date.now();
+    const tick = async () => {
+      const d = await loadStatus().catch(() => null);
+      if (!alive) return;
+      if (d?.inWallet) {
+        setStatus(d);
+        setPhase("added");
+      } else if (Date.now() - started < 60_000) {
+        timer = setTimeout(tick, 2500);
+      }
+    };
+    let timer = setTimeout(tick, 2500);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
   useEffect(() => {
     if (phase !== "opening") return;
     wasHiddenRef.current = false;
@@ -760,7 +787,6 @@ export function ClaimFlow({
         >
           Åbn kortet i Apple Wallet igen
         </a>
-        {referralPanel}
       </div>
     );
   }
@@ -782,11 +808,11 @@ export function ClaimFlow({
             border: `1px solid ${rgba(ctaBg, 0.18)}`,
           }}
         >
-          Åbnede Apple Wallet sig ikke? Første gang kan det tage et øjeblik. Prøv
-          igen.
+          Ligger kortet i din Apple Wallet nu? Så er du klar. Åbnede Wallet sig
+          ikke, kan du hente kortet igen.
         </p>
         <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg}>
-          Prøv igen
+          Hent kortet igen
         </CtaLink>
       </div>
     );
@@ -887,7 +913,7 @@ export function ClaimFlow({
           setStage("recover");
         }}
       />
-        {referral && !friend ? <CodeEntry ctaBg={ctaBg} /> : null}
+        {referral && !friend ? <CodeEntry ctaBg={ctaBg} ctaFg={ctaFg} /> : null}
         {referral?.termsLine ? (
           <p className="text-center text-[0.8rem] font-[300]" style={{ color: rgba(ctaBg, 0.7) }}>
             {referral.termsLine}
@@ -928,7 +954,8 @@ export function ClaimFlow({
           Du har allerede et kort her, så vennerabatten er til nye kunder. Men du kan selv henvise dine venner.
         </p>
       ) : null}
-      {referralPanel}
+      {/* Henvisningen vises foerst ved et senere besoeg: nu handler det om kortet. */}
+      {justCreated || recovered ? null : referralPanel}
     </div>
   );
 }
