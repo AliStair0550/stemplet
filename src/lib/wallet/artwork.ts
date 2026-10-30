@@ -35,7 +35,8 @@ function svgFor(i: ArtworkInput, s: number): string {
   const fg = esc(i.textColor);
   const open = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${POSTER_W} ${POSTER_H}">`;
   if (i.style === "pattern") {
-    return `${open}<defs><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><g transform="translate(10 10)" fill="none" stroke="${fg}" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g></pattern></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#p)"/></svg>`;
+    // Moensteret toner ud mod toppen, saa navn/logo og stempler staar frit.
+    return `${open}<defs><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><g transform="translate(10 10)" fill="none" stroke="${fg}" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g></pattern><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0.17" stop-color="#fff" stop-opacity="0"/><stop offset="0.32" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="m"><rect width="100%" height="100%" fill="url(#f)"/></mask></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#p)" mask="url(#m)"/></svg>`;
   }
   if (i.style === "stamps") {
     const cols = 5;

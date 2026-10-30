@@ -6,6 +6,7 @@ import {
   setPlan,
   deleteBusiness,
   clearDemoCards,
+  pushAllCardsAction,
   resetStamps,
   updateOwner,
   lockAdmin,
@@ -559,5 +560,55 @@ export function StopButton({
         Fortryd
       </button>
     </span>
+  );
+}
+
+// ── Opdater alle kort i Wallet (to-trins bekraeftelse) ────────────────
+export function PushAllCardsButton() {
+  const [armed, setArmed] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pending, start] = useTransition();
+
+  function run() {
+    setMsg(null);
+    start(async () => {
+      const res = await pushAllCardsAction();
+      setArmed(false);
+      setMsg(res.ok ? { ok: true, text: `Sendt til ${res.pushed} kort. De opdateres i løbet af få minutter.` } : { ok: false, text: res.error });
+    });
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {armed ? (
+        <>
+          <button
+            type="button"
+            onClick={run}
+            disabled={pending}
+            className="inline-flex min-h-10 items-center rounded-full bg-ink px-5 text-[0.85rem] font-semibold text-white disabled:opacity-50"
+          >
+            {pending ? "Sender..." : "Ja, opdater alle kort"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setArmed(false)}
+            disabled={pending}
+            className="inline-flex min-h-10 items-center rounded-full border border-clay px-4 text-[0.85rem] text-ink"
+          >
+            Fortryd
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setArmed(true)}
+          className="inline-flex min-h-10 items-center rounded-full border border-clay px-5 text-[0.85rem] font-semibold text-ink hover:border-ink"
+        >
+          Opdater alle kort i Wallet
+        </button>
+      )}
+      {msg ? <span className={`text-[0.82rem] ${msg.ok ? "text-ink" : "text-rust"}`}>{msg.text}</span> : null}
+    </div>
   );
 }

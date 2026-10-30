@@ -39,16 +39,14 @@ test("plakat: kun Henvisninger viser til gode oeverst og koden stort", () => {
   assert.match(f.footer[0]!.value, /Din ven får 100/);
 });
 
-test("knapper: Apples typer, kun det der kan bruges, hoejst to", () => {
-  const a = featuredActionsFor({
-    actions: ["henvis", "book", "beloenninger"],
-    bookingUrl: "https://planway.com/salon",
-    referralPageUrl: "https://x/henvisninger/salon",
-    cardPageUrl: "https://x/k/salon",
-  });
-  assert.deepEqual(a.map((x) => x.type), ["viewOffersRewards", "bookAppointment"]);
-  const b = featuredActionsFor({ actions: ["book", "henvis", "beloenninger"], bookingUrl: null, referralPageUrl: null, cardPageUrl: "https://x/k/salon" });
-  assert.deepEqual(b, [{ identifier: "beloenninger", type: "membershipBenefits", url: "https://x/k/salon" }]);
+test("knapper: Tilbud og fordele og Book tid som Apples typer", () => {
+  const a = featuredActionsFor({ actions: ["fordele", "book"], bookingUrl: "https://planway.com/salon", benefitsUrl: "https://x/fordele/t" });
+  assert.deepEqual(a.map((x) => [x.type, x.url]), [
+    ["viewOffersRewards", "https://x/fordele/t"],
+    ["bookAppointment", "https://planway.com/salon"],
+  ]);
+  const b = featuredActionsFor({ actions: ["book", "fordele"], bookingUrl: null, benefitsUrl: "https://x/fordele/t" });
+  assert.deepEqual(b, [{ identifier: "fordele", type: "viewOffersRewards", url: "https://x/fordele/t" }]);
 });
 
 test("plakatbillede: 1x, 2x og 3x i Apples maal for alle stilarter", async () => {

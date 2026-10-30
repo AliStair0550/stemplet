@@ -13,22 +13,26 @@ export const CARD_STYLE_LABEL: Record<CardStyle, string> = {
   stamps: "Stempler",
 };
 
-/** Knapper paa kortet (iOS 27 "Featured Actions"), hoejst to. */
-export const CARD_ACTIONS = ["book", "henvis", "beloenninger"] as const;
+/**
+ * Knapper paa kortet (iOS 27 "Featured Actions"), hoejst to: kundens egen side
+ * med tilbud og fordele (stempler, tilbud, henvisning) og butikkens booking.
+ */
+export const CARD_ACTIONS = ["fordele", "book"] as const;
 export type CardAction = (typeof CARD_ACTIONS)[number];
 export const MAX_CARD_ACTIONS = 2;
 
+// Tidligere knapper, der nu er samlet i "Tilbud og fordele" (gemte valg virker videre).
+const LEGACY_ACTIONS: Record<string, CardAction> = { henvis: "fordele", beloenninger: "fordele" };
+
 export const CARD_ACTION_LABEL: Record<CardAction, string> = {
+  fordele: "Tilbud og fordele",
   book: "Book tid",
-  henvis: "Henvis en ven",
-  beloenninger: "Se dine belønninger",
 };
 
 /** Hvad knappen goer, naar kunden trykker paa den i Wallet. */
 export const CARD_ACTION_HINT: Record<CardAction, string> = {
+  fordele: "Kundens egen side med stempler, tilbud og henvis en ven.",
   book: "Åbner dit booking-link.",
-  henvis: "Åbner kundens side med tilbud, fordele og henvisningskode.",
-  beloenninger: "Åbner kundens side med tilbud, fordele og stempler.",
 };
 
 export type CardLookContext = {
@@ -58,21 +62,22 @@ export function actionUnavailableReason(action: CardAction, ctx: CardLookContext
   if (action === "book" && !(ctx.bookingUrl && /^https?:\/\//i.test(ctx.bookingUrl))) {
     return "Tilføj et booking-link under Regler, Henvisninger.";
   }
-  if (action === "henvis" && !ctx.referralsEnabled) return "Kræver Henvisninger.";
   return null;
 }
 
 /** Gyldige, tilgaengelige knapper i valgt raekkefoelge, hoejst to. */
 export function normalizeActions(actions: readonly string[], ctx: CardLookContext): CardAction[] {
   const out: CardAction[] = [];
-  for (const a of actions) {
+  for (const raw of actions) {
+    const a = LEGACY_ACTIONS[raw] ?? raw;
     if (!(CARD_ACTIONS as readonly string[]).includes(a)) continue;
     const act = a as CardAction;
     if (out.includes(act) || actionUnavailableReason(act, ctx)) continue;
     out.push(act);
     if (out.length === MAX_CARD_ACTIONS) break;
   }
-  return out;
+  // Fast raekkefoelge: Tilbud og fordele foerst, saa Book tid.
+  return out.sort((a, b) => CARD_ACTIONS.indexOf(a) - CARD_ACTIONS.indexOf(b));
 }
 
 /** Oeverst paa kortet: logo, navn eller begge (butikken vaelger under Design). */

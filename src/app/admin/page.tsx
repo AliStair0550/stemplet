@@ -13,7 +13,7 @@ import { formatDkNumber, formatDkDateTime } from "@/lib/utils";
 import { BarChart } from "@/components/BarChart";
 import { AdminUnlock } from "./AdminUnlock";
 import { AdminShell } from "./AdminShell";
-import { ClearDemoButton } from "./AdminControls";
+import { ClearDemoButton, PushAllCardsButton } from "./AdminControls";
 import { AdminBusinesses, type Row } from "./AdminBusinesses";
 import { AdminCreateBusiness } from "./AdminCreateBusiness";
 import { APP_HOST } from "@/lib/platform";
@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 export const dynamic = "force-dynamic";
+// "Opdater alle kort" sender mange pushes; giv handlingen tid nok.
+export const maxDuration = 60;
 
 type RowMetrics = {
   customers: number;
@@ -381,6 +383,17 @@ export default async function AdminPage() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── Wallet: send en opdatering til alle kort ──────────────────── */}
+        <section>
+          <SectionHead
+            title="Kort i Wallet"
+            desc="Send en opdatering til alle kort, der ligger i kundernes Wallet, fx efter en ændring af kortets udseende eller knapper. Kunderne får ingen notifikation."
+          />
+          <div className="mt-4">
+            <PushAllCardsButton />
           </div>
         </section>
 
