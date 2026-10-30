@@ -3,6 +3,7 @@ import type { ReferralStatus, RewardType } from "@prisma/client";
 import { prisma } from "./prisma";
 import { isReferralStale, monthStartCopenhagen } from "./referral";
 import { classifyDeskQuery } from "./referral-query";
+import { rewardPhrase } from "./referral-text";
 
 // Henvisninger ved kassen og i dashboardet (fase 3). Kun laesning her; alle
 // overgange gaar gennem lib/referral (tilstandsmaskinen). Alt er scopet paa
@@ -82,6 +83,8 @@ export type DeskCustomer = {
     referrerCode: string | null;
     createdAt: string;
     stale: boolean;
+    /** Vennens rabat ved foerste besoeg, fx "100 kr." (null uden regel). */
+    friendReward: string | null;
   } | null;
   /** Kan kobles til en henviser ved disken (har ingen henviser endnu). */
   canLink: boolean;
@@ -126,7 +129,7 @@ export async function getDeskCustomer(
 
   const rule = await db.referralRule.findUnique({
     where: { businessId },
-    select: { rewardExpiryDays: true },
+    select: { rewardExpiryDays: true, newCustomerRewardType: true, newCustomerRewardValue: true },
   });
   const received = cc.referralReceived;
   const referralsDone = await db.referral.count({
@@ -147,6 +150,7 @@ export async function getDeskCustomer(
             referrerCode: received.referrerCard.referralCode,
             createdAt: received.createdAt.toISOString(),
             stale: rule ? isReferralStale(received.createdAt, rule.rewardExpiryDays, now) : false,
+            friendReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : null,
           }
         : null,
     canLink: cc.referredByCardId === null && received === null,

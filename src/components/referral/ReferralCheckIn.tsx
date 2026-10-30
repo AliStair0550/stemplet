@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { rewardPhrase } from "@/lib/referral-text";
+import { firstName, rewardPhrase } from "@/lib/referral-text";
 import type { DeskCustomer } from "@/lib/referral-desk";
 import { CelebrationToast } from "@/components/Celebrate";
 
@@ -127,11 +127,15 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
       {ref ? (
         <div className="flex flex-col gap-3 rounded-lg border border-ink bg-white p-5 shadow-card">
           <div>
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate">Første besøg via en ven</p>
-            <p className="mt-1 text-[1.05rem] font-semibold text-ink">
-              {customer.name ?? "Kunden"} er henvist af {ref.referrerName ?? ref.referrerCode}
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate">Ny kunde via en ven</p>
+            <p className="mt-1 text-[1.2rem] font-bold leading-tight text-ink">
+              {ref.friendReward
+                ? `Giv ${firstName(customer.name) ?? "kunden"} ${ref.friendReward} i rabat`
+                : `Giv ${firstName(customer.name) ?? "kunden"} rabatten`}
             </p>
-            <p className="text-[0.88rem] text-stone">Giv rabatten nu, og tryk herunder. Så får {ref.referrerName ?? "vennen"} sin belønning.</p>
+            <p className="mt-1 text-[0.88rem] text-stone">
+              Henvist af {firstName(ref.referrerName) ?? ref.referrerCode ?? "en ven"}. Når du trykker, får {firstName(ref.referrerName) ?? "vennen"} sin belønning.
+            </p>
           </div>
           <button
             type="button"
@@ -140,7 +144,7 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
             aria-busy={busy === "visit"}
             className={btnClass("primary", "lg")}
           >
-            {busy === "visit" ? "Et øjeblik" : "Rabat givet"}
+            {busy === "visit" ? "Et øjeblik" : `${firstName(customer.name) ?? "Kunden"} har fået rabatten`}
           </button>
         </div>
       ) : null}

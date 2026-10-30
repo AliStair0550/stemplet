@@ -614,6 +614,9 @@ function StaffCard({
   const [lastInc, setLastInc] = useState(1);
   // Kortet blev fuldt paa dette tryk: kassens stoerste oejeblik, fejres.
   const [justFilled, setJustFilled] = useState(false);
+  // Kvittering efter et stempel: hvor mange der blev givet, og hvor kortet staar.
+  // Erstatter "Giv stempel", saa det er tydeligt, at stemplet ER givet.
+  const [given, setGiven] = useState<{ inc: number; stamps: number; required: number } | null>(null);
   // Naar en beloenning lige er indloest: stor fejring + "giv beloenningen nu".
   // Baerer de reelle rest-stempler, saa kortet kan opdateres uden et ekstra kald.
   const [redeemed, setRedeemed] = useState<{
@@ -692,14 +695,11 @@ function StaffCard({
         setLastInc(data.increment ?? 1);
         setPulse((p) => p + 1);
         setJustFilled(!!data.rewardReady);
+        setGiven(data.rewardReady ? null : { inc: data.increment ?? 1, stamps: data.stamps, required: data.required });
         setQty(1);
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
-        setNote({
-          ok: true,
-          text: data.rewardReady
-            ? "Kortet er nu fuldt. Belønning klar."
-            : `${data.increment ?? 1} ${(data.increment ?? 1) === 1 ? "stempel" : "stempler"} givet. ${data.stamps} af ${data.required}.`,
-        });
+        // Almindeligt stempel: kvitteringen herunder siger det hele. Fuldt kort: en linje.
+        setNote(data.rewardReady ? { ok: true, text: "Kortet er nu fuldt. Belønning klar." } : null);
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke stemple." });
         // Kortet var maaske allerede fuldt (en anden enhed stemplede) -> hent
@@ -816,9 +816,10 @@ function StaffCard({
           rewardReady: data.stamps >= data.required,
           lifetimeStamps: data.lifetimeStamps ?? card.lifetimeStamps,
         });
+        setGiven(null);
         setNote({
           ok: true,
-          text: `Fortrudt. ${data.stamps} af ${data.required}.`,
+          text: `Fortrudt. Kortet står nu på ${data.stamps} af ${data.required}.`,
         });
       } else {
         setNote({ ok: false, text: data.message ?? "Kunne ikke fortryde." });
@@ -996,6 +997,35 @@ function StaffCard({
                 {busy ? "Indløser..." : "Indløs belønning"}
               </button>
             </div>
+          ) : given ? (
+            // Kvittering: stemplet er givet. Faerdig er naeste skridt; fortryd er
+            // tydeligt, hvis der blev trykket forkert.
+            <div className="flex flex-col items-center gap-4 rounded-2xl bg-[#E8F0FB] px-5 py-6 text-center" role="status" aria-live="polite">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#061C3D] text-white" style={{ animation: "celebrate-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both" }}>
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              </span>
+              <div>
+                <p className="text-[1.4rem] font-bold leading-tight tracking-[-0.02em] text-ink">
+                  {given.inc === 1 ? "Stempel givet" : `${given.inc} stempler givet`}
+                </p>
+                <p className="mt-1 text-[0.95rem] text-stone">
+                  Kortet står på <span className="font-semibold tabular-nums text-ink">{given.stamps} af {given.required}</span>
+                </p>
+              </div>
+              <button type="button" onClick={onExit} className={`${btnClass("primary", "lg")} w-full min-h-[3.4rem]`}>
+                Færdig
+              </button>
+              <div className="flex w-full flex-wrap justify-center gap-2">
+                <button type="button" onClick={() => setGiven(null)} className={`${btnClass("outline")} flex-1`}>
+                  Et stempel mere
+                </button>
+                <button type="button" onClick={undo} disabled={busy} aria-busy={busy} className={`${btnClass("outline")} flex-1 !text-rust`}>
+                  {busy ? "Fortryder..." : given.inc === 1 ? "Fortryd" : `Fortryd (fjern ${given.inc})`}
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col gap-3">
               {/* Antal: hurtig-vaelg med eet tryk (fx tre kaffe = 3) */}
@@ -1043,20 +1073,15 @@ function StaffCard({
                   )}
                 </button>
               </CtaGlow>
-              {/* Færdig: tydelig, men sekundaer (outline), saa "Giv stempel"
-                  beholder fokus. Goer det nemt at afslutte kunden lige efter man
-                  har stemplet, uden at lede efter linket nederst. */}
-              <button
-                type="button"
-                onClick={onExit}
-                className={`${btnClass("outline", "lg")} min-h-[3.2rem] text-[0.9rem]`}
-              >
-                Færdig
+              {/* Foer stemplet: kun et diskret "luk", saa det ikke ligner, at man
+                  skal trykke Faerdig for at give stemplet. */}
+              <button type="button" onClick={onExit} className="mx-auto py-1 text-[0.82rem] text-slate underline underline-offset-2">
+                Luk uden stempel
               </button>
             </div>
           )}
 
-          {card.stamps > 0 ? (
+          {card.stamps > 0 && !given ? (
             <button
               type="button"
               onClick={undo}

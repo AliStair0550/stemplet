@@ -47,8 +47,8 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 
 | # | Punkt | Status |
 |---|---|---|
-| D1 | Uklart flow ved "Rabat givet" og stempler; man kom til at give 2 stempler og kunne ikke se, hvordan man retter | Venter |
-| D2 | Det føles, som om man skal trykke Færdig, før stemplet gives | Venter |
+| D1 | Uklart flow ved "Rabat givet" og stempler; man kom til at give 2 stempler og kunne ikke se, hvordan man retter | Lavet (batch 6) |
+| D2 | Det føles, som om man skal trykke Færdig, før stemplet gives | Lavet (batch 6) |
 
 ## E. Kunden og henvisninger
 
