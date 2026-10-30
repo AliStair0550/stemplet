@@ -10,7 +10,7 @@ import { onboardingStartSchema } from "@/lib/validation";
 import { APP_URL } from "@/lib/env";
 import { sendEmail } from "@/lib/send-email";
 import { superadminRecipients } from "@/lib/superadmin-emails";
-import { superadminNewBusinessEmail } from "@/lib/emails";
+import { signupWelcomeEmail, superadminNewBusinessEmail } from "@/lib/emails";
 import { captureServerError } from "@/lib/sentry";
 import { createLoyaltyBusiness, LoyaltyOnboardingError, type LoyaltyInput } from "@/lib/loyalty-onboarding";
 
@@ -20,8 +20,8 @@ async function requestIp(): Promise<string> {
   return h.get("x-real-ip")?.trim() || h.get("x-forwarded-for")?.split(",")[0]?.trim() || "ukendt";
 }
 
-// Login-mail som fallback (hvis auto-login ikke lykkes), besked til superadmin
-// efter svaret og et kortlivet token til auto-login.
+// Velkomstmail (uden login-kode) og besked til superadmin efter svaret, og et
+// kortlivet token til auto-login.
 async function finishSelfServeSignup(o: {
   name: string;
   email: string;
@@ -31,15 +31,13 @@ async function finishSelfServeSignup(o: {
   pageUrl: string;
   dest: string;
 }): Promise<string> {
-  try {
-    await signIn("resend", { email: o.email, redirect: false, redirectTo: o.dest });
-  } catch (e) {
-    const digest = (e as { digest?: string })?.digest;
-    if (!(typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))) {
-      captureServerError(e, { route: "start:self-serve-login", extra: { slug: o.slug } });
-    }
-  }
   after(async () => {
+    // Velkomstmail uden login-kode: ejeren er allerede logget ind.
+    try {
+      await sendEmail({ to: o.email, ...signupWelcomeEmail(`${APP_URL}/app`) });
+    } catch (e) {
+      captureServerError(e, { route: "start:welcome-mail", extra: { slug: o.slug } });
+    }
     const recipients = superadminRecipients();
     if (recipients.length === 0) return;
     const mail = superadminNewBusinessEmail({

@@ -133,7 +133,13 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
             </p>
             <p className="text-[0.88rem] text-stone">Giv rabatten nu, og tryk herunder. Så får {ref.referrerName ?? "vennen"} sin belønning.</p>
           </div>
-          <button type="button" onClick={visit} disabled={busy !== null || (hasPin && pin.length < 4)} className={btnClass("primary", "lg")}>
+          <button
+            type="button"
+            onClick={visit}
+            disabled={busy !== null || (hasPin && pin.length < 4)}
+            aria-busy={busy === "visit"}
+            className={btnClass("primary", "lg")}
+          >
             {busy === "visit" ? "Et øjeblik" : "Rabat givet"}
           </button>
         </div>
@@ -149,6 +155,7 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
             type="button"
             onClick={() => redeem(r)}
             disabled={busy !== null || (hasPin && pin.length < 4)}
+            aria-busy={busy === r.id}
             className={cn(btnClass("primary"), "shrink-0")}
           >
             {busy === r.id ? "Et øjeblik" : "Indløs"}

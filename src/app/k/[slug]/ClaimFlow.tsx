@@ -175,11 +175,11 @@ function ContactForm({
         <button
           type="submit"
           disabled={busy}
-          className="relative flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] shadow-lift transition-transform duration-200 active:scale-[0.98] disabled:opacity-70"
+          className="relative flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium tracking-[-0.01em] shadow-lift transition-transform duration-200 active:scale-[0.98] disabled:cursor-wait"
           style={{ backgroundColor: ctaBg, color: ctaFg }}
         >
           {busy ? <Spinner /> : null}
-          {busy ? "Et øjeblik" : cta}
+          {busy ? "Henter dit kort" : cta}
         </button>
       </div>
       <button
@@ -288,7 +288,7 @@ function RecoverForm({
       <button
         type="submit"
         disabled={busy}
-        className="flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium shadow-lift transition-transform active:scale-[0.98] disabled:opacity-70"
+        className="flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-[0.95rem] font-medium shadow-lift transition-transform active:scale-[0.98] disabled:cursor-wait"
         style={{ backgroundColor: ctaBg, color: ctaFg }}
       >
         {busy ? <Spinner /> : null}
@@ -902,6 +902,13 @@ export function ClaimFlow({
           setJustCreated(true);
           setStage("ready");
           if (referral) void loadStatus().then(setStatus).catch(() => {});
+          // Eet tryk: paa iPhone aabner Wallet med det samme, saa kunden ikke
+          // ser en ny "Tilfoej"-knap og tror, det skal goeres igen. Aabner
+          // arket sig ikke, viser "usikker" en "Hent kortet igen"-knap.
+          if (ios && walletEnabled && !inApp) {
+            setPhase("opening");
+            window.location.assign(claimUrl);
+          }
         }}
         onFejl={setFejl}
         onEmailTaken={(email) => {

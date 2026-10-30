@@ -30,6 +30,9 @@ const SIZES: Record<Size, string> = {
 export function btnClass(variant: Variant = "primary", size: Size = "md"): string {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-[-0.01em] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100",
+    // Mens knappen arbejder (aria-busy), beholder den sin farve og tekst, saa
+    // "Et oejeblik" kan laeses i stedet for at blive graa og forsvinde.
+    "aria-busy:opacity-100 aria-busy:cursor-wait",
     // Synlig tastatur-fokus overalt (terracotta-ring).
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/50 focus-visible:ring-offset-2 focus-visible:ring-offset-parchment",
     VARIANTS[variant],

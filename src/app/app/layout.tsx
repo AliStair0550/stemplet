@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireBusiness, getMyBusinesses, getSupportBusiness } from "@/lib/session";
 import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
+import { isSuperadminEmail } from "@/lib/superadmin-emails";
 
 export const metadata: Metadata = {
   title: { default: "Hjem", template: "%s - Folka Kort" },
@@ -19,7 +20,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { business } = await requireBusiness();
+  const { business, email } = await requireBusiness();
   const businesses = await getMyBusinesses();
   const support = await getSupportBusiness();
   // "Abonnement" i menuen: altid, saa ejeren kan se de gratis maaneder og prisen.
@@ -31,6 +32,7 @@ export default async function AppLayout({
       <DashboardNav
         businesses={businesses}
         activeBusinessId={business.id}
+        canCreateBusiness={isSuperadminEmail(email)}
         showAgreement={showAgreement}
         showReferrals={business.referralsEnabled}
         showStamps={business.stampsEnabled}

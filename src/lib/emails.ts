@@ -258,6 +258,46 @@ export function welcomeEmail(url: string, code: string): Email {
   return { subject: "Velkommen til Folka Kort", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
+// ── Velkomst efter selvbetjent oprettelse ────────────────────────────
+// Ejeren er allerede logget ind (auto-login), saa mailen har ingen kode: kun
+// velkomst, de tre naeste skridt og en knap til dashboardet.
+export function signupWelcomeEmail(dashboardUrl: string): Email {
+  const steps = ["Giv kortet dine farver og dit logo under Design.", "Hæng QR-koden op ved kassen.", "Del kortet med dine kunder."];
+  const list = steps
+    .map(
+      (t, i) => `<tr>
+        <td valign="top" style="padding:7px 12px 7px 0;font-family:${FONT};font-size:15px;font-weight:700;color:${A.ink};">${i + 1}</td>
+        <td valign="top" style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:1.5;color:${A.ink};">${t}</td>
+      </tr>`,
+    )
+    .join("");
+  const inner = `
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka Kort</h1>
+    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Din butik er klar. Om lidt har dine kunder dit kort i lommen, og hvert besøg bliver en grund til at komme igen.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;background:${A.surface};border-radius:16px;">
+      <tr><td style="padding:18px 20px;">
+        <p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">Tre skridt, så er du i gang</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
+      </td></tr>
+    </table>
+    ${folkaButton(dashboardUrl, "Gå til dit dashboard")}`;
+  const text = [
+    "Velkommen til Folka Kort",
+    "",
+    "Din butik er klar. Om lidt har dine kunder dit kort i lommen.",
+    "",
+    "Tre skridt, så er du i gang:",
+    ...steps.map((t, i) => `${i + 1}. ${t}`),
+    "",
+    `Dit dashboard: ${dashboardUrl}`,
+    "",
+    "Folka Kort.",
+  ].join("\n");
+  return { subject: "Velkommen til Folka Kort", html: folkaShell("Din butik er klar. Tre skridt, så er du i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
+}
+
 // ── Ugentlig statistik-mail ──────────────────────────────────────────
 
 export type WeeklyEmailData = {
