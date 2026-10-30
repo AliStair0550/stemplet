@@ -47,7 +47,7 @@ export function NewBusinessForm() {
         acceptedTerms,
       });
       if (res.ok) {
-        router.push("/app/kom-i-gang");
+        router.push("/app");
         router.refresh();
       } else {
         setError(res.error);

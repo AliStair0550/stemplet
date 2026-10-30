@@ -706,17 +706,26 @@ export function ClaimFlow({
     if (phase !== "opening" && phase !== "usikker") return;
     let alive = true;
     const started = Date.now();
+    // Let kald, til kortet er landet, med voksende pause (2,5 s, 4 s, saa 6 s);
+    // den fulde status hentes kun een gang, naar svaret er ja.
+    const delays = [2500, 4000, 6000];
+    let n = 0;
     const tick = async () => {
-      const d = await loadStatus().catch(() => null);
+      const landed = await fetch(`/api/k/${encodeURIComponent(slug)}/i-wallet`, { cache: "no-store" })
+        .then((r) => r.json() as Promise<{ inWallet: boolean }>)
+        .then((r) => r.inWallet)
+        .catch(() => false);
       if (!alive) return;
-      if (d?.inWallet) {
-        setStatus(d);
+      if (landed) {
+        const d = await loadStatus().catch(() => null);
+        if (!alive) return;
+        if (d) setStatus(d);
         setPhase("added");
       } else if (Date.now() - started < 60_000) {
-        timer = setTimeout(tick, 2500);
+        timer = setTimeout(tick, delays[Math.min(++n, delays.length - 1)]);
       }
     };
-    let timer = setTimeout(tick, 2500);
+    let timer = setTimeout(tick, delays[0]);
     return () => {
       alive = false;
       clearTimeout(timer);
