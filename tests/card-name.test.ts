@@ -27,6 +27,7 @@ test("butikkens eget navn vinder, ellers visningsnavnet", () => {
 
 test("knapteksten", () => {
   assert.equal(claimCta("Sara Salon"), "Hent dit Sara Salon-kort");
+  assert.equal(claimCta("Klubkort"), "Hent dit Klubkort", "intet dobbelt -kort");
 });
 
 test("validering af eget navn", () => {

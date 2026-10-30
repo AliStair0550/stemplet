@@ -84,7 +84,7 @@ export function WebCardActions({
         {phoneQr ? (
           <Image
             src={phoneQr}
-            alt="Scan med din mobil for at hente stempelkortet"
+            alt="Scan med din mobil for at hente kortet"
             width={180}
             height={180}
             className="h-44 w-44"
@@ -95,7 +95,7 @@ export function WebCardActions({
           <div className="h-44 w-44 animate-pulse rounded-lg bg-fog" />
         )}
         <p className="max-w-[17rem] text-center text-[0.85rem] font-[300] leading-relaxed text-stone">
-          Scan koden med din mobils kamera, så henter du stempelkortet, klar til
+          Scan koden med din mobils kamera, så henter du kortet, klar til
           Apple Wallet.
         </p>
       </div>

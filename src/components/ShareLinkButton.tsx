@@ -49,7 +49,7 @@ export function ShareLinkButton({
         // stempelkortet (OG-billedet) fortaeller historien, saa beskeden bliver
         // ren og klikbar.
         await navigator.share({
-          title: `Stempelkort hos ${businessName}`,
+          title: `Kundekort hos ${businessName}`,
           url,
         });
       } else {

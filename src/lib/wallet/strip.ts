@@ -126,7 +126,7 @@ export async function buildStripImages(opts: {
     const ty = cy - iconSize / 2;
     const dash = `${esc(D * 0.09)} ${esc(D * 0.09)}`;
     const icon = (color: string, markup: string, w = 1.9) =>
-      `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${markup}</g>`;
+      `<g transform="translate(${esc(tx)} ${esc(ty)}) scale(${esc(s)})" fill="none" stroke="${color}" color="${color}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${markup}</g>`;
 
     if (isGift) {
       // Beloennings-gaven. Optjent: guldmoent (med praeg + skygge) og gave-ikon i

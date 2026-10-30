@@ -67,7 +67,7 @@ export type MemberCardData = {
 
 function patternUrl(icon: StampIconKey, color: string): string {
   const markup = STAMP_ICON_PATHS[icon] ?? STAMP_ICON_PATHS.custom;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-opacity="0.16" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="${color}" color="${color}" opacity="0.16" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 

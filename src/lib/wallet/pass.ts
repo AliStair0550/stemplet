@@ -282,7 +282,7 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
     passTypeIdentifier,
     teamIdentifier,
     organizationName: input.businessName,
-    description: `Stempelkort - ${input.businessName}`,
+    description: `Kundekort - ${input.businessName}`,
     serialNumber: input.serial,
     foregroundColor: fg,
     backgroundColor: bg,

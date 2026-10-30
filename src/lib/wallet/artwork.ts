@@ -36,7 +36,7 @@ function svgFor(i: ArtworkInput, s: number): string {
   const open = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${POSTER_W} ${POSTER_H}">`;
   if (i.style === "pattern") {
     // Moensteret toner ud mod toppen, saa navn/logo og stempler staar frit.
-    return `${open}<defs><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><g transform="translate(10 10)" fill="none" stroke="${fg}" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g></pattern><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0.17" stop-color="#fff" stop-opacity="0"/><stop offset="0.32" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="m"><rect width="100%" height="100%" fill="url(#f)"/></mask></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#p)" mask="url(#m)"/></svg>`;
+    return `${open}<defs><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><g transform="translate(10 10)" fill="none" stroke="${fg}" color="${fg}" opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g></pattern><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0.17" stop-color="#fff" stop-opacity="0"/><stop offset="0.32" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="m"><rect width="100%" height="100%" fill="url(#f)"/></mask></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#p)" mask="url(#m)"/></svg>`;
   }
   if (i.style === "stamps") {
     const cols = 5;
@@ -50,7 +50,7 @@ function svgFor(i: ArtworkInput, s: number): string {
       const cy = y + size / 2;
       if (k < i.stamps) {
         const sc = (size * 0.55) / 24;
-        cells += `<circle cx="${cx}" cy="${cy}" r="${size / 2}" fill="${fg}"/><g transform="translate(${cx - 12 * sc} ${cy - 12 * sc}) scale(${sc})" fill="none" stroke="${bg}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g>`;
+        cells += `<circle cx="${cx}" cy="${cy}" r="${size / 2}" fill="${fg}"/><g transform="translate(${cx - 12 * sc} ${cy - 12 * sc}) scale(${sc})" fill="none" stroke="${bg}" color="${bg}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g>`;
       } else {
         cells += `<circle cx="${cx}" cy="${cy}" r="${size / 2 - 0.75}" fill="none" stroke="${fg}" stroke-opacity="0.35" stroke-width="1.5"/>`;
       }

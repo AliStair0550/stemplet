@@ -33,11 +33,11 @@ test("fornavn til overskriften", () => {
 test("delelink og -besked", () => {
   assert.equal(
     referralShareUrl("https://stemplet.alius.dk", "sara-salon", "SARA-K8"),
-    "https://stemplet.alius.dk/k/sara-salon?k=SARA-K8",
+    "https://stemplet.alius.dk/k/sara-salon/ven/SARA-K8",
   );
   assert.equal(
     referralShareText("Sara Salon", `100${NBSP}kr.`),
-    `Jeg har en rabat til dig hos Sara Salon: 100${NBSP}kr. ved dit første besøg.`,
+    `Jeg giver dig 100${NBSP}kr. hos Sara Salon. Hent kortet her, så ligger rabatten klar til dit første besøg:`,
   );
 });
 
@@ -102,10 +102,11 @@ test("wallet: til gode lægger beløb sammen, ellers behandling eller antal", ()
   );
 });
 
-test("wallet: forsiden viser kode og til gode, altid begge felter", () => {
+test("wallet: forsiden opfordrer til at dele og viser til gode, altid begge felter", () => {
   const f = referralFrontFields(info());
   assert.deepEqual(f.map((x) => x.key), ["ref-code", "ref-owed"]);
-  assert.equal(f[0]!.value, "SARA-K8");
+  assert.equal(f[0]!.label, "DEL MED EN VEN");
+  assert.equal(f[0]!.value, `Giv 100${NBSP}kr.`);
   assert.equal(f[1]!.value, "Intet endnu");
   assert.equal(f[1]!.changeMessage, undefined);
 });
@@ -145,16 +146,16 @@ test("kode: tolerant over for mellemrum, tankestreg, smaa bogstaver og manglende
   assert.deepEqual(referralCodeCandidates("   "), []);
 });
 
-test("wallet uden Stemplet: koden er primaerfelt, vennens rabat og til gode under", () => {
+test("wallet uden Stemplet: opfordringen er primaerfelt, din beloenning og til gode under", () => {
   const f = referralOnlyFrontFields(info({ rewards: [{ type: "SERVICE", value: "Gratis klip" }], announce: true, referralsDone: 1 }));
   assert.deepEqual(
     f.primary.map((x) => [x.key, x.value]),
-    [["ref-code", "SARA-K8"]],
+    [["ref-code", `Giv 100${NBSP}kr.`]],
   );
   assert.deepEqual(
     f.secondary.map((x) => [x.key, x.value]),
     [
-      ["ref-friend", `100${NBSP}kr.`],
+      ["ref-you", "gratis klip"],
       ["ref-owed", "Gratis klip"],
     ],
   );

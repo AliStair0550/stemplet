@@ -3,7 +3,7 @@
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
-import { photoPalette, type StampIconKey } from "@/lib/brand";
+import { photoPalette, shade, type StampIconKey } from "@/lib/brand";
 import { CARD_ACTION_LABEL, headerShows, type CardAction, type CardStyle } from "@/lib/card-look";
 
 // Forhaandsvisning af Wallet-kortet i dashboardet (siden Kortet): plakatkortet
@@ -32,13 +32,11 @@ export type WalletCardPreviewProps = {
   actions: CardAction[];
   /** Vis disse i stedet for eksempelkunden (fx butikssiden: 0 stempler). */
   sampleStamps?: number;
-  sampleCode?: string;
   /** Et nyt kort (butikssiden): intet til gode endnu. */
   fresh?: boolean;
 };
 
 const EXAMPLE_STAMPS = 3;
-const EXAMPLE_CODE = "EMMA-K7";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -79,7 +77,7 @@ function artworkStyle(p: WalletCardPreviewProps): React.CSSProperties {
   }
   if (p.style === "pattern") {
     const markup = STAMP_ICON_PATHS[p.stampIcon] ?? STAMP_ICON_PATHS.custom;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${p.textColor}" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${p.textColor}" color="${p.textColor}" opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
     // Moensteret toner ud mod toppen, saa navn/logo og stempler staar frit (som i Wallet).
     return {
       background: `linear-gradient(180deg, ${p.primaryColor} 17%, ${p.primaryColor}00 32%), url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / 44px 44px, ${p.primaryColor}`,
@@ -102,7 +100,6 @@ function Qr({ size }: { size: number }) {
 function Poster(p: WalletCardPreviewProps) {
   const fg = p.textColor;
   const n = p.sampleStamps ?? EXAMPLE_STAMPS;
-  const code = p.sampleCode ?? EXAMPLE_CODE;
   const owed = p.fresh ? "Intet endnu" : cap(p.referrerReward);
   const stamps = p.product !== "henvisninger";
   const refs = p.product !== "stemplet";
@@ -115,7 +112,9 @@ function Poster(p: WalletCardPreviewProps) {
       className="relative isolate aspect-[300/430] w-full max-w-[300px] overflow-hidden rounded-[18px] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.5)]"
       style={{ ...artworkStyle(p), color: fg }}
     >
-      <div className="flex items-start justify-between gap-3 px-4 pt-4">
+      {/* Som i Wallet: Apple laegger en bloed moerk skygge oeverst paa plakatkortet. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[38%]" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0))" }} />
+      <div className="relative flex items-start justify-between gap-3 px-4 pt-4">
         <div className="flex min-w-0 items-center gap-2">
           {shows.logo && p.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -137,17 +136,18 @@ function Poster(p: WalletCardPreviewProps) {
         </div>
       ) : null}
       <div
-        className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_auto] items-end gap-x-3.5 gap-y-2.5 px-4 pb-4 pt-3.5 backdrop-blur-md"
-        style={{ background: `${p.primaryColor}b8` }}
+        className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_auto] items-end gap-x-3.5 gap-y-2.5 px-4 pb-4 pt-3.5"
+        // Som i Wallet: feltbaandet i bunden er taet og en anelse dybere end kortet.
+        style={{ background: shade(p.primaryColor, -0.08) }}
       >
         <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-2">
           {p.product === "henvisninger" ? (
             <div className="col-span-2">
-              <Field label="Henvis en ven" value={code} big />
+              <Field label="Del med en ven" value={`Giv ${p.friendReward}`} big />
             </div>
           ) : refs ? (
             <>
-              <Field label="Henvis en ven" value={code} />
+              <Field label="Del med en ven" value={`Giv ${p.friendReward}`} />
               <Field label="Til gode" value={owed} />
             </>
           ) : (
@@ -159,7 +159,7 @@ function Poster(p: WalletCardPreviewProps) {
         <Qr size={54} />
         <div className="col-span-2 border-t pt-2 text-[11px] opacity-80" style={{ borderColor: `${fg}38` }}>
           {p.product === "henvisninger"
-            ? `Din ven får ${p.friendReward} ved første besøg`
+            ? `Du får ${p.referrerReward}, når din ven har været her`
             : refs
               ? `Belønning: ${p.rewardText}`
               : `${p.stampsRequired - n} stempler til næste belønning`}
@@ -194,10 +194,10 @@ function Classic(p: WalletCardPreviewProps) {
     >
       <span className="text-[15px] font-extrabold">{p.name}</span>
       <div className="mt-5">
-        <Field label="Henvis en ven" value={p.sampleCode ?? EXAMPLE_CODE} big />
+        <Field label="Del med en ven" value={`Giv ${p.friendReward}`} big />
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <Field label="Din ven får" value={p.friendReward} />
+        <Field label="Du får" value={p.referrerReward} />
         <Field label="Til gode" value={p.fresh ? "Intet endnu" : cap(p.referrerReward)} />
       </div>
       <div className="mt-5 flex justify-center">

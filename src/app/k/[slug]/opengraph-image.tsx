@@ -2,70 +2,34 @@ import { ImageResponse } from "next/og";
 import { cardShortName, claimCta } from "@/lib/card-name";
 import { prisma } from "@/lib/prisma";
 import { cardTitle } from "@/lib/brand";
+import { ogIcon, ogRgba } from "@/lib/og";
 
-// Delings-billede (1200x630) for tilmeldings-siden: naar butikken deler linket
-// paa iMessage, Facebook, Instagram osv., vises butikkens eget stempelkort med
-// navn og beloenning, saa folk kan trykke og hente kortet direkte.
+// Delings-billede (1200x630) for butikkens side: naar linket deles paa iMessage,
+// Facebook, Instagram osv., vises butikkens kort i egne farver med en klar
+// opfordring ("Hent dit X-kort"), saa folk ved, hvad de faar.
 export const runtime = "nodejs";
-export const alt = "Dit digitale kort";
+export const alt = "Hent kortet i Apple Wallet";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-// Cache billedet: font-hentning + generering sker een gang pr. dag pr. butik,
-// ikke ved hver deling/crawl (foer tog det ~1,7 sek. hver gang).
+// Cache billedet: genereres een gang pr. dag pr. butik, ikke ved hver deling.
 export const revalidate = 86400;
 
-// Henter Jost (brand-fonten), saa danske tegn (aeoeaa/accenter) i butiksnavn og
-// beloenning tegnes korrekt. Fejler hentningen, falder vi tilbage til standard-
-// fonten, og billedet genereres stadig.
-async function loadJost(
-  weight: 400 | 600,
-): Promise<
-  { name: string; data: ArrayBuffer; weight: 400 | 600; style: "normal" } | null
-> {
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 2500);
-    const css = await fetch(
-      `https://fonts.googleapis.com/css2?family=Jost:wght@${weight}`,
-      { headers: { "User-Agent": "Mozilla/5.0" }, signal: ctrl.signal },
-    ).then((r) => r.text());
-    const url = css.match(/src:\s*url\(([^)]+)\)/)?.[1];
-    if (!url) {
-      clearTimeout(timer);
-      return null;
-    }
-    const data = await fetch(url, { signal: ctrl.signal }).then((r) =>
-      r.arrayBuffer(),
-    );
-    clearTimeout(timer);
-    return { name: "Jost", data, weight, style: "normal" };
-  } catch {
-    return null;
-  }
-}
-
-export default async function Image({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const business = await prisma.business.findUnique({
     where: { slug },
-    include: {
-      cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
-    },
+    include: { cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 } },
   });
 
-  const name = business ? cardTitle(business) : "Stempelkort";
-  const primary = business?.primaryColor ?? "#061C3D";
-  const fg = business?.textColor ?? "#FFFFFF";
-  const reward = business?.cards[0]?.rewardText ?? "";
-  const required = Math.min(business?.cards[0]?.stampsRequired ?? 10, 10);
-
-  const loaded = (await Promise.all([loadJost(400), loadJost(600)])).filter(
-    (f): f is NonNullable<typeof f> => f !== null,
-  );
+  const name = business ? cardTitle(business) : "Kundekort";
+  const bg = business?.primaryColor ?? "#061C3D";
+  const fg = business?.textColor ?? "#EAF1FB";
+  const card = business?.cards[0];
+  const stamps = business?.stampsEnabled !== false && card;
+  const required = Math.min(card?.stampsRequired ?? 10, 10);
+  const cta = business ? claimCta(cardShortName(business)) : "Hent dit kort";
+  const empty = ogIcon(card?.stampIcon ?? "coffee", ogRgba(fg, 0.45));
+  const gift = ogIcon("gift", fg);
 
   return new ImageResponse(
     (
@@ -76,114 +40,65 @@ export default async function Image({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          background: "#FAF8F4",
+          background: `radial-gradient(ellipse 80% 90% at 10% 0%, ${ogRgba(fg, 0.09)} 0%, ${bg} 60%)`,
+          backgroundColor: bg,
+          color: fg,
           padding: "64px 76px",
-          fontFamily: loaded.length ? "Jost" : undefined,
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", width: 610 }}>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 30,
-              letterSpacing: 3,
-              color: "#A6502E",
-              fontWeight: 600,
-            }}
-          >
-            STEMPELKORT
+        <div style={{ display: "flex", flexDirection: "column", width: 600 }}>
+          <div style={{ display: "flex", fontSize: 30, fontWeight: 600, color: ogRgba(fg, 0.75) }}>{name}</div>
+          <div style={{ display: "flex", fontSize: 58, lineHeight: 1.08, fontWeight: 700, marginTop: 22, letterSpacing: -2 }}>
+            {cta}
           </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 62,
-              lineHeight: 1.1,
-              fontWeight: 600,
-              color: "#1A1A1A",
-              marginTop: 22,
-            }}
-          >
-            {name}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 30,
-              color: "#4A4A4A",
-              marginTop: 26,
-            }}
-          >
-            {business ? `${claimCta(cardShortName(business))} direkte i Apple Wallet.` : "Hent dit kort direkte i Apple Wallet."}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 24,
-              color: "#8A8A8A",
-              marginTop: 14,
-            }}
-          >
-            Ingen app. Kun navn og e-mail.
+          {stamps && card ? (
+            <div style={{ display: "flex", fontSize: 30, marginTop: 26 }}>
+              {card.rewardText} efter {card.stampsRequired} stempler
+            </div>
+          ) : null}
+          <div style={{ display: "flex", fontSize: 24, color: ogRgba(fg, 0.7), marginTop: 16 }}>
+            Ligger i Apple Wallet på få sekunder. Ingen app.
           </div>
         </div>
 
-        {/* Selve stempelkortet i butikkens farver */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             width: 400,
-            background: primary,
-            color: fg,
-            borderRadius: 28,
-            padding: "34px 36px",
-            boxShadow: "0 30px 70px rgba(0,0,0,0.35)",
+            background: ogRgba(fg, 0.1),
+            border: `2px solid ${ogRgba(fg, 0.2)}`,
+            borderRadius: 30,
+            padding: "34px 34px 30px",
+            transform: "rotate(-3deg)",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ display: "flex", fontSize: 24, fontWeight: 600 }}>
-              {name}
-            </div>
-            <div style={{ display: "flex", fontSize: 20, opacity: 0.7 }}>
-              0/{required}
-            </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", fontSize: 26, fontWeight: 700 }}>{name}</div>
+            <div style={{ display: "flex", fontSize: 24, color: ogRgba(fg, 0.7) }}>0/{required}</div>
           </div>
-          {reward ? (
-            <div style={{ display: "flex", fontSize: 26, marginTop: 18 }}>
-              {reward}
-            </div>
-          ) : null}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              marginTop: 26,
-            }}
-          >
-            {Array.from({ length: required }).map((_, i) => (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 30 }}>
+            {Array.from({ length: required }, (_, i) => (
               <div
                 key={i}
                 style={{
                   display: "flex",
-                  width: 50,
-                  height: 50,
+                  width: 56,
+                  height: 56,
                   borderRadius: 999,
-                  border: `2px solid ${fg}`,
-                  opacity: 0.4,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: `2px solid ${ogRgba(fg, i === required - 1 ? 0.7 : 0.3)}`,
                 }}
-              />
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={i === required - 1 ? gift : empty} width={28} height={28} alt="" />
+              </div>
             ))}
           </div>
         </div>
       </div>
     ),
-    { ...size, fonts: loaded.length ? loaded : undefined },
+    { ...size },
   );
 }
