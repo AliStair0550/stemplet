@@ -29,8 +29,8 @@ model Business {
   slug             String     @unique
   category         String? // branche (kode), backfilles i indstillinger
   logoUrl          String?
-  primaryColor     String     @default("#2A1A10")
-  textColor        String     @default("#FFFFFF")
+  primaryColor     String     @default("#EFEBE3")
+  textColor        String     @default("#1E2633")
   plan             Plan       @default(FREE)
   stripeCustomerId String?
   staffPin         String? // hashet (bcrypt). Null = ingen PIN kraevet ved indloesning (standard; kan slaas til i indstillinger)

@@ -38,9 +38,9 @@ export const DEFAULT_DESIGN: CardDesign = {
   rewardText: "10. kop er gratis",
   stampIcon: "coffee",
   displayName: null,
-  // "Mørk": det foerste indbyggede tema, varmt og laesbart for de fleste.
-  primaryColor: "#2A1A10",
-  textColor: "#F6EEE4",
+  // "Sand": lyst og roligt, saa butikken selv kan goere kortet moerkere.
+  primaryColor: "#EFEBE3",
+  textColor: "#1E2633",
   logoUrl: null,
   logoScale: 1,
   terms: null,

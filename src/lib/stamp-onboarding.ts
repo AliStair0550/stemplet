@@ -6,9 +6,9 @@ import { STAMPS_MAX, STAMPS_MIN, REWARD_TEXT_MAX } from "./system-config";
 
 type Db = typeof prisma;
 
-// Standardfarverne fra kortdesigneren ("Mørk"); kan aendres under Design.
-const DEFAULT_PRIMARY = "#2A1A10";
-const DEFAULT_TEXT = "#F6EEE4";
+// Standardfarverne fra kortdesigneren ("Sand"); kan aendres under Design.
+const DEFAULT_PRIMARY = "#EFEBE3";
+const DEFAULT_TEXT = "#1E2633";
 
 export class StampOnboardingError extends Error {
   constructor(

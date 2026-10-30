@@ -3,8 +3,8 @@
 
 // "Mørk": foerste indbyggede tema, varmt og laesbart. Bruges som reserve, saa
 // et kort uden eksplicit farve stadig lander paa det nye brand.
-export const DEFAULT_PRIMARY = "#2A1A10";
-export const DEFAULT_TEXT = "#F6EEE4";
+export const DEFAULT_PRIMARY = "#EFEBE3";
+export const DEFAULT_TEXT = "#1E2633";
 
 // Navnet der vises paa kundens kort: butikkens valgte kort-navn, ellers firmanavnet.
 export function cardTitle(b: { name: string; displayName?: string | null }): string {
@@ -191,6 +191,17 @@ export function contrastRatio(aHex: string, bHex: string): number {
   const hi = Math.max(la, lb);
   const lo = Math.min(la, lb);
   return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * Med eget billede skal teksten vaere lys oven paa fotoet. Er kortets farve den
+ * lyse i parret (fx Sand eller Is), byttes rollerne: bunden toner i den moerke
+ * farve, og teksten bliver lys. Moerke temaer er uaendrede.
+ */
+export function photoPalette(primary: string, text: string): { primaryColor: string; textColor: string } {
+  return relLuminance(primary) > relLuminance(text)
+    ? { primaryColor: text, textColor: primary }
+    : { primaryColor: primary, textColor: text };
 }
 
 /** Er tekst-på-kort læsbar? AA for stor tekst er 3:1; vi kræver 3.5 som margin. */

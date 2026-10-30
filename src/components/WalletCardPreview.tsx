@@ -3,7 +3,7 @@
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
-import type { StampIconKey } from "@/lib/brand";
+import { photoPalette, type StampIconKey } from "@/lib/brand";
 import { CARD_ACTION_LABEL, type CardAction, type CardStyle } from "@/lib/card-look";
 
 // Forhaandsvisning af Wallet-kortet i dashboardet (siden Kortet): plakatkortet
@@ -200,7 +200,12 @@ function Classic(p: WalletCardPreviewProps) {
   );
 }
 
-export function WalletCardPreview(p: WalletCardPreviewProps) {
+export function WalletCardPreview(props: WalletCardPreviewProps) {
+  // Eget billede: lys tekst paa fotoet, ogsaa med et lyst tema (som i Wallet).
+  const p =
+    props.style === "photo" && props.artwork
+      ? { ...props, ...photoPalette(props.primaryColor, props.textColor) }
+      : props;
   return (
     <div className="flex w-full flex-col items-center gap-3">
       {p.os === "27" ? <Poster {...p} /> : <Classic {...p} />}

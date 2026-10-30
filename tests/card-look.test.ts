@@ -20,3 +20,10 @@ test("knapper: kun tilgaengelige, ingen dubletter, hoejst to", () => {
   assert.deepEqual(normalizeActions(["beloenninger", "beloenninger", "x"], both), ["beloenninger"]);
   assert.match(actionUnavailableReason("book", refOnly) ?? "", /booking-link/);
 });
+
+import { photoPalette } from "../src/lib/brand";
+
+test("eget billede: lyst tema faar lys tekst paa fotoet, moerkt tema er uaendret", () => {
+  assert.deepEqual(photoPalette("#EFEBE3", "#1E2633"), { primaryColor: "#1E2633", textColor: "#EFEBE3" });
+  assert.deepEqual(photoPalette("#061C3D", "#EAF1FB"), { primaryColor: "#061C3D", textColor: "#EAF1FB" });
+});
