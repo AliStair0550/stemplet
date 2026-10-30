@@ -14,6 +14,8 @@ export type ReferralPassInfo = {
   newCustomerReward: string;
   referrerReward: string;
   referralsDone: number;
+  /** Venner, der har hentet kortet via kunden (ogsaa dem, der ikke har vaeret der endnu). */
+  referralsMade?: number;
   /** Beloenninger der kan indloeses nu (ikke udloebne). */
   rewards: { type: RewardType; value: string }[];
   /** Sidste aendring var en ny beloenning (ikke en indloesning): vis en besked. */
