@@ -223,6 +223,7 @@ export default async function HomePage() {
           </Link>
           {/* Knapperne under kortet i Wallet vises under Design, ikke her. */}
           <WalletCardPreview os="27" {...preview} actions={[]} />
+          <p className="-mt-1 w-full max-w-[300px] text-center text-[0.75rem] text-slate">Eksempel på en kundes kort</p>
           <div className="flex w-full max-w-[300px] gap-2">
             <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-4 text-[0.88rem] font-[500] text-ink hover:border-ink">
               Design kortet

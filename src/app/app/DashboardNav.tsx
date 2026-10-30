@@ -119,7 +119,7 @@ export function DashboardNav({
     exact.has(href) ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
   const inHenvisninger = pathname.startsWith("/app/henvisninger");
-  const inComms = isActive(COMMS.href) || isActive("/app/kampagner") || isActive("/app/nyhedsmail");
+  const inComms = isActive(COMMS.href) || isActive("/app/kampagner") || isActive("/app/tilbud") || isActive("/app/nyhedsmail");
 
   const stemplet = showStamps ? (
     <ProductGroup
