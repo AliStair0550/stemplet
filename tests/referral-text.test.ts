@@ -33,11 +33,11 @@ test("fornavn til overskriften", () => {
 test("delelink og -besked", () => {
   assert.equal(
     referralShareUrl("https://stemplet.alius.dk", "sara-salon", "SARA-K8"),
-    "https://stemplet.alius.dk/k/sara-salon?k=SARA-K8",
+    "https://stemplet.alius.dk/k/sara-salon/ven/SARA-K8",
   );
   assert.equal(
     referralShareText("Sara Salon", `100${NBSP}kr.`),
-    `Jeg har en rabat til dig hos Sara Salon: 100${NBSP}kr. ved dit første besøg.`,
+    `Jeg giver dig 100${NBSP}kr. hos Sara Salon. Hent kortet her, så ligger rabatten klar til dit første besøg:`,
   );
 });
 

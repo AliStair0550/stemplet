@@ -25,14 +25,18 @@ export function firstName(name: string | null | undefined): string | null {
   return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
-/** Delbart link til butikkens side med kundens kode. */
+/**
+ * Delbart link med kundens kode. Egen adresse (/k/butik/ven/KODE), saa
+ * link-forhaandsvisningen kan vise gaven til vennen; den sender videre til
+ * butikkens side med koden (?k=), som gamle links ogsaa bruger.
+ */
 export function referralShareUrl(appUrl: string, slug: string, code: string): string {
-  return `${appUrl}/k/${encodeURIComponent(slug)}?k=${encodeURIComponent(code)}`;
+  return `${appUrl}/k/${encodeURIComponent(slug)}/ven/${encodeURIComponent(code)}`;
 }
 
 /** Den faerdige delebesked (Web Share API / kopiér). */
 export function referralShareText(shopName: string, newCustomerReward: string): string {
-  return `Jeg har en rabat til dig hos ${shopName}: ${newCustomerReward} ved dit første besøg.`;
+  return `Jeg giver dig ${newCustomerReward} hos ${shopName}. Hent kortet her, så ligger rabatten klar til dit første besøg:`;
 }
 
 /**
