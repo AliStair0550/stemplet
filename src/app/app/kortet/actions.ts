@@ -26,6 +26,8 @@ export async function saveCardLook(input: {
   /** Motiv og accent (stilen "Motiv"); accent null = automatisk. */
   art?: string | null;
   accent?: string | null;
+  /** Booking-link (Book tid-knappen); undefined = uaendret, "" = fjern. */
+  bookingUrl?: string;
 }): Promise<Result> {
   const { business } = await requireBusiness();
   const parsed = cardDesignSchema.safeParse(input.design);
@@ -51,10 +53,18 @@ export async function saveCardLook(input: {
     return { ok: false, error: "Upload et billede, eller vælg en anden stil." };
   }
 
+  const rawBooking = input.bookingUrl === undefined ? undefined : input.bookingUrl.trim().slice(0, 300);
+  if (rawBooking && !/^https?:\/\/\S+$/i.test(rawBooking)) {
+    return { ok: false, error: "Booking-linket skal starte med https://" };
+  }
+  const bookingUrl = rawBooking === undefined ? business.bookingUrl : rawBooking || null;
+  if (input.actions.includes("book") && !bookingUrl) {
+    return { ok: false, error: "Indsæt dit booking-link, eller fravælg Book tid." };
+  }
   const actions = normalizeActions(input.actions, {
     stampsEnabled: business.stampsEnabled,
     referralsEnabled: business.referralsEnabled,
-    bookingUrl: business.bookingUrl,
+    bookingUrl,
   });
 
   // Ikonet hoerer til udseendet, men gemmes paa stempelkortet (som i Wallet).
@@ -79,12 +89,14 @@ export async function saveCardLook(input: {
       cardStyle: input.style,
       ...(artwork !== undefined ? { cardArtwork: artwork } : {}),
       cardActions: actions,
+      ...(rawBooking !== undefined ? { bookingUrl } : {}),
       ...(art ? { cardArt: art } : {}),
       cardAccent: accent,
     },
   });
 
   revalidatePath("/app/kortet");
+  revalidatePath("/app/regler");
   revalidatePath("/app");
   // Kundesiderne er cachet pr. butik: farver og logo slaar igennem med det samme.
   revalidatePath(`/k/${business.slug}`);

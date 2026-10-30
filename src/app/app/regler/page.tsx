@@ -3,7 +3,7 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { APP_URL } from "@/lib/env";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
 import { cn } from "@/lib/utils";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
@@ -51,9 +51,9 @@ const FEATURES: Record<Feature, { title: string; text: string; offWarning: strin
   },
 };
 
-export default async function ReglerPage({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
+export default async function ReglerPage({ searchParams }: { searchParams: Promise<{ f?: string; vis?: string }> }) {
   const { business } = await requireBusiness();
-  const { f } = await searchParams;
+  const { f, vis } = await searchParams;
 
   const enabled: Record<Feature, boolean> = {
     stempler: business.stampsEnabled,
@@ -123,7 +123,7 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
           )}
           {active === "stempler" ? <StampRules business={business} /> : null}
           {active === "henvisninger" ? <ReferralRules business={business} /> : null}
-          {active === "kundekort" ? <CardShare business={business} /> : null}
+          {active === "kundekort" ? <CardShare business={business} show={vis === "1"} /> : null}
         </section>
       ) : null}
     </>
@@ -153,7 +153,7 @@ async function StampRules({ business }: { business: Biz }) {
   return <KortEditor initial={initial} businessName={business.name} slug={business.slug} qrDataUrl={qrDataUrl} />;
 }
 
-async function CardShare({ business }: { business: Biz }) {
+async function CardShare({ business, show }: { business: Biz; show: boolean }) {
   const url = `${APP_URL}/k/${business.slug}`;
   const [qrDataUrl, card, rule] = await Promise.all([
     QRCode.toDataURL(url, { margin: 2, width: 900, color: { dark: "#0B1628", light: "#FFFFFF" } }),
@@ -170,6 +170,8 @@ async function CardShare({ business }: { business: Biz }) {
       <KundekortShare
         url={url}
         qrDataUrl={qrDataUrl}
+        autoOpen={show}
+        walletPassUrl={WALLET_ENABLED ? "/api/wallet/butikkort" : null}
         showcase={{
           shopName: cardTitle(business),
           logoUrl: business.logoUrl,

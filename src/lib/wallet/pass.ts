@@ -3,10 +3,9 @@ import sharp from "sharp";
 import { PKPass, PassType } from "passkit-generator";
 import { posterEnabled, posterFields, featuredActionsFor } from "./poster";
 import { renderPosterArtwork } from "./artwork";
+import { renderPassIcon } from "./icon";
 import { effectiveStyle, headerShows, normalizeActions } from "../card-look";
-import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
-import path from "node:path";
 import { walletIds, walletCertificates } from "./config";
 import { buildStripImages } from "./strip";
 import {
@@ -208,16 +207,16 @@ async function fetchLogo(logoUrl: string): Promise<Buffer | null> {
   return null;
 }
 
-// Wallet-ikonet er en statisk fil, der aldrig aendrer sig. Laes den een gang pr.
-// proces i stedet for ved hver pass-bygning.
-let iconBufCache: Buffer | null = null;
-async function loadIcon(): Promise<Buffer> {
-  if (!iconBufCache) {
-    iconBufCache = await readFile(
-      path.join(process.cwd(), "public", "icon-192.png"),
-    );
-  }
-  return iconBufCache;
+// Kortets ikon (notifikationer, laaseskaerm) viser butikken: dens logo paa dens
+// farve, ellers dens stempelikon. Cachet i renderPassIcon.
+function loadIcon(input: PassInput) {
+  return renderPassIcon({
+    logoKey: input.logoUrl ?? null,
+    loadLogo: () => (input.logoUrl ? fetchLogo(input.logoUrl) : Promise.resolve(null)),
+    primaryColor: input.primaryColor,
+    textColor: input.textColor,
+    stampIcon: input.stampIcon,
+  });
 }
 
 /**
@@ -246,8 +245,8 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
   // Ikon (cache), logo (netvaerk) og strip-gitteret (sharp-render) afhaenger ikke
   // af hinanden, saa vi koerer dem samtidig i stedet for i raekke. Det tunge trin
   // (strip) overlapper med logo-hentningen.
-  const [iconBuf, logoBuf, strip] = await Promise.all([
-    loadIcon(),
+  const [icon, logoBuf, strip] = await Promise.all([
+    loadIcon(input),
     loadLogo(input.cardHeader === "name" ? null : input.logoUrl, input.logoScale ?? 1),
     buildStripImages({
       stamps: input.stamps,
@@ -266,8 +265,9 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
   const rewardReady = input.stamps >= input.required;
 
   const images: Record<string, Buffer> = {
-    "icon.png": iconBuf,
-    "icon@2x.png": iconBuf,
+    "icon.png": icon.x1,
+    "icon@2x.png": icon.x2,
+    "icon@3x.png": icon.x3,
     "strip.png": strip.x1,
     "strip@2x.png": strip.x2,
     "strip@3x.png": strip.x3,
@@ -446,13 +446,13 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
 async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPassInfo }): Promise<Buffer> {
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
-  const [iconBuf, logoBuf] = await Promise.all([loadIcon(), loadLogo(input.cardHeader === "name" ? null : input.logoUrl, input.logoScale ?? 1)]);
+  const [icon, logoBuf] = await Promise.all([loadIcon(input), loadLogo(input.cardHeader === "name" ? null : input.logoUrl, input.logoScale ?? 1)]);
   const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(
     input.primaryColor,
     input.textColor,
   );
 
-  const images: Record<string, Buffer> = { "icon.png": iconBuf, "icon@2x.png": iconBuf };
+  const images: Record<string, Buffer> = { "icon.png": icon.x1, "icon@2x.png": icon.x2, "icon@3x.png": icon.x3 };
   if (logoBuf) {
     images["logo.png"] = logoBuf;
     images["logo@2x.png"] = logoBuf;
@@ -563,4 +563,59 @@ async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null)
     benefitsUrl: memberUrl(input.serial),
   });
   if (actions.length > 0) pass.featuredActions = actions;
+}
+
+/**
+ * Butikkens eget QR-kort til ejerens Wallet: butikkens logo og farver og en stor
+ * QR-kode til kundesiden. Ejeren viser det over disken, saa kunden scanner og
+ * henter sit eget kort. Statisk (ingen web service): hentes igen for at opdatere.
+ */
+export async function buildShopQrPass(input: {
+  businessId: string;
+  businessName: string;
+  pageUrl: string;
+  primaryColor: string;
+  textColor: string;
+  logoUrl: string | null;
+  stampIcon: string;
+  lines: string[];
+}): Promise<Buffer> {
+  const { passTypeIdentifier, teamIdentifier } = walletIds();
+  const certificates = walletCertificates();
+  const [icon, logoBuf] = await Promise.all([
+    renderPassIcon({
+      logoKey: input.logoUrl,
+      loadLogo: () => (input.logoUrl ? fetchLogo(input.logoUrl) : Promise.resolve(null)),
+      primaryColor: input.primaryColor,
+      textColor: input.textColor,
+      stampIcon: input.stampIcon,
+    }),
+    loadLogo(input.logoUrl, 1),
+  ]);
+  const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(input.primaryColor, input.textColor);
+
+  const images: Record<string, Buffer> = { "icon.png": icon.x1, "icon@2x.png": icon.x2, "icon@3x.png": icon.x3 };
+  if (logoBuf) {
+    images["logo.png"] = logoBuf;
+    images["logo@2x.png"] = logoBuf;
+    images["logo@3x.png"] = logoBuf;
+  }
+
+  const pass = new PKPass(images, certificates, {
+    passTypeIdentifier,
+    teamIdentifier,
+    organizationName: input.businessName,
+    description: `QR-kode til ${input.businessName}s kort`,
+    serialNumber: `butik-${input.businessId}`,
+    foregroundColor: fg,
+    backgroundColor: bg,
+    labelColor: labelCol,
+    ...(logoBuf ? {} : { logoText: input.businessName }),
+  });
+  pass.type = "storeCard";
+  pass.primaryFields.push({ key: "cta", label: "TIL DINE KUNDER", value: "Scan og hent kortet" });
+  input.lines.slice(0, 2).forEach((l, i) => pass.secondaryFields.push({ key: `line${i}`, label: i === 0 ? "DE FÅR" : "OG", value: l }));
+  pass.backFields.push({ key: "how", label: "Sådan", value: "Vis koden til kunden. Kunden åbner kameraet, scanner og lægger sit eget kort i Wallet. Ingen app." });
+  pass.setBarcodes({ format: "PKBarcodeFormatQR", message: input.pageUrl, messageEncoding: "iso-8859-1", altText: "Scan med kameraet" });
+  return pass.getAsBuffer();
 }

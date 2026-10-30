@@ -137,6 +137,9 @@ export function KortetEditor({
   const [art, setArt] = useState<Art>(initialArt);
   const [accent, setAccent] = useState<string | null>(initialAccent);
   const [actions, setActions] = useState<CardAction[]>(initialActions);
+  // Booking-linket kan saettes direkte her (ogsaa under Regler, Henvisninger).
+  const [bookingUrl, setBookingUrl] = useState(ctx.bookingUrl ?? "");
+  const bookingValid = /^https?:\/\/\S+$/i.test(bookingUrl.trim());
   const [os, setOs] = useState<"27" | "old">("27");
   const [uploading, setUploading] = useState(false);
   const [pending, start] = useTransition();
@@ -147,11 +150,11 @@ export function KortetEditor({
     ctx.stampsEnabled && ctx.referralsEnabled ? "begge" : ctx.referralsEnabled ? "henvisninger" : "stemplet";
 
   const snapshot = useMemo(
-    () => JSON.stringify({ design, style, actions, artworkChanged, art, accent }),
-    [design, style, actions, artworkChanged, art, accent],
+    () => JSON.stringify({ design, style, actions, artworkChanged, art, accent, bookingUrl }),
+    [design, style, actions, artworkChanged, art, accent, bookingUrl],
   );
   const savedRef = useRef(
-    JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false, art: initialArt, accent: initialAccent }),
+    JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false, art: initialArt, accent: initialAccent, bookingUrl: ctx.bookingUrl ?? "" }),
   );
   const dirty = snapshot !== savedRef.current;
 
@@ -200,9 +203,10 @@ export function KortetEditor({
         actions,
         art,
         accent,
+        bookingUrl,
       });
       if (res.ok) {
-        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false, art, accent });
+        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false, art, accent, bookingUrl });
         setArtworkChanged(false);
         setMsg({ ok: true, text: "Gemt" });
       } else {
@@ -360,11 +364,13 @@ export function KortetEditor({
           <p className="mt-0.5 text-[0.88rem] text-stone">Genveje under kortet i Wallet (iOS 27). Kunden trykker på dem direkte fra kortet.</p>
           <div className="mt-4 flex flex-col gap-2">
             {CARD_ACTIONS.map((a) => {
-              const reason = actionUnavailableReason(a, ctx);
+              // Book tid kan altid vaelges: mangler linket, indsaettes det lige herunder.
+              const reason = a === "book" ? null : actionUnavailableReason(a, ctx);
               const on = actions.includes(a);
+              const hint = a === "book" && !bookingValid ? "Tryk, og indsæt dit booking-link." : CARD_ACTION_HINT[a];
               return (
+                <div key={a} className="flex flex-col gap-2">
                 <button
-                  key={a}
                   type="button"
                   disabled={!!reason}
                   aria-pressed={on}
@@ -376,7 +382,7 @@ export function KortetEditor({
                 >
                   <span>
                     <span className="block text-[0.95rem] font-semibold text-ink">{CARD_ACTION_LABEL[a]}</span>
-                    <span className="block text-[0.78rem] text-slate">{reason ?? CARD_ACTION_HINT[a]}</span>
+                    <span className="block text-[0.78rem] text-slate">{reason ?? hint}</span>
                   </span>
                   <span
                     className={cn(
@@ -387,6 +393,25 @@ export function KortetEditor({
                     ✓
                   </span>
                 </button>
+                {a === "book" && on ? (
+                  <label className="flex flex-col gap-1.5 px-1">
+                    <span className="text-[0.82rem] font-medium text-ink">Booking-link</span>
+                    <input
+                      type="url"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={bookingUrl}
+                      onChange={(e) => setBookingUrl(e.target.value)}
+                      className="w-full rounded-xl border border-fog bg-[#F2F5F9] px-4 py-2.5 text-[0.95rem] text-ink outline-none focus:border-ink"
+                    />
+                    {bookingUrl.trim() && !bookingValid ? (
+                      <span className="text-[0.78rem] text-rust">Linket skal starte med https://</span>
+                    ) : (
+                      <span className="text-[0.78rem] text-slate">Kopiér linket fra dit bookingsystem, og indsæt det her.</span>
+                    )}
+                  </label>
+                ) : null}
+                </div>
               );
             })}
           </div>

@@ -105,7 +105,7 @@ export default async function StatistikPage() {
         <Panel>
           <div className="flex flex-col items-start gap-4 py-2">
             <p className="text-[1.05rem] font-[600] text-ink">Statistik starter ved første stempel.</p>
-            <Link href="/app/regler?f=kundekort" className={btnClass("primary")}>
+            <Link href="/app/regler?f=kundekort&vis=1" className={btnClass("primary")}>
               Vis QR-kode
             </Link>
           </div>
