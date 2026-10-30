@@ -1,4 +1,4 @@
-// Enkelt-serie soejlegraf: terracotta med fin diagonal tekstur. Vaerdien staar
+// Enkelt-serie soejlegraf i Folkas blaa; den hoejeste soejle i moerkeblaa. Vaerdien staar
 // paa EN fast linje lige over soejlerne (samme hoejde for alle), saa tallene er
 // nemme at scanne uafhaengigt af soejlehoejden. Kan vise en fast etiket (fx
 // ugedag eller maaned) under hver soejle. Ren CSS, vokser blidt ved indlaesning
@@ -40,8 +40,7 @@ export function BarChart({
                   className="w-full max-w-[44px] origin-bottom rounded-t-[5px]"
                   style={{
                     height: `${Math.max(1.5, h)}%`,
-                    background:
-                      "repeating-linear-gradient(135deg, #A6502E 0 5px, #8F432695 5px 6px)",
+                    background: i === maxIdx && d.count > 0 ? "#061C3D" : "#1B5EAE",
                     animation: "growBar 0.7s cubic-bezier(0.16,1,0.3,1) both",
                     animationDelay: `${i * 0.03}s`,
                   }}

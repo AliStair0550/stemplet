@@ -9,12 +9,11 @@ export type Loyalty = {
   over250: number;
 };
 
-// Stamkunde-niveauer: farven eskalerer med troskab, saa 250+ faar samme guld
-// som beloenningen paa selve stempelkortet (prestige, konsekvent med Wallet).
+// Stamkunde-niveauer: farven bliver moerkere med troskab (Folkas blaa toner).
 const TIERS = [
-  { key: "over50", label: "50+ stempler", note: "trofaste", dot: "bg-terracotta/40" },
-  { key: "over100", label: "100+ stempler", note: "stamkunder", dot: "bg-terracotta" },
-  { key: "over250", label: "250+ stempler", note: "ambassadører", dot: "bg-[#C9A24B]" },
+  { key: "over50", label: "50+ stempler", note: "trofaste", dot: "bg-[#8FB3DE]" },
+  { key: "over100", label: "100+ stempler", note: "stamkunder", dot: "bg-[#1B5EAE]" },
+  { key: "over250", label: "250+ stempler", note: "ambassadører", dot: "bg-[#061C3D]" },
 ] as const;
 
 /** Overblik over de mest loyale kunder: rekordholder + antal pr. niveau. */
