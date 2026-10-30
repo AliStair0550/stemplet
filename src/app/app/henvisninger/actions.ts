@@ -10,7 +10,7 @@ import { refreshShop } from "@/lib/shop-refresh";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-const rewardType = z.enum(["AMOUNT", "STAMPS", "SERVICE"]);
+const rewardType = z.enum(["AMOUNT", "PERCENT", "STAMPS", "SERVICE"]);
 const optionalInt = (msg: string) =>
   z
     .union([z.literal(""), z.coerce.number({ message: msg }).int(msg).min(0, msg).max(100_000, msg)])

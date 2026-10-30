@@ -97,7 +97,7 @@ export function ReferralWorklist({
   async function giveDiscount(row: WaitingRow) {
     const data = await post(row.referralId, "/api/henvisninger/kasse/besoeg", { referralId: row.referralId });
     if (!data) return;
-    const ambassador = (data.rewards as { role: string; type: "AMOUNT" | "STAMPS" | "SERVICE"; value: string }[]).find(
+    const ambassador = (data.rewards as { role: string; type: "AMOUNT" | "PERCENT" | "STAMPS" | "SERVICE"; value: string }[]).find(
       (r) => r.role === "referrer",
     );
     setToast({

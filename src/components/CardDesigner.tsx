@@ -299,7 +299,6 @@ export function CardDesigner({
                 value={value.rewardText}
                 maxLength={REWARD_TEXT_MAX}
                 onChange={(e) => set("rewardText", e.target.value)}
-                placeholder="10. kop er gratis"
                 className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
               />
             </label>
@@ -617,7 +616,6 @@ export function CardDesigner({
                   setTermsDraft(e.target.value);
                   set("terms", e.target.value.trim() || null);
                 }}
-                placeholder="Fx: Gælder kun ved køb af kaffe. Kan indløses i alle vores butikker."
                 className="resize-none border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.9rem] leading-relaxed text-ink outline-none focus:border-terracotta"
               />
               <div className="flex items-baseline justify-between gap-2">

@@ -233,7 +233,7 @@ function CustomerCard({
     if (res.ok) {
       visitKey.current = newIdemKey();
       setPin("");
-      const amb = (res.rewards as { role: string; type: "AMOUNT" | "STAMPS" | "SERVICE"; value: string }[]).find(
+      const amb = (res.rewards as { role: string; type: "AMOUNT" | "PERCENT" | "STAMPS" | "SERVICE"; value: string }[]).find(
         (r) => r.role === "referrer",
       );
       onCelebrate({

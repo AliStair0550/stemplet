@@ -25,11 +25,11 @@ test("plakat: kun Stemplet viser stempler, beloenning og hvor mange der mangler"
   assert.deepEqual(vals(f.footer), ["7 stempler til næste belønning"]);
 });
 
-test("plakat: begge viser stempler, koden og til gode uden notifikation", () => {
+test("plakat: begge viser stempler, koden og til gode med besked", () => {
   const f = posterFields({ stamps: 3, required: 10, rewardText: "Gratis klip", stampsEnabled: true, referral });
   assert.deepEqual(vals(f.header), ["3/10"]);
   assert.deepEqual(vals(f.primary), ["SARA-K7", "Gratis klip"]);
-  assert.equal(f.primary[1]!.changeMessage, undefined);
+  assert.match(f.primary[1]!.changeMessage ?? "", /%@/);
 });
 
 test("plakat: kun Henvisninger viser til gode oeverst og koden stort", () => {
