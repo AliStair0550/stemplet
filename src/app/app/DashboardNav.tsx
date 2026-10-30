@@ -59,9 +59,9 @@ const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, COMMS, { href: "/app
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
-  { href: "/app/indstillinger", label: "Indstillinger" },
   { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
+  { href: "/app/indstillinger", label: "Indstillinger" },
   { href: "/app/guide", label: "Service" },
 ];
 // "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.

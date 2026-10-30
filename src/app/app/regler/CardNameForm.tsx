@@ -34,7 +34,7 @@ export function CardNameForm({
   }
 
   return (
-    <section className="mb-6 rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
+    <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
       <h3 className="text-[1.05rem] font-semibold text-ink">Kortets navn</h3>
       <p className="mt-1 text-[0.9rem] text-stone">Bruges i knappen, når kunderne henter kortet på din side.</p>
       <input
