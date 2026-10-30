@@ -110,7 +110,7 @@ export function ShareReferral({
           className="w-full rounded-2xl p-4"
           style={{ background: fg, color: bg, animation: "cardReceive 0.6s cubic-bezier(0.34,1.56,0.64,1) both" }}
         >
-          <p className="text-[1.3rem] font-bold tracking-[-0.02em]">Sendt! Godt gået.</p>
+          <p className="text-[1.3rem] font-bold tracking-[-0.02em]">Sendt. Godt gået.</p>
           <p className="mt-1 text-[0.92rem] leading-snug" style={{ color: rgba(bg, 0.78) }}>
             Når din ven har været her, får du {end(yourReward)}{" "}
             {shares > 1 ? `Du har delt ${shares} gange.` : "Del gerne med flere."}

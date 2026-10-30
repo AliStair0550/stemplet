@@ -183,7 +183,7 @@ export function CelebrationToast({
   }, [onDone]);
   return (
     <>
-      <Confetti colors={["#1C1917", "#A6502E", "#E2DDD5", "#C9A24B"]} originY="18%" />
+      <Confetti colors={["#061C3D", "#1B5EAE", "#7CC4FF", "#C8D8E8"]} originY="18%" />
       {/* Centreringen ligger paa den ydre boks, saa pop-animationen (transform)
           ikke skubber toasten ud af midten. */}
       <div className="pointer-events-none fixed inset-x-0 top-6 z-50 flex justify-center px-4">
@@ -192,7 +192,7 @@ export function CelebrationToast({
           className="pointer-events-auto flex w-full max-w-[26rem] items-center gap-4 rounded-2xl border border-fog bg-white px-5 py-4 shadow-lift"
           style={{ animation: "celebrate-pop 380ms cubic-bezier(0.16, 1, 0.3, 1) both" }}
         >
-          <CheckBurst size={44} />
+          <CheckBurst size={44} bg="#061C3D" fg="#FFFFFF" />
           <div className="min-w-0">
             <p className="text-[1rem] font-[600] text-ink">{title}</p>
             {text ? <p className="mt-0.5 text-[0.85rem] leading-snug text-stone">{text}</p> : null}

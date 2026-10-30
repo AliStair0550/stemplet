@@ -11,8 +11,10 @@ import { loadCardPreview } from "@/lib/card-preview";
 import { APP_URL } from "@/lib/env";
 import { AddToHomeButton } from "./AddToHomeButton";
 import { formatDkNumber } from "@/lib/utils";
+import { DEFAULT_PRIMARY } from "@/lib/brand";
+import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
 
-export const metadata = { title: { absolute: "Hjem - Kundekort" } };
+export const metadata = { title: { absolute: "Hjem - Folka Kort" } };
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +105,14 @@ export default async function HomePage() {
     month: "long",
   }).format(now);
 
+  // Kom i gang: flueben fra det, vi allerede ved. Plakaten kan vi ikke se.
+  const designed = business.primaryColor !== DEFAULT_PRIMARY || !!business.logoUrl || !!business.cardArtwork;
+  const steps = [
+    { title: "Design kortet", text: "Navn, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
+    { title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen.", href: "/app/plakat", cta: "Lav plakaten", done: false },
+    { title: "Prøv det selv", text: "Hent kortet på din telefon. Find dig selv under Kunder, og giv et stempel.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true, done: false },
+  ];
+  const doneCount = steps.filter((s) => s.done).length;
 
   return (
     <>
@@ -130,16 +140,26 @@ export default async function HomePage() {
       {/* Ny butik (ingen kortholdere endnu): de tre skridt til det foerste kort. */}
       {stats.totalCustomers === 0 ? (
         <section aria-labelledby="kom-i-gang" className="mb-10 rounded-[22px] bg-[#061C3D] p-6 text-white md:p-7">
-          <h2 id="kom-i-gang" className="text-[1.25rem] font-semibold tracking-[-0.02em]">Kom i gang på tre skridt</h2>
-          <p className="mt-1 text-[0.9rem] text-white/70">Så har du din første kunde på kortet i dag.</p>
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 id="kom-i-gang" className="text-[1.25rem] font-semibold tracking-[-0.02em]">Din første kunde i dag</h2>
+            <span className="text-[0.9rem] font-semibold tabular-nums text-[#7CC4FF]">{doneCount}/3</span>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
+            <div className="h-full rounded-full bg-[#7CC4FF] transition-[width] duration-700" style={{ width: `${Math.max(4, (doneCount / 3) * 100)}%` }} />
+          </div>
           <ol className="mt-5 grid gap-3 md:grid-cols-3">
-            {[
-              { n: 1, title: "Design kortet", text: "Dit navn, dine farver og dit billede.", href: "/app/kortet", cta: "Design kortet" },
-              { n: 2, title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen, klar til print.", href: "/app/plakat", cta: "Lav plakaten" },
-              { n: 3, title: "Prøv det selv", text: "Hent kortet på din egen telefon, og giv dig selv et stempel.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true },
-            ].map((s) => (
-              <li key={s.n} className="flex flex-col rounded-[16px] bg-white/[.07] p-4 ring-1 ring-inset ring-white/10">
-                <span className="text-[0.8rem] font-semibold text-[#7CC4FF]">Trin {s.n}</span>
+            {steps.map((s, i) => (
+              <li key={s.title} className={`flex flex-col rounded-[16px] p-4 ring-1 ring-inset ${s.done ? "bg-white/[.03] ring-white/5" : "bg-white/[.07] ring-white/10"}`}>
+                <span className="flex items-center gap-2 text-[0.8rem] font-semibold text-[#7CC4FF]">
+                  {s.done ? (
+                    <span aria-label="Klaret" className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7CC4FF] text-[#061C3D]">
+                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    </span>
+                  ) : null}
+                  Trin {i + 1}
+                </span>
                 <span className="mt-1 text-[1rem] font-semibold">{s.title}</span>
                 <span className="mt-1 text-[0.85rem] leading-snug text-white/70">{s.text}</span>
                 {s.external ? (
@@ -155,6 +175,8 @@ export default async function HomePage() {
             ))}
           </ol>
         </section>
+      ) : stats.totalCustomers <= 3 ? (
+        <FirstCustomerCelebration businessId={business.id} customers={stats.totalCustomers} />
       ) : null}
 
       {/* Klar til belønning: kunder, der venter paa noget ved kassen. Et tryk
@@ -227,13 +249,18 @@ export default async function HomePage() {
         <div className="flex min-w-0 flex-col gap-3">
           <div>
             <h2 className="text-[1.3rem] font-bold tracking-[-0.025em] text-ink">På dit kort</h2>
-            <p className="mt-0.5 text-[0.88rem] text-stone">Funktionerne ligger på det samme kort hos kunden. Tilføj dem, du vil bruge.</p>
           </div>
           {business.stampsEnabled ? (
             <Feature href="/app/stemplet" rulesHref="/app/regler?f=stempler" logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Stempler</span>}>
-              <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
-              <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye kortholdere" />
-              <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
+              {stats.totalCustomers === 0 ? (
+                <p className="col-span-3 text-[0.95rem] font-[500] text-stone">Første stempel venter.</p>
+              ) : (
+                <>
+                  <Stat value={formatDkNumber(stats.perDay.at(-1)?.count ?? 0)} label="stempler i dag" />
+                  <Stat value={formatDkNumber(stats.newPerDay.at(-1)?.count ?? 0)} label="nye i dag" />
+                  <Stat value={formatDkNumber(pulse.redemptionsToday)} label="indløst i dag" />
+                </>
+              )}
             </Feature>
           ) : null}
           {referrals ? (
@@ -256,7 +283,7 @@ export default async function HomePage() {
           ) : null}
           {business.stampsEnabled ? null : (
             <AddFeature
-              href="/app/regler"
+              href="/app/stemplet/tilfoej"
               logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Stempler</span>}
               title="Tilføj stempler"
               text="Stempler på kortet, så kunderne kommer igen."
@@ -264,7 +291,7 @@ export default async function HomePage() {
           )}
           {business.referralsEnabled ? null : (
             <AddFeature
-              href="/app/regler"
+              href="/app/henvisninger/tilfoej"
               logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Henvisninger</span>}
               title="Tilføj henvisninger"
               text="En henvisningskode på kortet, så kunderne skaffer nye kunder."
@@ -286,13 +313,11 @@ export default async function HomePage() {
       </div>
 
       {/* Ingen venter: en kort note nederst (listen staar oeverst, naar der er nogen). */}
-      {ready.customers.length === 0 ? (
+      {ready.customers.length === 0 && stats.totalCustomers > 0 ? (
         <section>
           <SectionHeader title="Klar til belønning" />
           <Panel>
-            <p className="py-1 text-[0.88rem] text-stone">
-              Ingen venter lige nu. Når en kunde har et fuldt kort, en belønning til gode eller kommer første gang via en ven, står de her.
-            </p>
+            <p className="py-1 text-[0.88rem] text-stone">Ingen venter lige nu.</p>
           </Panel>
         </section>
       ) : null}

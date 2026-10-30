@@ -62,7 +62,7 @@ export default function Hero() {
               </ButtonLink>
             </div>
             <p className="mt-7 text-[0.85rem] text-taupe-light">
-              Dine første 100 kunder er gratis. Intet kreditkort.
+              Tre måneder gratis. Derefter 49 kr. om måneden. Ingen binding.
             </p>
           </div>
         </div>

@@ -31,7 +31,7 @@ export default async function TilbudPage() {
       <KommunikationTabs active="tilbud" showCampaigns={business.stampsEnabled} />
       <PageHeading
         title="Tilbud"
-        subtitle="Særlige tilbud og rabatter hos samarbejdspartnere. Kunderne ser dem under Tilbud og fordele, når de trykker på knappen under kortet i Wallet."
+        subtitle="Rabatter kun for kortholdere. Kunderne ser dem under kortet i Wallet."
       />
       <div className="flex flex-col gap-6">
         <OffersSection kind="OFFER" offers={rows.filter((o) => o.kind === "OFFER").map(toRow)} />

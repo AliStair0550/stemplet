@@ -6,12 +6,12 @@ import { Section, Container, Divider } from "@/components/ui";
 import { BRANCHER } from "@/lib/brancher";
 
 export const metadata: Metadata = {
-  title: { absolute: "Stempelkort til din branche | Stemplet" },
+  title: { absolute: "Stempelkort til din branche | Folka Kort" },
   description:
     "Se hvordan et digitalt stempelkort i Apple Wallet virker i netop din type forretning. Vælg din branche.",
   alternates: { canonical: "/brancher" },
   openGraph: {
-    title: "Stempelkort til din branche | Stemplet",
+    title: "Stempelkort til din branche | Folka Kort",
     description:
       "Se hvordan et digitalt stempelkort i Apple Wallet virker i netop din type forretning.",
     url: "/brancher",

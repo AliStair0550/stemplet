@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadDemoBusiness, DEMO_SLUG } from "@/lib/demo";
-import { WALLET_ENABLED } from "@/lib/env";
+import QRCode from "qrcode";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { DemoExperience } from "./DemoExperience";
 
 export const metadata: Metadata = {
-  title: "Prøv Stemplet i din egen Wallet",
+  title: "Prøv Folka Kort på din telefon",
   description:
     "Læg et rigtigt digitalt stempelkort i din Apple Wallet på få sekunder. Ingen app. Præcis som dine kunder vil opleve det.",
   robots: { index: false },
@@ -17,17 +18,12 @@ export const revalidate = 3600;
 export default async function ProevPage() {
   const biz = await loadDemoBusiness();
   const card = biz?.cards[0] ?? null;
+  // Paa en computer kan kortet ikke laegges i Wallet: vis en kode til telefonen.
+  const qrDataUrl = await QRCode.toDataURL(`${APP_URL}/pr%C3%B8v`, { margin: 1, width: 360, color: { dark: "#061C3D", light: "#FFFFFF" } });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-parchment px-6 py-8 text-center">
-      <div className="flex max-w-md flex-col items-center gap-2">
-        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.18em] text-terracotta">
-          Prøv det selv
-        </span>
-        <h1 className="font-fraunces text-[1.9rem] font-light italic leading-tight text-ink">
-          Dit eget stempelkort. Lige nu.
-        </h1>
-      </div>
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#F2F5F9] px-6 py-8 text-center text-[#061C3D]">
+      <h1 className="max-w-md text-[2rem] font-semibold leading-[1.05] tracking-[-0.035em]">Prøv kortet på din egen telefon.</h1>
 
       {biz && card ? (
         <DemoExperience
@@ -40,17 +36,24 @@ export default async function ProevPage() {
           rewardText={card.rewardText}
           required={card.stampsRequired}
           walletEnabled={WALLET_ENABLED}
+          qrDataUrl={qrDataUrl}
         />
       ) : (
-        <p className="max-w-xs font-[300] text-[0.95rem] text-stone">
+        <p className="max-w-xs text-[0.95rem] text-[#5F6B7E]">
           Demoen er lige nu ikke tilgængelig. Prøv igen om lidt.
         </p>
       )}
 
-      <Link
-        href="/"
-        className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
-      >
+      <div className="flex flex-col items-center gap-2">
+        <Link
+          href="/start"
+          className="rounded-full bg-[#061C3D] px-7 py-3.5 text-[15px] font-semibold text-white transition-transform hover:scale-[1.03] active:scale-[0.98]"
+        >
+          Opret dit eget kort
+        </Link>
+        <p className="text-[13px] text-[#5F6B7E]">Tre måneder gratis. Det tager et minut.</p>
+      </div>
+      <Link href="/" className="text-[13px] text-[#5F6B7E] underline-offset-4 hover:underline">
         Tilbage til forsiden
       </Link>
     </main>

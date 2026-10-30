@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { StampIconKey } from "@/lib/brand";
 import { StampIcon } from "@/components/StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
@@ -186,6 +187,9 @@ export function MemberCard({
   priority?: boolean;
 }) {
   const { bg, fg } = card;
+  // Unikt pr. kort: samme butik vises flere gange paa siden (ogsaa skjult paa
+  // mobil), og delte gradient-id'er kan give tomme kort.
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   return (
     <div
       className={cn("relative aspect-[1/1.42] w-full overflow-hidden rounded-[22px] kk-shadow-3", className)}
@@ -198,7 +202,7 @@ export function MemberCard({
     >
       {card.art ? (
         <>
-          <ArtLayer id={`kk-${card.shop.toLowerCase().replace(/[^a-z0-9]/g, "")}`} art={card.art} bg={bg} fg={fg} accent={card.accent ?? fg} />
+          <ArtLayer id={`kk-${uid}`} art={card.art} bg={bg} fg={fg} accent={card.accent ?? fg} />
           {/* Blød bund, saa felterne altid kan laeses (som i Wallet). */}
           <div aria-hidden className="absolute inset-0" style={{ background: `linear-gradient(180deg, ${bg}00 52%, ${bg}e6 100%)` }} />
         </>

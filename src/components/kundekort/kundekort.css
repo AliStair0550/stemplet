@@ -38,7 +38,6 @@
   position: absolute;
   inset: -20% -10% -10%;
   z-index: -2;
-  filter: blur(70px);
 }
 .kk-light > span {
   position: absolute;
@@ -57,6 +56,7 @@
   right: -6%;
   top: -8%;
   background: radial-gradient(closest-side, rgba(120, 170, 235, 0.55), transparent);
+  will-change: transform;
   animation: kk-drift 24s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate;
 }
 .kk-light > span:nth-child(3) {
@@ -65,6 +65,7 @@
   right: 20%;
   bottom: -16%;
   background: radial-gradient(closest-side, rgba(200, 216, 232, 0.28), transparent);
+  will-change: transform;
   animation: kk-drift 30s cubic-bezier(0.2, 0.8, 0.2, 1) infinite alternate-reverse;
 }
 .kk-grid {

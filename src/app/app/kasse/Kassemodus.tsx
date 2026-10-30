@@ -612,6 +612,8 @@ function StaffCard({
   const [pulse, setPulse] = useState(0);
   // Hvor mange stempler seneste tryk gav (normalt 1, 2 ved dobbeltstempel-kampagne).
   const [lastInc, setLastInc] = useState(1);
+  // Kortet blev fuldt paa dette tryk: kassens stoerste oejeblik, fejres.
+  const [justFilled, setJustFilled] = useState(false);
   // Naar en beloenning lige er indloest: stor fejring + "giv beloenningen nu".
   // Baerer de reelle rest-stempler, saa kortet kan opdateres uden et ekstra kald.
   const [redeemed, setRedeemed] = useState<{
@@ -689,6 +691,7 @@ function StaffCard({
         });
         setLastInc(data.increment ?? 1);
         setPulse((p) => p + 1);
+        setJustFilled(!!data.rewardReady);
         setQty(1);
         haptic(data.rewardReady ? [30, 50, 30, 50, 90] : [16, 45, 22]);
         setNote({
@@ -928,7 +931,7 @@ function StaffCard({
               <span className="font-[400] tabular-nums text-stone">
                 {card.lifetimeStamps}
               </span>{" "}
-              {card.lifetimeStamps === 1 ? "stempel" : "stempler"} i alt hos jer
+              {card.lifetimeStamps === 1 ? "stempel" : "stempler"} i alt
             </p>
           ) : null}
 
@@ -951,8 +954,11 @@ function StaffCard({
 
           {card.rewardReady ? (
             <div className="flex flex-col gap-3 rounded-lg border border-terracotta bg-terracotta/5 p-5">
+              {justFilled ? <Celebration show /> : null}
               <div>
-                <p className="font-[400] text-[1rem] text-ink">Belønning klar</p>
+                <p className={justFilled ? "text-[1.5rem] font-bold leading-tight tracking-[-0.02em] text-ink" : "font-[400] text-[1rem] text-ink"}>
+                  {justFilled ? "Kortet er fuldt" : "Belønning klar"}
+                </p>
                 <p className="font-[300] text-[0.85rem] text-stone">
                   {card.rewardText}
                 </p>
@@ -991,9 +997,6 @@ function StaffCard({
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              <p className="text-center text-[0.8rem] font-[300] text-slate">
-                Kortet er scannet. Vælg antal og giv stemplet.
-              </p>
               {/* Antal: hurtig-vaelg med eet tryk (fx tre kaffe = 3) */}
               <div className="flex flex-col items-center gap-2">
                 <span className="text-[0.72rem] font-[400] uppercase tracking-[0.1em] text-slate">
@@ -1064,11 +1067,9 @@ function StaffCard({
 
           {/* Saa personalet ved besked, hvis kunden spoerger: Wallet-pass'et
               opdaterer sig selv efter et oejeblik (Apples baggrunds-push). */}
-          <p className="rounded-lg bg-sand/50 px-4 py-3 text-center text-[0.74rem] font-[300] leading-relaxed text-slate">
-            Vises stemplet ikke straks i kundens Wallet, opdaterer det sig selv
-            om et øjeblik. Kunden kan åbne sit kort på telefonen og se det med
-            det samme.
-          </p>
+          {pulse > 0 ? (
+            <p className="text-center text-[0.74rem] font-[300] text-slate">Wallet opdaterer om et øjeblik.</p>
+          ) : null}
         </>
       ) : (
         <div className="flex flex-col items-center gap-4 py-8 text-center">
@@ -1099,12 +1100,14 @@ function StaffCard({
         >
           Scan nyt kort
         </button>
-        <button
-          onClick={onExit}
-          className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
-        >
-          Færdig
-        </button>
+        {card && !card.rewardReady && !redeemed ? null : (
+          <button
+            onClick={onExit}
+            className="text-[0.72rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-ink"
+          >
+            Færdig
+          </button>
+        )}
       </div>
     </div>
   );

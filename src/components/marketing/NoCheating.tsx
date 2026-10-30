@@ -67,7 +67,7 @@ const POINTS = [
   {
     icon: <LockIcon />,
     title: "Personale-PIN ved indløsning",
-    body: "Belønninger frigives kun med personalets PIN. Kunden kan ikke selv løse ind.",
+    body: "Slå personale-PIN til, så kun dine folk kan frigive en belønning.",
   },
 ];
 

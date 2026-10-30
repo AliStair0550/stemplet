@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FolkaLogo, KundekortMark } from "@/components/ProductLogo";
 import { StampCard } from "@/components/StampCard";
+import { Confetti } from "@/components/Celebrate";
+import { DEFAULT_PRIMARY, DEFAULT_TEXT } from "@/lib/brand";
 import { StampIcon } from "@/components/StampIcon";
 import { Phone } from "@/components/henvisninger-site/Screens";
 import type { StampIconKey } from "@/lib/brand";
@@ -101,14 +103,15 @@ export function StempletStart() {
   return (
     <div className="dash-theme min-h-screen bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>
       <header className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-4 sm:px-6">
-        <Link href="/" aria-label="Kundekort, til forsiden">
+        <Link href="/" aria-label="Folka Kort, til forsiden">
           <KundekortMark />
         </Link>
-        <span className="text-[13px] text-[#0B1628]/60">Gratis. Intet kreditkort.</span>
+        <span className="text-[13px] text-[#0B1628]/60">Tre måneder gratis.</span>
       </header>
 
       {loginToken ? (
         <main className="mx-auto flex max-w-[560px] flex-col items-center px-4 py-24 text-center sm:px-6">
+          <Confetti colors={["#061C3D", "#1B5EAE", "#7CC4FF", "#C8D8E8"]} />
           <FolkaLogo className="h-14" />
           <h1 className="mt-8 text-[30px] font-bold leading-tight tracking-[-0.03em]">{businessName.trim()} er klar.</h1>
           <p className="mt-3 text-[18px] text-[#0B1628]/60">Vi åbner dit dashboard.</p>
@@ -126,7 +129,7 @@ export function StempletStart() {
             <h1 className="text-[36px] font-bold leading-[1.04] tracking-[-0.04em] sm:text-[48px]">
               Få dine kunder til at komme igen.
             </h1>
-            <p className="mt-4 text-[19px] text-[#0B1628]/55">Lav dit kundekort, så er det klar på et minut.</p>
+            <p className="mt-4 text-[19px] text-[#0B1628]/55">Lav dit kort. Det er klar på et minut.</p>
 
             <form onSubmit={submit} className="mt-10 flex flex-col gap-8">
               <label className="block">
@@ -142,7 +145,7 @@ export function StempletStart() {
               </label>
 
               <fieldset>
-                <legend className="mb-3 text-[22px] font-bold tracking-[-0.02em]">Dit kundekort</legend>
+                <legend className="mb-3 text-[22px] font-bold tracking-[-0.02em]">Dit kort</legend>
                 <label className="block">
                   <Label>Belønning, når kortet er fuldt</Label>
                   <input
@@ -214,16 +217,18 @@ export function StempletStart() {
               <fieldset>
                 <legend className="mb-3 text-[22px] font-bold tracking-[-0.02em]">Dig</legend>
                 <div className="flex flex-col gap-3">
-                  <input
-                    className={inputCls}
-                    type="email"
-                    value={email}
-                    maxLength={120}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="din@mail.dk"
-                    autoComplete="email"
-                    aria-label="E-mail"
-                  />
+                  <label className="block">
+                    <Label>E-mail</Label>
+                    <input
+                      className={inputCls}
+                      type="email"
+                      value={email}
+                      maxLength={120}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="din@mail.dk"
+                      autoComplete="email"
+                    />
+                  </label>
                   <input
                     className={inputCls}
                     value={contactName}
@@ -266,13 +271,29 @@ export function StempletStart() {
                 </p>
               ) : null}
 
+              {/* Paa mobil er telefonen skjult: vis kortet lige over knappen. */}
+              <div className="lg:hidden">
+                <p className="mb-2 text-[14px] font-medium text-[#0B1628]/60">Sådan ser kunderne det</p>
+                <div className="mx-auto max-w-[300px]" style={{ zoom: 0.8 }}>
+                  <StampCard
+                    businessName={businessName.trim() || "Din butik"}
+                    primaryColor={DEFAULT_PRIMARY}
+                    textColor={DEFAULT_TEXT}
+                    stampIcon={icon}
+                    stamps={Math.min(3, stamps)}
+                    required={stamps}
+                    rewardText={reward.trim() || "Gratis kaffe"}
+                  />
+                </div>
+              </div>
+
               <div>
                 <button
                   type="submit"
                   disabled={busy}
                   className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#061C3D] px-8 text-[17px] font-semibold text-white transition-[transform,background-color] hover:bg-[#0A2D5A] active:scale-[0.98] disabled:opacity-60 sm:w-auto"
                 >
-                  {busy ? "Opretter din butik..." : "Opret min butik"}
+                  {busy ? "Opretter dit kort..." : "Opret mit kort"}
                 </button>
                 <p className="mt-3 text-[13px] text-[#0B1628]/60">Vi bruger dine oplysninger til at sætte din butik op.</p>
                 <p className="mt-6 text-[15px] text-[#0B1628]/60">
@@ -287,11 +308,13 @@ export function StempletStart() {
               <Phone>
                 <div className="flex flex-1 flex-col bg-[#F2F5F9] px-3.5 pb-8 pt-14">
                   <p className="text-center text-[13px] font-semibold">{businessName.trim() || "Din butik"}</p>
-                  <p className="mb-4 text-center text-[11px] text-[#0B1628]/60">Dit kundekort</p>
+                  <p className="mb-4 text-center text-[11px] text-[#0B1628]/60">Dit kort</p>
                   {/* Kortet er tegnet til fuld bredde; zoom saa det passer i telefonen. */}
                   <div style={{ zoom: 0.72 }}>
                     <StampCard
                       businessName={businessName.trim() || "Din butik"}
+                      primaryColor={DEFAULT_PRIMARY}
+                      textColor={DEFAULT_TEXT}
                       stampIcon={icon}
                       stamps={Math.min(3, stamps)}
                       required={stamps}

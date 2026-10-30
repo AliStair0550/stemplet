@@ -112,6 +112,18 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
     <div className="flex w-full flex-col gap-3">
       {toast ? <CelebrationToast title={toast.title} text={toast.text} onDone={() => setToast(null)} /> : null}
 
+      {/* PIN foer knapperne, den laaser op. */}
+      {hasPin ? (
+        <input
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          inputMode="numeric"
+          placeholder="Personale-PIN"
+          aria-label="Personale-PIN"
+          className="min-h-[3rem] rounded-full border border-clay bg-white px-5 text-center text-[1rem] tracking-[0.3em] text-ink outline-none focus:border-ink"
+        />
+      ) : null}
+
       {ref ? (
         <div className="flex flex-col gap-3 rounded-lg border border-ink bg-white p-5 shadow-card">
           <div>
@@ -144,16 +156,6 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
         </div>
       ))}
 
-      {hasPin ? (
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-          inputMode="numeric"
-          placeholder="Personale-PIN"
-          aria-label="Personale-PIN"
-          className="min-h-[3rem] rounded-full border border-clay bg-white px-5 text-center text-[1rem] tracking-[0.3em] text-ink outline-none focus:border-ink"
-        />
-      ) : null}
       {note ? (
         <p role="status" className={cn("text-center text-[0.9rem]", note.ok ? "text-ink" : "text-rust")}>
           {note.text}

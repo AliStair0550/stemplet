@@ -221,7 +221,7 @@ export function DashboardNav({
     <>
       {/* Desktop */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col overflow-y-auto border-r border-fog bg-white px-4 py-6 md:flex print:hidden">
-        <Link href="/app" aria-label="Kundekort, til Hjem" className="mb-5 px-2">
+        <Link href="/app" aria-label="Folka Kort, til Hjem" className="mb-5 px-2">
           <KundekortMark />
         </Link>
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
@@ -329,7 +329,7 @@ export function DashboardNav({
           aria-expanded={moreOpen}
           aria-controls="mere-menu"
           className={cn(
-            "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
+            "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.72rem]",
             moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder"))
               ? "font-[500] text-ink"
               : "text-slate",
@@ -434,7 +434,7 @@ function TabLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
+        "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.72rem]",
         active ? "font-[500] text-ink" : "text-slate",
       )}
     >

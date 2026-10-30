@@ -42,7 +42,7 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
       </td></tr>
       <tr><td style="padding:20px 4px 0;">
         <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-          Kundekort fra Folka. Stempler og henvisninger i kundens Wallet.
+          Folka Kort. Stempler, henvisninger og beskeder i kundens Wallet.
         </p>
         ${footerExtra}
       </td></tr>
@@ -90,7 +90,7 @@ function folkaShell(preheader: string, inner: string, shopName?: string): string
       </td></tr>
       <tr><td align="center" style="padding:22px 16px 0;">
         <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Kundekort."}
+          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Folka Kort."}
         </p>
       </td></tr>
     </table>
@@ -175,7 +175,7 @@ export function loginEmail(url: string, code: string): Email {
     "",
     `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke bedt om at logge ind, kan du roligt ignorere denne mail.`,
     "",
-    "Kundekort fra Folka.",
+    "Folka Kort.",
   ].join("\n");
 
   // Koden i emnet: iPhone foreslaar den selv i kodefeltet, og den kan ses uden
@@ -211,7 +211,7 @@ export function welcomeEmail(url: string, code: string): Email {
   const steps = [
     "Sæt linket til din side på din hjemmeside.",
     "Hæng QR-koden op ved kassen.",
-    "Tilføj det andet produkt i dashboardet, når du er klar.",
+    "Slå henvisninger til under Regler, når du er klar.",
   ];
   const list = steps
     .map(
@@ -223,7 +223,7 @@ export function welcomeEmail(url: string, code: string): Email {
     .join("");
 
   const inner = `
-    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka</h1>
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka Kort</h1>
     <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Din butik er klar. Om lidt har dine kunder dit kort i lommen, og hvert besøg bliver en grund til at komme igen.
     </p>
@@ -238,7 +238,7 @@ export function welcomeEmail(url: string, code: string): Email {
     ${folkaFallback(url, `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.`)}`;
 
   const text = [
-    "Velkommen til Folka",
+    "Velkommen til Folka Kort",
     "",
     "Din butik er klar. Om lidt har dine kunder dit kort i lommen.",
     "",
@@ -252,10 +252,10 @@ export function welcomeEmail(url: string, code: string): Email {
     "",
     `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.`,
     "",
-    "Kundekort fra Folka.",
+    "Folka Kort.",
   ].join("\n");
 
-  return { subject: "Velkommen til Folka", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
+  return { subject: "Velkommen til Folka Kort", html: folkaShell("Din butik er klar. Log ind og kom i gang.", inner), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
 // ── Ugentlig statistik-mail ──────────────────────────────────────────
@@ -374,7 +374,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
 
   return {
     subject: `Din uge hos ${d.businessName}: ${d.stampsWeek} stempler`,
-    html: shell("Din uge med Kundekort.", inner, footerExtra),
+    html: shell("Din uge med Folka Kort.", inner, footerExtra),
     text,
   };
 }
@@ -610,7 +610,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
   ].join("\n");
 
   return {
-    subject: `[Kundekort] Ny butik: ${d.businessName}`,
+    subject: `[Folka Kort] Ny butik: ${d.businessName}`,
     html: shell(`Ny butik oprettet: ${esc(d.businessName)}.`, inner),
     text,
   };
@@ -642,7 +642,7 @@ export function marketingWelcomeEmail(name?: string | null): Email {
     "",
     "Har du ikke selv skrevet dig op, så skriv til os på hej@folka.dk, så fjerner vi dig med det samme.",
     "",
-    "Kundekort fra Folka.",
+    "Folka Kort.",
   ].join("\n");
 
   return {
@@ -707,7 +707,7 @@ export function superadminMarketingSignupEmail(
   ].join("\n");
 
   return {
-    subject: `[Kundekort] Ny tilmelding: ${d.email}`,
+    subject: `[Folka Kort] Ny tilmelding: ${d.email}`,
     html: shell("Ny bekræftet tilmelding til Kundekort.", inner),
     text,
   };
@@ -791,7 +791,7 @@ export function superadminSignupRequestEmail(
   ].join("\n");
 
   return {
-    subject: `[Kundekort] Oprettelsesanmodning${d.referralsOnly ? " (kun Henvisninger)" : d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
+    subject: `[Folka Kort] Oprettelsesanmodning${d.referralsOnly ? " (kun Henvisninger)" : d.referralReward ? " (Henvisninger)" : ""}: ${d.businessName}`,
     html: shell("En butik vil gerne oprettes på Kundekort.", inner),
     text,
   };

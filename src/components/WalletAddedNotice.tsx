@@ -1,35 +1,26 @@
-// Groen kvittering: kortet er nu i Apple Wallet. Delt mellem claim-siden
+"use client";
+
+import { CheckBurst, Confetti } from "@/components/Celebrate";
+
+// Kvittering: kortet er nu i Apple Wallet. Delt mellem claim-siden
 // (/k/[slug], iPhone-flowet) og webkortet (/kort/[serial]), saa teksten og stilen
-// kun findes eet sted.
-export function WalletAddedNotice() {
+// kun findes eet sted. I butikkens farver; konfetti kun naar vi ved, at kortet
+// faktisk er landet (claim-siden bekraefter via registreringen).
+export function WalletAddedNotice({
+  bg = "#061C3D",
+  fg = "#FFFFFF",
+  celebrate = false,
+}: {
+  bg?: string;
+  fg?: string;
+  celebrate?: boolean;
+}) {
   return (
-    <div className="flex w-full items-start gap-3 rounded-xl border border-moss/25 bg-moss/[0.06] p-4 text-left">
-      <span
-        aria-hidden
-        className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-moss text-parchment"
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M5 12.5 10 17.5 19 7" />
-        </svg>
-      </span>
-      <div className="flex flex-col gap-0.5">
-        <span className="text-[0.92rem] font-[500] text-forest">
-          Dit stempelkort er nu i din Wallet
-        </span>
-        <span className="text-[0.82rem] font-[300] leading-relaxed text-stone">
-          Åbn Wallet og begynd at samle på dine stempler. Vis QR-koden til
-          personalet ved hvert besøg.
-        </span>
-      </div>
+    <div className="flex w-full flex-col items-center gap-3 rounded-2xl bg-white p-6 text-center shadow-card">
+      {celebrate ? <Confetti colors={[bg, fg === "#FFFFFF" ? "#7CC4FF" : fg, "#C8D8E8", "#1B5EAE"]} /> : null}
+      <CheckBurst size={56} bg={bg} fg={fg} />
+      <p className="text-[1.15rem] font-semibold leading-tight text-[#061C3D]">Kortet er i din Wallet</p>
+      <p className="max-w-[18rem] text-[0.92rem] leading-snug text-[#5F6B7E]">Vis QR-koden ved kassen, så får du stempler.</p>
     </div>
   );
 }

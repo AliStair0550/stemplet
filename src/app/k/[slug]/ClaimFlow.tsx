@@ -779,7 +779,7 @@ export function ClaimFlow({
   if (phase === "added") {
     return (
       <div className="flex w-full flex-col items-center gap-3">
-        <WalletAddedNotice />
+        <WalletAddedNotice bg={ctaBg} fg={ctaFg} celebrate />
         <a
           href={claimUrl}
           className="text-[0.8rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
