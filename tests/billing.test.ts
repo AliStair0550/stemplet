@@ -13,7 +13,9 @@ import {
 } from "../src/lib/billing";
 
 const DAY = 86_400_000;
-const daysAgo = (n: number) => new Date(Date.now() - n * DAY);
+// Fast "nu" efter relanceringen (taelleren starter 1. december 2026).
+const NOW = new Date("2027-08-01T10:00:00Z");
+const daysAgo = (n: number) => new Date(NOW.getTime() - n * DAY);
 
 // De to typer, funktionerne forventer for db og mailer. Vi udleder dem, saa vi
 // ikke skal importere selve prisma-vaerdien (og konstruere den).
@@ -191,7 +193,7 @@ test("sweep genopsamler varslet efter et mail-blip", async () => {
     attempts += 1;
     throw new Error("resend nede");
   };
-  const r1 = await sweepPendingThresholdEmails(client, failing);
+  const r1 = await sweepPendingThresholdEmails(client, failing, NOW);
   assert.equal(r1.warns, 0, "intet varsel talt som leveret");
   assert.ok(attempts > 0, "mailen blev forsoegt");
   assert.equal(
@@ -206,7 +208,7 @@ test("sweep genopsamler varslet efter et mail-blip", async () => {
     delivered += 1;
     return true;
   };
-  const r2 = await sweepPendingThresholdEmails(client, ok);
+  const r2 = await sweepPendingThresholdEmails(client, ok, NOW);
   assert.equal(r2.warns, 1, "varslet blev genopsamlet og leveret");
   assert.ok(delivered >= 1, "mailen blev sendt ved retry");
   assert.notEqual(
@@ -216,7 +218,7 @@ test("sweep genopsamler varslet efter et mail-blip", async () => {
   );
 
   // Tredje sweep: intet tilbage at gensende (idempotent, ingen dubletter).
-  const r3 = await sweepPendingThresholdEmails(client, ok);
+  const r3 = await sweepPendingThresholdEmails(client, ok, NOW);
   assert.equal(r3.warns, 0, "ingen dubletter ved naeste sweep");
 });
 
@@ -241,8 +243,8 @@ test("to samtidige kald giver praecis eet varsel (fire-once)", async () => {
 
   // To samtidige kald (fx nyt kort + cron) mod SAMME butik i varsel-vinduet.
   await Promise.all([
-    processTrialMilestones("b2", client, mailer),
-    processTrialMilestones("b2", client, mailer),
+    processTrialMilestones("b2", client, mailer, NOW),
+    processTrialMilestones("b2", client, mailer, NOW),
   ]);
 
   assert.notEqual(
@@ -275,7 +277,7 @@ test("Resend-fejl ved varslet: warnedAt saettes, sentAt null, sweep gensender", 
   const failing: MailArg = async () => {
     throw new Error("resend nede");
   };
-  await processTrialMilestones("bx", client, failing);
+  await processTrialMilestones("bx", client, failing, NOW);
 
   const b = businesses.get("bx")!;
   assert.notEqual(
@@ -291,7 +293,7 @@ test("Resend-fejl ved varslet: warnedAt saettes, sentAt null, sweep gensender", 
 
   // Sweep-cronen gensender bagefter med en virkende mailer.
   const ok: MailArg = async () => true;
-  const r = await sweepPendingThresholdEmails(client, ok);
+  const r = await sweepPendingThresholdEmails(client, ok, NOW);
   assert.equal(r.warns, 1, "sweepet gensendte det tabte varsel");
   assert.notEqual(
     businesses.get("bx")!.cardholderWarnEmailSentAt,
@@ -305,7 +307,7 @@ test("Resend-fejl ved varslet: warnedAt saettes, sentAt null, sweep gensender", 
 test("foer varsel-vinduet sker der intet", async () => {
   const { client, businesses } = makeFakeDb([baseRow({ id: "n1", slug: "ny", createdAt: daysAgo(10) })]);
   let sends = 0;
-  await processTrialMilestones("n1", client, async () => (sends++, true));
+  await processTrialMilestones("n1", client, async () => (sends++, true), NOW);
   assert.equal(sends, 0);
   assert.equal(businesses.get("n1")!.cardholderWarnedAt, null);
   assert.equal(businesses.get("n1")!.reached100At, null);
@@ -315,13 +317,13 @@ test("efter de tre maaneder: varsel og faktura-trigger, hver kun een gang", asyn
   const { client, businesses } = makeFakeDb([baseRow({ id: "o1", slug: "gammel", createdAt: daysAgo(100) })]);
   let sends = 0;
   const mailer: MailArg = async () => (sends++, true);
-  await processTrialMilestones("o1", client, mailer);
+  await processTrialMilestones("o1", client, mailer, NOW);
   const b = businesses.get("o1")!;
   assert.notEqual(b.cardholderWarnedAt, null, "varsel givet");
   assert.notEqual(b.reached100At, null, "fakturering startet");
   assert.notEqual(b.reached100EmailSentAt, null, "faktura-trigger leveret");
   assert.equal(sends, 3, "ejer + superadmin (varsel) + superadmin (faktura)");
-  await processTrialMilestones("o1", client, mailer);
+  await processTrialMilestones("o1", client, mailer, NOW);
   assert.equal(sends, 3, "intet sendes igen");
 });
 
@@ -330,8 +332,30 @@ test("sweep finder butikker, hvis milepael er naaet", async () => {
     baseRow({ id: "s1", slug: "klar", createdAt: daysAgo(80) }),
     baseRow({ id: "s2", slug: "for-ny", createdAt: daysAgo(5) }),
   ]);
-  const r = await sweepPendingThresholdEmails(client, async () => true);
+  const r = await sweepPendingThresholdEmails(client, async () => true, NOW);
   assert.notEqual(businesses.get("s1")!.cardholderWarnedAt, null, "varslet for den, der er i vinduet");
   assert.equal(businesses.get("s2")!.cardholderWarnedAt, null, "ingen varsel for en ny butik");
   assert.equal(r.warns, 0, "varslet blev leveret med det samme, intet tilbage at gensende");
+});
+
+import { trialEndsAt, TRIAL_COUNT_FROM } from "../src/lib/plans";
+
+test("taelleren starter tidligst 1. december 2026", () => {
+  const old = new Date("2026-07-01T10:00:00Z");
+  const fresh = new Date("2027-01-15T10:00:00Z");
+  const end = trialEndsAt(old);
+  assert.equal(end.getTime() > TRIAL_COUNT_FROM.getTime(), true);
+  assert.equal(end.toISOString().slice(0, 10), "2027-02-28", "tre maaneder fra 1. december (dansk midnat)");
+  assert.equal(trialEndsAt(fresh).toISOString().slice(0, 10), "2027-04-15", "nye butikker: fra oprettelsen");
+});
+
+test("foer relanceringen sendes ingen mails, heller ikke til gamle butikker", async () => {
+  const today = new Date("2026-10-30T12:00:00Z");
+  const { client, businesses } = makeFakeDb([baseRow({ id: "g1", slug: "sommer", createdAt: new Date("2026-07-01T10:00:00Z") })]);
+  let sends = 0;
+  const r = await sweepPendingThresholdEmails(client, async () => (sends++, true), today);
+  assert.equal(sends, 0);
+  assert.equal(r.warns + r.invoices, 0);
+  assert.equal(businesses.get("g1")!.cardholderWarnedAt, null);
+  assert.equal(businesses.get("g1")!.reached100At, null);
 });

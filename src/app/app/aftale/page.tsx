@@ -66,7 +66,7 @@ export default async function AftalePage() {
             <div className="h-full rounded-full bg-terracotta transition-all" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-3 font-[300] text-[0.82rem] leading-relaxed text-slate">
-            Tre måneder gratis fra oprettelsen, til og med {endsOn}. Du har {formatDkNumber(v.cardholders)}{" "}
+            Tre måneder gratis, til og med {endsOn}. Du har {formatDkNumber(v.cardholders)}{" "}
             {v.cardholders === 1 ? "kortholder" : "kortholdere"}, og der er ingen grænse.
           </p>
         </section>
