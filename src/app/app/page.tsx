@@ -109,11 +109,11 @@ export default async function HomePage() {
     month: "long",
   }).format(now);
 
-  // Kom i gang: flueben fra det, vi allerede ved. Plakaten kan vi ikke se.
+  // Kom i gang: flueben fra det, vi allerede ved (plakaten: hentet som PDF).
   const designed = business.primaryColor !== DEFAULT_PRIMARY || !!business.logoUrl || !!business.cardArtwork;
   const steps = [
     { title: "Design kortet", text: "Navn, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
-    { title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen.", href: "/app/plakat", cta: "Lav plakaten", done: false },
+    { title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen.", href: "/app/plakat", cta: "Lav plakaten", done: !!business.posterMadeAt },
     { title: "Prøv det selv", text: business.stampsEnabled
         ? "Hent kortet på din telefon. Find dig selv under Kunder, og giv et stempel."
         : "Hent kortet på din telefon, og se det, dine kunder ser.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true, done: false },

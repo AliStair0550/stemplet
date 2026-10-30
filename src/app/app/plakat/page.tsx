@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { requireBusiness } from "@/lib/session";
 import { PageHeading } from "@/components/dash";
 import { cardShortName, claimCta } from "@/lib/card-name";
+import { createHash } from "node:crypto";
+import { parsePosterSettings } from "@/lib/materials";
 import { PosterBuilder } from "./PosterBuilder";
 
 export const metadata: Metadata = { title: "Plakat" };
@@ -21,7 +23,11 @@ export default async function PlakatPage() {
       <PosterBuilder
         stampsEnabled={business.stampsEnabled}
         referralsEnabled={business.referralsEnabled}
-        hasPhoto={!!business.cardArtwork}
+        photo={business.posterPhoto ?? business.cardArtwork}
+        ownPhoto={!!business.posterPhoto}
+        designPhoto={!!business.cardArtwork}
+        photoVersion={createHash("sha1").update(business.posterPhoto ?? business.cardArtwork ?? "").digest("hex").slice(0, 8)}
+        saved={business.posterSettings ? parsePosterSettings(business.posterSettings) : null}
         cardHeadline={claimCta(cardShortName(business))}
       />
     </>

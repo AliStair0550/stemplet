@@ -37,11 +37,11 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 
 | # | Punkt | Status |
 |---|---|---|
-| C1 | Plakaten bruger det første billede, og det kan ikke ændres | Venter |
-| C2 | "Kortets farve" bruger ikke den rigtige farve | Venter |
-| C3 | Eget billede zoomer for meget på A4/A5 og for lidt på A6 | Venter |
-| C4 | Plakaten kan ikke gemmes (man starter forfra) | Venter |
-| C5 | Kom i gang-trinnet "Hæng QR-koden op" bliver ikke markeret som klaret | Venter |
+| C1 | Plakaten bruger det første billede, og det kan ikke ændres | Lavet (batch 5) |
+| C2 | "Kortets farve" bruger ikke den rigtige farve | Lavet (batch 4) |
+| C3 | Eget billede zoomer for meget på A4/A5 og for lidt på A6 | Lavet (batch 4) |
+| C4 | Plakaten kan ikke gemmes (man starter forfra) | Lavet (batch 5) |
+| C5 | Kom i gang-trinnet "Hæng QR-koden op" bliver ikke markeret som klaret | Lavet (batch 5) |
 
 ## D. Kassen
 

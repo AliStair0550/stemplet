@@ -148,7 +148,7 @@ export function MaterialsPdf({
     <Document>
       <Page size={[dims.w, dims.h]} style={styles.page}>
         <View style={full}>
-          {photo ? <Image src={photo} style={{ ...full, objectFit: "cover" }} /> : null}
+          {photo ? <Image src={photo} style={full} /> : null}
           {photo ? <View style={{ ...full, backgroundColor: pageBg, opacity: 0.55 }} /> : null}
         <View style={styles.inner}>
           {brand ? <View style={styles.brand}>{brand}</View> : null}

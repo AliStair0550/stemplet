@@ -9,7 +9,8 @@ import { APP_URL } from "@/lib/env";
 import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { buildStripImages } from "@/lib/wallet/strip";
-import { isStampIcon, contrastRatio } from "@/lib/brand";
+import { isStampIcon, contrastRatio, contrastText, isCardReadable, normalizeHex, photoPalette } from "@/lib/brand";
+import { effectiveStyle } from "@/lib/card-look";
 import { headlineFromParam, focusFromParam, posterFootline, posterRewardLine } from "@/lib/materials";
 import { cardShortName, claimCta } from "@/lib/card-name";
 import { rewardPhrase } from "@/lib/referral-text";
@@ -109,7 +110,17 @@ export async function GET(
   const showBrand = sp.get("navn") === "1";
   const light = sp.get("bg") === "lys";
   // Eget billede fra Design som baggrund (kun naar butikken har et).
-  const photo = sp.get("bg") === "billede" && business.cardArtwork ? business.cardArtwork : null;
+  // Plakatens eget billede, ellers billedet fra Design.
+  const ownPhoto = business.posterPhoto ?? business.cardArtwork;
+  const photoSrc = sp.get("bg") === "billede" && ownPhoto ? ownPhoto : null;
+
+  // "Kortets farve" = de farver, kortet faktisk har i Wallet: med eget billede
+  // bytter Wallet rollerne (lys tekst paa moerk bund), og en ulaeselig
+  // tekstfarve erstattes af sort/hvid. Ellers matcher plakaten ikke kortet.
+  const style = effectiveStyle(business.cardStyle, { stampsEnabled: business.stampsEnabled, referralsEnabled: business.referralsEnabled, bookingUrl: business.bookingUrl }, !!business.cardArtwork);
+  const palette = style === "photo" ? photoPalette(business.primaryColor, business.textColor) : { primaryColor: business.primaryColor, textColor: business.textColor };
+  const cardBg = normalizeHex(palette.primaryColor);
+  const cardFg = isCardReadable(cardBg, palette.textColor) ? palette.textColor : contrastText(cardBg);
   const showGridOpt = sp.get("stempler") !== "0" && focus === "kort" && business.stampsEnabled;
   const fallbackHeadline =
     focus === "henvis" ? "Henvis en ven" : claimCta(cardShortName(business));
@@ -125,18 +136,18 @@ export async function GET(
   // parchment med en laesbar moerk tekst (kortets farve hvis den staar klart paa
   // lys, ellers en neutral moerk). Gitteret tegnes i samme laesbare farve.
   const LIGHT_BG = "#FAF8F4";
-  const brandReadsOnLight = contrastRatio(business.primaryColor, LIGHT_BG) >= 3.2;
-  const pageBg = light ? LIGHT_BG : business.primaryColor;
-  const pageFg = photo
-    ? business.textColor
+  const brandReadsOnLight = contrastRatio(cardBg, LIGHT_BG) >= 3.2;
+  const pageBg = light ? LIGHT_BG : cardBg;
+  const pageFg = photoSrc
+    ? cardFg
     : light
     ? brandReadsOnLight
-      ? business.primaryColor
+      ? cardBg
       : "#1C1917"
-    : business.textColor;
+    : cardFg;
   const tileBorder = light ? "#00000022" : "#00000014";
-  const gridPrimary = light ? LIGHT_BG : business.primaryColor;
-  const gridText = light ? pageFg : business.textColor;
+  const gridPrimary = light ? LIGHT_BG : cardBg;
+  const gridText = light ? pageFg : cardFg;
 
   const wantGrid = showGridOpt && (fmt.tier === "lg" || fmt.tier === "md");
 
@@ -158,6 +169,24 @@ export async function GET(
         })
       : null,
   ]);
+
+  // Billedet beskaeres paa serveren til sidens praecise format (react-pdf's
+  // objectFit: cover zoomede forskelligt paa A4, A5 og A6). 2 px pr. punkt.
+  const PAGE_PT = { A4: [595.28, 841.89], A5: [419.53, 595.28], A6: [297.64, 419.53] } as const;
+  const dims = PAGE_PT[(typeof fmt.pageSize === "string" && fmt.pageSize in PAGE_PT ? fmt.pageSize : "A4") as keyof typeof PAGE_PT];
+  let photo: string | null = null;
+  if (photoSrc && fmt.tier !== "xs") {
+    try {
+      const raw = Buffer.from(photoSrc.split(",")[1] ?? "", "base64");
+      const cropped = await sharp(raw)
+        .resize(Math.round(dims[0] * 2), Math.round(dims[1] * 2), { fit: "cover", position: "attention" })
+        .jpeg({ quality: 82 })
+        .toBuffer();
+      photo = `data:image/jpeg;base64,${cropped.toString("base64")}`;
+    } catch {
+      photo = null;
+    }
+  }
 
   let stampGrid: string | null = null;
   let stampAspect = 2;
@@ -186,10 +215,17 @@ export async function GET(
   });
   const buffer = await renderToBuffer(element);
 
+  // "Hent PDF" i dashboardet: plakaten er lavet (Kom i gang-trinnet krydses af).
+  if (!slug && sp.get("hent") === "1") {
+    await prisma.business.update({ where: { id: business.id }, data: { posterMadeAt: new Date() } }).catch(() => {});
+  }
+
   return new Response(new Uint8Array(buffer), {
     headers: {
       "content-type": "application/pdf",
       "content-disposition": `inline; filename="${business.slug}-${focus === "henvis" ? "henvis" : "kort"}-${fmt.file}.pdf"`,
+      // Altid frisk: aendres billede eller farver under Design, skal plakaten foelge med.
+      "cache-control": "no-store",
     },
   });
 }
