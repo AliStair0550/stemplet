@@ -19,10 +19,6 @@ const featureLabel = (t: string) => <span className="text-[0.88rem] font-[500] t
 type NavLink = { href: string; label: string };
 
 const SCAN: NavLink = { href: "/app/kasse", label: "Scan" };
-const COMMON: NavLink[] = [
-  { href: "/app", label: "Hjem" },
-  { href: "/app/kunder", label: "Kunder" },
-];
 
 const STEMPLET_LINKS: NavLink[] = [
   { href: "/app/stemplet", label: "Overblik" },
@@ -36,6 +32,7 @@ const HENVISNINGER_LINKS: NavLink[] = [
 
 // Kommunikation: pushbeskeder, kampagner (kraever stempler) og senere nyhedsmail.
 const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
+const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, COMMS, { href: "/app/kunder", label: "Kunder" }];
 
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
@@ -225,21 +222,12 @@ export function DashboardNav({
               href={l.href}
               className={cn(
                 "rounded-lg px-3 py-2 text-[0.86rem] transition-colors",
-                isActive(l.href) ? "bg-sand font-[500] text-ink" : "text-stone hover:text-ink",
+                (l.href === COMMS.href ? inComms : isActive(l.href)) ? "bg-sand font-[500] text-ink" : "text-stone hover:text-ink",
               )}
             >
               {l.label}
             </Link>
           ))}
-          <Link
-            href={COMMS.href}
-            className={cn(
-              "rounded-lg px-3 py-2 text-[0.86rem] transition-colors",
-              inComms ? "bg-sand font-[500] text-ink" : "text-stone hover:text-ink",
-            )}
-          >
-            {COMMS.label}
-          </Link>
 
           {/* Dit kort: design og regler oeverst, derunder funktionerne paa kortet. */}
           <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
