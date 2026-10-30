@@ -6,12 +6,11 @@ import { StampShareCard } from "./StampShareCard";
 import { requireStampsBusiness } from "@/lib/session";
 import {
   getBusinessStats,
-  getRecentActivity,
   getOverviewPulse,
 } from "@/lib/stats";
-import { Panel, SectionHeader } from "@/components/dash";
+import { SectionHeader } from "@/components/dash";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import { cn, relativeDk } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { AddToHomeTile } from "../AddToHomeButton";
 import { summaryLine } from "@/lib/overview-text";
 import {
@@ -28,13 +27,6 @@ import {
 
 export const metadata = { title: "Stempler" };
 export const dynamic = "force-dynamic";
-
-const ACTION_LABEL: Record<string, string> = {
-  STAMP: "Stempel givet",
-  REDEEM: "Belønning indløst",
-  PIN_FAIL: "Forkert PIN",
-  FLAGGED: "Mistænkelig aktivitet",
-};
 
 // Sammenligning med i gaar, skrevet ud, saa ejeren slipper for at regne.
 function deltaLabel(
@@ -198,11 +190,7 @@ function ActionGrid({ customerUrl }: { customerUrl: string }) {
 
 export default async function StempletOverviewPage() {
   const { business } = await requireStampsBusiness();
-  const [stats, activity, pulse] = await Promise.all([
-    getBusinessStats(business.id),
-    getRecentActivity(business.id, 6),
-    getOverviewPulse(business.id),
-  ]);
+  const [stats, pulse] = await Promise.all([getBusinessStats(business.id), getOverviewPulse(business.id)]);
 
   const summary = summaryLine({
     totalCustomers: stats.totalCustomers,
@@ -280,59 +268,6 @@ export default async function StempletOverviewPage() {
             </div>
           </div>
 
-          {/* Dernaest: seneste aktivitet som en let laesbar tidslinje */}
-          <div>
-            <SectionHeader title="Seneste aktivitet" />
-            <Panel>
-              {activity.length === 0 ? (
-                <p className="py-2 font-[300] text-[0.86rem] text-slate">
-                  Ingen aktivitet endnu. Sæt QR-koden op ved kassen, så begynder
-                  dagen at tælle.
-                </p>
-              ) : (
-                <ol className="flex flex-col">
-                  {activity.map((a, i) => {
-                    const isAlert =
-                      a.action === "FLAGGED" || a.action === "PIN_FAIL";
-                    const isLast = i === activity.length - 1;
-                    return (
-                      <li
-                        key={a.id}
-                        className="relative flex items-start gap-3 pl-5 pb-4 last:pb-0"
-                      >
-                        {!isLast ? (
-                          <span
-                            aria-hidden
-                            className="absolute left-[3px] top-3 h-full w-px bg-fog"
-                          />
-                        ) : null}
-                        <span
-                          aria-hidden
-                          className={cn(
-                            "absolute left-0 top-[7px] h-[7px] w-[7px] rounded-full",
-                            isAlert ? "bg-rust" : "bg-terracotta",
-                          )}
-                        />
-                        <div className="flex flex-1 items-baseline justify-between gap-3">
-                          <span
-                            className={cn(
-                              "text-[0.86rem] font-[300]",
-                              isAlert ? "text-rust" : "text-ink",
-                            )}
-                          >
-                            {ACTION_LABEL[a.action] ?? a.action}
-                          </span>
-                          <span className="shrink-0 text-[0.72rem] font-[300] text-slate">
-                            {relativeDk(a.createdAt)}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
-            </Panel>
-          </div>
         </div>
       )}
 
