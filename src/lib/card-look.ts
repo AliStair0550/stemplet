@@ -24,6 +24,13 @@ export const CARD_ACTION_LABEL: Record<CardAction, string> = {
   beloenninger: "Se dine belønninger",
 };
 
+/** Hvad knappen goer, naar kunden trykker paa den i Wallet. */
+export const CARD_ACTION_HINT: Record<CardAction, string> = {
+  book: "Åbner dit booking-link.",
+  henvis: "Åbner kundens side med deres henvisningskode.",
+  beloenninger: "Åbner kundens side med stempler og belønninger.",
+};
+
 export type CardLookContext = {
   stampsEnabled: boolean;
   referralsEnabled: boolean;
@@ -66,9 +73,4 @@ export function normalizeActions(actions: readonly string[], ctx: CardLookContex
     if (out.length === MAX_CARD_ACTIONS) break;
   }
   return out;
-}
-
-/** Forslag, naar butikken ikke selv har valgt: Book tid og Henvis en ven, ellers belønninger. */
-export function suggestedActions(ctx: CardLookContext): CardAction[] {
-  return normalizeActions(["book", "henvis", "beloenninger"], ctx);
 }

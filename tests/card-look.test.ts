@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { effectiveStyle, normalizeActions, suggestedActions, actionUnavailableReason } from "../src/lib/card-look";
+import { effectiveStyle, normalizeActions, actionUnavailableReason } from "../src/lib/card-look";
 
 const both = { stampsEnabled: true, referralsEnabled: true, bookingUrl: "https://planway.com/salon" };
 const stampOnly = { stampsEnabled: true, referralsEnabled: false, bookingUrl: null };
@@ -19,10 +19,4 @@ test("knapper: kun tilgaengelige, ingen dubletter, hoejst to", () => {
   assert.deepEqual(normalizeActions(["book", "henvis", "beloenninger"], stampOnly), ["beloenninger"]);
   assert.deepEqual(normalizeActions(["beloenninger", "beloenninger", "x"], both), ["beloenninger"]);
   assert.match(actionUnavailableReason("book", refOnly) ?? "", /booking-link/);
-});
-
-test("forslag: Book tid og Henvis en ven, naar de er sat op", () => {
-  assert.deepEqual(suggestedActions(both), ["book", "henvis"]);
-  assert.deepEqual(suggestedActions(refOnly), ["henvis", "beloenninger"]);
-  assert.deepEqual(suggestedActions(stampOnly), ["beloenninger"]);
 });

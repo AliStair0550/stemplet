@@ -7,6 +7,7 @@ import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import {
   CARD_ACTIONS,
+  CARD_ACTION_HINT,
   CARD_ACTION_LABEL,
   CARD_STYLES,
   CARD_STYLE_LABEL,
@@ -262,7 +263,7 @@ export function KortetEditor({
         {/* Knapper */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
           <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Knapper på kortet</h2>
-          <p className="mt-0.5 text-[0.88rem] text-stone">Op til to genveje under kortet i Wallet (iOS 27).</p>
+          <p className="mt-0.5 text-[0.88rem] text-stone">Op til to genveje under kortet i Wallet (iOS 27). Vælg ingen, hvis du ikke vil have knapper.</p>
           <div className="mt-4 flex flex-col gap-2">
             {CARD_ACTIONS.map((a) => {
               const reason = actionUnavailableReason(a, ctx);
@@ -281,7 +282,7 @@ export function KortetEditor({
                 >
                   <span>
                     <span className="block text-[0.95rem] font-semibold text-ink">{CARD_ACTION_LABEL[a]}</span>
-                    {reason ? <span className="block text-[0.78rem] text-slate">{reason}</span> : null}
+                    <span className="block text-[0.78rem] text-slate">{reason ?? CARD_ACTION_HINT[a]}</span>
                   </span>
                   <span
                     className={cn(

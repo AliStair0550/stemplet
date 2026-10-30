@@ -205,15 +205,18 @@ export function WalletCardPreview(p: WalletCardPreviewProps) {
     <div className="flex w-full flex-col items-center gap-3">
       {p.os === "27" ? <Poster {...p} /> : <Classic {...p} />}
       {p.os === "27" && p.actions.length > 0 ? (
-        <div className="grid w-full max-w-[300px] grid-cols-2 gap-2">
-          {p.actions.map((a) => (
-            <div key={a} className="flex min-w-0 items-center gap-2 rounded-[14px] bg-[#f5f5f7] px-3 py-2.5 text-[12.5px] font-semibold text-[#111]">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111] text-[11px] text-white">
-                {a === "book" ? "◷" : a === "henvis" ? "+" : "★"}
-              </span>
-              <span className="truncate">{CARD_ACTION_LABEL[a]}</span>
-            </div>
-          ))}
+        <div className="w-full max-w-[300px]">
+          <p className="mb-1.5 text-center text-[0.72rem] text-slate">Knapper under kortet i Wallet</p>
+          <div className="grid grid-cols-2 gap-2">
+            {p.actions.map((a) => (
+              <div key={a} className="flex min-w-0 items-center gap-2 rounded-[14px] bg-[#f5f5f7] px-3 py-2.5 text-[12.5px] font-semibold text-[#111]">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111] text-[11px] text-white">
+                  {a === "book" ? "◷" : a === "henvis" ? "+" : "★"}
+                </span>
+                <span className="truncate">{CARD_ACTION_LABEL[a]}</span>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
