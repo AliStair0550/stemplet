@@ -8,11 +8,11 @@ test("passColors: butikkens egen primaryColor slaar igennem paa baggrunden", () 
   assert.equal(passColors("#123B47", "#FFFFFF").backgroundColor, "rgb(18, 59, 71)");
 });
 
-test("passColors: tom eller ugyldig farve falder tilbage til Stemplets #2A1A10", () => {
-  assert.equal(passColors("", "#FFFFFF").backgroundColor, "rgb(42, 26, 16)");
+test("passColors: tom eller ugyldig farve falder tilbage til standarden (Sand #EFEBE3)", () => {
+  assert.equal(passColors("", "#FFFFFF").backgroundColor, "rgb(239, 235, 227)");
   assert.equal(
     passColors("ikke-en-farve", "#FFFFFF").backgroundColor,
-    "rgb(42, 26, 16)",
+    "rgb(239, 235, 227)",
   );
 });
 

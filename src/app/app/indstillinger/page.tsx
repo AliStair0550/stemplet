@@ -9,6 +9,8 @@ import { WeeklyEmailRecipient } from "./WeeklyEmailRecipient";
 import { SelfScanToggle } from "./SelfScanToggle";
 import { AccessManager } from "./AccessManager";
 import { LocationCard } from "./LocationCard";
+import { DeleteProfile } from "./DeleteProfile";
+import { soleBusinessesOf } from "@/lib/profile-delete";
 import { SubmitButton } from "@/components/SubmitButton";
 import { startCheckout, openPortal } from "../actions";
 import { PRO_PRICE_DKK, FREE_CUSTOMER_LIMIT } from "@/lib/plans";
@@ -30,11 +32,11 @@ export default async function IndstillingerPage({
 }: {
   searchParams: Promise<{ betaling?: string; fejl?: string }>;
 }) {
-  const { business, userId } = await requireBusiness();
+  const { business, userId, email } = await requireBusiness();
   const { betaling, fejl } = await searchParams;
   const stripeOn = stripeConfigured();
 
-  const [logs, devices, memberships] = await Promise.all([
+  const [logs, devices, memberships, sole] = await Promise.all([
     prisma.auditLog.findMany({
       where: { businessId: business.id },
       orderBy: { createdAt: "desc" },
@@ -48,6 +50,7 @@ export default async function IndstillingerPage({
       },
       orderBy: { createdAt: "asc" },
     }),
+    soleBusinessesOf(userId),
   ]);
   const members = memberships.map((m) => m.user);
   const loginEmails = members.map((u) => ({
@@ -269,6 +272,11 @@ export default async function IndstillingerPage({
             </div>
           )}
         </Panel>
+      </div>
+
+      {/* Slet profil: nederst, adskilt fra resten. */}
+      <div className="mt-12 border-t border-fog pt-8">
+        <DeleteProfile email={email} deletes={sole.map((b) => b.name)} />
       </div>
     </>
   );

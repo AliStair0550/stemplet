@@ -3,8 +3,8 @@
 
 // "Mørk": foerste indbyggede tema, varmt og laesbart. Bruges som reserve, saa
 // et kort uden eksplicit farve stadig lander paa det nye brand.
-export const DEFAULT_PRIMARY = "#2A1A10";
-export const DEFAULT_TEXT = "#F6EEE4";
+export const DEFAULT_PRIMARY = "#EFEBE3";
+export const DEFAULT_TEXT = "#1E2633";
 
 // Navnet der vises paa kundens kort: butikkens valgte kort-navn, ellers firmanavnet.
 export function cardTitle(b: { name: string; displayName?: string | null }): string {
@@ -113,9 +113,8 @@ export function isStampIcon(v: string): v is StampIconKey {
   return STAMP_ICONS.some((i) => i.key === v);
 }
 
-// Seks indbyggede temaer, hvert med sit eget navn: gennemtaenkte farvepar, saa
-// enhver kan lave et flot, laesbart kort i eet klik. Raekkefoelgen er bevidst:
-// varm -> koel, med en enkelt lys i bunden til dem der vil have et lyst kort.
+// Seks indbyggede temaer i Folkas stil: tre moerke og tre lyse, gennemtaenkte
+// farvepar, saa enhver kan lave et flot, laesbart kort i eet klik.
 // Ud over disse kan man altid vaelge sin egen farve (custom).
 export type CardTheme = {
   name: string;
@@ -124,12 +123,12 @@ export type CardTheme = {
 };
 
 export const CARD_THEMES: CardTheme[] = [
-  { name: "Mørk", primary: "#2A1A10", text: "#F6EEE4" },
-  { name: "Terrakotta", primary: "#8A3B24", text: "#FBEDE6" },
-  { name: "Skov", primary: "#1F3A2E", text: "#F3F7F4" },
-  { name: "Midnat", primary: "#101F33", text: "#EAF0F8" },
-  { name: "Bordeaux", primary: "#5E2438", text: "#F7E7EE" },
-  { name: "Sand", primary: "#E8E2D6", text: "#3B2F1E" },
+  { name: "Midnat", primary: "#061C3D", text: "#EAF1FB" },
+  { name: "Ocean", primary: "#1B5EAE", text: "#FFFFFF" },
+  { name: "Grafit", primary: "#1E2633", text: "#F2F5F9" },
+  { name: "Is", primary: "#E8F0FB", text: "#061C3D" },
+  { name: "Hvid", primary: "#FFFFFF", text: "#0B1628" },
+  { name: "Sand", primary: "#EFEBE3", text: "#1E2633" },
 ];
 
 /** Navnet paa et indbygget tema der matcher farverne, ellers null (custom). */
@@ -192,6 +191,17 @@ export function contrastRatio(aHex: string, bHex: string): number {
   const hi = Math.max(la, lb);
   const lo = Math.min(la, lb);
   return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * Med eget billede skal teksten vaere lys oven paa fotoet. Er kortets farve den
+ * lyse i parret (fx Sand eller Is), byttes rollerne: bunden toner i den moerke
+ * farve, og teksten bliver lys. Moerke temaer er uaendrede.
+ */
+export function photoPalette(primary: string, text: string): { primaryColor: string; textColor: string } {
+  return relLuminance(primary) > relLuminance(text)
+    ? { primaryColor: text, textColor: primary }
+    : { primaryColor: primary, textColor: text };
 }
 
 /** Er tekst-på-kort læsbar? AA for stor tekst er 3:1; vi kræver 3.5 som margin. */

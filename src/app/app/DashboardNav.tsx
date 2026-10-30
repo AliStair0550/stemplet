@@ -8,8 +8,30 @@ import { BusinessSwitcher } from "./BusinessSwitcher";
 import { KundekortMark } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
 
-// Funktionerne paa kortet vises som almindelig tekst under Kundekort (Folka).
-const featureLabel = (t: string) => <span className="text-[0.88rem] font-[500] text-ink">{t}</span>;
+// Funktionerne paa kortet vises som Design og Regler: ikon og almindelig tekst.
+const FEATURE_ICONS: Record<string, React.ReactNode> = {
+  Stempler: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m8.5 12.2 2.4 2.4 4.6-5" />
+    </>
+  ),
+  Henvisninger: (
+    <>
+      <circle cx="8" cy="9" r="3" />
+      <circle cx="17" cy="10" r="2.5" />
+      <path d="M2.5 19c.7-3 2.8-4.5 5.5-4.5s4.8 1.5 5.5 4.5M14.5 15.2c.8-.5 1.6-.7 2.5-.7 2.2 0 3.8 1.3 4.5 3.8" />
+    </>
+  ),
+};
+const featureLabel = (t: string) => (
+  <span className="flex items-center gap-2.5 text-[0.88rem] text-ink">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" className="h-4 w-4" aria-hidden>
+      {FEATURE_ICONS[t]}
+    </svg>
+    {t}
+  </span>
+);
 
 // Dashboardets ramme med kundernes kort i centrum. Oeverst det faelles (Scan,
 // Hjem, Kunder), saa DIT KORT: kortets design og funktionerne paa kortet med
@@ -37,7 +59,7 @@ const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, COMMS, { href: "/app
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
-  { href: "/app/indstillinger", label: "Butik og adgang" },
+  { href: "/app/indstillinger", label: "Indstillinger" },
   { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/guide", label: "Service" },

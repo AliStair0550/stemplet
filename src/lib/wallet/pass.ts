@@ -24,6 +24,7 @@ import {
   contrastText,
   isCardReadable,
   normalizeHex,
+  photoPalette,
   DEFAULT_PRIMARY,
 } from "../brand";
 
@@ -90,7 +91,7 @@ function blendRgb(hexA: string, hexB: string, t: number): string {
 
 /**
  * Passets farver som rgb()-strenge. Butikkens egen primaryColor slaar igennem;
- * er den tom/ugyldig, falder vi tilbage til Stemplets standard (#2A1A10), saa DB
+ * er den tom/ugyldig, falder vi tilbage til standarden (Sand #EFEBE3), saa DB
  * og kode har samme reserve. foregroundColor foelger butikkens tekstfarve, men
  * falder tilbage til en GARANTERET laesbar kontrastfarve (sort/hvid), hvis den
  * ikke er laesbar paa baggrunden. labelColor er en daempet variant (tekstfarven
@@ -213,8 +214,22 @@ async function loadIcon(): Promise<Buffer> {
   return iconBufCache;
 }
 
+/**
+ * Med eget billede paa plakatkortet staar teksten oven paa fotoet. Wallet har een
+ * tekstfarve for hele kortet, saa et lyst tema faar byttet rollerne (lys tekst,
+ * moerk bund), ellers bliver navnet moerkt paa fotoet.
+ */
+function withPhotoPalette(input: PassInput): PassInput {
+  const look = input.look;
+  if (!posterEnabled() || !look) return input;
+  const ctx = { stampsEnabled: input.stampsEnabled !== false, referralsEnabled: !!input.referral, bookingUrl: look.bookingUrl };
+  if (effectiveStyle(look.style, ctx, !!look.artwork) !== "photo") return input;
+  return { ...input, ...photoPalette(input.primaryColor, input.textColor) };
+}
+
 /** Bygger et .pkpass (storeCard) for et kundekort. */
-export async function buildPass(input: PassInput): Promise<Buffer> {
+export async function buildPass(raw: PassInput): Promise<Buffer> {
+  const input = withPhotoPalette(raw);
   // Kun Henvisninger: eget, enkelt kort. Alle andre kort bygges som foer herunder.
   if (input.stampsEnabled === false && input.referral) {
     return buildReferralOnlyPass({ ...input, referral: input.referral });
