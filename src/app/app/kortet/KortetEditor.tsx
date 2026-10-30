@@ -21,6 +21,7 @@ import {
 import { ACCENT_SWATCHES, CARD_ARTS, CARD_ART_LABEL, artDataUri, autoAccent, type Art } from "@/lib/card-art";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import type { StampIconKey } from "@/lib/brand";
+import { prepareImage } from "@/lib/prepare-image";
 import { saveCardLook } from "./actions";
 
 // Kortet: butikkens faelles kortdesign. Stil, farver, navn og logo, eget billede
@@ -77,34 +78,6 @@ function StyleThumb({
       <span className="absolute inset-x-0 bottom-0 h-[22%]" style={{ background: "rgba(0,0,0,0.18)" }} />
     </span>
   );
-}
-
-// Beskaer og komprimér i browseren foer upload (serveren goer det igen). Holder
-// uploaden lille og hurtig, ogsaa fra en telefon med et 12 MP-foto.
-async function prepareArtwork(file: File): Promise<string> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const i = new Image();
-      i.onload = () => resolve(i);
-      i.onerror = reject;
-      i.src = url;
-    });
-    const W = 1074;
-    const H = 1344;
-    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
-    const w = img.naturalWidth * scale;
-    const h = img.naturalHeight * scale;
-    const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("canvas");
-    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
-    return canvas.toDataURL("image/jpeg", 0.85);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
 }
 
 export function KortetEditor({
@@ -177,7 +150,7 @@ export function KortetEditor({
     }
     setUploading(true);
     try {
-      setArtwork(await prepareArtwork(file));
+      setArtwork(await prepareImage(file));
       setArtworkChanged(true);
       setStyle("photo");
     } catch {

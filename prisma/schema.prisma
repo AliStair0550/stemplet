@@ -93,6 +93,11 @@ model Business {
   // dets accentfarve (null = automatisk, en tone mellem kortets farver).
   cardArt            String?
   cardAccent         String?
+  // Plakaten: eget billede (null = billedet fra Design), de sidste valg, saa
+  // man ikke starter forfra, og hvornaar den sidst blev hentet (Kom i gang).
+  posterPhoto        String?
+  posterSettings     Json?
+  posterMadeAt       DateTime?
   /// Knapper paa kortet (iOS 27, hoejst to): "book" | "henvis" | "beloenninger".
   cardActions        String[]  @default(["fordele"])
   /// Oeverst paa kortet: "logo" (logo, ellers navn), "name" eller "both".

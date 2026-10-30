@@ -1,14 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { MATERIAL_HEADLINE_MAX, REFERRAL_HEADLINES, type PosterFocus } from "@/lib/materials";
+import { btnClass } from "@/components/ui";
+import { prepareImage } from "@/lib/prepare-image";
+import {
+  DEFAULT_POSTER_SETTINGS,
+  MATERIAL_HEADLINE_MAX,
+  REFERRAL_HEADLINES,
+  type PosterBg as Bg,
+  type PosterFocus,
+  type PosterSettings,
+  type PosterSize as Size,
+} from "@/lib/materials";
+import { savePosterSettings, setPosterPhoto } from "./actions";
 
 // Plakatens valg og en live-visning af den rigtige PDF (samme URL som
 // download), saa det, man ser, er praecis det, der bliver trykt.
 
-type Size = "plakat" | "a5" | "skilt";
-type Bg = "farve" | "lys" | "billede";
 
 const SIZES: { key: Size; label: string; note: string }[] = [
   { key: "plakat", label: "A4", note: "Plakat til døren" },
@@ -59,21 +69,101 @@ function Box({ title, children }: { title: string; children: React.ReactNode }) 
 export function PosterBuilder({
   stampsEnabled,
   referralsEnabled,
-  hasPhoto,
+  photo,
+  ownPhoto,
+  designPhoto,
+  photoVersion,
+  saved,
   cardHeadline,
 }: {
   stampsEnabled: boolean;
   referralsEnabled: boolean;
-  hasPhoto: boolean;
+  /** Billedet paa plakaten: plakatens eget eller billedet fra Design. */
+  photo: string | null;
+  /** Plakaten har sit eget billede (ikke Designs). */
+  ownPhoto: boolean;
+  designPhoto: boolean;
+  /** Skifter, naar billedet skifter, saa forhaandsvisningen hentes igen. */
+  photoVersion: string;
+  /** De sidst gemte valg (null = foerste gang). */
+  saved: PosterSettings | null;
   /** "Hent dit Sara Salon-kort" */
   cardHeadline: string;
 }) {
-  const [focus, setFocus] = useState<PosterFocus>("kort");
-  const [size, setSize] = useState<Size>("plakat");
-  const [bg, setBg] = useState<Bg>(hasPhoto ? "billede" : "farve");
-  const [brand, setBrand] = useState(true);
-  const [grid, setGrid] = useState(true);
-  const [headline, setHeadline] = useState("");
+  const router = useRouter();
+  const start0 = saved ?? { ...DEFAULT_POSTER_SETTINGS, bg: photo ? ("billede" as Bg) : ("farve" as Bg) };
+  const [focus, setFocus] = useState<PosterFocus>(start0.focus);
+  const [size, setSize] = useState<Size>(start0.size);
+  const [bg, setBg] = useState<Bg>(start0.bg === "billede" && !photo ? "farve" : start0.bg);
+  const [brand, setBrand] = useState(start0.brand);
+  const [grid, setGrid] = useState(start0.grid);
+  const [headline, setHeadline] = useState(start0.headline);
+  const [savedNote, setSavedNote] = useState(false);
+  const [uploading, startUpload] = useTransition();
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Valgene gemmes automatisk kort efter sidste aendring, saa man ikke starter
+  // forfra. Kun naar noget faktisk er aendret, og en ventende aendring gemmes med
+  // det samme, hvis man forlader siden.
+  const current = JSON.stringify({ focus, size, bg, brand, grid, headline });
+  const lastSaved = useRef(JSON.stringify(start0));
+  const pending = useRef<string | null>(null);
+  useEffect(() => {
+    if (current === lastSaved.current) return;
+    pending.current = current;
+    const t = setTimeout(() => {
+      const snap = pending.current;
+      if (!snap) return;
+      pending.current = null;
+      lastSaved.current = snap;
+      void savePosterSettings(JSON.parse(snap)).then(() => {
+        setSavedNote(true);
+        setTimeout(() => setSavedNote(false), 1800);
+      });
+    }, 500);
+    return () => clearTimeout(t);
+  }, [current]);
+  useEffect(
+    () => () => {
+      if (pending.current) {
+        lastSaved.current = pending.current;
+        void savePosterSettings(JSON.parse(pending.current));
+        pending.current = null;
+      }
+    },
+    [],
+  );
+
+  function pickPhoto(file: File | undefined) {
+    if (!file) return;
+    setPhotoError(null);
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Vælg en billedfil (JPG eller PNG).");
+      return;
+    }
+    startUpload(async () => {
+      try {
+        const res = await setPosterPhoto(await prepareImage(file));
+        if (!res.ok) {
+          setPhotoError(res.error);
+          return;
+        }
+        setBg("billede");
+        router.refresh();
+      } catch {
+        setPhotoError("Billedet kunne ikke læses. Prøv et andet.");
+      }
+    });
+  }
+
+  function useDesignPhoto() {
+    startUpload(async () => {
+      await setPosterPhoto(null);
+      if (!designPhoto) setBg("farve");
+      router.refresh();
+    });
+  }
 
   const defaultHeadline = focus === "henvis" ? "Henvis en ven" : cardHeadline;
   const suggestions =
@@ -84,8 +174,10 @@ export function PosterBuilder({
   const url = useMemo(() => {
     const q = new URLSearchParams({ fokus: focus, bg, navn: brand ? "1" : "0", stempler: grid ? "1" : "0" });
     if (headline.trim()) q.set("titel", headline.trim());
+    // v: nyt billede = ny adresse, saa forhaandsvisningen hentes igen.
+    if (bg === "billede") q.set("v", photoVersion);
     return `/api/materials/${size}?${q.toString()}`;
-  }, [focus, size, bg, brand, grid, headline]);
+  }, [focus, size, bg, brand, grid, headline, photoVersion]);
 
   // Live-visningen opdateres kort efter sidste aendring (PDF'en tager et oejeblik).
   const [previewUrl, setPreviewUrl] = useState(url);
@@ -124,12 +216,40 @@ export function PosterBuilder({
         <Box title="Baggrund">
           <Choice<Bg>
             value={bg}
-            onChange={setBg}
+            // Uden billede aabner "Dit billede" filvaelgeren direkte.
+            onChange={(v) => (v === "billede" && !photo ? fileRef.current?.click() : setBg(v))}
             options={[
               { key: "farve", label: "Kortets farve" },
               { key: "lys", label: "Lys", note: "Sparer blæk" },
-              { key: "billede", label: "Dit billede", note: hasPhoto ? "Fra Design" : "Upload under Design", disabled: !hasPhoto },
+              { key: "billede", label: "Dit billede", note: photo ? (ownPhoto ? "Plakatens billede" : "Fra Design") : "Upload et billede" },
             ]}
+          />
+          {bg === "billede" || !photo ? (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              {photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photo} alt="Plakatens billede" className="h-16 w-12 rounded-lg object-cover" />
+              ) : null}
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} aria-busy={uploading} className={btnClass("outline")}>
+                {uploading ? "Gemmer billedet..." : photo ? "Skift billede" : "Upload billede"}
+              </button>
+              {ownPhoto ? (
+                <button type="button" onClick={useDesignPhoto} disabled={uploading} className="text-[0.85rem] text-stone underline underline-offset-2 hover:text-ink">
+                  {designPhoto ? "Brug billedet fra Design" : "Fjern billede"}
+                </button>
+              ) : null}
+              {photoError ? <p className="w-full text-[0.82rem] text-rust">{photoError}</p> : null}
+            </div>
+          ) : null}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              pickPhoto(e.target.files?.[0]);
+              e.target.value = "";
+            }}
           />
         </Box>
 
@@ -186,12 +306,13 @@ export function PosterBuilder({
           ) : null}
         </div>
         <a
-          href={url}
+          href={`${url}&hent=1`}
           download
           className="flex min-h-12 items-center justify-center rounded-full bg-ink px-6 text-[0.95rem] font-semibold text-white hover:bg-[#0A2D5A]"
         >
           Hent PDF
         </a>
+        <p className="text-center text-[0.78rem] text-slate" aria-live="polite">{savedNote ? "Plakaten er gemt" : "Dine valg gemmes automatisk"}</p>
       </aside>
     </div>
   );

@@ -61,3 +61,32 @@ export function posterRewardLine(
 export function posterFootline(focus: PosterFocus): string {
   return focus === "henvis" ? "Scan, og få dit eget link at dele." : "Ingen app. Kun navn og e-mail.";
 }
+
+// ── Plakatens gemte valg ─────────────────────────────────────────────
+export type PosterSize = "plakat" | "a5" | "skilt";
+export type PosterBg = "farve" | "lys" | "billede";
+export type PosterSettings = {
+  focus: PosterFocus;
+  size: PosterSize;
+  bg: PosterBg;
+  brand: boolean;
+  grid: boolean;
+  headline: string;
+};
+
+export const DEFAULT_POSTER_SETTINGS: PosterSettings = { focus: "kort", size: "plakat", bg: "farve", brand: true, grid: true, headline: "" };
+
+/** Gemte valg fra databasen (eller en klient) renset til gyldige vaerdier. */
+export function parsePosterSettings(raw: unknown): PosterSettings {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const pick = <T extends string>(v: unknown, ok: readonly T[], d: T): T => (typeof v === "string" && (ok as readonly string[]).includes(v) ? (v as T) : d);
+  const d = DEFAULT_POSTER_SETTINGS;
+  return {
+    focus: pick(o.focus, ["kort", "henvis"] as const, d.focus),
+    size: pick(o.size, ["plakat", "a5", "skilt"] as const, d.size),
+    bg: pick(o.bg, ["farve", "lys", "billede"] as const, d.bg),
+    brand: typeof o.brand === "boolean" ? o.brand : d.brand,
+    grid: typeof o.grid === "boolean" ? o.grid : d.grid,
+    headline: typeof o.headline === "string" ? o.headline.trim().replace(/\s+/g, " ").slice(0, MATERIAL_HEADLINE_MAX) : d.headline,
+  };
+}

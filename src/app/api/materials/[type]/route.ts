@@ -110,7 +110,9 @@ export async function GET(
   const showBrand = sp.get("navn") === "1";
   const light = sp.get("bg") === "lys";
   // Eget billede fra Design som baggrund (kun naar butikken har et).
-  const photoSrc = sp.get("bg") === "billede" && business.cardArtwork ? business.cardArtwork : null;
+  // Plakatens eget billede, ellers billedet fra Design.
+  const ownPhoto = business.posterPhoto ?? business.cardArtwork;
+  const photoSrc = sp.get("bg") === "billede" && ownPhoto ? ownPhoto : null;
 
   // "Kortets farve" = de farver, kortet faktisk har i Wallet: med eget billede
   // bytter Wallet rollerne (lys tekst paa moerk bund), og en ulaeselig
@@ -212,6 +214,11 @@ export async function GET(
     stampAspect,
   });
   const buffer = await renderToBuffer(element);
+
+  // "Hent PDF" i dashboardet: plakaten er lavet (Kom i gang-trinnet krydses af).
+  if (!slug && sp.get("hent") === "1") {
+    await prisma.business.update({ where: { id: business.id }, data: { posterMadeAt: new Date() } }).catch(() => {});
+  }
 
   return new Response(new Uint8Array(buffer), {
     headers: {
