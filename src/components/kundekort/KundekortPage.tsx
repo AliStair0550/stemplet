@@ -92,9 +92,9 @@ function Hero() {
       <Lights />
       <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6">
         <h1 className="mx-auto text-[clamp(2.5rem,6.6vw,5.2rem)] font-semibold leading-[1] tracking-[-0.045em]">
-          Dit kort. Dine kunder.
+          Dit kort.
           <br />
-          <span className="text-white/45">Din kanal.</span>
+          <span className="text-white/45">Dine kunder. Din kanal.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-[34rem] text-[1.08rem] leading-relaxed text-white/70">
           Loyalitet, der skaber vækst. Dine kunder samler stempler, får dine tilbud direkte på telefonen og tager vennerne
@@ -331,7 +331,7 @@ function Pricing() {
   ];
   return (
     <section id="pris" className="scroll-mt-4 bg-white py-24 sm:py-32">
-      <SectionHead title="Tre måneder gratis. Derefter 49 kr. om måneden." text="Stempler, henvisninger og beskeder er med. Ubegrænset antal kortholdere." />
+      <SectionHead title="Tre måneder gratis. Derefter 49 kr. om måneden." text="Ubegrænset antal kortholdere." />
       <div className="mx-auto mt-14 max-w-[560px] px-4 sm:px-6">
         <div className="kk-reveal kk-dark rounded-[28px] p-8 sm:p-10">
           <Lights />
@@ -420,7 +420,7 @@ function Footer() {
         <div>
           <Wordmark dark />
           <p className="mt-4 max-w-[22rem] text-[14px] leading-relaxed">
-            Folka Kort giver dig stamkunder, der kommer igen og tager vennerne med. Et produkt fra Folka.
+            Dit kort. Dine kunder. Din kanal.
           </p>
           <a href={`mailto:${PLATFORM.contactEmail}`} className="mt-4 inline-block text-[14px] text-white/80 hover:text-white">
             {PLATFORM.contactEmail}

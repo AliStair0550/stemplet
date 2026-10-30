@@ -85,10 +85,14 @@ model Business {
   referralsEnabled   Boolean   @default(false)
   /// Stemplet slaaet til. Fra = kun Henvisninger (Stemplet kan tilfoejes i dashboardet).
   stampsEnabled      Boolean   @default(true)
-  /// Kortet: stil paa iOS 27-plakatkortet: "color" | "photo" | "pattern" | "stamps".
+  /// Kortet: stil paa iOS 27-plakatkortet: "color" | "art" | "photo" | "pattern" | "stamps".
   cardStyle          String    @default("color")
   /// Butikkens eget billede til plakatkortet (data-URI, JPEG, allerede beskaaret).
   cardArtwork        String?
+  // Stilen "Motiv": tegnet motiv (aurora, sun, waves, rings, hills, arches) og
+  // dets accentfarve (null = automatisk, en tone mellem kortets farver).
+  cardArt            String?
+  cardAccent         String?
   /// Knapper paa kortet (iOS 27, hoejst to): "book" | "henvis" | "beloenninger".
   cardActions        String[]  @default(["fordele"])
   /// Oeverst paa kortet: "logo" (logo, ellers navn), "name" eller "both".

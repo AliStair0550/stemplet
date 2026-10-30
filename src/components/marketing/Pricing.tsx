@@ -48,7 +48,7 @@ export default function Pricing() {
           Tre måneder gratis. Derefter {PRO_PRICE_DKK} kr. om måneden.
         </h2>
         <p className="mt-4 font-[300] text-[0.95rem] leading-[1.7] text-stone">
-          Alle tre moduler er med. Ubegrænset antal kortholdere.{" "}
+          Ubegrænset antal kortholdere.{" "}
           <span className="whitespace-nowrap">Prisen er ekskl. moms.</span>
         </p>
       </div>

@@ -18,6 +18,9 @@ import {
   type CardLookContext,
   type CardStyle,
 } from "@/lib/card-look";
+import { ACCENT_SWATCHES, CARD_ARTS, CARD_ART_LABEL, artDataUri, autoAccent, type Art } from "@/lib/card-art";
+import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
+import type { StampIconKey } from "@/lib/brand";
 import { saveCardLook } from "./actions";
 
 // Kortet: butikkens faelles kortdesign. Stil, farver, navn og logo, eget billede
@@ -25,12 +28,56 @@ import { saveCardLook } from "./actions";
 // klassiske kort. Reglerne for stempler og henvisninger ligger under hvert
 // produkt; dette er udseendet, der deles.
 
-const STYLE_HINT: Record<CardStyle, string> = {
-  color: "Din farve og dit navn",
-  photo: "Upload dit eget foto",
-  pattern: "Dit stempel som mønster",
-  stamps: "Dine stempler på kortet",
-};
+// Miniature af en stil i butikkens egne farver, saa man ser resultatet, foer
+// man vaelger. Samme tegning som kortet (motiver fra lib/card-art).
+function StyleThumb({
+  style,
+  bg,
+  fg,
+  art,
+  accent,
+  artwork,
+  icon,
+}: {
+  style: CardStyle;
+  bg: string;
+  fg: string;
+  art: Art;
+  accent: string | null;
+  artwork: string | null;
+  icon: StampIconKey;
+}) {
+  let look: React.CSSProperties = { background: bg };
+  if (style === "art") look = { backgroundColor: bg, backgroundImage: artDataUri(art, { bg, fg, accent }), backgroundSize: "cover" };
+  if (style === "photo" && artwork) look = { backgroundImage: `url(${artwork})`, backgroundSize: "cover", backgroundPosition: "center" };
+  if (style === "pattern") {
+    const markup = STAMP_ICON_PATHS[icon] ?? STAMP_ICON_PATHS.custom;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${fg}" color="${fg}" opacity="0.28" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
+    look = { background: `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / 22px 22px, ${bg}` };
+  }
+  return (
+    <span className="relative block aspect-[1/1.42] w-full overflow-hidden rounded-[10px] shadow-[0_6px_16px_-10px_rgba(0,0,0,0.5)]" style={{ ...look, color: fg }} aria-hidden>
+      {style === "color" ? <span className="absolute left-2 top-2 h-1.5 w-8 rounded-full" style={{ background: fg, opacity: 0.85 }} /> : null}
+      {style === "photo" && !artwork ? (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <circle cx="9" cy="10" r="1.6" />
+            <path d="M21 16l-5-5-8 8" />
+          </svg>
+        </span>
+      ) : null}
+      {style === "stamps" ? (
+        <span className="absolute inset-x-2 top-[22%] grid grid-cols-5 gap-1">
+          {Array.from({ length: 10 }, (_, i) => (
+            <span key={i} className="aspect-square rounded-full" style={i < 3 ? { background: fg } : { border: `1px solid ${fg}66` }} />
+          ))}
+        </span>
+      ) : null}
+      <span className="absolute inset-x-0 bottom-0 h-[22%]" style={{ background: "rgba(0,0,0,0.18)" }} />
+    </span>
+  );
+}
 
 // Beskaer og komprimér i browseren foer upload (serveren goer det igen). Holder
 // uploaden lille og hurtig, ogsaa fra en telefon med et 12 MP-foto.
@@ -64,6 +111,8 @@ export function KortetEditor({
   initial,
   initialStyle,
   initialArtwork,
+  initialArt,
+  initialAccent,
   initialActions,
   ctx,
   businessName,
@@ -73,6 +122,8 @@ export function KortetEditor({
   initial: CardDesign;
   initialStyle: CardStyle;
   initialArtwork: string | null;
+  initialArt: Art;
+  initialAccent: string | null;
   initialActions: CardAction[];
   ctx: CardLookContext;
   businessName: string;
@@ -83,6 +134,8 @@ export function KortetEditor({
   const [style, setStyle] = useState<CardStyle>(initialStyle);
   const [artwork, setArtwork] = useState<string | null>(initialArtwork);
   const [artworkChanged, setArtworkChanged] = useState(false);
+  const [art, setArt] = useState<Art>(initialArt);
+  const [accent, setAccent] = useState<string | null>(initialAccent);
   const [actions, setActions] = useState<CardAction[]>(initialActions);
   const [os, setOs] = useState<"27" | "old">("27");
   const [uploading, setUploading] = useState(false);
@@ -94,11 +147,11 @@ export function KortetEditor({
     ctx.stampsEnabled && ctx.referralsEnabled ? "begge" : ctx.referralsEnabled ? "henvisninger" : "stemplet";
 
   const snapshot = useMemo(
-    () => JSON.stringify({ design, style, actions, artworkChanged }),
-    [design, style, actions, artworkChanged],
+    () => JSON.stringify({ design, style, actions, artworkChanged, art, accent }),
+    [design, style, actions, artworkChanged, art, accent],
   );
   const savedRef = useRef(
-    JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false }),
+    JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false, art: initialArt, accent: initialAccent }),
   );
   const dirty = snapshot !== savedRef.current;
 
@@ -145,9 +198,11 @@ export function KortetEditor({
         style,
         artwork: artworkChanged ? artwork : "keep",
         actions,
+        art,
+        accent,
       });
       if (res.ok) {
-        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false });
+        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false, art, accent });
         setArtworkChanged(false);
         setMsg({ ok: true, text: "Gemt" });
       } else {
@@ -162,7 +217,7 @@ export function KortetEditor({
         {/* Stil */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
           <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Stil</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
             {CARD_STYLES.map((s) => {
               const ok = styleAvailable(s, ctx);
               return (
@@ -173,19 +228,91 @@ export function KortetEditor({
                   aria-pressed={style === s}
                   onClick={() => (s === "photo" && !artwork ? fileRef.current?.click() : setStyle(s))}
                   className={cn(
-                    "flex flex-col gap-1 rounded-[14px] border-2 p-3 text-left transition-colors disabled:opacity-40",
-                    style === s ? "border-ink" : "border-fog hover:border-clay",
+                    "flex flex-col gap-2 rounded-[14px] border-2 p-2 text-left transition-[border-color,transform] active:scale-[0.97] disabled:opacity-40",
+                    style === s ? "border-ink" : "border-transparent hover:border-clay",
                   )}
                 >
-                  <span className="text-[0.95rem] font-semibold text-ink">{CARD_STYLE_LABEL[s]}</span>
-                  <span className="text-[0.78rem] leading-snug text-stone">
-                    {ok ? STYLE_HINT[s] : "Kræver stempler"}
-                  </span>
+                  <StyleThumb
+                    style={s}
+                    bg={design.primaryColor}
+                    fg={design.textColor}
+                    art={art}
+                    accent={accent}
+                    artwork={artwork}
+                    icon={design.stampIcon}
+                  />
+                  <span className="truncate px-0.5 text-[0.82rem] font-semibold text-ink">{ok ? CARD_STYLE_LABEL[s] : "Kræver stempler"}</span>
                 </button>
               );
             })}
           </div>
-          {style === "photo" || artwork ? (
+          {style === "art" ? (
+            <div className="mt-5 flex flex-col gap-4">
+              <div>
+                <p className="mb-2 text-[0.85rem] font-semibold text-ink">Motiv</p>
+                <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
+                  {CARD_ARTS.map((a) => (
+                    <button
+                      key={a}
+                      type="button"
+                      aria-pressed={art === a}
+                      onClick={() => setArt(a)}
+                      className={cn(
+                        "flex flex-col gap-1.5 rounded-[12px] border-2 p-1.5 transition-[border-color,transform] active:scale-[0.97]",
+                        art === a ? "border-ink" : "border-transparent hover:border-clay",
+                      )}
+                    >
+                      <span
+                        aria-hidden
+                        className="block aspect-[1/1.42] w-full rounded-[8px]"
+                        style={{ backgroundColor: design.primaryColor, backgroundImage: artDataUri(a, { bg: design.primaryColor, fg: design.textColor, accent }), backgroundSize: "cover" }}
+                      />
+                      <span className="text-[0.78rem] font-medium text-ink">{CARD_ART_LABEL[a]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-[0.85rem] font-semibold text-ink">Accent</p>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {[null, ...ACCENT_SWATCHES].map((c) => {
+                    const shown = c ?? autoAccent(design.primaryColor, design.textColor);
+                    return (
+                      <button
+                        key={c ?? "auto"}
+                        type="button"
+                        aria-pressed={accent === c}
+                        aria-label={c ? `Accent ${c}` : "Automatisk accent"}
+                        onClick={() => setAccent(c)}
+                        className={cn(
+                          "flex h-10 items-center gap-2 rounded-full border-2 pl-1 transition-colors",
+                          c ? "w-10 justify-center pl-0" : "pr-3",
+                          accent === c ? "border-ink" : "border-transparent hover:border-clay",
+                        )}
+                      >
+                        <span className="h-7 w-7 rounded-full ring-1 ring-inset ring-black/10" style={{ background: shown }} />
+                        {c ? null : <span className="text-[0.8rem] font-medium text-ink">Auto</span>}
+                      </button>
+                    );
+                  })}
+                  <label className="flex h-10 cursor-pointer items-center gap-2 rounded-full border-2 border-transparent pl-1 pr-3 hover:border-clay">
+                    <span
+                      className="h-7 w-7 rounded-full ring-1 ring-inset ring-black/10"
+                      style={{ background: "conic-gradient(#E88B9B, #E7A15B, #C9A24B, #8FD1A6, #7CC4FF, #B9A4E8, #E88B9B)" }}
+                    />
+                    <span className="text-[0.8rem] font-medium text-ink">Egen</span>
+                    <input
+                      type="color"
+                      value={accent ?? autoAccent(design.primaryColor, design.textColor)}
+                      onChange={(e) => setAccent(e.target.value.toUpperCase())}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {style === "photo" ? (
             <div className="mt-4 flex flex-wrap items-center gap-3">
               {artwork ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -306,6 +433,8 @@ export function KortetEditor({
             os={os}
             style={style === "photo" && !artwork ? "color" : style}
             artwork={artwork}
+            art={art}
+            accent={accent}
             primaryColor={design.primaryColor}
             textColor={design.textColor}
             logoUrl={design.logoUrl ?? null}

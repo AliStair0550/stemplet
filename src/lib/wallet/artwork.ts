@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { STAMP_ICON_PATHS } from "../stamp-icon-paths";
 import type { StampIconKey } from "../brand";
 import type { CardStyle } from "../card-look";
+import { artMarkup, isCardArt } from "../card-art";
 
 // Plakatbilledet til iOS 27-kortet (artwork.png), tegnet paa serveren ud fra
 // butikkens stil. Ingen tekst i billedet (felterne staar i Wallet), saa
@@ -20,6 +21,9 @@ export type ArtworkInput = {
   required: number;
   /** Butikkens eget billede (data-URI), naar stilen er "photo". */
   photo: string | null;
+  /** Motiv og accent, naar stilen er "art". */
+  art?: string | null;
+  accent?: string | null;
 };
 
 const esc = (c: string) => (/^#[0-9a-f]{6}$/i.test(c) ? c : "#2a1a10");
@@ -34,6 +38,11 @@ function svgFor(i: ArtworkInput, s: number): string {
   const bg = esc(i.primaryColor);
   const fg = esc(i.textColor);
   const open = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${POSTER_W} ${POSTER_H}">`;
+  if (i.style === "art") {
+    // Samme tegning som forsiden og Design, beskaaret til plakatens format.
+    const art = isCardArt(i.art) ? i.art : "aurora";
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 100 142" preserveAspectRatio="xMidYMid slice">${artMarkup(art, { bg, fg, accent: i.accent }, "w")}</svg>`;
+  }
   if (i.style === "pattern") {
     // Moensteret toner ud mod toppen, saa navn/logo og stempler staar frit.
     return `${open}<defs><pattern id="p" width="44" height="44" patternUnits="userSpaceOnUse"><g transform="translate(10 10)" fill="none" stroke="${fg}" color="${fg}" opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${icon(i.stampIcon)}</g></pattern><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0.17" stop-color="#fff" stop-opacity="0"/><stop offset="0.32" stop-color="#fff" stop-opacity="1"/></linearGradient><mask id="m"><rect width="100%" height="100%" fill="url(#f)"/></mask></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#p)" mask="url(#m)"/></svg>`;

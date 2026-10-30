@@ -71,6 +71,9 @@ type PassInput = {
   look?: {
     style: string;
     artwork: string | null;
+    /** Motivet og accenten, naar stilen er "art". */
+    art?: string | null;
+    accent?: string | null;
     actions: string[];
     bookingUrl: string | null;
     cardPageUrl: string;
@@ -527,6 +530,8 @@ async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null)
     stamps: input.stamps,
     required: input.required,
     photo: look.artwork,
+    art: look.art ?? null,
+    accent: look.accent ?? null,
   });
   pass.addBuffer("artwork.png", art.x1);
   pass.addBuffer("artwork@2x.png", art.x2);

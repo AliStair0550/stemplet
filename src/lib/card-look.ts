@@ -3,11 +3,12 @@
 // stempler og henvisninger ligger hos hvert produkt. Ren logik uden database,
 // saa den kan enhedstestes og bruges baade i dashboardet og i Wallet-passet.
 
-export const CARD_STYLES = ["color", "photo", "pattern", "stamps"] as const;
+export const CARD_STYLES = ["color", "art", "photo", "pattern", "stamps"] as const;
 export type CardStyle = (typeof CARD_STYLES)[number];
 
 export const CARD_STYLE_LABEL: Record<CardStyle, string> = {
   color: "Farve",
+  art: "Motiv",
   photo: "Dit billede",
   pattern: "Mønster",
   stamps: "Stempler",
