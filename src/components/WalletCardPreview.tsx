@@ -3,7 +3,7 @@
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
-import { photoPalette, type StampIconKey } from "@/lib/brand";
+import { photoPalette, shade, type StampIconKey } from "@/lib/brand";
 import { CARD_ACTION_LABEL, headerShows, type CardAction, type CardStyle } from "@/lib/card-look";
 
 // Forhaandsvisning af Wallet-kortet i dashboardet (siden Kortet): plakatkortet
@@ -112,7 +112,9 @@ function Poster(p: WalletCardPreviewProps) {
       className="relative isolate aspect-[300/430] w-full max-w-[300px] overflow-hidden rounded-[18px] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.5)]"
       style={{ ...artworkStyle(p), color: fg }}
     >
-      <div className="flex items-start justify-between gap-3 px-4 pt-4">
+      {/* Som i Wallet: Apple laegger en bloed moerk skygge oeverst paa plakatkortet. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[38%]" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0))" }} />
+      <div className="relative flex items-start justify-between gap-3 px-4 pt-4">
         <div className="flex min-w-0 items-center gap-2">
           {shows.logo && p.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -134,8 +136,9 @@ function Poster(p: WalletCardPreviewProps) {
         </div>
       ) : null}
       <div
-        className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_auto] items-end gap-x-3.5 gap-y-2.5 px-4 pb-4 pt-3.5 backdrop-blur-md"
-        style={{ background: `${p.primaryColor}b8` }}
+        className="absolute inset-x-0 bottom-0 grid grid-cols-[1fr_auto] items-end gap-x-3.5 gap-y-2.5 px-4 pb-4 pt-3.5"
+        // Som i Wallet: feltbaandet i bunden er taet og en anelse dybere end kortet.
+        style={{ background: shade(p.primaryColor, -0.08) }}
       >
         <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-2">
           {p.product === "henvisninger" ? (
