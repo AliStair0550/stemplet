@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import sharp from "sharp";
+import { createHash } from "node:crypto";
 import { posterFields, featuredActionsFor } from "../src/lib/wallet/poster";
 import { renderPosterArtwork, POSTER_W, POSTER_H } from "../src/lib/wallet/artwork";
 import type { ReferralPassInfo } from "../src/lib/wallet/referral-fields";
@@ -57,4 +58,27 @@ test("plakatbillede: 1x, 2x og 3x i Apples maal for alle stilarter", async () =>
     assert.equal(m3.height, POSTER_H * 3);
     assert.equal((await sharp(a.x1).metadata()).width, POSTER_W);
   }
+});
+
+test("plakatbillede: hvert motiv tegnes i Apples maal, i butikkens farver og forskelligt", async () => {
+  const { CARD_ARTS } = await import("../src/lib/card-art");
+  const seen = new Set<string>();
+  for (const art of CARD_ARTS) {
+    const a = await renderPosterArtwork({ style: "art", art, accent: null, primaryColor: "#0B2545", textColor: "#F2F5F9", stampIcon: "coffee", stamps: 3, required: 10, photo: null });
+    const m = await sharp(a.x3).metadata();
+    assert.equal(m.width, POSTER_W * 3);
+    assert.equal(m.height, POSTER_H * 3);
+    // Ikke et ensfarvet billede: motivet er faktisk tegnet.
+    const { channels } = await sharp(a.x1).stats();
+    assert.ok(channels.some((c) => c.stdev > 4), `${art} ser ensfarvet ud`);
+    seen.add(createHash("sha1").update(await sharp(a.x1).raw().toBuffer()).digest("hex"));
+  }
+  assert.equal(seen.size, CARD_ARTS.length);
+});
+
+test("motiv: valgt accent bruges, ellers en automatisk tone; ugyldige farver afvises", async () => {
+  const { artMarkup, autoAccent } = await import("../src/lib/card-art");
+  assert.match(artMarkup("rings", { bg: "#000000", fg: "#FFFFFF", accent: "#E7A15B" }, "t"), /#E7A15B/);
+  assert.match(artMarkup("rings", { bg: "#000000", fg: "#FFFFFF", accent: null }, "t"), new RegExp(autoAccent("#000000", "#FFFFFF")));
+  assert.doesNotMatch(artMarkup("rings", { bg: "red\"/><script>", fg: "#FFFFFF", accent: "x" }, "t"), /script/);
 });

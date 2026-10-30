@@ -5,6 +5,7 @@ import type { StampIconKey } from "./brand";
 import { cardTitle } from "./brand";
 import { effectiveStyle, normalizeActions, type CardLookContext } from "./card-look";
 import { rewardPhrase } from "./referral-text";
+import { isCardArt } from "./card-art";
 import type { WalletCardPreviewProps } from "@/components/WalletCardPreview";
 
 /**
@@ -24,6 +25,8 @@ export async function loadCardPreview(business: Business): Promise<Omit<WalletCa
   return {
     style: effectiveStyle(business.cardStyle, ctx, !!business.cardArtwork),
     artwork: business.cardArtwork,
+    art: isCardArt(business.cardArt) ? business.cardArt : "aurora",
+    accent: business.cardAccent,
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     logoUrl: business.logoUrl,

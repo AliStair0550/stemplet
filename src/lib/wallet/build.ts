@@ -50,6 +50,8 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     look: {
       style: b.cardStyle,
       artwork: b.cardArtwork,
+      art: b.cardArt,
+      accent: b.cardAccent,
       actions: b.cardActions,
       bookingUrl: b.bookingUrl,
       cardPageUrl: `${APP_URL}/k/${b.slug}`,

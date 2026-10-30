@@ -3,44 +3,54 @@ import type { StampIconKey } from "@/lib/brand";
 import { StampIcon } from "@/components/StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { cn } from "@/lib/utils";
+import { artMarkup, type Art } from "@/lib/card-art";
 
 // Et medlemskort, som det ser ud i kundens Wallet (plakatformat): butikkens
 // billede eller farve fylder kortet, og navn, felter og kode ligger ovenpaa.
 // Ren visning til forsiden; tallene er eksempler.
 
-/** QR-koden tegnes som et fast moenster, saa den ser aegte ud uden at pege nogen steder hen. */
-const QR_SIZE = 25;
-const QR = (() => {
-  const cells: [number, number][] = [];
-  let seed = 7;
-  const finder = (x: number, y: number) => x < 8 && y < 8;
-  for (let y = 0; y < QR_SIZE; y++) {
-    for (let x = 0; x < QR_SIZE; x++) {
-      if (finder(x, y) || finder(QR_SIZE - 1 - x, y) || finder(x, QR_SIZE - 1 - y)) continue;
-      seed = (seed * 1103515245 + 12345) % 2147483648;
-      if (seed % 100 < 48) cells.push([x, y]);
-    }
-  }
-  return cells;
-})();
+/** En rigtig QR-kode (til kort.folka.dk), saa den ser aegte ud og kan scannes.
+ *  Genereret een gang med qrcode ("https://kort.folka.dk", niveau M). */
+const QR_ROWS = [
+  "1111111011100110001111111",
+  "1000001010000110101000001",
+  "1011101011000110101011101",
+  "1011101000001111101011101",
+  "1011101011101110101011101",
+  "1000001000011110101000001",
+  "1111111010101010101111111",
+  "0000000001110110100000000",
+  "1001111110011010110010111",
+  "0001000110010011000111110",
+  "0111001011100001100101001",
+  "0011000110111001000011111",
+  "0111011110111000101100001",
+  "1001100010000011110010010",
+  "1101001011111001101011111",
+  "1010110000010001000101101",
+  "1011111111100011111110110",
+  "0000000010011100100010110",
+  "1111111010110000101010001",
+  "1000001010101011100010011",
+  "1011101011101111111110011",
+  "1011101010100010011000011",
+  "1011101001001010100011111",
+  "1000001000000010001110111",
+  "1111111010100111111001001",
+];
+const QR_SIZE = QR_ROWS.length;
 
-// Hele moenstret som EEN sti (i stedet for ~300 <rect> pr. kode), saa forsidens
-// mange kort ikke giver tusindvis af elementer, som telefonen skal tegne.
-const QR_PATH = (() => {
-  const corners = [
-    [0, 0],
-    [QR_SIZE - 7, 0],
-    [0, QR_SIZE - 7],
-  ];
-  const parts = corners.map(([x, y]) => `M${x} ${y}h7v7h-7z M${x + 1} ${y + 1}v5h5v-5z M${x + 2} ${y + 2}h3v3h-3z`);
-  for (const [x, y] of QR) parts.push(`M${x} ${y}h1v1h-1z`);
-  return parts.join("");
-})();
+// Hele koden som EEN sti af vandrette loeb (ikke et felt pr. modul): faa kanter,
+// ingen haarfine saemme mellem nabofelter, og skarpt i alle stoerrelser og
+// vinkler. Loebene overlapper en anelse lodret, saa raekkerne flyder sammen.
+const QR_PATH = QR_ROWS.flatMap((row, y) =>
+  [...row.matchAll(/1+/g)].map((m) => `M${m.index} ${y - 0.01}h${m[0].length}v1.02h-${m[0].length}z`),
+).join("");
 
 export function QrCode({ className }: { className?: string }) {
   return (
-    <svg viewBox={`0 0 ${QR_SIZE} ${QR_SIZE}`} className={cn("h-full w-full fill-[#020B1C]", className)} shapeRendering="crispEdges" aria-hidden>
-      <path d={QR_PATH} fillRule="evenodd" />
+    <svg viewBox={`0 0 ${QR_SIZE} ${QR_SIZE}`} className={cn("block h-full w-full fill-[#020B1C]", className)} aria-hidden>
+      <path d={QR_PATH} />
     </svg>
   );
 }
@@ -66,108 +76,21 @@ export type MemberCardData = {
   foot: { label: string; value: string };
 };
 
-export type Art = "aurora" | "sun" | "waves" | "rings" | "hills" | "arches";
+export type { Art };
 
 /**
- * Kreative, tegnede motiver til eksempelkortene: nordlys, sol over horisont,
- * boelger, ringe, bakker og buer. Tegnet i kortets egne farver, saa de altid
- * passer sammen, er skarpe i alle stoerrelser og ikke viser mennesker.
+ * Tegnet motiv i kortets egne farver. Tegningen bor i lib/card-art, saa forsiden,
+ * Design og det rigtige Wallet-kort viser praecis det samme.
  */
 export function ArtLayer({ id, art, bg, fg, accent }: { id: string; art: Art; bg: string; fg: string; accent: string }) {
-  const common = { className: "absolute inset-0 h-full w-full", viewBox: "0 0 100 142", preserveAspectRatio: "xMidYMid slice", "aria-hidden": true } as const;
-  if (art === "aurora") {
-    // Bloede lysfelter (radiale overgange i stedet for sloer): skarpt og let at tegne.
-    const glow = (key: string, color: string) => (
-      <radialGradient id={`${id}-${key}`}>
-        <stop offset="0" stopColor={color} stopOpacity="0.95" />
-        <stop offset="1" stopColor={color} stopOpacity="0" />
-      </radialGradient>
-    );
-    return (
-      <svg {...common}>
-        <defs>
-          {glow("a", accent)}
-          {glow("b", fg)}
-          {glow("c", accent)}
-        </defs>
-        <rect width="100" height="142" fill={bg} />
-        <ellipse cx="22" cy="42" rx="58" ry="40" fill={`url(#${id}-a)`} />
-        <ellipse cx="88" cy="70" rx="46" ry="38" fill={`url(#${id}-b)`} opacity="0.32" />
-        <ellipse cx="60" cy="14" rx="40" ry="24" fill={`url(#${id}-c)`} opacity="0.7" />
-      </svg>
-    );
-  }
-  if (art === "sun") {
-    return (
-      <svg {...common}>
-        <defs>
-          <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={bg} />
-            <stop offset="0.62" stopColor={accent} />
-          </linearGradient>
-        </defs>
-        <rect width="100" height="142" fill={`url(#${id}-sky)`} />
-        <circle cx="50" cy="80" r="24" fill={fg} opacity="0.9" />
-        <rect y="80" width="100" height="62" fill={bg} />
-        {[84, 88, 93, 99].map((y, i) => (
-          <rect key={y} x={20 - i * 4} y={y} width={60 + i * 8} height="1.4" rx="0.7" fill={fg} opacity={0.5 - i * 0.1} />
-        ))}
-      </svg>
-    );
-  }
-  if (art === "waves") {
-    return (
-      <svg {...common}>
-        <rect width="100" height="142" fill={bg} />
-        {[0, 1, 2, 3, 4].map((i) => (
-          <path
-            key={i}
-            d={`M-10 ${44 + i * 13} C 15 ${34 + i * 13}, 35 ${56 + i * 13}, 55 ${44 + i * 13} S 95 ${34 + i * 13}, 115 ${46 + i * 13} V 142 H -10 Z`}
-            fill={i % 2 ? accent : fg}
-            opacity={0.12 + i * 0.07}
-          />
-        ))}
-      </svg>
-    );
-  }
-  if (art === "rings") {
-    return (
-      <svg {...common}>
-        <rect width="100" height="142" fill={bg} />
-        {[8, 16, 24, 32, 40, 48, 56].map((r, i) => (
-          <circle key={r} cx="78" cy="40" r={r} fill="none" stroke={i % 2 ? accent : fg} strokeWidth="1.1" opacity={0.55 - i * 0.06} />
-        ))}
-        <circle cx="78" cy="40" r="5" fill={accent} />
-      </svg>
-    );
-  }
-  if (art === "hills") {
-    return (
-      <svg {...common}>
-        <rect width="100" height="142" fill={accent} />
-        <circle cx="72" cy="30" r="9" fill={fg} opacity="0.85" />
-        <path d="M-10 70 Q 25 45 55 66 T 115 58 V 142 H -10 Z" fill={bg} opacity="0.55" />
-        <path d="M-10 86 Q 30 64 62 84 T 115 78 V 142 H -10 Z" fill={bg} opacity="0.8" />
-        <path d="M-10 102 Q 35 84 70 100 T 115 96 V 142 H -10 Z" fill={bg} />
-      </svg>
-    );
-  }
-  // arches: buer som et museums soejlegang.
   return (
-    <svg {...common}>
-      <rect width="100" height="142" fill={bg} />
-      {[0, 1, 2].map((i) => (
-        <path
-          key={i}
-          d={`M${8 + i * 30} 84 V 44 a 12 12 0 0 1 24 0 V 84`}
-          fill={i === 1 ? accent : "none"}
-          stroke={fg}
-          strokeWidth="1.2"
-          opacity={i === 1 ? 0.9 : 0.45}
-        />
-      ))}
-      <rect x="4" y="84" width="92" height="1.4" fill={fg} opacity="0.5" />
-    </svg>
+    <svg
+      className="absolute inset-0 h-full w-full"
+      viewBox="0 0 100 142"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
+      dangerouslySetInnerHTML={{ __html: artMarkup(art, { bg, fg, accent }, id) }}
+    />
   );
 }
 

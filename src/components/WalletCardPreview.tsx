@@ -5,6 +5,7 @@ import { StampIcon } from "./StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { photoPalette, shade, type StampIconKey } from "@/lib/brand";
 import { CARD_ACTION_LABEL, headerShows, type CardAction, type CardStyle } from "@/lib/card-look";
+import { artDataUri, type Art } from "@/lib/card-art";
 
 // Forhaandsvisning af Wallet-kortet i dashboardet (siden Kortet): plakatkortet
 // paa iOS 27 og det klassiske kort, som aeldre iPhones faar. Viser butikkens
@@ -16,6 +17,9 @@ export type WalletCardPreviewProps = {
   os: "27" | "old";
   style: CardStyle;
   artwork: string | null;
+  /** Motiv og accent til stilen "Motiv" (accent null = automatisk). */
+  art?: Art;
+  accent?: string | null;
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
@@ -71,6 +75,14 @@ function artworkStyle(p: WalletCardPreviewProps): React.CSSProperties {
   if (p.style === "photo" && p.artwork) {
     return {
       backgroundImage: `linear-gradient(180deg, transparent 45%, ${p.primaryColor}e6 92%), url(${p.artwork})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
+  }
+  if (p.style === "art") {
+    return {
+      backgroundColor: p.primaryColor,
+      backgroundImage: artDataUri(p.art ?? "aurora", { bg: p.primaryColor, fg: p.textColor, accent: p.accent }),
       backgroundSize: "cover",
       backgroundPosition: "center",
     };

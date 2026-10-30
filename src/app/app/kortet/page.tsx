@@ -6,6 +6,7 @@ import type { CardDesign } from "@/components/CardDesigner";
 import type { StampIconKey } from "@/lib/brand";
 import { effectiveStyle, isCardHeader, normalizeActions, type CardLookContext } from "@/lib/card-look";
 import { rewardPhrase } from "@/lib/referral-text";
+import { isCardArt } from "@/lib/card-art";
 import { KortetEditor } from "./KortetEditor";
 
 export const metadata: Metadata = { title: "Design" };
@@ -50,6 +51,8 @@ export default async function KortetPage() {
         initial={initial}
         initialStyle={effectiveStyle(business.cardStyle, ctx, !!business.cardArtwork)}
         initialArtwork={business.cardArtwork}
+        initialArt={isCardArt(business.cardArt) ? business.cardArt : "aurora"}
+        initialAccent={business.cardAccent}
         initialActions={actions}
         ctx={ctx}
         businessName={business.name}
