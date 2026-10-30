@@ -14,9 +14,12 @@ type Biz = { id: string; name: string };
 export function BusinessSwitcher({
   businesses,
   activeId,
+  canCreate = false,
 }: {
   businesses: Biz[];
   activeId: string;
+  /** Kun superadmin kan oprette flere butikker. */
+  canCreate?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -49,6 +52,13 @@ export function BusinessSwitcher({
       const res = await switchBusiness(id);
       if (res.ok) router.refresh();
     });
+  }
+
+  // Een butik og ingen opret-mulighed: bare navnet, ingen menu at aabne.
+  if (businesses.length <= 1 && !canCreate) {
+    return (
+      <div className="truncate rounded-lg px-1 py-2.5 text-[0.95rem] font-[600] text-ink">{active?.name}</div>
+    );
   }
 
   return (
@@ -112,6 +122,7 @@ export function BusinessSwitcher({
               );
             })}
           </ul>
+          {canCreate ? (
           <Link
             href="/app/ny-butik"
             className="flex items-center gap-2 border-t border-fog px-3 py-2.5 text-[0.78rem] font-[400] text-terracotta transition-colors hover:bg-sand/50"
@@ -120,6 +131,7 @@ export function BusinessSwitcher({
             <span className="text-[1rem] leading-none">+</span>
             Opret ny butik
           </Link>
+          ) : null}
         </div>
       ) : null}
     </div>

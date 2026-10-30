@@ -82,9 +82,12 @@ export function DashboardNav({
   showAgreement = false,
   showReferrals = false,
   showStamps = true,
+  canCreateBusiness = false,
 }: {
   businesses: { id: string; name: string }[];
   activeBusinessId: string;
+  /** Kun superadmin ser "Opret ny butik". */
+  canCreateBusiness?: boolean;
   showAgreement?: boolean;
   showReferrals?: boolean;
   /** Fra = kun Henvisninger: Stemplet vises som "+ Tilfoej". */
@@ -241,7 +244,7 @@ export function DashboardNav({
         <Link href="/app" aria-label="Folka Kort, til Hjem" className="mb-5 px-2">
           <KundekortMark />
         </Link>
-        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
+        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} canCreate={canCreateBusiness} />
 
         <Link
           href={SCAN.href}
@@ -285,7 +288,7 @@ export function DashboardNav({
       <MarkDashboardVisit />
       {/* Mobil: butik oeverst, faner i bunden */}
       <div className="sticky top-0 z-30 border-b border-fog bg-parchment px-5 py-3 md:hidden print:hidden">
-        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
+        <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} canCreate={canCreateBusiness} />
       </div>
 
       {moreOpen ? (

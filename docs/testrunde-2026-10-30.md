@@ -26,9 +26,9 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 
 | # | Punkt | Status |
 |---|---|---|
-| B1 | Knap til at se alle ikoner ved oprettelse | Batch 3 |
-| B2 | "Opret flere butikker" i toppen kun for admin | Batch 3 |
-| B3 | Eksempel-knapper på Hjem forvirrer (man prøver at trykke på dem) | Batch 3 |
+| B1 | Knap til at se alle ikoner ved oprettelse | Lavet (batch 3) |
+| B2 | "Opret flere butikker" i toppen kun for admin | Lavet (batch 3) |
+| B3 | Eksempel-knapper på Hjem forvirrer (man prøver at trykke på dem) | Lavet (batch 3) |
 | B4 | Kom i gang: fokus på design, kundekortet og rabatten; trin 3 = se kortet og del det | Venter |
 | B5 | Stærkere deling på Hjem, så man føler sig klar efter oprettelsen | Venter |
 | B6 | Altid tydeligt næste skridt, så butikken klarer sig uden support | Venter |

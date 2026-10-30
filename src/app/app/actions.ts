@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { isSuperadminEmail } from "@/lib/superadmin-emails";
 import { ONBOARDING_HIDDEN_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
@@ -68,6 +69,8 @@ export async function createBusinessForCurrentUser(input: {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, error: "Du er ikke logget ind." };
+  // Flere butikker pr. konto er kun for os (superadmin); en butiksejer har een.
+  if (!isSuperadminEmail(session?.user?.email)) return { ok: false, error: "Kun Folka kan oprette flere butikker." };
   if (!input.acceptedTerms) {
     return {
       ok: false,

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { requireBusiness } from "@/lib/session";
+import { isSuperadminEmail } from "@/lib/superadmin-emails";
 import { PageHeading } from "@/components/dash";
 import { NewBusinessForm } from "./NewBusinessForm";
 
@@ -8,7 +10,9 @@ export const dynamic = "force-dynamic";
 
 export default async function NyButikPage() {
   // Kraev login (agentur-flow: opret en butik under din egen konto).
-  await requireBusiness();
+  const { email } = await requireBusiness();
+  // Kun superadmin opretter flere butikker; en butiksejer sendes til Hjem.
+  if (!isSuperadminEmail(email)) redirect("/app");
   return (
     <>
       <PageHeading

@@ -6,7 +6,7 @@ import { FolkaLogo, KundekortMark } from "@/components/ProductLogo";
 import { StampIcon } from "@/components/StampIcon";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { Confetti } from "@/components/Celebrate";
-import { DEFAULT_PRIMARY, DEFAULT_TEXT, type StampIconKey } from "@/lib/brand";
+import { DEFAULT_PRIMARY, DEFAULT_TEXT, STAMP_ICONS, type StampIconKey } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 import { createLoyaltyBusinessAction, loginWithOnboardingToken } from "./actions";
 
@@ -127,6 +127,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
   const [reward, setReward] = useState("");
   const [stamps, setStamps] = useState(10);
   const [icon, setIcon] = useState<StampIconKey>("coffee");
+  const [allIcons, setAllIcons] = useState(false);
   const [email, setEmail] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -324,7 +325,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
 
                   <p className="mb-2 mt-5 text-[14px] font-medium text-[#0B1628]/60">Stempel</p>
                   <div className="grid grid-cols-6 gap-2">
-                    {ICONS.map((i) => (
+                    {(allIcons ? STAMP_ICONS.filter((i) => i.key !== "custom") : ICONS).map((i) => (
                       <button
                         key={i.key}
                         type="button"
@@ -340,6 +341,14 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                       </button>
                     ))}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setAllIcons((v) => !v)}
+                    aria-expanded={allIcons}
+                    className="mt-3 inline-flex min-h-10 items-center rounded-full border border-[#0B1628]/15 px-4 text-[14px] font-medium text-[#0B1628] hover:border-[#0B1628]/40"
+                  >
+                    {allIcons ? "Vis færre ikoner" : `Se alle ${STAMP_ICONS.length - 1} ikoner`}
+                  </button>
                 </fieldset>
               ) : null}
 
