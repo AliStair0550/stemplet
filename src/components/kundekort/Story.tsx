@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { StampIcon } from "@/components/StampIcon";
 import { ArtLayer, QrCode } from "./MemberCard";
 
-// Historien om Emma: fra foerste scanning til den gratis kop. Telefonen staar
+// Historien om Emma gennem kortets fire funktioner (stempler, henvisninger,
+// saerlige rabatter og direkte beskeder) og det, de giver butikken: vaekst. Telefonen staar
 // fast, mens man scroller gennem kapitlerne, og kortet i den skifter tilstand.
 // Uden JavaScript (eller ved "reducér bevægelse") ses blot kapitlerne og det
 // foerste kort.
@@ -22,43 +23,43 @@ type Chapter = {
 
 const CHAPTERS: Chapter[] = [
   {
-    kicker: "Første besøg",
-    title: "Emma scanner koden ved kassen.",
-    text: "Hun skriver sit navn og sin e-mail og trykker Hent. Ingen app og ingen adgangskode. Kortet er hendes på få sekunder.",
-    stamps: 0,
-    title2: "Velkommen, Emma",
-    foot: { label: "Belønning", value: "10. kop er gratis" },
-  },
-  {
-    kicker: "I hendes Wallet",
-    title: "Kortet ligger ved siden af betalingskortet.",
-    text: "Med dit billede, dit navn og dine farver. Hun får sit første stempel, og kortet opdaterer sig selv.",
-    stamps: 1,
-    title2: "Stamkunde",
-    foot: { label: "Belønning", value: "10. kop er gratis" },
-    note: { from: "Kaffestuen", text: "Dit første stempel er på kortet. Ni mere, så er kaffen på os." },
-  },
-  {
-    kicker: "Hun kommer igen",
-    title: "Og igen. Og igen.",
-    text: "Personalet scanner hendes kort, og stemplet lander med det samme. Du kan se, hvem der kommer igen, uge for uge.",
-    stamps: 7,
+    kicker: "Stempler",
+    title: "Hun kommer igen. Og igen.",
+    text: "Hvert besøg giver et stempel på kortet i hendes telefon. Ti stempler, og kaffen er på dig. Nu har hun en grund til at vælge dig.",
+    stamps: 4,
     title2: "Stamkunde",
     foot: { label: "Belønning", value: "10. kop er gratis" },
   },
   {
-    kicker: "Hun tager en veninde med",
-    title: "Louise får rabat. Emma får en kop.",
-    text: "Emma deler sin kode fra kortet. Louise får rabat ved sit første besøg, og når hun har været der, får Emma sin belønning.",
-    stamps: 8,
+    kicker: "Henvisninger",
+    title: "Hun tager sin veninde med.",
+    text: "Emma deler sin kode. Louise får rabat første gang. Emma får en kop, når Louise har været der. Dine kunder bliver din reklame.",
+    stamps: 6,
     title2: "Stamkunde",
     foot: { label: "Til gode", value: "1 gratis kop" },
     note: { from: "Kaffestuen", text: "Louise har været her. Du har en gratis kop til gode." },
   },
   {
-    kicker: "Den tiende kop",
-    title: "Belønningen er klar.",
-    text: "Personalet løser den ind med sin PIN. Kunden kan ikke selv, og ingen kan stemple sig selv. Så starter et nyt kort.",
+    kicker: "Særlige rabatter",
+    title: "Hun får fordele, andre ikke får.",
+    text: "Tilbud kun for kortholdere og rabatter hos dine samarbejdspartnere. Hun føler sig som stamgæst, fordi hun er det.",
+    stamps: 7,
+    title2: "Stamkunde",
+    foot: { label: "Kun for dig", value: "20 % på kager" },
+  },
+  {
+    kicker: "Direkte beskeder",
+    title: "Du har en direkte linje.",
+    text: "Din besked lander på hendes låseskærm. Ingen mailliste, ingen annoncekroner. Én om dagen, så den bliver læst.",
+    stamps: 8,
+    title2: "Stamkunde",
+    foot: { label: "Belønning", value: "10. kop er gratis" },
+    note: { from: "Kaffestuen", text: "Dobbelt stempel hele weekenden. Vi ses." },
+  },
+  {
+    kicker: "Vækst",
+    title: "Flere besøg. Flere nye kunder.",
+    text: "Stamkunderne kommer oftere og tager andre med. Du ser det i tal, uge for uge.",
     stamps: 10,
     title2: "Klar til dig",
     foot: { label: "Belønning", value: "10. kop er gratis" },
