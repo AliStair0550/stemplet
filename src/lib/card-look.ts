@@ -27,8 +27,8 @@ export const CARD_ACTION_LABEL: Record<CardAction, string> = {
 /** Hvad knappen goer, naar kunden trykker paa den i Wallet. */
 export const CARD_ACTION_HINT: Record<CardAction, string> = {
   book: "Åbner dit booking-link.",
-  henvis: "Åbner kundens side med deres henvisningskode.",
-  beloenninger: "Åbner kundens side med stempler og belønninger.",
+  henvis: "Åbner kundens side med tilbud, fordele og henvisningskode.",
+  beloenninger: "Åbner kundens side med tilbud, fordele og stempler.",
 };
 
 export type CardLookContext = {
@@ -73,4 +73,21 @@ export function normalizeActions(actions: readonly string[], ctx: CardLookContex
     if (out.length === MAX_CARD_ACTIONS) break;
   }
   return out;
+}
+
+/** Oeverst paa kortet: logo, navn eller begge (butikken vaelger under Design). */
+export const CARD_HEADERS = ["logo", "name", "both"] as const;
+export type CardHeader = (typeof CARD_HEADERS)[number];
+export const CARD_HEADER_LABEL: Record<CardHeader, string> = { logo: "Logo", name: "Navn", both: "Logo og navn" };
+
+export function isCardHeader(v: string): v is CardHeader {
+  return (CARD_HEADERS as readonly string[]).includes(v);
+}
+
+/** Hvad vises oeverst? Uden logo vises altid navnet. */
+export function headerShows(header: string | null | undefined, hasLogo: boolean): { logo: boolean; name: boolean } {
+  if (!hasLogo) return { logo: false, name: true };
+  if (header === "name") return { logo: false, name: true };
+  if (header === "both") return { logo: true, name: true };
+  return { logo: true, name: false };
 }

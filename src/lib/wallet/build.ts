@@ -30,6 +30,7 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     textColor: b.textColor,
     logoUrl: b.logoUrl,
     logoScale: b.logoScale,
+    cardHeader: b.cardHeader,
     stampIcon: cc.card.stampIcon,
     rewardText: cc.card.rewardText,
     terms: cc.card.terms,

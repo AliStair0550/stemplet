@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { PKPass, PassType } from "passkit-generator";
 import { posterEnabled, posterFields, featuredActionsFor } from "./poster";
 import { renderPosterArtwork } from "./artwork";
-import { effectiveStyle, normalizeActions } from "../card-look";
+import { effectiveStyle, headerShows, normalizeActions } from "../card-look";
 import { readFile } from "node:fs/promises";
 import { lookup } from "node:dns/promises";
 import path from "node:path";
@@ -37,6 +37,8 @@ type PassInput = {
   textColor: string;
   logoUrl: string | null;
   logoScale?: number;
+  /** Oeverst paa kortet: "logo" (logo, ellers navn), "name" eller "both". */
+  cardHeader?: string;
   stampIcon: string;
   rewardText: string;
   // Valgfrie betingelser. Vises paa BAGSIDEN af passet (kunden trykker "..."-info
@@ -243,7 +245,7 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
   // (strip) overlapper med logo-hentningen.
   const [iconBuf, logoBuf, strip] = await Promise.all([
     loadIcon(),
-    loadLogo(input.logoUrl, input.logoScale ?? 1),
+    loadLogo(input.cardHeader === "name" ? null : input.logoUrl, input.logoScale ?? 1),
     buildStripImages({
       stamps: input.stamps,
       required: input.required,
@@ -289,7 +291,7 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
     // logo, staar det alene i toppen; ellers vises butiksnavnet som tekst. I en
     // STAK adskilles Stemplet-kort saa paa logo/navn + den tydelige forskel i
     // baggrundsfarve (alle kort deler passTypeIdentifier og stakker ellers).
-    ...(logoBuf ? {} : { logoText: input.businessName }),
+    ...(headerShows(input.cardHeader, !!logoBuf).name ? { logoText: input.businessName } : {}),
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
     sharingProhibited: true,
@@ -441,7 +443,7 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
 async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPassInfo }): Promise<Buffer> {
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
-  const [iconBuf, logoBuf] = await Promise.all([loadIcon(), loadLogo(input.logoUrl, input.logoScale ?? 1)]);
+  const [iconBuf, logoBuf] = await Promise.all([loadIcon(), loadLogo(input.cardHeader === "name" ? null : input.logoUrl, input.logoScale ?? 1)]);
   const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(
     input.primaryColor,
     input.textColor,
@@ -463,7 +465,7 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
     foregroundColor: fg,
     backgroundColor: bg,
     labelColor: labelCol,
-    ...(logoBuf ? {} : { logoText: input.businessName }),
+    ...(headerShows(input.cardHeader, !!logoBuf).name ? { logoText: input.businessName } : {}),
     webServiceURL: `${APP_URL}/api/wallet`,
     authenticationToken: input.authToken,
     sharingProhibited: true,

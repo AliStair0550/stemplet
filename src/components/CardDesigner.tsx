@@ -1,5 +1,6 @@
 "use client";
 
+import { CARD_HEADERS, CARD_HEADER_LABEL } from "@/lib/card-look";
 import { useState } from "react";
 import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
@@ -27,6 +28,8 @@ export type CardDesign = {
   // Navn vist paa kundens kort. Tomt = brug firmanavnet. Valgfrit, saa
   // preview-byggere (kasse, kampagner) ikke behoever saette det.
   displayName?: string | null;
+  // Oeverst paa kortet: logo, navn eller begge (kun relevant med logo).
+  cardHeader?: "logo" | "name" | "both";
   // Valgfri betingelser. Vises IKKE paa kortet, men under "Hent mit
   // stempelkort" for kunden. Valgfrit felt, saa preview-byggere (kasse,
   // kampagner) ikke behoever saette det.
@@ -521,10 +524,37 @@ export function CardDesigner({
                 ) : null}
               </div>
               <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-                Har du et logo, viser kortet det i stedet for butikkens navn.
+                Med et logo vælger du herunder, om kortet viser logo, navn eller begge.
               </p>
               {logoError ? (
                 <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
+              ) : null}
+
+              {/* Oeverst paa kortet: eet sted, der styrer logo og navn. */}
+              {value.logoUrl ? (
+                <div className="mt-2 flex flex-col gap-2 border-t border-fog pt-4">
+                  <span className="text-[0.85rem] font-[400] text-ink">Øverst på kortet</span>
+                  <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Øverst på kortet">
+                    {CARD_HEADERS.map((h) => {
+                      const on = (value.cardHeader ?? "logo") === h;
+                      return (
+                        <button
+                          key={h}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => set("cardHeader", h)}
+                          className={cn(
+                            "rounded-xl border px-3 py-2.5 text-[0.85rem] transition-colors",
+                            on ? "border-ink bg-white font-semibold text-ink" : "border-fog text-stone hover:border-clay",
+                          )}
+                        >
+                          {CARD_HEADER_LABEL[h]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               ) : null}
 
             </div>

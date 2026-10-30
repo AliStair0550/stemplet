@@ -64,6 +64,7 @@ export const cardDesignSchema = z.object({
     .optional(),
   // Logo-stoerrelse: 1 = standard. Klampes til et rimeligt interval.
   logoScale: z.coerce.number().min(0.6).max(2.2).optional().default(1),
+  cardHeader: z.enum(["logo", "name", "both"]).optional(),
   // Valgfri betingelser. Trimmes; tom tekst behandles som "ingen betingelser".
   terms: z
     .string()
