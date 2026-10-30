@@ -231,6 +231,7 @@ export default async function ClaimPage({
             shopName={cardTitle(business)}
             cardName={cardShortName(business)}
             referral={referral}
+            bookingUrl={business.bookingUrl && /^https?:\/\/\S+$/i.test(business.bookingUrl) ? business.bookingUrl : null}
             ctaBg={text}
             ctaFg={primary}
           />

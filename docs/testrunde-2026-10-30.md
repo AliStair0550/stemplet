@@ -54,10 +54,10 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 
 | # | Punkt | Status |
 |---|---|---|
-| E1 | Kundesiden: "Har du en kode fra en ven" er ikke relevant; mangler en delingsknap | Venter |
-| E2 | Henvisning skal gå gennem kortet (link, ikke kode). Ingen kode vist, bare "Del" | Venter |
-| E3 | Efter henvisning mangler en call-to-action til booking | Venter |
-| E4 | Tilbud og fordele: vis hvor mange man har henvist | Venter |
+| E1 | Kundesiden: "Har du en kode fra en ven" er ikke relevant; mangler en delingsknap | Lavet (batch 7) |
+| E2 | Henvisning skal gå gennem kortet (link, ikke kode). Ingen kode vist, bare "Del" | Lavet (batch 7) |
+| E3 | Efter henvisning mangler en call-to-action til booking | Lavet (batch 7) |
+| E4 | Tilbud og fordele: vis hvor mange man har henvist | Lavet (batch 7) |
 
 ## F. Dashboardet
 

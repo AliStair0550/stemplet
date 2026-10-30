@@ -29,7 +29,7 @@ export async function loadReferralPassInfo(
   const code = cc.referralCode ?? (await assignReferralCode({ customerCardId: cc.id }, db).catch(() => null));
   if (!code) return null;
 
-  const [rule, rewards, lastRedeemed, referralsDone] = await Promise.all([
+  const [rule, rewards, lastRedeemed, referralsDone, referralsMade] = await Promise.all([
     db.referralRule.findUnique({
       where: { businessId: b.id },
       select: {
@@ -51,6 +51,8 @@ export async function loadReferralPassInfo(
       select: { redeemedAt: true },
     }),
     db.referral.count({ where: { referrerCardId: cc.id, status: "REWARDED" } }),
+    // Venner, der har hentet kortet via kunden (ogsaa dem, der ikke har vaeret der endnu).
+    db.referral.count({ where: { referrerCardId: cc.id, status: { in: ["CREATED", "VISITED", "REWARDED"] } } }),
   ]);
 
   // Besked kun naar seneste aendring var en ny beloenning (ikke en indloesning).
@@ -65,6 +67,7 @@ export async function loadReferralPassInfo(
     newCustomerReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "rabat",
     referrerReward: rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "en belønning",
     referralsDone,
+    referralsMade,
     rewards: rewards.map((r) => ({ type: r.type, value: r.value })),
     announce: newest > redeemed,
   };

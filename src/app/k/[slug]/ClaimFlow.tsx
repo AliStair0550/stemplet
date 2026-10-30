@@ -356,23 +356,22 @@ function ReferralPanel({
       className="flex w-full flex-col gap-3 rounded-2xl p-5 text-center"
       style={{ background: rgba(ctaBg, 0.1), border: `1px solid ${rgba(ctaBg, 0.2)}` }}
     >
-      <h2 className="text-[1.15rem] font-[500]">Henvis en ven</h2>
-      <p className="text-[0.88rem] font-[300] leading-relaxed" style={muted}>
-        Din ven får {newCustomerReward} ved første besøg. Du får {referrerReward}, når vennen har været her.
+      <h2 className="text-[1.15rem] font-[600]">Henvis en ven</h2>
+      <p className="text-[0.9rem] leading-relaxed" style={muted}>
+        Send dit link. Din ven får {newCustomerReward} ved første besøg, og du får {referrerReward}, når vennen har været her.
       </p>
-      <div className="rounded-xl py-3" style={{ background: rgba(ctaBg, 0.08) }}>
-        <span className="block text-[0.68rem] font-[500] uppercase tracking-[0.14em]" style={muted}>
-          Din kode
-        </span>
-        <span className="block text-[1.6rem] font-[600] tracking-[0.04em]">{me.code}</span>
-      </div>
+      {me.made > 0 ? (
+        <p className="text-[0.9rem] font-[600]">
+          {me.made} {me.made === 1 ? "ven har" : "venner har"} fået kortet via dig
+        </p>
+      ) : null}
       <button
         type="button"
         onClick={share}
         className="flex min-h-[3.25rem] w-full items-center justify-center rounded-2xl px-6 text-[0.95rem] font-medium shadow-lift transition-transform active:scale-[0.98]"
         style={{ backgroundColor: ctaBg, color: ctaFg }}
       >
-        {copied ? "Link kopieret" : "Del dit link"}
+        {copied ? "Link kopieret" : "Del med en ven"}
       </button>
       <button type="button" onClick={copy} className="text-[0.84rem] underline underline-offset-2 opacity-80">
         Kopiér link
@@ -383,48 +382,6 @@ function ReferralPanel({
         </p>
       ) : null}
     </section>
-  );
-}
-
-// "Har du en kode fra en ven?": aabner siden med koden (?k=), saa vennens
-// rabat vises og tilmeldingen registrerer henvisningen.
-function CodeEntry({ ctaBg, ctaFg }: { ctaBg: string; ctaFg: string }) {
-  const [open, setOpen] = useState(false);
-  const [code, setCode] = useState("");
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="text-[0.84rem] underline underline-offset-2 opacity-80" style={{ color: ctaBg }}>
-        Har du en kode fra en ven?
-      </button>
-    );
-  }
-  return (
-    <form
-      className="flex w-full gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const c = code.trim();
-        if (!c) return;
-        const u = new URL(window.location.href);
-        u.searchParams.set("k", c);
-        u.searchParams.set("via", "kode");
-        window.location.href = u.toString();
-      }}
-    >
-      <input
-        value={code}
-        onChange={(e) => setCode(e.target.value.toUpperCase())}
-        aria-label="Kode fra en ven"
-        placeholder="Fx EMMA-K7"
-        autoCapitalize="characters"
-        maxLength={20}
-        className="min-w-0 flex-1 rounded-xl px-4 py-3 text-[1rem] outline-none"
-        style={fieldStyle(ctaBg, ctaFg)}
-      />
-      <button type="submit" className="rounded-xl px-4 text-[0.9rem] font-medium" style={{ border: `1px solid ${rgba(ctaBg, 0.4)}`, color: ctaBg }}>
-        Brug
-      </button>
-    </form>
   );
 }
 
@@ -483,6 +440,7 @@ export function ClaimFlow({
   shopName,
   cardName,
   referral = null,
+  bookingUrl = null,
   // CTA-farver: passer til kortet. Standard = kortets tekstfarve som baggrund og
   // kortfarven som tekst, saa knappen altid harmonerer med brandet.
   ctaBg = "#F6EEE4",
@@ -495,6 +453,8 @@ export function ClaimFlow({
   cardName: string;
   /** Butikkens henvisninger (null = ingen). */
   referral?: { newCustomerReward: string; referrerReward: string; termsLine: string | null } | null;
+  /** Butikkens booking-link: "Book tid" efter kortet er hentet. */
+  bookingUrl?: string | null;
   ctaBg?: string;
   ctaFg?: string;
 }) {
@@ -789,6 +749,19 @@ export function ClaimFlow({
     return (
       <div className="flex w-full flex-col items-center gap-3">
         <WalletAddedNotice bg={ctaBg} fg={ctaFg} celebrate />
+        {bookingUrl ? (
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-2xl px-6 text-[0.95rem] font-semibold shadow-lift transition-transform active:scale-[0.98]"
+            style={{ backgroundColor: ctaBg, color: ctaFg }}
+          >
+            Book tid
+          </a>
+        ) : null}
+        {/* Kortet er hentet: nu kan kunden dele det med en ven. */}
+        {referralPanel}
         <a
           href={claimUrl}
           className="text-[0.8rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
@@ -920,7 +893,6 @@ export function ClaimFlow({
           setStage("recover");
         }}
       />
-        {referral && !friend ? <CodeEntry ctaBg={ctaBg} ctaFg={ctaFg} /> : null}
         {referral?.termsLine ? (
           <p className="text-center text-[0.8rem] font-[300]" style={{ color: rgba(ctaBg, 0.7) }}>
             {referral.termsLine}

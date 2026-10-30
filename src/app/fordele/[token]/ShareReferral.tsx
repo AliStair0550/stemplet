@@ -7,7 +7,9 @@ import { Confetti } from "@/components/Celebrate";
 // "100 kr." slutter allerede med punktum: undgaa "100 kr.." i en saetning.
 const end = (s: string) => (s.endsWith(".") ? s : `${s}.`);
 
-// Henvis en ven: koden, del-knappen (telefonens delemenu) og kopiér link. Naar
+// Henvis en ven: del-knappen (telefonens delemenu) med kundens personlige link
+// (koden ligger i linket, saa vennens rabat foelger med uden at skrive noget) og
+// hvor mange venner der har faaet kortet via kunden. Naar
 // kunden har delt, fejrer vi det: konfetti i butikkens farver og et "Sendt!"-kort,
 // der fortaeller, hvad der sker nu. Antal delinger huskes paa telefonen.
 export function ShareReferral({
@@ -17,6 +19,7 @@ export function ShareReferral({
   friendGift,
   yourReward,
   referralsDone,
+  referralsMade = 0,
   fg,
   bg,
 }: {
@@ -26,6 +29,8 @@ export function ShareReferral({
   friendGift: string;
   yourReward: string;
   referralsDone: number;
+  /** Venner, der har hentet kortet via kunden. */
+  referralsMade?: number;
   fg: string;
   bg: string;
 }) {
@@ -97,12 +102,15 @@ export function ShareReferral({
         Din ven får rabatten ved første besøg. Du får din belønning, når vennen har været her.
       </p>
 
-      <div className="w-full rounded-2xl py-3.5" style={{ background: rgba(fg, 0.1), border: `1.5px dashed ${rgba(fg, 0.35)}` }}>
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.14em]" style={muted}>
-          Din kode
-        </p>
-        <p className="text-[1.9rem] font-bold tracking-[0.1em]">{code}</p>
-      </div>
+      {referralsMade > 0 ? (
+        <div className="flex w-full items-center justify-center gap-3 rounded-2xl py-3" style={{ background: rgba(fg, 0.1) }}>
+          <span className="text-[2rem] font-bold leading-none tabular-nums">{referralsMade}</span>
+          <span className="text-left text-[0.9rem] leading-snug">
+            {referralsMade === 1 ? "ven har fået kortet via dig" : "venner har fået kortet via dig"}
+            {referralsDone > 0 ? <span className="block" style={muted}>{referralsDone} har været her</span> : null}
+          </span>
+        </div>
+      ) : null}
 
       {party > 0 ? (
         <div
@@ -118,27 +126,23 @@ export function ShareReferral({
         </div>
       ) : null}
 
-      <div className="flex w-full gap-2">
+      {/* Een stor knap: del linket (vennens rabat foelger med). Kopiér som lille alternativ. */}
+      <div className="flex w-full flex-col items-center gap-2">
         {canShare ? (
-          <button type="button" onClick={share} className={btn} style={{ background: fg, color: bg }}>
-            {party > 0 ? "Del med en til" : "Del"}
+          <button type="button" onClick={share} className={`${btn} w-full`} style={{ background: fg, color: bg }}>
+            {party > 0 ? "Del med en til" : "Del med en ven"}
           </button>
         ) : null}
         <button
           type="button"
           onClick={copy}
-          className={btn}
-          style={canShare ? { border: `1px solid ${rgba(fg, 0.35)}`, color: fg } : { background: fg, color: bg }}
+          className={canShare ? "py-1 text-[0.9rem] underline underline-offset-4" : `${btn} w-full`}
+          style={canShare ? { color: fg } : { background: fg, color: bg }}
         >
-          {copied ? "Kopieret" : "Kopiér link"}
+          {copied ? "Link kopieret" : "Kopiér link"}
         </button>
       </div>
 
-      {referralsDone > 0 ? (
-        <p className="text-[0.88rem] font-medium">
-          Du har allerede henvist {referralsDone} {referralsDone === 1 ? "ven" : "venner"}. Tak.
-        </p>
-      ) : null}
     </div>
   );
 }

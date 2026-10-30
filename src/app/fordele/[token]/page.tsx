@@ -52,6 +52,8 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
   const partners = liveOffers.filter((o) => o.kind === "PARTNER");
 
   const shop = cardTitle(b);
+  // Booking-link fra butikken (Design eller Regler): en tydelig "Book tid" oeverst.
+  const booking = b.bookingUrl && /^https?:\/\/\S+$/i.test(b.bookingUrl) ? b.bookingUrl : null;
   const fg = b.textColor;
   const bg = b.primaryColor;
   const icon: StampIconKey = isStampIcon(cc.card.stampIcon) ? cc.card.stampIcon : "coffee";
@@ -98,6 +100,21 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
           <p className="max-w-[18rem] text-[0.98rem] leading-snug" style={muted}>
             Tilbud og fordele til dig som kortholder hos {shop}.
           </p>
+          {booking ? (
+            <a
+              href={booking}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex min-h-[3.1rem] items-center justify-center gap-2 rounded-full px-7 text-[1rem] font-semibold transition-transform active:scale-[0.97]"
+              style={{ background: fg, color: bg }}
+            >
+              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3.5" y="5" width="17" height="15" rx="2.5" />
+                <path d="M3.5 10h17M8 3v4M16 3v4" />
+              </svg>
+              Book tid
+            </a>
+          ) : null}
         </header>
 
         {b.stampsEnabled ? (
@@ -253,6 +270,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
               friendGift={referral.newCustomerReward}
               yourReward={referral.referrerReward}
               referralsDone={referral.referralsDone}
+              referralsMade={referral.referralsMade ?? 0}
               fg={fg}
               bg={bg}
             />

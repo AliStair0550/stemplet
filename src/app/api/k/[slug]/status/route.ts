@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export type ShopStatus = {
   known: boolean;
-  me: { code: string; shareUrl: string; referred: boolean; rewards: string[] } | null;
+  me: { code: string; shareUrl: string; referred: boolean; rewards: string[]; made: number } | null;
   friend: { firstName: string | null } | null;
   invalidCode: boolean;
   /** Kundens eget link aabnet paa egen telefon. */
@@ -68,16 +68,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     // Kort fra foer henvisningerne (eller uden navn) faar en kode nu, saa
     // "Henvis en ven" altid virker for en kendt kunde.
     const code = visitor.referralCode ?? (await assignReferralCode({ customerCardId: visitor.id, name: visitor.name }));
-    const rewards = await prisma.reward.findMany({
-      where: { cardId: visitor.id, status: "AVAILABLE", expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: "asc" },
-      select: { type: true, value: true },
-    });
+    const [rewards, made] = await Promise.all([
+      prisma.reward.findMany({
+        where: { cardId: visitor.id, status: "AVAILABLE", expiresAt: { gt: new Date() } },
+        orderBy: { createdAt: "asc" },
+        select: { type: true, value: true },
+      }),
+      prisma.referral.count({ where: { referrerCardId: visitor.id, status: { in: ["CREATED", "VISITED", "REWARDED"] } } }),
+    ]);
     me = {
       code,
       shareUrl: referralShareUrl(APP_URL, slug, code),
       referred: visitor.referredByCardId !== null,
       rewards: rewards.map((r) => rewardPhrase(r.type, r.value)),
+      made,
     };
   }
 
