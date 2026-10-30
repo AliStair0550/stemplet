@@ -35,7 +35,7 @@ function shell(preheader: string, inner: string, footerExtra = ""): string {
   <tr><td align="center" style="padding:40px 20px;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
       <tr><td style="padding:0 4px 20px;">
-        <img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="86" height="48" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:26px;font-style:italic;color:${PLATFORM.color};">
+        <img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="50" height="28" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:26px;font-style:italic;color:${PLATFORM.color};">
       </td></tr>
       <tr><td style="background:${C.card};border-radius:20px;padding:36px 32px;">
         ${inner}
@@ -74,7 +74,7 @@ export function folkaSender(from: string | undefined): string | undefined {
 function folkaShell(preheader: string, inner: string, shopName?: string): string {
   const header = shopName
     ? `<span style="font-family:${FONT};font-size:20px;font-weight:700;letter-spacing:-.02em;color:${A.ink};">${shopName}</span>`
-    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="68" height="38" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
+    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="50" height="28" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
   return `<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:${A.bg};">
