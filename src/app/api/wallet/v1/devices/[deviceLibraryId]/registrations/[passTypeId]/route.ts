@@ -1,13 +1,16 @@
 import type { NextRequest } from "next/server";
 import { WALLET_ENABLED } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { changedSince } from "@/lib/wallet/registrations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Hent serienumre for pass, der er ændret siden sidst (til denne enhed).
+// Hent serienumre for pass, der er ændret siden sidst (til denne enhed). Kort
+// stakker paa samme passTypeIdentifier, saa uden filteret hentede enheden ALLE
+// sine kort igen ved hvert push.
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ deviceLibraryId: string; passTypeId: string }> },
 ) {
   if (!WALLET_ENABLED) return new Response(null, { status: 404 });
@@ -15,13 +18,13 @@ export async function GET(
 
   const regs = await prisma.walletRegistration.findMany({
     where: { deviceLibraryId },
-    include: { customerCard: { select: { serial: true, lastStampAt: true } } },
+    select: { customerCard: { select: { serial: true, passUpdatedAt: true } } },
   });
 
-  if (regs.length === 0) return new Response(null, { status: 204 });
-
-  return Response.json({
-    lastUpdated: String(Date.now()),
-    serialNumbers: regs.map((r) => r.customerCard.serial),
-  });
+  const result = changedSince(
+    regs.map((r) => r.customerCard),
+    req.nextUrl.searchParams.get("passesUpdatedSince"),
+  );
+  if (!result) return new Response(null, { status: 204 });
+  return Response.json(result);
 }

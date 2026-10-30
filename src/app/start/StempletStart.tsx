@@ -50,7 +50,6 @@ export function StempletStart() {
   const [reward, setReward] = useState("");
   const [stamps, setStamps] = useState(10);
   const [icon, setIcon] = useState<StampIconKey>("coffee");
-  const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -83,7 +82,6 @@ export function StempletStart() {
       const res = await createStampBusinessAction({
         name: businessName,
         email,
-        contactName,
         rewardText: reward,
         stampsRequired: stamps,
         stampIcon: icon,
@@ -229,15 +227,6 @@ export function StempletStart() {
                       autoComplete="email"
                     />
                   </label>
-                  <input
-                    className={inputCls}
-                    value={contactName}
-                    maxLength={80}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Dit navn (valgfrit)"
-                    autoComplete="name"
-                    aria-label="Navn"
-                  />
                 </div>
               </fieldset>
 

@@ -56,7 +56,7 @@ const HENVISNINGER_LINKS: NavLink[] = [
 const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
 const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, COMMS, { href: "/app/kunder", label: "Kunder" }];
 
-// "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
+// "Integrationer" (API/webhooks) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
   { href: "/app/plakat", label: "Plakat" },

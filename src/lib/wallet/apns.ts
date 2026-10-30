@@ -77,6 +77,11 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
     where: { customerCardId },
   });
   if (regs.length === 0) return;
+  // Marker kortet som aendret FOER pushet, saa enheden finder det, naar den
+  // spoerger "hvad er aendret siden sidst" (passesUpdatedSince).
+  await prisma.customerCard
+    .update({ where: { id: customerCardId }, data: { passUpdatedAt: new Date() } })
+    .catch(() => {});
   const { topic } = apnsConfig();
 
   let jwt: string;

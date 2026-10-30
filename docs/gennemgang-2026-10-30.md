@@ -98,5 +98,12 @@ Lavet: punkt 1 (pris), 2-7, 11-17, 20-23, 26 og udvalgte P2. Godkendt og lavet: 
 
 - Pushbesked, når kortet er fuldt: "Din belønning er klar. Vis kortet ved kassen."
 - Ét samlet "Del kortet" i menuen med QR, link, plakat og visitkort.
-- Afventer svar: ét tryk til Wallet, server-redirect på henvisningslink, Wallet "siden sidst" (migration), navnefelt i oprettelsen, ny butik nr. 2 til Hjem.
+- Ét tryk fra formular til Wallet (test på iPhone først).
+- Henvisningslink direkte til butikken (server-redirect).
+- Fejr butikkens første stempel nogensinde.
+- "Kortets navn" flyttes fra Regler til Design.
+- Oprydning: overflødige indeks og dobbelt log-række pr. stempel.
+- Stripe: fjern eller behold.
+
+Bygget 30. oktober (anden runde): navnefelt fjernet i oprettelsen, ny butik nr. 2 lander på Hjem, Wallet henter kun ændrede kort, let kald mens kunden venter på Wallet.
 - Hastighed uden adfærdsændring: delt APNs-forbindelse, mindre data pr. stempel og pr. dashboard-kald, cache af kortopslag på Hjem.

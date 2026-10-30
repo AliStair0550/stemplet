@@ -29,7 +29,6 @@ export function HenvisningerStart() {
   const [businessName, setBusinessName] = useState("");
   const [friend, setFriend] = useState("");
   const [referrer, setReferrer] = useState("");
-  const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -62,7 +61,6 @@ export function HenvisningerStart() {
       const res = await createReferralBusinessAction({
         name: businessName,
         email,
-        contactName,
         friendReward: friend,
         referrerReward: referrer,
         acceptedTerms,
@@ -164,15 +162,6 @@ export function HenvisningerStart() {
                     placeholder="din@mail.dk"
                     autoComplete="email"
                     aria-label="E-mail"
-                  />
-                  <input
-                    className={inputCls}
-                    value={contactName}
-                    maxLength={80}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Dit navn (valgfrit)"
-                    autoComplete="name"
-                    aria-label="Navn"
                   />
                 </div>
               </fieldset>
