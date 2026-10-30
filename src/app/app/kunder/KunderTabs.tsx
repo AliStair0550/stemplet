@@ -1,20 +1,20 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Kunder, Pushbeskeder og Kampagner hoerer sammen: det er maaderne, man taler med
-// kunderne og giver dem en grund til at komme igen. Kampagner kraever stempler.
+// Kunder og Kampagner hoerer sammen: kampagner giver kunderne en grund til at
+// komme igen. Kampagner kraever stempler; uden dem vises ingen faner.
 export function KunderTabs({
   active,
   showCampaigns,
 }: {
-  active: "kunder" | "beskeder" | "kampagner";
+  active: "kunder" | "kampagner";
   showCampaigns: boolean;
 }) {
   const tabs = [
     { key: "kunder", href: "/app/kunder", label: "Kunder" },
-    { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder" },
     ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner" } as const] : []),
   ] as const;
+  if (tabs.length < 2) return null;
   return (
     <nav aria-label="Kunder" className="mb-6 flex w-fit rounded-full bg-[#F2F5F9] p-1">
       {tabs.map((t) => (

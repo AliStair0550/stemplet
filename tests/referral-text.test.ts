@@ -109,13 +109,9 @@ test("wallet: forsiden viser kode og til gode, altid begge felter", () => {
   assert.equal(f[1]!.changeMessage, undefined);
 });
 
-test("wallet: besked kun ved en ny belønning, og ambassadøren får 'din ven'-beskeden", () => {
+test("wallet: ingen notifikation ved en ny belønning (kun pushbeskeder giver notifikation)", () => {
   const rewards = [{ type: "AMOUNT" as const, value: "100" }];
-  const amb = referralFrontFields(info({ rewards, announce: true, referralsDone: 1 }))[1]!;
-  assert.equal(amb.changeMessage, "Din ven har været her. Du har nu %@ til gode.");
-  const ny = referralFrontFields(info({ rewards, announce: true }))[1]!;
-  assert.equal(ny.changeMessage, "Du har nu %@ til gode.");
-  // Efter en indløsning: ingen besked.
+  assert.equal(referralFrontFields(info({ rewards, announce: true, referralsDone: 1 }))[1]!.changeMessage, undefined);
   assert.equal(referralFrontFields(info({ rewards, announce: false }))[1]!.changeMessage, undefined);
 });
 
@@ -158,7 +154,7 @@ test("wallet uden Stemplet: koden er primaerfelt, vennens rabat og til gode unde
     ],
   );
   // Beskeden ved en ny beloenning foelger med, som paa stempelkortet.
-  assert.match(f.secondary[1]!.changeMessage ?? "", /%@/);
+  assert.equal(f.secondary[1]!.changeMessage, undefined);
 });
 
 import { referralSummaryLine } from "../src/lib/overview-text";

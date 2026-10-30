@@ -50,6 +50,10 @@ export function owedLabel(rewards: ReferralPassInfo["rewards"]): string {
  * vise en besked, naar vaerdien stiger (en besked kraever et felt, der skifter
  * vaerdi). Beskeden saettes kun ved en ny beloenning, aldrig ved en indloesning.
  */
+// Notifikationer kommer kun fra butikkens egne pushbeskeder (Ali 2026-10-30).
+// Kortet opdateres stadig tavst; saet til true for at faa "til gode"-beskeden tilbage.
+const REFERRAL_PUSH_MESSAGES = false;
+
 export function referralFrontFields(info: ReferralPassInfo): PassField[] {
   const owed: PassField = {
     key: "ref-owed",
@@ -57,7 +61,7 @@ export function referralFrontFields(info: ReferralPassInfo): PassField[] {
     value: owedLabel(info.rewards),
     textAlignment: "PKTextAlignmentRight",
   };
-  if (info.announce && info.rewards.length > 0) {
+  if (REFERRAL_PUSH_MESSAGES && info.announce && info.rewards.length > 0) {
     owed.changeMessage =
       info.referralsDone > 0
         ? "Din ven har været her. Du har nu %@ til gode."
