@@ -5,6 +5,7 @@ import type { StampIconKey } from "@/lib/brand";
 import { PLATFORM } from "@/lib/platform";
 import { CARDS, MemberCard, type MemberCardData } from "./MemberCard";
 import { Story } from "./Story";
+import { LiveStamps } from "./LiveStamps";
 import "./kundekort.css";
 
 // Folka Kort: forsiden paa kort.folka.dk. Navnet er "Folka Kort" (altid stort K);
@@ -180,7 +181,7 @@ function SectionHead({ title, text, light = true }: { title: React.ReactNode; te
 
 function StorySection() {
   return (
-    <section id="historien" className="scroll-mt-4 bg-[#F2F5F9] pt-24 sm:pt-32">
+    <section id="historien" className="scroll-mt-4 bg-[#F2F5F9] pb-10 pt-24 sm:pt-32 lg:pb-32">
       <SectionHead
         title={
           <>
@@ -264,22 +265,16 @@ function Features() {
       />
       <div className="mx-auto mt-14 grid max-w-[1100px] gap-4 px-4 sm:px-6 md:grid-cols-6">
         <Tile icon="star" title="Stempler" text="Du vælger antal og belønning. Kunden ser kortet fyldes og kommer igen." className="md:col-span-3">
-          <div className="grid grid-cols-10 gap-1.5" aria-hidden>
-            {Array.from({ length: 10 }, (_, i) => (
-              <span key={i} className={`grid aspect-square place-items-center rounded-full ${i < 7 ? "bg-[#061C3D] text-white" : "border-[1.5px] border-[#CAD2DD]"}`}>
-                {i < 7 ? <StampIcon icon="coffee" className="h-[55%] w-[55%]" /> : null}
-              </span>
-            ))}
-          </div>
+          <LiveStamps />
         </Tile>
         <Tile icon="heart" title="Henvisninger" text="Vennen får rabat første gang. Kunden får en belønning. Du får en ny kunde." className="md:col-span-3">
           <div className="flex flex-wrap items-center gap-2" aria-hidden>
-            <span className="rounded-full bg-[#061C3D] px-4 py-2 font-mono text-[14px] font-semibold tracking-wider text-white">EMMA-K7</span>
-            <span className="text-[#8D98A8]">→</span>
-            <span className="rounded-full bg-[#E8F0FB] px-4 py-2 text-[14px] font-semibold text-[#1B5EAE]">Louise: 25 kr. rabat</span>
+            <span className="rounded-full bg-[#061C3D] px-4 py-2 text-[14px] font-semibold text-white">Karoline</span>
+            <span className="text-[14px] text-[#8D98A8]">giver</span>
+            <span className="rounded-full bg-[#E8F0FB] px-4 py-2 text-[14px] font-semibold text-[#1B5EAE]">Louise 100 kr. rabat</span>
           </div>
         </Tile>
-        <Tile icon="sparkle" title="Direkte beskeder" text="Din besked på kundens låseskærm. Uden mailliste og uden annoncer." className="md:col-span-2" />
+        <Tile icon="sparkle" title="Direkte beskeder" text="Din besked direkte på kundens låseskærm." className="md:col-span-2" />
         <Tile icon="gift" title="Særlige rabatter" text="Tilbud kun for kortholdere og rabatter hos dine samarbejdspartnere." className="md:col-span-2" />
         <Tile icon="hand" title="Ét scan ved kassen" text="Stempel, rabat og belønning på samme skærm. Klaret på få sekunder." className="md:col-span-2" />
         <Tile icon="book" title="Plakater og visitkort" text="Din QR-kode klar til print. Hæng den op i dag." className="md:col-span-2" />
