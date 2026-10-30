@@ -56,8 +56,8 @@ function svgFor(i: ArtworkInput, s: number): string {
     }
     return `${open}<rect width="100%" height="100%" fill="${bg}"/>${cells}</svg>`;
   }
-  // Farve: butikkens farve med et blidt lys oeverst.
-  return `${open}<defs><radialGradient id="g" cx="0.2" cy="0.1" r="0.9"><stop offset="0" stop-color="${fg}" stop-opacity="0.1"/><stop offset="1" stop-color="${fg}" stop-opacity="0"/></radialGradient></defs><rect width="100%" height="100%" fill="${bg}"/><rect width="100%" height="100%" fill="url(#g)"/></svg>`;
+  // Farve: hele kortet i butikkens farve (ensfarvet, ingen lys-effekt).
+  return `${open}<rect width="100%" height="100%" fill="${bg}"/></svg>`;
 }
 
 async function photoAt(i: ArtworkInput, s: number): Promise<Buffer> {

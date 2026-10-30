@@ -309,6 +309,7 @@ export function KortetEditor({
             primaryColor={design.primaryColor}
             textColor={design.textColor}
             logoUrl={design.logoUrl ?? null}
+            header={design.cardHeader}
             name={design.displayName?.trim() || businessName}
             stampIcon={design.stampIcon}
             stampsRequired={design.stampsRequired}

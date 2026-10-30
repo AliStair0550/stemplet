@@ -4,7 +4,7 @@ import { StampCard } from "./StampCard";
 import { StampIcon } from "./StampIcon";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { photoPalette, type StampIconKey } from "@/lib/brand";
-import { CARD_ACTION_LABEL, type CardAction, type CardStyle } from "@/lib/card-look";
+import { CARD_ACTION_LABEL, headerShows, type CardAction, type CardStyle } from "@/lib/card-look";
 
 // Forhaandsvisning af Wallet-kortet i dashboardet (siden Kortet): plakatkortet
 // paa iOS 27 og det klassiske kort, som aeldre iPhones faar. Viser butikkens
@@ -19,6 +19,8 @@ export type WalletCardPreviewProps = {
   primaryColor: string;
   textColor: string;
   logoUrl: string | null;
+  /** Oeverst paa kortet: logo, navn eller begge (standard: logo, ellers navn). */
+  header?: string;
   name: string;
   stampIcon: StampIconKey;
   stampsRequired: number;
@@ -104,18 +106,20 @@ function Poster(p: WalletCardPreviewProps) {
   const header = stamps
     ? { label: "Stempler", value: `${n}/${p.stampsRequired}` }
     : { label: "Til gode", value: owed };
+  const shows = headerShows(p.header, !!p.logoUrl);
   return (
     <div
       className="relative isolate aspect-[300/430] w-full max-w-[300px] overflow-hidden rounded-[18px] shadow-[0_24px_60px_-28px_rgba(0,0,0,0.5)]"
       style={{ ...artworkStyle(p), color: fg }}
     >
       <div className="flex items-start justify-between gap-3 px-4 pt-4">
-        {p.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.logoUrl} alt="" className="h-[30px] w-auto max-w-[126px] object-contain object-left" />
-        ) : (
-          <span className="truncate text-[15px] font-extrabold tracking-[-0.02em]">{p.name}</span>
-        )}
+        <div className="flex min-w-0 items-center gap-2">
+          {shows.logo && p.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.logoUrl} alt="" className="h-[30px] w-auto max-w-[126px] shrink-0 object-contain object-left" />
+          ) : null}
+          {shows.name ? <span className="truncate text-[15px] font-extrabold tracking-[-0.02em]">{p.name}</span> : null}
+        </div>
         <div className="text-right">
           <Field label={header.label} value={header.value} />
         </div>

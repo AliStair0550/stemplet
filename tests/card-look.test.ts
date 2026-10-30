@@ -27,3 +27,13 @@ test("eget billede: lyst tema faar lys tekst paa fotoet, moerkt tema er uaendret
   assert.deepEqual(photoPalette("#EFEBE3", "#1E2633"), { primaryColor: "#1E2633", textColor: "#EFEBE3" });
   assert.deepEqual(photoPalette("#061C3D", "#EAF1FB"), { primaryColor: "#061C3D", textColor: "#EAF1FB" });
 });
+
+import { headerShows } from "../src/lib/card-look";
+
+test("oeverst paa kortet: logo, navn eller begge; uden logo altid navnet", () => {
+  assert.deepEqual(headerShows("logo", true), { logo: true, name: false });
+  assert.deepEqual(headerShows("name", true), { logo: false, name: true });
+  assert.deepEqual(headerShows("both", true), { logo: true, name: true });
+  assert.deepEqual(headerShows("logo", false), { logo: false, name: true });
+  assert.deepEqual(headerShows(undefined, true), { logo: true, name: false });
+});

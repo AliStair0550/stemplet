@@ -141,3 +141,14 @@ test("fravalgs-linket for pushbeskeder kan ikke forfalskes", () => {
   assert.equal(verifyNewsOptOutToken(t.replace("ABC123", "XYZ999")), null, "andet kort, samme signatur");
   assert.equal(verifyNewsOptOutToken("ABC123"), null);
 });
+
+import { memberToken, verifyMemberToken } from "../src/lib/member-link";
+
+test("fordele-linket kan ikke forfalskes og er ikke det samme som fravalgs-linket", () => {
+  process.env.AUTH_SECRET ||= "test-secret";
+  const t = memberToken("ABC123");
+  assert.equal(verifyMemberToken(t), "ABC123");
+  assert.equal(verifyMemberToken("ABC123.forkert"), null);
+  assert.equal(verifyMemberToken(t.replace("ABC123", "XYZ999")), null, "andet kort, samme signatur");
+  assert.equal(verifyMemberToken(newsOptOutToken("ABC123")), null, "fravalgs-tokenet aabner ikke fordele");
+});

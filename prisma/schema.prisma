@@ -91,6 +91,8 @@ model Business {
   cardArtwork        String?
   /// Knapper paa kortet (iOS 27, hoejst to): "book" | "henvis" | "beloenninger".
   cardActions        String[]  @default([])
+  /// Oeverst paa kortet: "logo" (logo, ellers navn), "name" eller "both".
+  cardHeader         String    @default("logo")
   // Butikkens eget booking-link (fx Planway), vist som "Book tid" paa
   // henvisningssiden efter tilmelding. Null = knappen skjules.
   bookingUrl         String?

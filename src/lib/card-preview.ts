@@ -27,6 +27,7 @@ export async function loadCardPreview(business: Business): Promise<Omit<WalletCa
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     logoUrl: business.logoUrl,
+    header: business.cardHeader,
     name: cardTitle(business),
     stampIcon: (card?.stampIcon as StampIconKey) ?? "coffee",
     stampsRequired: card?.stampsRequired ?? 10,

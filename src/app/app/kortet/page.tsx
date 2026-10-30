@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import type { CardDesign } from "@/components/CardDesigner";
 import type { StampIconKey } from "@/lib/brand";
-import { effectiveStyle, normalizeActions, type CardLookContext } from "@/lib/card-look";
+import { effectiveStyle, isCardHeader, normalizeActions, type CardLookContext } from "@/lib/card-look";
 import { rewardPhrase } from "@/lib/referral-text";
 import { KortetEditor } from "./KortetEditor";
 
@@ -33,6 +33,7 @@ export default async function KortetPage() {
     textColor: business.textColor,
     logoUrl: business.logoUrl,
     logoScale: business.logoScale,
+    cardHeader: isCardHeader(business.cardHeader) ? business.cardHeader : "logo",
     terms: card?.terms ?? null,
     displayName: business.displayName,
   };

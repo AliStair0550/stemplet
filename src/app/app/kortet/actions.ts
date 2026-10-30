@@ -68,6 +68,7 @@ export async function saveCardLook(input: {
       logoUrl: parsed.data.logoUrl ?? null,
       logoScale: parsed.data.logoScale,
       displayName: parsed.data.displayName?.trim() || null,
+      ...(parsed.data.cardHeader ? { cardHeader: parsed.data.cardHeader } : {}),
       cardStyle: input.style,
       ...(artwork !== undefined ? { cardArtwork: artwork } : {}),
       cardActions: actions,
