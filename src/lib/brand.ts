@@ -46,6 +46,12 @@ export type StampIconKey =
   | "candle"
   | "leaf"
   | "paw"
+  | "dumbbell"
+  | "car"
+  | "glasses"
+  | "shirt"
+  | "book"
+  | "bike"
   | "gift"
   | "heart"
   | "star"
@@ -53,7 +59,7 @@ export type StampIconKey =
   | "custom";
 
 // Raekkefoelgen styrer designerens ikon-gitter: foerst mad og drikke, saa
-// skoenhed, massage/spa og butik, til sidst de generelle. Bredt nok til alle vores brancher,
+// skoenhed, massage/spa, butik og service (traening, bil, optiker, toej, bog, cykel), til sidst de generelle. Bredt nok til alle vores brancher,
 // saa hver forretning kan finde et ikon der passer.
 export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "coffee", label: "Kaffekop" },
@@ -90,6 +96,12 @@ export const STAMP_ICONS: { key: StampIconKey; label: string }[] = [
   { key: "candle", label: "Stearinlys" },
   { key: "leaf", label: "Blad" },
   { key: "paw", label: "Pote" },
+  { key: "dumbbell", label: "Håndvægt" },
+  { key: "car", label: "Bil" },
+  { key: "glasses", label: "Briller" },
+  { key: "shirt", label: "Skjorte" },
+  { key: "book", label: "Bog" },
+  { key: "bike", label: "Cykel" },
   { key: "gift", label: "Gave" },
   { key: "heart", label: "Hjerte" },
   { key: "star", label: "Stjerne" },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireStampsBusiness } from "@/lib/session";
-import { getBusinessStats, type BusinessStats } from "@/lib/stats";
+import { getBusinessStats, getRecentActivity, type BusinessStats } from "@/lib/stats";
+import { RecentActivity } from "@/components/RecentActivity";
 import { PageHeading, StatTile, Panel } from "@/components/dash";
 import { BarChart } from "@/components/BarChart";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
@@ -68,7 +69,7 @@ function summarize(stats: BusinessStats): { headline: string; body: string } {
 
 export default async function StatistikPage() {
   const { business } = await requireStampsBusiness();
-  const stats = await getBusinessStats(business.id);
+  const [stats, activity] = await Promise.all([getBusinessStats(business.id), getRecentActivity(business.id, 8)]);
   const started = stats.totalCustomers > 0;
   const summary = summarize(stats);
 
@@ -136,6 +137,10 @@ export default async function StatistikPage() {
 
       <div className="mt-6">
         <FullStats stats={stats} />
+      </div>
+
+      <div className="mt-10">
+        <RecentActivity activity={activity} />
       </div>
     </>
   );

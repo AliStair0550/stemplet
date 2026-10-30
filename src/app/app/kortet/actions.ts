@@ -8,7 +8,6 @@ import { prisma } from "@/lib/prisma";
 import { cardDesignSchema } from "@/lib/validation";
 import { isCardStyle, normalizeActions } from "@/lib/card-look";
 import { processArtwork, ArtworkError } from "@/lib/card-artwork";
-import { parseCardName } from "@/lib/card-name";
 import type { CardDesign } from "@/components/CardDesigner";
 
 type Result = { ok: true } | { ok: false; error: string };
@@ -23,16 +22,11 @@ export async function saveCardLook(input: {
   /** Nyt billede (data-URI), "keep" = behold det gemte, null = fjern. */
   artwork: string | "keep" | null;
   actions: string[];
-  /** Kortets korte navn til knappen; tomt = automatisk. */
-  cardName?: string;
 }): Promise<Result> {
   const { business } = await requireBusiness();
   const parsed = cardDesignSchema.safeParse(input.design);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Tjek felterne." };
   if (!isCardStyle(input.style)) return { ok: false, error: "Vælg en stil." };
-  const cardName = parseCardName(input.cardName);
-  if (!cardName.ok) return { ok: false, error: cardName.error };
-
   let artwork: string | null | undefined;
   if (input.artwork === "keep") artwork = undefined;
   else if (input.artwork === null) artwork = null;
@@ -77,7 +71,6 @@ export async function saveCardLook(input: {
       cardStyle: input.style,
       ...(artwork !== undefined ? { cardArtwork: artwork } : {}),
       cardActions: actions,
-      ...(input.cardName !== undefined ? { cardName: cardName.value } : {}),
     },
   });
 

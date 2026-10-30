@@ -50,10 +50,10 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
           <Link href="/app/plakat" className="font-[500] text-white underline underline-offset-4">
             Lav en plakat
           </Link>
-          {/* PDF-download (en fil, ikke en side), derfor <a download>. */}
-          <a href="/api/qr-print/visitkort" download className="font-[500] text-white underline underline-offset-4">
-            Download visitkort
-          </a>
+          {/* Visitkort designes foerst og hentes derefter som PDF. */}
+          <Link href="/app/visitkort" className="font-[500] text-white underline underline-offset-4">
+            Visitkort
+          </Link>
         </div>
         <p className="mt-5 text-[0.82rem] leading-relaxed text-white/45">
           Instagram og Facebook åbner links i deres egen browser, hvor kortet ikke kan lægges i Wallet. Brug derfor
