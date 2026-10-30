@@ -123,10 +123,11 @@ export function monthStartCopenhagen(now: Date): Date {
   return new Date(guess - tzOffsetMs(new Date(guess)));
 }
 
-/** amount/stamps skal vaere et positivt heltal; service en ikke-tom tekst. */
+/** amount/stamps skal vaere et positivt heltal, procent 1-100; service en ikke-tom tekst. */
 export function isValidRewardValue(type: RewardType, value: string): boolean {
   const v = value.trim();
   if (type === "SERVICE") return v.length > 0 && v.length <= 80;
+  if (type === "PERCENT") return /^[1-9]\d?$|^100$/.test(v);
   return /^[1-9]\d{0,5}$/.test(v);
 }
 

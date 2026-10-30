@@ -202,25 +202,12 @@ export default async function ClaimPage({
               style={{ height: `${4 * capScale}rem`, maxWidth: "min(60vw, 14rem)" }}
             />
           ) : null}
-          <div className="flex flex-col gap-2">
-            <h1
-              className="font-[300] text-[1.5rem] leading-tight"
-              style={{ color: text }}
-            >
-              Dit kort hos {cardTitle(business)}
-            </h1>
-            <p
-              className="mx-auto max-w-xs font-[300] text-[0.92rem] leading-relaxed"
-              style={{ color: rgba(text, 0.72) }}
-            >
-              {business.stampsEnabled
-                ? `${card.rewardText}.`
-                : referral
-                  ? `Din ven får ${referral.newCustomerReward} ved første besøg.`
-                  : ""}{" "}
-              Ingen app. Kun navn og e-mail.
-            </p>
-          </div>
+          <h1
+            className="font-[300] text-[1.5rem] leading-tight"
+            style={{ color: text }}
+          >
+            Dit kort hos {cardTitle(business)}
+          </h1>
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}

@@ -10,7 +10,7 @@ import { clientIp } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { buildStripImages } from "@/lib/wallet/strip";
 import { isStampIcon, contrastRatio } from "@/lib/brand";
-import { headlineFromParam, focusFromParam, posterFootline } from "@/lib/materials";
+import { headlineFromParam, focusFromParam, posterFootline, posterRewardLine } from "@/lib/materials";
 import { cardShortName, claimCta } from "@/lib/card-name";
 import { rewardPhrase } from "@/lib/referral-text";
 import { MaterialsPdf, type MaterialTier } from "./Doc";
@@ -46,7 +46,6 @@ const FORMATS: Record<
 };
 
 // Afslut en saetning med punktum, men ikke to ("100 kr." + ".").
-const sentence = (t: string) => (t.endsWith(".") ? t : `${t}.`);
 
 const withCard = {
   cards: { take: 1, orderBy: { createdAt: "asc" as const } },
@@ -111,16 +110,16 @@ export async function GET(
   const light = sp.get("bg") === "lys";
   // Eget billede fra Design som baggrund (kun naar butikken har et).
   const photo = sp.get("bg") === "billede" && business.cardArtwork ? business.cardArtwork : null;
-  const showGridOpt = sp.get("stempler") !== "0" && focus === "kort";
+  const showGridOpt = sp.get("stempler") !== "0" && focus === "kort" && business.stampsEnabled;
   const fallbackHeadline =
     focus === "henvis" ? "Henvis en ven" : claimCta(cardShortName(business));
   const headline = sp.get("titel")?.trim() ? headlineFromParam(sp.get("titel")) : fallbackHeadline;
-  const rewardLine =
-    focus === "henvis"
-      ? rule
-        ? `${sentence(`Din ven får ${rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue)}`)} ${sentence(`Du får ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`)}`
-        : ""
-      : (card?.rewardText ?? "");
+  const referralOn = business.referralsEnabled && rule;
+  const rewardLine = posterRewardLine(focus, {
+    stampReward: business.stampsEnabled ? (card?.rewardText ?? null) : null,
+    friendReward: referralOn ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : null,
+    referrerReward: referralOn ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : null,
+  });
 
   // Oploeste side-farver. Farvet: kortets egne farver. Lys: blaeksparende
   // parchment med en laesbar moerk tekst (kortets farve hvis den staar klart paa

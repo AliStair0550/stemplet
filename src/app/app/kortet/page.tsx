@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import type { CardDesign } from "@/components/CardDesigner";
 import type { StampIconKey } from "@/lib/brand";
-import { effectiveStyle, normalizeActions, suggestedActions, type CardLookContext } from "@/lib/card-look";
+import { effectiveStyle, normalizeActions, type CardLookContext } from "@/lib/card-look";
 import { rewardPhrase } from "@/lib/referral-text";
 import { KortetEditor } from "./KortetEditor";
 
@@ -36,8 +36,8 @@ export default async function KortetPage() {
     terms: card?.terms ?? null,
     displayName: business.displayName,
   };
-  // Har butikken endnu ikke valgt knapper, foreslaar vi dem ud fra opsaetningen.
-  const actions = business.cardActions.length > 0 ? normalizeActions(business.cardActions, ctx) : suggestedActions(ctx);
+  // Kun de knapper, der rent faktisk er paa kortet (ingen valgt = ingen knapper).
+  const actions = normalizeActions(business.cardActions, ctx);
 
   return (
     <>

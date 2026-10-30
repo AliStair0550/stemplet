@@ -76,7 +76,7 @@ export default async function StatistikPage() {
     <>
       <PageHeading
         title="Statistik"
-        subtitle="Dit overblik på ét sted, med en kort konklusion øverst."
+        subtitle="Dit overblik over stempler og kunder."
         action={
           <a
             href="/api/export/csv"
@@ -90,10 +90,7 @@ export default async function StatistikPage() {
       {started ? (
         <div className="mb-6 overflow-hidden rounded-lg border border-terracotta/30 bg-terracotta/[0.06]">
           <div className="flex flex-col gap-2 p-6 md:p-7">
-            <span className="text-label font-[400] uppercase tracking-[0.14em] text-terracotta">
-              Kort fortalt
-            </span>
-            <h2 className="font-fraunces text-[1.5rem] font-light italic text-ink">
+            <h2 className="text-[1.35rem] font-semibold tracking-[-0.02em] text-ink">
               {summary.headline}
             </h2>
             <p className="max-w-2xl font-[300] text-[0.95rem] leading-relaxed text-stone">
@@ -151,12 +148,9 @@ function FullStats({ stats }: { stats: BusinessStats }) {
 
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <Panel>
-          <h2 className="mb-1 text-label font-[400] uppercase tracking-[0.14em] text-slate">
+          <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
             Stempler seneste 7 dage
           </h2>
-          <p className="mb-4 text-[0.74rem] font-[300] text-stone">
-            Faktiske stempler givet pr. dag.
-          </p>
           <BarChart
             data={stats.perDay.slice(-7).map((d) => ({
               label: d.label,
@@ -166,12 +160,9 @@ function FullStats({ stats }: { stats: BusinessStats }) {
           />
         </Panel>
         <Panel>
-          <h2 className="mb-1 text-label font-[400] uppercase tracking-[0.14em] text-slate">
+          <h2 className="mb-4 text-label font-[400] uppercase tracking-[0.14em] text-slate">
             Nye kunder seneste 7 dage
           </h2>
-          <p className="mb-4 text-[0.74rem] font-[300] text-stone">
-            Nye kort hentet pr. dag.
-          </p>
           <BarChart
             data={stats.newPerDay.slice(-7).map((d) => ({
               label: d.label,

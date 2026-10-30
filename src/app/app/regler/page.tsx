@@ -83,7 +83,6 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
             />
           ))}
         </div>
-        <p className="mt-3 text-[0.82rem] text-slate">Flere funktioner er på vej. De lægges på det samme kort.</p>
       </section>
 
       {active ? (

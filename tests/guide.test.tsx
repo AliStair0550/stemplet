@@ -58,3 +58,9 @@ test("dobbeltstempel vises naar kampagnen er aktiv", () => {
   );
   assert.match(html, /Dobbeltstempel kører/);
 });
+
+test("guiden viser servicenummeret som et link", () => {
+  const html = renderToStaticMarkup(<GuideContent data={sample} />);
+  assert.ok(html.includes('href="tel:+4560516538"'));
+  assert.ok(html.includes("+45 60 51 65 38"));
+});

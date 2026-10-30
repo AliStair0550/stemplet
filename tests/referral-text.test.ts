@@ -12,6 +12,7 @@ const NBSP = " ";
 
 test("beloenning: beloeb og stempler med haardt mellemrum", () => {
   assert.equal(rewardPhrase("AMOUNT", "100"), `100${NBSP}kr.`);
+  assert.equal(rewardPhrase("PERCENT", "20"), `20${NBSP}% rabat`);
   assert.equal(rewardPhrase("STAMPS", "3"), `3${NBSP}stempler`);
   assert.equal(rewardPhrase("STAMPS", "1"), `1${NBSP}stempel`);
 });
@@ -179,6 +180,8 @@ test("oprettelse: beloenning som fri tekst bliver beloeb eller behandling", () =
   assert.deepEqual(parseRewardInput("100 kr. rabat"), { type: "AMOUNT", value: "100" });
   assert.deepEqual(parseRewardInput("75"), { type: "AMOUNT", value: "75" });
   assert.deepEqual(parseRewardInput("gratis vask"), { type: "SERVICE", value: "gratis vask" });
-  assert.deepEqual(parseRewardInput("10 % rabat"), { type: "SERVICE", value: "10 % rabat" });
+  assert.deepEqual(parseRewardInput("10 % rabat"), { type: "PERCENT", value: "10" });
+  assert.deepEqual(parseRewardInput("20%"), { type: "PERCENT", value: "20" });
+  assert.deepEqual(parseRewardInput("150 %"), { type: "SERVICE", value: "150 %" });
   assert.equal(parseRewardInput("   "), null);
 });

@@ -7,10 +7,11 @@ import type { RewardType } from "@prisma/client";
 // Haardt mellemrum, saa "100 kr." aldrig knaekker over to linjer.
 const NBSP = "\u00A0";
 
-/** "100 kr.", "3 stempler", "1 stempel" eller servicen selv ("gratis klip"). */
+/** "100 kr.", "20 % rabat", "3 stempler", "1 stempel" eller servicen selv ("gratis klip"). */
 export function rewardPhrase(type: RewardType, value: string): string {
   const v = value.trim();
   if (type === "AMOUNT") return `${v}${NBSP}kr.`;
+  if (type === "PERCENT") return `${v}${NBSP}% rabat`;
   if (type === "STAMPS") return v === "1" ? `1${NBSP}stempel` : `${v}${NBSP}stempler`;
   // Fri tekst midt i en saetning: lille forbogstav ("Gratis klip" -> "gratis
   // klip"), men ikke for forkortelser ("SPA-behandling" bliver staaende).
@@ -36,14 +37,16 @@ export function referralShareText(shopName: string, newCustomerReward: string): 
 
 /**
  * Fortolker en beloenning skrevet som fri tekst ved oprettelsen: "150 kr.",
- * "1.000 kr", "200,-" og "100 kr. rabat" bliver et beloeb; alt andet ("gratis
- * vask") en behandling. Tom tekst giver null.
+ * "1.000 kr", "200,-" og "100 kr. rabat" bliver et beloeb; "20 %" og "20% rabat"
+ * en procentrabat; alt andet ("gratis vask") en behandling. Tom tekst giver null.
  */
-export function parseRewardInput(raw: string): { type: "AMOUNT" | "SERVICE"; value: string } | null {
+export function parseRewardInput(raw: string): { type: "AMOUNT" | "PERCENT" | "SERVICE"; value: string } | null {
   const t = raw.trim().replace(/\s+/g, " ");
   if (!t) return null;
   const n = t.replace(/(\d)\.(\d{3})(?!\d)/g, "$1$2");
   const m = /^(\d{1,6})\s*(kr\.?|kroner|dkk|,-)?(\s+(i\s+)?rabat)?$/i.exec(n);
   if (m && /^[1-9]/.test(m[1]!)) return { type: "AMOUNT", value: m[1]! };
+  const pct = /^([1-9]\d?|100)\s*(%|procent)(\s+(i\s+)?rabat)?$/i.exec(t);
+  if (pct) return { type: "PERCENT", value: pct[1]! };
   return { type: "SERVICE", value: t.slice(0, 80) };
 }

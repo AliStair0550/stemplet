@@ -409,6 +409,7 @@ enum ReferralSource {
 
 enum RewardType {
   AMOUNT // value = kroner, fx "100"
+  PERCENT // value = procent rabat, fx "20"
   STAMPS // value = antal stempler, fx "3"
   SERVICE // value = fri tekst, fx "Gratis klip"
 }

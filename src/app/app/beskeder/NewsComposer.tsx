@@ -7,11 +7,9 @@ import { formatDkDate } from "@/lib/utils";
 import { clearNewsAction, sendNewsAction } from "./actions";
 
 const IDEAS = [
-  "Nye åbningstider fra mandag: 7 til 17.",
   "Dobbelt stempel hele weekenden. Vi glæder os til at se dig.",
+  "Nye åbningstider fra mandag: 7 til 17.",
   "Nyhed: prøv vores nye sæsonmenu. Kun i en kort periode.",
-  "Vi har lukket i morgen, men er klar igen torsdag.",
-  "Tak for et godt år. Vi holder lukket 24. til 26. december.",
 ];
 
 type Sent = { id: string; text: string; recipients: number; sentAt: string };
@@ -52,7 +50,6 @@ export function NewsComposer({
   nextAllowedAt,
   inWallet,
   optedOut,
-  cardholders,
   history,
 }: {
   shopName: string;
@@ -61,7 +58,6 @@ export function NewsComposer({
   nextAllowedAt: string | null;
   inWallet: number;
   optedOut: number;
-  cardholders: number;
   history: Sent[];
 }) {
   const [text, setText] = useState("");
@@ -101,11 +97,7 @@ export function NewsComposer({
     });
   }
 
-  const hint = locked && nextAllowedAt
-    ? `Du har sendt dagens pushbesked. Du kan sende igen ${when(nextAllowedAt)}.`
-    : inWallet === 0
-      ? null
-      : `Når ${kort(inWallet)} i Apple Wallet. ${cardholders > inWallet ? `${cardholders - inWallet} kortholdere har ikke kortet i Wallet og får den ikke.` : ""}`.trim();
+  const hint = locked && nextAllowedAt ? `Du har sendt dagens pushbesked. Du kan sende igen ${when(nextAllowedAt)}.` : null;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
@@ -121,7 +113,7 @@ export function NewsComposer({
             maxLength={NEWS_MAX}
             rows={3}
             disabled={locked || pending}
-            placeholder={locked ? "Du kan skrive en ny besked i morgen." : "Fx Dobbelt stempel hele weekenden."}
+            placeholder={locked ? "Du kan skrive en ny besked i morgen." : undefined}
             aria-describedby={hint ? "news-hint" : undefined}
             className="mt-3 w-full resize-none rounded-xl border border-fog px-4 py-3 text-[0.98rem] leading-relaxed text-ink outline-none disabled:opacity-60"
           />
@@ -258,9 +250,7 @@ export function NewsComposer({
         ) : null}
 
         <p className="text-[0.82rem] leading-relaxed text-stone">
-          Én pushbesked i døgnet, så kunderne bliver glade for dem og beholder kortet. Brug dem til nyheder om butikken,
-          tilbud og åbningstider. Pushbeskeder når kort i Apple Wallet på iPhone. Kunderne kan altid slå dem fra via
-          linket på bagsiden af kortet
+          Du kan sende én pushbesked i døgnet. Kunderne kan slå dem fra på bagsiden af kortet
           {optedOut > 0 ? `, og ${optedOut} har gjort det` : ""}.
         </p>
       </div>

@@ -37,13 +37,14 @@ const HENVISNINGER_LINKS: NavLink[] = [
 // Kampagner hoerer til kunderne (velkomst, dobbelt-stempler m.m.), ikke til et
 // enkelt produkt; de kraever dog stempler.
 const CAMPAIGNS: NavLink = { href: "/app/kampagner", label: "Kampagner" };
-// Pushbeskeder til kundernes kort (alle butikker, uanset funktioner).
-const NEWS: NavLink = { href: "/app/beskeder", label: "Pushbeskeder" };
+// Kommunikation: pushbeskeder (og senere nyhedsmail) til kunderne, for alle butikker.
+const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
 
 // "Integrationer" (API/webhooks) og "Opsætning" (/app/kom-i-gang) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
   { href: "/app/indstillinger", label: "Butik og adgang" },
+  { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/guide", label: "Guide til personalet" },
 ];
@@ -102,6 +103,7 @@ export function DashboardNav({
     exact.has(href) ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
   const inHenvisninger = pathname.startsWith("/app/henvisninger");
+  const inComms = isActive(COMMS.href) || isActive("/app/nyhedsmail");
 
   const stemplet = showStamps ? (
     <ProductGroup
@@ -182,15 +184,6 @@ export function DashboardNav({
           <circle cx="10" cy="17" r="2" />
         </>,
       )}
-      {cardLink(
-        "/app/plakat",
-        "Plakat",
-        <>
-          <rect x="5" y="3.5" width="14" height="17" rx="1.5" />
-          <rect x="9" y="11" width="6" height="6" rx="0.8" />
-          <path d="M8.5 7.5h7" />
-        </>,
-      )}
       <p className="mx-3 mb-1 mt-3 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Funktioner</p>
     </>
   );
@@ -241,7 +234,7 @@ export function DashboardNav({
               {l.label}
             </Link>
           ))}
-          {[NEWS, ...(showStamps ? [CAMPAIGNS] : [])].map((l) => (
+          {(showStamps ? [CAMPAIGNS] : []).map((l) => (
             <Link
               key={l.href}
               href={l.href}
@@ -253,6 +246,15 @@ export function DashboardNav({
               {l.label}
             </Link>
           ))}
+          <Link
+            href={COMMS.href}
+            className={cn(
+              "rounded-lg px-3 py-2 text-[0.86rem] transition-colors",
+              inComms ? "bg-sand font-[500] text-ink" : "text-stone hover:text-ink",
+            )}
+          >
+            {COMMS.label}
+          </Link>
 
           {/* Dit kort: design og regler oeverst, derunder funktionerne paa kortet. */}
           <p className="mx-3 mb-1.5 mt-6 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
@@ -285,7 +287,7 @@ export function DashboardNav({
             onClick={(e) => e.stopPropagation()}
           >
             {[
-              { ...NEWS, label: "Pushbeskeder til dine kunder" },
+              { ...COMMS, label: "Kommunikation" },
               ...(showStamps ? [{ ...CAMPAIGNS, label: "Kampagner til dine kunder" }] : []),
             ].map((l) => (
               <Link
@@ -293,7 +295,7 @@ export function DashboardNav({
                 href={l.href}
                 className={cn(
                   "mb-1 flex rounded-lg px-3 py-2 text-[0.88rem] transition-colors",
-                  isActive(l.href) ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
+                  (l.href === COMMS.href ? inComms : isActive(l.href)) ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
                 )}
               >
                 {l.label}
@@ -322,7 +324,7 @@ export function DashboardNav({
         <TabLink href={SCAN.href} label="Scan" active={isActive(SCAN.href)}>
           <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
         </TabLink>
-        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder") || isActive(CAMPAIGNS.href) || isActive(NEWS.href)}>
+        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder") || isActive(CAMPAIGNS.href)}>
           <circle cx="9" cy="8" r="3.5" />
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
         </TabLink>
@@ -334,7 +336,7 @@ export function DashboardNav({
           aria-controls="mere-menu"
           className={cn(
             "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.68rem]",
-            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder") && !isActive(CAMPAIGNS.href) && !isActive(NEWS.href))
+            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder") && !isActive(CAMPAIGNS.href))
               ? "font-[500] text-ink"
               : "text-slate",
           )}

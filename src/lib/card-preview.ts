@@ -3,7 +3,7 @@ import type { Business } from "@prisma/client";
 import { prisma } from "./prisma";
 import type { StampIconKey } from "./brand";
 import { cardTitle } from "./brand";
-import { effectiveStyle, normalizeActions, suggestedActions, type CardLookContext } from "./card-look";
+import { effectiveStyle, normalizeActions, type CardLookContext } from "./card-look";
 import { rewardPhrase } from "./referral-text";
 import type { WalletCardPreviewProps } from "@/components/WalletCardPreview";
 
@@ -34,6 +34,6 @@ export async function loadCardPreview(business: Business): Promise<Omit<WalletCa
     product: business.stampsEnabled && business.referralsEnabled ? "begge" : business.referralsEnabled ? "henvisninger" : "stemplet",
     friendReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "100 kr.",
     referrerReward: rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "gratis klip",
-    actions: business.cardActions.length > 0 ? normalizeActions(business.cardActions, ctx) : suggestedActions(ctx),
+    actions: normalizeActions(business.cardActions, ctx),
   };
 }

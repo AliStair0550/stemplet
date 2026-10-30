@@ -30,7 +30,7 @@ export default async function GuidePage() {
     <>
       <PageHeading
         title="Guide til personalet"
-        subtitle="Guiden til dit personale. Den opdaterer sig selv efter dine indstillinger."
+        subtitle="Del den med dit personale. Den følger dine indstillinger."
         action={<GuideActions publicUrl={publicUrl} />}
       />
 

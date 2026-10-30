@@ -270,7 +270,6 @@ export default async function HomePage() {
               text="En henvisningskode på kortet, så kunderne skaffer nye kunder."
             />
           )}
-          <p className="px-1 pt-1 text-[0.8rem] text-slate">Flere funktioner er på vej. De lægges på det samme kort.</p>
         </div>
       </section>
 

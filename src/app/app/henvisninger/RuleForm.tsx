@@ -11,7 +11,7 @@ import { saveReferralSettings, type RuleInput } from "./actions";
 // een forklarende linje og de felter, der skal udfyldes. Et eksempel viser, hvad
 // kunden ser. Genbruges af onboardingen i fase 5.
 
-type RewardType = "AMOUNT" | "STAMPS" | "SERVICE";
+type RewardType = "AMOUNT" | "PERCENT" | "STAMPS" | "SERVICE";
 
 type Form = {
   newCustomerRewardType: RewardType;
@@ -27,6 +27,7 @@ type Form = {
 
 const TYPES: { value: RewardType; label: string }[] = [
   { value: "AMOUNT", label: "Rabat i kr." },
+  { value: "PERCENT", label: "Rabat i %" },
   { value: "STAMPS", label: "Stempler" },
   { value: "SERVICE", label: "Gratis behandling" },
 ];
@@ -112,18 +113,19 @@ function RewardPicker({
           <input
             value={value}
             onChange={(e) => onValue(e.target.value)}
-            placeholder="Gratis klip"
             maxLength={80}
             className={fieldCls}
           />
         </Field>
       ) : (
-        <Field label={type === "AMOUNT" ? "Beløb" : "Antal stempler"} suffix={type === "AMOUNT" ? "kr." : "stempler"}>
+        <Field
+          label={type === "AMOUNT" ? "Beløb" : type === "PERCENT" ? "Procent" : "Antal stempler"}
+          suffix={type === "AMOUNT" ? "kr." : type === "PERCENT" ? "%" : "stempler"}
+        >
           <input
             value={value}
             onChange={(e) => onValue(e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
-            placeholder={type === "AMOUNT" ? "100" : "3"}
             className={cn(fieldCls, "max-w-[10rem]")}
           />
         </Field>
@@ -178,7 +180,8 @@ export function RuleForm({
         <RewardPicker
           type={form.newCustomerRewardType}
           value={form.newCustomerRewardValue}
-          onType={(t) => set("newCustomerRewardType", t)}
+          // Et nyt type-valg toemmer vaerdien, saa "100 kr." ikke bliver til "100 %".
+          onType={(t) => t !== form.newCustomerRewardType && (set("newCustomerRewardType", t), set("newCustomerRewardValue", ""))}
           onValue={(v) => set("newCustomerRewardValue", v)}
         />
       </Box>
@@ -187,7 +190,7 @@ export function RuleForm({
         <RewardPicker
           type={form.referrerRewardType}
           value={form.referrerRewardValue}
-          onType={(t) => set("referrerRewardType", t)}
+          onType={(t) => t !== form.referrerRewardType && (set("referrerRewardType", t), set("referrerRewardValue", ""))}
           onValue={(v) => set("referrerRewardValue", v)}
         />
       </Box>
@@ -198,7 +201,6 @@ export function RuleForm({
             value={form.minPurchaseKr}
             onChange={(e) => set("minPurchaseKr", e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
-            placeholder="300"
             className={cn(fieldCls, "max-w-[10rem]")}
           />
         </Field>
@@ -207,13 +209,12 @@ export function RuleForm({
             value={form.termsLine}
             onChange={(e) => set("termsLine", e.target.value)}
             maxLength={120}
-            placeholder="Gælder ved første besøg over 300 kr."
             className={fieldCls}
           />
         </Field>
       </Box>
 
-      <Box title="Grænser" hint="Valgfrit. Sæt en grænse, hvis du vil beskytte dig mod misbrug.">
+      <Box title="Grænser" hint="Valgfrit. Bestem, hvor mange henvisninger om måneden en kunde kan få belønning for, og hvor længe belønningen gælder.">
         <Field
           label="Højst antal belønninger pr. ambassadør pr. måned"
           hint="Når grænsen er nået, får den nye kunde stadig sin rabat. Tomt betyder ingen grænse."
@@ -231,7 +232,6 @@ export function RuleForm({
             value={form.rewardExpiryDays}
             onChange={(e) => set("rewardExpiryDays", e.target.value.replace(/\D/g, ""))}
             inputMode="numeric"
-            placeholder="180"
             className={cn(fieldCls, "max-w-[10rem]")}
           />
         </Field>

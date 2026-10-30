@@ -302,6 +302,10 @@ test("beloenningens expires_at = nu + reward_expiry_days", () => {
 test("beloenningsvaerdier: amount/stamps positivt heltal, service tekst", () => {
   assert.equal(isValidRewardValue("AMOUNT", "100"), true);
   assert.equal(isValidRewardValue("STAMPS", "3"), true);
+  assert.equal(isValidRewardValue("PERCENT", "20"), true);
+  assert.equal(isValidRewardValue("PERCENT", "100"), true);
+  assert.equal(isValidRewardValue("PERCENT", "101"), false);
+  assert.equal(isValidRewardValue("PERCENT", "0"), false);
   assert.equal(isValidRewardValue("AMOUNT", "0"), false);
   assert.equal(isValidRewardValue("AMOUNT", "-5"), false);
   assert.equal(isValidRewardValue("STAMPS", "2.5"), false);

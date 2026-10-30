@@ -78,15 +78,6 @@ function Switch({
   );
 }
 
-// Hurtige forslag til belOnningen, saa man kan komme i gang med eet klik.
-// BelOnningen er fri tekst, saa fx procent-rabat ("25 % rabat") virker ogsaa.
-const REWARD_SUGGESTIONS = [
-  "Den 10. er gratis",
-  "25 % rabat",
-  "Gratis produkt",
-  "En på huset",
-];
-
 /**
  * Læser logoet én gang i browseren: skalerer det ned til en komprimeret
  * data-URL (gemmes direkte, ingen ekstern tjeneste). Farverne vaelger butikken
@@ -299,30 +290,12 @@ export function CardDesigner({
                 value={value.rewardText}
                 maxLength={REWARD_TEXT_MAX}
                 onChange={(e) => set("rewardText", e.target.value)}
-                placeholder="10. kop er gratis"
                 className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
               />
             </label>
             <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
               Kort tekst ser bedst ud i Apple Wallet. Maks {REWARD_TEXT_MAX} tegn.
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {REWARD_SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => set("rewardText", s)}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-[0.72rem] font-[300] transition-colors",
-                    value.rewardText === s
-                      ? "border-terracotta bg-terracotta/10 text-terracotta"
-                      : "border-clay text-stone hover:border-terracotta hover:text-terracotta",
-                  )}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
         </Section>
         ) : null}
@@ -594,7 +567,7 @@ export function CardDesigner({
         {/* Betingelser (valgfri): til/fra + kort tekst. Vises IKKE paa kortet,
             men diskret under "Hent mit stempelkort" for kunden. */}
         {showRules ? (
-        <Section boxed={boxed} title="Betingelser" hint="Valgfrit. Fx hvilke produkter kortet gælder for.">
+        <Section boxed={boxed} title="Betingelser">
           <div className="flex items-center justify-between gap-4">
             <span className="text-[0.85rem] font-[400] text-ink">Vis betingelser</span>
             <Switch
@@ -617,7 +590,6 @@ export function CardDesigner({
                   setTermsDraft(e.target.value);
                   set("terms", e.target.value.trim() || null);
                 }}
-                placeholder="Fx: Gælder kun ved køb af kaffe. Kan indløses i alle vores butikker."
                 className="resize-none border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.9rem] leading-relaxed text-ink outline-none focus:border-terracotta"
               />
               <div className="flex items-baseline justify-between gap-2">

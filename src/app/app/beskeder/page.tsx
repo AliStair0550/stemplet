@@ -5,7 +5,7 @@ import { PageHeading } from "@/components/dash";
 import { cardTitle } from "@/lib/brand";
 import { nextNewsAllowedAt } from "@/lib/news";
 import { newsOptOutCount, walletCardCount } from "@/lib/news-reach";
-import { KunderTabs } from "../kunder/KunderTabs";
+import { KommunikationTabs } from "./KommunikationTabs";
 import { NewsComposer } from "./NewsComposer";
 
 export const metadata: Metadata = { title: "Pushbeskeder" };
@@ -13,10 +13,9 @@ export const dynamic = "force-dynamic";
 
 export default async function BeskederPage() {
   const { business } = await requireBusiness();
-  const [inWallet, optedOut, cardholders, history] = await Promise.all([
+  const [inWallet, optedOut, history] = await Promise.all([
     walletCardCount(business.id),
     newsOptOutCount(business.id),
-    prisma.customerCard.count({ where: { card: { businessId: business.id } } }),
     prisma.newsMessage.findMany({
       where: { businessId: business.id },
       orderBy: { sentAt: "desc" },
@@ -28,7 +27,7 @@ export default async function BeskederPage() {
 
   return (
     <>
-      <KunderTabs active="beskeder" showCampaigns={business.stampsEnabled} />
+      <KommunikationTabs active="beskeder" />
       <PageHeading
         title="Pushbeskeder"
         subtitle="Send en kort nyhed direkte til dine kunders iPhone. Den vises på låseskærmen, ligesom en besked fra en app, og står på kortet bagefter."
@@ -40,7 +39,6 @@ export default async function BeskederPage() {
         nextAllowedAt={next?.toISOString() ?? null}
         inWallet={inWallet}
         optedOut={optedOut}
-        cardholders={cardholders}
         history={history.map((h) => ({ id: h.id, text: h.text, recipients: h.recipients, sentAt: h.sentAt.toISOString() }))}
       />
     </>
