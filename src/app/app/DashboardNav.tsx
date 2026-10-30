@@ -266,7 +266,7 @@ export function DashboardNav({
       </aside>
 
       {/* Mobil: butik oeverst, faner i bunden */}
-      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 px-5 py-3 backdrop-blur-md md:hidden print:hidden">
+      <div className="sticky top-0 z-30 border-b border-fog bg-parchment px-5 py-3 md:hidden print:hidden">
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
       </div>
 

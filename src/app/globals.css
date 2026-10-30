@@ -49,7 +49,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   /* Lys-only side: undgaar sort UA-baggrund paa telefoner i moerk tilstand. */
   color-scheme: light;
   /* Brand-baggrunden allerede paa rod-elementet, saa foerste paint er pergament
@@ -60,6 +59,14 @@ html {
      (og udloese "zoom-ud", naar man traekker). "clip" laver ingen scroll-
      container, saa position: sticky virker stadig. */
   overflow-x: clip;
+}
+
+/* Bloed scroll kun til anker-links paa de offentlige sider. Ikke i dashboardet:
+   dér faar programmatiske scroll (navigation, fokus) iOS til at kaempe med
+   fingeren, saa siden "scroller selv". data-scroll-behavior paa <html> lader
+   Next slaa det fra under navigation (Next 16 goer det ikke selv laengere). */
+html:not(:has(.dash-theme)) {
+  scroll-behavior: smooth;
 }
 
 body {
