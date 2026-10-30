@@ -15,6 +15,7 @@ import { ClaimHeading } from "./ClaimHeading";
 import { cardShortName } from "@/lib/card-name";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { optimizedLogoDataUri } from "@/lib/logo";
+import { BackToDashboard } from "@/components/BackToDashboard";
 
 // Et diskret, gentaget felt af butikkens stempel-ikon som baggrunds-tekstur.
 // Tegnet i tekstfarven ved lav opacitet, saa det giver liv uden at stjaele fokus.
@@ -188,6 +189,7 @@ export default async function ClaimPage({
       className="flex min-h-screen flex-col items-center justify-center px-6 py-16"
       style={bgStyle}
     >
+      <BackToDashboard />
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           {logoSrc ? (
@@ -218,6 +220,7 @@ export default async function ClaimPage({
             actions={[]}
             sampleStamps={0}
             fresh
+            hideQr
           />
         </div>
 

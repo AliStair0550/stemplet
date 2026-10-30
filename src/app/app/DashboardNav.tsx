@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOutAction } from "./actions";
 import { BusinessSwitcher } from "./BusinessSwitcher";
+import { MarkDashboardVisit } from "@/components/BackToDashboard";
 import { KundekortMark } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
 
@@ -281,6 +282,7 @@ export function DashboardNav({
         </div>
       </aside>
 
+      <MarkDashboardVisit />
       {/* Mobil: butik oeverst, faner i bunden */}
       <div className="sticky top-0 z-30 border-b border-fog bg-parchment px-5 py-3 md:hidden print:hidden">
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />

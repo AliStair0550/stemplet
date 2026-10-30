@@ -15,9 +15,9 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 | A1 | Knaptekst forsvinder eller bliver mørk ved tryk (Skift billede, Tilføj til hjemmeskærm, Rabat givet, Giv stempel) | Lavet (batch 1) |
 | A2 | Hvid kasse omkring Folka-logoet i mails | Lavet (batch 1) |
 | A3 | Login-kode-mail ved oprettelse, selvom man logges ind automatisk | Lavet (batch 1) |
-| A4 | Hent kort: viser "Hent kort" igen og kortet først 3 sekunder efter | Batch 2 |
-| A5 | Vennen ser QR-koden på iPhone efter at have hentet kortet | Batch 2 |
-| A6 | "Se kundekort" på iPhone (app fra hjemmeskærm) mangler en vej tilbage | Batch 2 |
+| A4 | Hent kort: viser "Hent kort" igen og kortet først 3 sekunder efter | Lavet (batch 2) |
+| A5 | Vennen ser QR-koden på iPhone efter at have hentet kortet (den tegnede QR i kortets forhåndsvisning er fjernet på kundesiden; ses en rigtig QR igen, så send et skærmbillede) | Lavet (batch 2) |
+| A6 | "Se kundekort" på iPhone (app fra hjemmeskærm) mangler en vej tilbage | Lavet (batch 2) |
 | A7 | Eget billede + lyse farver: der sker ingenting | Venter |
 | A8 | Hjemmeskærm-ikonet viser det gamle logo, ikke Folka | Venter |
 | A9 | Pushbesked, der ikke ses på låseskærmen, kan ikke findes bagefter | Venter |

@@ -38,6 +38,8 @@ export type WalletCardPreviewProps = {
   sampleStamps?: number;
   /** Et nyt kort (butikssiden): intet til gode endnu. */
   fresh?: boolean;
+  /** Uden den tegnede QR-kode (kundesiden: kunden skal ikke tro, den skal scannes). */
+  hideQr?: boolean;
 };
 
 const EXAMPLE_STAMPS = 3;
@@ -168,7 +170,7 @@ function Poster(p: WalletCardPreviewProps) {
             </div>
           )}
         </div>
-        <Qr size={54} />
+        {p.hideQr ? <span aria-hidden /> : <Qr size={54} />}
         <div className="col-span-2 border-t pt-2 text-[11px] opacity-80" style={{ borderColor: `${fg}38` }}>
           {p.product === "henvisninger"
             ? `Du får ${p.referrerReward}, når din ven har været her`
@@ -213,7 +215,7 @@ function Classic(p: WalletCardPreviewProps) {
         <Field label="Til gode" value={p.fresh ? "Intet endnu" : cap(p.referrerReward)} />
       </div>
       <div className="mt-5 flex justify-center">
-        <Qr size={70} />
+        {p.hideQr ? null : <Qr size={70} />}
       </div>
     </div>
   );
