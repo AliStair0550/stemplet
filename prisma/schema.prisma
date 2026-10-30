@@ -111,11 +111,31 @@ model Business {
   referrals        Referral[]
   rewards          Reward[]
   newsMessages     NewsMessage[]
+  memberOffers     MemberOffer[]
   createdAt        DateTime   @default(now())
 }
 
 // Historik over sendte pushbeskeder (den aktuelle tekst bor paa Business.newsText).
 // recipients = antal kort i Wallet, da beskeden blev sendt.
+/// Butikkens egne tilbud og samarbejdspartnere til kortholdere. Vises paa
+/// kundens side "Tilbud og fordele". kind: "OFFER" (butikkens tilbud) eller
+/// "PARTNER" (rabat hos en samarbejdspartner mod at vise kortet).
+model MemberOffer {
+  id          String    @id @default(cuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  kind        String
+  title       String
+  text        String?
+  partnerName String?
+  link        String?
+  endsAt      DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@index([businessId, kind])
+}
+
 model NewsMessage {
   id         String   @id @default(cuid())
   businessId String

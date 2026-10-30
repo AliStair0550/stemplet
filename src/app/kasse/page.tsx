@@ -7,10 +7,6 @@ import { PairDevice } from "./PairDevice";
 import { UnpairButton } from "./UnpairButton";
 import { InstallHomeScreen } from "./InstallHomeScreen";
 import { ReferralDesk } from "@/components/referral/ReferralDesk";
-import {
-  KasseViewSwitch,
-  kasseViewFor,
-} from "@/components/referral/KasseViewSwitch";
 
 export const metadata: Metadata = {
   title: "Kasse",
@@ -30,9 +26,9 @@ const PAIR_ERRORS: Record<string, string> = {
 export default async function KasseRegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kode?: string; fejl?: string; visning?: string }>;
+  searchParams: Promise<{ kode?: string; fejl?: string }>;
 }) {
-  const { kode, fejl, visning } = await searchParams;
+  const { kode, fejl } = await searchParams;
   const access = await kasseAccess(false);
 
   if (!access) {
@@ -54,8 +50,9 @@ export default async function KasseRegisterPage({
     return <PairDevice presetCode={typeof kode === "string" ? kode : ""} error={null} />;
   }
   const card = business.cards[0];
-  // Henvisninger (kun naar modulet er slaaet til). Uden modulet er siden uaendret.
-  const { view, showSwitch } = kasseViewFor(business, visning);
+  // Een kasse: med Stemplet viser kunden ved scan ogsaa henvisningens foerste
+  // besoeg og beloenninger. Kun Henvisninger: soeg/scan-visningen.
+  const onlyReferrals = business.referralsEnabled && !business.stampsEnabled;
   const kioskCard: KioskCard = {
     businessName: business.name,
     logoUrl: business.logoUrl,
@@ -81,16 +78,14 @@ export default async function KasseRegisterPage({
         </div>
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">
-        {showSwitch ? (
-          <KasseViewSwitch basePath="/kasse" view={view} />
-        ) : null}
-        {view === "henvisninger" ? (
+        {onlyReferrals ? (
           <ReferralDesk hasPin={business.staffPin != null} />
         ) : (
           <Kassemodus
             card={kioskCard}
             selfScan={business.selfScanEnabled}
             hasPin={business.staffPin != null}
+            referrals={business.referralsEnabled}
           />
         )}
       </div>

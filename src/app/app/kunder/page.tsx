@@ -17,7 +17,8 @@ export const dynamic = "force-dynamic";
 // Maerker viser produktet: Stemplet (har stempler eller et rent stempelkort) og
 // Henvisninger (har en henvisningskode; den gives kun ved tilmelding via
 // henvisningssiden). En kunde kan have begge. Har butikken begge produkter, kan
-// oversigten filtreres. Kun laesning; handlinger sker via Scan.
+// oversigten filtreres. "Tjek ind" aabner kunden i kassen (samme kundekort som
+// ved scan), saa man kan give stempler, rabat eller indloese uden at scanne.
 
 const PAGE_SIZE = 50;
 
@@ -85,6 +86,8 @@ export default async function CustomersPage({
         createdAt: true,
         lastStampAt: true,
         referredBy: { select: { name: true } },
+        referralReceived: { select: { status: true } },
+        _count: { select: { rewards: { where: { status: "AVAILABLE", expiresAt: { gt: new Date() } } } } },
       },
     }),
     prisma.card
@@ -165,6 +168,16 @@ export default async function CustomersPage({
                     {[c.contactEmail ?? formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {(business.stampsEnabled && c.stamps >= required) || c._count.rewards > 0 ? (
+                      <span className="inline-flex items-center rounded-full bg-[#1B5EAE] px-2.5 py-0.5 text-[0.74rem] font-[600] text-white">
+                        Belønning klar
+                      </span>
+                    ) : null}
+                    {c.referralReceived?.status === "CREATED" ? (
+                      <span className="inline-flex items-center rounded-full bg-[#E8F0FB] px-2.5 py-0.5 text-[0.74rem] font-[600] text-[#1B5EAE]">
+                        Første besøg
+                      </span>
+                    ) : null}
                     {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
                         <span className="font-[600]">Stempler</span>
@@ -192,7 +205,12 @@ export default async function CustomersPage({
                     </span>
                   </div>
                 ) : null}
-                <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
+                <div className="flex items-center gap-2">
+                  <Link href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`} className="inline-flex min-h-10 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white hover:bg-[#0A2D5A]">
+                    Tjek ind
+                  </Link>
+                  <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
+                </div>
               </li>
             ))}
           </ul>

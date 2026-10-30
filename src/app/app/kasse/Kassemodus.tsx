@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { ReferralCheckIn } from "@/components/referral/ReferralCheckIn";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
 import { Celebration } from "@/components/Celebration";
@@ -275,13 +276,19 @@ export function Kassemodus({
   card,
   selfScan,
   hasPin,
+  referrals = false,
+  initialSerial = null,
 }: {
   card: KioskCard;
   selfScan: boolean;
   // Har butikken sat en personale-PIN? Ellers indloeses uden PIN.
   hasPin: boolean;
+  /** Henvisninger slaaet til: vis foerste besoeg og henvisningsbeloenninger ved kunden. */
+  referrals?: boolean;
+  /** Aabn en bestemt kunde direkte (fra Kunder eller Hjem: ?kort=). */
+  initialSerial?: string | null;
 }) {
-  const [mode, setMode] = useState<"qr" | "scan">("qr");
+  const [mode, setMode] = useState<"qr" | "scan">(initialSerial ? "scan" : "qr");
   const [kioskOpen, setKioskOpen] = useState(false);
 
   // Kun ved selvbetjening: startet fra hjemmeskaermen (standalone) -> aabn
@@ -308,7 +315,7 @@ export function Kassemodus({
   if (!selfScan) {
     return (
       <div className="flex flex-col gap-7">
-        <ScanPanel hasPin={hasPin} />
+        <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} />
       </div>
     );
   }
@@ -349,7 +356,7 @@ export function Kassemodus({
         </button>
       </div>
 
-      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel hasPin={hasPin} />}
+      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} />}
 
       {kioskOpen ? <KioskShell card={card} onClose={closeKiosk} /> : null}
     </div>
@@ -428,12 +435,20 @@ function StampQrPanel({ card }: { card: KioskCard }) {
 }
 
 // ── Panel: scan kundens kort (personalet stempler selv) ───────────────
-function ScanPanel({ hasPin }: { hasPin: boolean }) {
+function ScanPanel({
+  hasPin,
+  referrals,
+  initialSerial,
+}: {
+  hasPin: boolean;
+  referrals: boolean;
+  initialSerial: string | null;
+}) {
   // Scanning er den eneste funktion ved kassen, saa kameraet aabner med det
   // samme: trykker man "Stempel", er man klar til at scanne uden et ekstra tryk.
   // Bliver kameraet afvist/blokeret, viser Scanner en paen fejl med "Prøv igen".
-  const [scanning, setScanning] = useState(true);
-  const [serial, setSerial] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(!initialSerial);
+  const [serial, setSerial] = useState<string | null>(initialSerial);
   // Manuel indtastning: fallback naar QR'en ikke kan scannes (glare, revnet
   // skaerm, afvist kamera, eller en desktop uden brugbart kamera).
   const [showManual, setShowManual] = useState(false);
@@ -453,6 +468,7 @@ function ScanPanel({ hasPin }: { hasPin: boolean }) {
         <StaffCard
           serial={serial}
           hasPin={hasPin}
+          referrals={referrals}
           onRescan={() => {
             setSerial(null);
             setScanning(true);
@@ -555,11 +571,13 @@ type CardState = {
 function StaffCard({
   serial,
   hasPin,
+  referrals,
   onRescan,
   onExit,
 }: {
   serial: string;
   hasPin: boolean;
+  referrals: boolean;
   onRescan: () => void;
   onExit: () => void;
 }) {
@@ -913,6 +931,10 @@ function StaffCard({
               {card.lifetimeStamps === 1 ? "stempel" : "stempler"} i alt hos jer
             </p>
           ) : null}
+
+          {/* Henvisning: vennens foerste besoeg og beloenninger, der er klar.
+              Vises kun, naar der er noget at goere. */}
+          {referrals ? <ReferralCheckIn serial={card.serial} hasPin={hasPin} /> : null}
 
           {note ? (
             <p

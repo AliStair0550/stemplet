@@ -8,6 +8,7 @@ import { loadReferralPassInfo } from "@/lib/referral-wallet";
 import { owedLabel } from "@/lib/wallet/referral-fields";
 import { referralShareText, firstName } from "@/lib/referral-text";
 import { formatDkDate } from "@/lib/utils";
+import { offerIsLive } from "@/lib/member-offers";
 import { StampIcon } from "@/components/StampIcon";
 import { ShareReferral } from "./ShareReferral";
 
@@ -19,7 +20,7 @@ export const metadata: Metadata = { title: { absolute: "Tilbud og fordele" }, ro
 // til gode, tilbud lige nu og henvis en ven (med fejring, naar man har delt).
 // Animationerne respekterer "reducer bevaegelse" (globals.css).
 
-type Offer = { title: string; text: string; until?: Date };
+type Offer = { title: string; text: string | null; until?: Date | null; link?: string | null };
 
 // Indgang: sektionerne glider ind efter hinanden.
 const rise = (i: number): CSSProperties => ({ animation: `fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) ${0.08 + i * 0.09}s both` });
@@ -42,7 +43,12 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
   });
   if (!cc) notFound();
   const b = cc.card.business;
-  const referral = await loadReferralPassInfo(cc, now).catch(() => null);
+  const [referral, memberOffers] = await Promise.all([
+    loadReferralPassInfo(cc, now).catch(() => null),
+    prisma.memberOffer.findMany({ where: { businessId: b.id, active: true }, orderBy: { createdAt: "desc" } }),
+  ]);
+  const liveOffers = memberOffers.filter((o) => offerIsLive(o, now));
+  const partners = liveOffers.filter((o) => o.kind === "PARTNER");
 
   const shop = cardTitle(b);
   const fg = b.textColor;
@@ -55,7 +61,10 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
   const name = firstName(cc.name);
   const reward = cc.card.rewardText;
 
-  const offers: Offer[] = [];
+  // Butikkens egne tilbud foerst, saa kampagner og den seneste besked.
+  const offers: Offer[] = liveOffers
+    .filter((o) => o.kind === "OFFER")
+    .map((o) => ({ title: o.title, text: o.text, until: o.endsAt, link: o.link }));
   for (const c of cc.card.campaigns) {
     if (c.type === "DOUBLE_STAMP") offers.push({ title: "Dobbelt stempel", text: "Hvert stempel tæller dobbelt lige nu.", until: c.endsAt });
     if (c.type === "WELCOME_BONUS" && cc.lifetimeStamps === 0)
@@ -175,7 +184,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
           {offers.length > 0 ? (
             offers.map((o, i) => (
               <div
-                key={o.title + o.text}
+                key={o.title + (o.text ?? "")}
                 className="relative overflow-hidden rounded-[22px] p-5"
                 style={{
                   background: fg,
@@ -185,7 +194,12 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
                 }}
               >
                 <p className="text-[1.2rem] font-bold tracking-[-0.02em]">{o.title}</p>
-                <p className="mt-1 text-[0.98rem] leading-snug">{o.text}</p>
+                {o.text ? <p className="mt-1 text-[0.98rem] leading-snug">{o.text}</p> : null}
+                {o.link ? (
+                  <a href={o.link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[0.9rem] font-semibold underline underline-offset-4">
+                    Læs mere
+                  </a>
+                ) : null}
                 {o.until ? (
                   <p className="mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.78rem] font-semibold" style={{ background: rgba(bg, 0.1) }}>
                     Til og med {formatDkDate(new Date(o.until.getTime() - 1))}
@@ -199,6 +213,34 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
             </div>
           )}
         </section>
+
+        {partners.length > 0 ? (
+          <section className="flex flex-col gap-3" style={rise(section++)}>
+            <span className={`${label} px-1 pt-2`} style={muted}>
+              Fordele hos vores partnere
+            </span>
+            {partners.map((p) => (
+              <div key={p.id} className="rounded-[22px] p-5" style={panel}>
+                <p className={label} style={muted}>
+                  {p.partnerName}
+                </p>
+                <p className="mt-1 text-[1.2rem] font-bold leading-tight tracking-[-0.02em]">{p.title}</p>
+                {p.text ? <p className="mt-1 text-[0.95rem] leading-snug" style={muted}>{p.text}</p> : null}
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.82rem]">
+                  <span className="rounded-full px-2.5 py-1 font-semibold" style={{ background: rgba(fg, 0.12) }}>
+                    Vis kortet i Wallet
+                  </span>
+                  {p.endsAt ? <span style={muted}>Til og med {formatDkDate(new Date(p.endsAt.getTime() - 1))}</span> : null}
+                  {p.link ? (
+                    <a href={p.link} target="_blank" rel="noreferrer" className="font-semibold underline underline-offset-4">
+                      Se mere
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </section>
+        ) : null}
 
         {referral ? (
           <section style={rise(section++)}>

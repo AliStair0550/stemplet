@@ -321,8 +321,8 @@ export function KortetEditor({
           />
           <p className="max-w-[300px] text-center text-[0.78rem] text-slate">
             {os === "27"
-              ? "Plakatkortet på iOS 27."
-              : "Ældre iPhones får det klassiske kort, som i dag."}
+              ? "Eksempel på en kundes kort. Plakatkortet på iOS 27."
+              : "Eksempel på en kundes kort. Ældre iPhones får det klassiske kort."}
           </p>
         </div>
       </aside>
