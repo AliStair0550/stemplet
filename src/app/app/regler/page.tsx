@@ -13,7 +13,8 @@ import { RuleForm } from "../henvisninger/RuleForm";
 import { FeatureSwitch } from "./FeatureSwitch";
 import { KundekortShare } from "./KundekortShare";
 import { CardNameForm } from "./CardNameForm";
-import { autoCardName } from "@/lib/card-name";
+import { autoCardName, cardShortName, claimCta } from "@/lib/card-name";
+import { rewardPhrase } from "@/lib/referral-text";
 import type { Feature } from "./actions";
 
 export const metadata: Metadata = { title: "Regler for dit kort" };
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
 const FEATURES: Record<Feature, { title: string; text: string; offWarning: string; icon: React.ReactNode }> = {
   stempler: {
     title: "Stempler",
-    text: "Et stempel pr. besøg og en belønning, når kortet er fuldt.",
+    text: "Stempelkortet, der skaber flere gensyn.",
     offWarning:
       "Slå stempler fra? Kunderne kan ikke få nye stempler, og stemplerne forsvinder fra kortet. Intet slettes: slår du det til igen, er stemplerne der stadig.",
     icon: (
@@ -37,7 +38,7 @@ const FEATURES: Record<Feature, { title: string; text: string; offWarning: strin
   },
   henvisninger: {
     title: "Henvisninger",
-    text: "Kunderne anbefaler dig til venner. Vennen får rabat, kunden en belønning.",
+    text: "Motivér dine kunder til at henvise dig.",
     offWarning:
       "Slå henvisninger fra? Koderne forsvinder fra kortet, og henvisningssiden lukker. Intet slettes: slår du det til igen, er koder og belønninger der stadig.",
     icon: (
@@ -77,7 +78,7 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
     <>
       <PageHeading
         title="Regler"
-        subtitle="Vælg hvad dit kort kan, og hvordan det virker. Udseendet laver du under Design."
+        subtitle="Vælg hvad dit kort kan, og hvordan det virker."
       />
 
       <section className="mb-10">
@@ -154,17 +155,37 @@ async function StampRules({ business }: { business: Biz }) {
 
 async function CardShare({ business }: { business: Biz }) {
   const url = `${APP_URL}/k/${business.slug}`;
-  const qrDataUrl = await QRCode.toDataURL(url, { margin: 2, width: 800, color: { dark: "#111111", light: "#FFFFFF" } });
+  const [qrDataUrl, card, rule] = await Promise.all([
+    QRCode.toDataURL(url, { margin: 2, width: 900, color: { dark: "#0B1628", light: "#FFFFFF" } }),
+    prisma.card.findFirst({ where: { businessId: business.id }, orderBy: { createdAt: "asc" }, select: { rewardText: true, stampsRequired: true } }),
+    business.referralsEnabled ? prisma.referralRule.findUnique({ where: { businessId: business.id } }) : null,
+  ]);
+  // Det, kunden faar: stempelbeloenningen og vennens rabat (det, butikken har slaaet til).
+  const lines = [
+    ...(business.stampsEnabled && card ? [`${card.rewardText} efter ${card.stampsRequired} stempler`] : []),
+    ...(rule ? [`Henvis en ven: ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
+  ];
   return (
-    <>
+    <div className="flex flex-col gap-6">
+      <KundekortShare
+        url={url}
+        qrDataUrl={qrDataUrl}
+        showcase={{
+          shopName: cardTitle(business),
+          logoUrl: business.logoUrl,
+          headline: claimCta(cardShortName(business)),
+          lines,
+          primaryColor: business.primaryColor,
+          textColor: business.textColor,
+        }}
+      />
       <CardNameForm
         initialName={business.cardName ?? ""}
         autoName={autoCardName(cardTitle(business))}
         primaryColor={business.primaryColor}
         textColor={business.textColor}
       />
-      <KundekortShare url={url} qrDataUrl={qrDataUrl} shopName={cardTitle(business)} />
-    </>
+    </div>
   );
 }
 
