@@ -6,10 +6,10 @@ import { KommunikationTabs } from "../beskeder/KommunikationTabs";
 export const metadata: Metadata = { title: "Nyhedsmail" };
 
 export default async function NyhedsmailPage() {
-  await requireBusiness();
+  const { business } = await requireBusiness();
   return (
     <>
-      <KommunikationTabs active="nyhedsmail" />
+      <KommunikationTabs active="nyhedsmail" showCampaigns={business.stampsEnabled} />
       <PageHeading title="Nyhedsmail" subtitle="Nyhedsmail er under udarbejdelse." />
     </>
   );

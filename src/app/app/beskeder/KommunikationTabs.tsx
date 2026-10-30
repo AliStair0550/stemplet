@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Kommunikation: maaderne, butikken taler med kunderne paa. Nyhedsmail er kun en
-// fane her (ikke i menuen), indtil den er bygget.
-export function KommunikationTabs({ active }: { active: "beskeder" | "nyhedsmail" }) {
+// Kommunikation: maaderne, butikken taler med kunderne paa. Kampagner kraever
+// stempler. Nyhedsmail er kun en fane her (ikke i menuen), indtil den er bygget.
+export function KommunikationTabs({
+  active,
+  showCampaigns,
+}: {
+  active: "beskeder" | "kampagner" | "nyhedsmail";
+  showCampaigns: boolean;
+}) {
   const tabs = [
     { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder" },
+    ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner" } as const] : []),
     { key: "nyhedsmail", href: "/app/nyhedsmail", label: "Nyhedsmail" },
   ] as const;
   return (

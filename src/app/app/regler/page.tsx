@@ -6,11 +6,12 @@ import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
 import { cn } from "@/lib/utils";
-import type { StampIconKey } from "@/lib/brand";
+import { cardTitle, type StampIconKey } from "@/lib/brand";
 import type { CardDesign } from "@/components/CardDesigner";
 import { KortEditor } from "../kort/KortEditor";
 import { RuleForm } from "../henvisninger/RuleForm";
 import { FeatureSwitch } from "./FeatureSwitch";
+import { KundekortShare } from "./KundekortShare";
 import type { Feature } from "./actions";
 
 export const metadata: Metadata = { title: "Regler for dit kort" };
@@ -55,10 +56,20 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
     stempler: business.stampsEnabled,
     henvisninger: business.referralsEnabled,
   };
-  const tabs = (Object.keys(FEATURES) as Feature[]).filter((k) => enabled[k]);
-  const active: Feature | null =
-    f === "stempler" || f === "henvisninger" ? (enabled[f] ? f : null) : (tabs[0] ?? null);
-  const onlyOne = tabs.length === 1;
+  const features = (Object.keys(FEATURES) as Feature[]).filter((k) => enabled[k]);
+  // Fanerne: de aktive funktioner og Kundekort (QR og link til deling).
+  type Tab = Feature | "kundekort";
+  const tabs: Tab[] = [...features, "kundekort"];
+  const active: Tab | null =
+    f === "kundekort"
+      ? "kundekort"
+      : f === "stempler" || f === "henvisninger"
+        ? enabled[f]
+          ? f
+          : null
+        : (tabs[0] ?? null);
+  const onlyOne = features.length === 1;
+  const tabTitle = (k: Tab) => (k === "kundekort" ? "Kundekort" : FEATURES[k].title);
 
   return (
     <>
@@ -100,15 +111,16 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
                     active === k ? "bg-ink font-semibold text-white" : "text-stone hover:text-ink",
                   )}
                 >
-                  {FEATURES[k].title}
+                  {tabTitle(k)}
                 </Link>
               ))}
             </div>
           ) : (
-            <h2 className="mb-4 text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">{FEATURES[active].title}</h2>
+            <h2 className="mb-4 text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">{tabTitle(active)}</h2>
           )}
           {active === "stempler" ? <StampRules business={business} /> : null}
           {active === "henvisninger" ? <ReferralRules business={business} /> : null}
+          {active === "kundekort" ? <CardShare business={business} /> : null}
         </section>
       ) : null}
     </>
@@ -136,6 +148,12 @@ async function StampRules({ business }: { business: Biz }) {
     color: { dark: "#1A1A1A", light: "#FFFFFF" },
   });
   return <KortEditor initial={initial} businessName={business.name} slug={business.slug} qrDataUrl={qrDataUrl} />;
+}
+
+async function CardShare({ business }: { business: Biz }) {
+  const url = `${APP_URL}/k/${business.slug}`;
+  const qrDataUrl = await QRCode.toDataURL(url, { margin: 2, width: 800, color: { dark: "#111111", light: "#FFFFFF" } });
+  return <KundekortShare url={url} qrDataUrl={qrDataUrl} shopName={cardTitle(business)} />;
 }
 
 async function ReferralRules({ business }: { business: Biz }) {

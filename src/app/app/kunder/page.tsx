@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import { requireBusiness } from "@/lib/session";
-import { KunderTabs } from "./KunderTabs";
 import { DeleteCustomerButton } from "./DeleteCustomerButton";
 import { prisma } from "@/lib/prisma";
 import { PageHeading, Panel } from "@/components/dash";
@@ -99,7 +98,6 @@ export default async function CustomersPage({
 
   return (
     <>
-      <KunderTabs active="kunder" showCampaigns={business.stampsEnabled} />
       <PageHeading
         title="Kunder"
         subtitle={`${formatDkNumber(total)} ${total === 1 ? "kortholder" : "kortholdere"} i alt.`}
