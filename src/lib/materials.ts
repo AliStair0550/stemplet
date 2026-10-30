@@ -23,7 +23,7 @@ export function headlineFromParam(v: string | null): string {
   return t || DEFAULT_MATERIAL_HEADLINE;
 }
 
-// Plakatens fokus: hent kortet (stempler) eller henvis en ven (henvisninger).
+// Plakatens fokus: hent kundekortet (alt paa kortet) eller henvis en ven.
 export type PosterFocus = "kort" | "henvis";
 
 export const REFERRAL_HEADLINES = [
@@ -32,10 +32,29 @@ export const REFERRAL_HEADLINES = [
   "Del os med en ven",
 ] as const;
 
-/** Fokus ud fra query'en og butikkens funktioner (uden stempler altid henvis). */
+/** Fokus ud fra query'en og butikkens funktioner (henvis kraever Henvisninger). */
 export function focusFromParam(v: string | null, b: { stampsEnabled: boolean; referralsEnabled: boolean }): PosterFocus {
-  if (!b.stampsEnabled) return "henvis";
   return v === "henvis" && b.referralsEnabled ? "henvis" : "kort";
+}
+
+const sentence = (t: string) => (t.endsWith(".") ? t : `${t}.`);
+
+/**
+ * Linjen under overskriften. Kundekortet naevner alt paa kortet (stempel-
+ * beloenningen og/eller henvisningen); henvis-plakaten begge parters beloenning.
+ * Beloenningerne kommer faerdigformuleret ("100 kr.", "gratis klip").
+ */
+export function posterRewardLine(
+  focus: PosterFocus,
+  i: { stampReward: string | null; friendReward: string | null; referrerReward: string | null },
+): string {
+  const referral =
+    i.friendReward && i.referrerReward
+      ? `${sentence(`Din ven får ${i.friendReward}`)} ${sentence(`Du får ${i.referrerReward}`)}`
+      : "";
+  if (focus === "henvis") return referral;
+  if (i.stampReward && i.referrerReward) return `${sentence(i.stampReward)} ${sentence(`Henvis en ven, og få ${i.referrerReward}`)}`;
+  return i.stampReward ?? referral;
 }
 
 /** Linjen under QR-koden. */

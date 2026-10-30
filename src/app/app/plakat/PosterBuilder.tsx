@@ -68,7 +68,7 @@ export function PosterBuilder({
   /** "Hent dit Sara Salon-kort" */
   cardHeadline: string;
 }) {
-  const [focus, setFocus] = useState<PosterFocus>(stampsEnabled ? "kort" : "henvis");
+  const [focus, setFocus] = useState<PosterFocus>("kort");
   const [size, setSize] = useState<Size>("plakat");
   const [bg, setBg] = useState<Bg>(hasPhoto ? "billede" : "farve");
   const [brand, setBrand] = useState(true);
@@ -76,7 +76,10 @@ export function PosterBuilder({
   const [headline, setHeadline] = useState("");
 
   const defaultHeadline = focus === "henvis" ? "Henvis en ven" : cardHeadline;
-  const suggestions = focus === "henvis" ? [...REFERRAL_HEADLINES] : [cardHeadline, "Saml stempler, få en belønning", "Bliv stamkunde"];
+  const suggestions =
+    focus === "henvis"
+      ? [...REFERRAL_HEADLINES]
+      : [cardHeadline, ...(stampsEnabled ? ["Saml stempler, få en belønning"] : []), "Bliv stamkunde"];
 
   const url = useMemo(() => {
     const q = new URLSearchParams({ fokus: focus, bg, navn: brand ? "1" : "0", stempler: grid ? "1" : "0" });
@@ -98,7 +101,7 @@ export function PosterBuilder({
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
       <div className="flex min-w-0 flex-col gap-4">
-        {stampsEnabled && referralsEnabled ? (
+        {referralsEnabled ? (
           <Box title="Hvad skal plakaten?">
             <Choice<PosterFocus>
               value={focus}
@@ -107,8 +110,8 @@ export function PosterBuilder({
                 setHeadline("");
               }}
               options={[
-                { key: "kort", label: "Hent kortet", note: "QR til dit kort" },
-                { key: "henvis", label: "Henvis en ven", note: "QR til henvisningssiden" },
+                { key: "kort", label: "Hent kundekortet", note: "Til nye kunder" },
+                { key: "henvis", label: "Henvis en ven", note: "Til kunder med kortet" },
               ]}
             />
           </Box>
@@ -158,7 +161,7 @@ export function PosterBuilder({
             <input type="checkbox" checked={brand} onChange={(e) => setBrand(e.target.checked)} className="h-5 w-5 accent-[#061C3D]" />
             Logo eller butiksnavn
           </label>
-          {focus === "kort" ? (
+          {focus === "kort" && stampsEnabled ? (
             <label className="flex items-center gap-3 py-1 text-[0.92rem] text-ink">
               <input type="checkbox" checked={grid} onChange={(e) => setGrid(e.target.checked)} className="h-5 w-5 accent-[#061C3D]" />
               Stemplerne (på A4 og A5)
@@ -189,7 +192,6 @@ export function PosterBuilder({
         >
           Hent PDF
         </a>
-        <p className="text-center text-[0.78rem] text-slate">Tryk på almindeligt papir, eller send PDF&apos;en til et trykkeri.</p>
       </aside>
     </div>
   );
