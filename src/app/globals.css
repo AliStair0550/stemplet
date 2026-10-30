@@ -843,25 +843,31 @@ textarea:focus-visible {
 .dash-theme [class*="text-terracotta/"] {
   color: rgb(27 94 174 / 0.6);
 }
-.dash-theme .hover\:text-terracotta:hover,
-.dash-theme .hover\:text-terracotta-dark:hover,
-.dash-theme .group:hover .group-hover\:text-terracotta {
-  color: var(--folka-deep);
-}
-.dash-theme .hover\:text-ink:hover {
-  color: var(--folka-ink);
-}
-.dash-theme .hover\:border-terracotta:hover,
-.dash-theme .focus\:border-terracotta:focus,
-.dash-theme .hover\:border-ink:hover {
+.dash-theme .focus\:border-terracotta:focus {
   border-color: var(--folka-deep);
 }
-.dash-theme .hover\:bg-terracotta-dark:hover,
-.dash-theme .hover\:bg-terracotta:hover,
-.dash-theme .group:hover .group-hover\:bg-terracotta,
-.dash-theme .hover\:bg-black:hover,
-.dash-theme [class*="hover:bg-ink/"]:hover {
-  background-color: var(--folka-ocean);
+/* Hover kun med en rigtig mus. Paa iPhone "haenger" :hover efter et tryk, og
+   en lys knap blev da malet moerkeblaa med moerk tekst (moerk paa moerk). */
+@media (hover: hover) {
+  .dash-theme .hover\:text-terracotta:hover,
+  .dash-theme .hover\:text-terracotta-dark:hover,
+  .dash-theme .group:hover .group-hover\:text-terracotta {
+    color: var(--folka-deep);
+  }
+  .dash-theme .hover\:text-ink:hover {
+    color: var(--folka-ink);
+  }
+  .dash-theme .hover\:border-terracotta:hover,
+  .dash-theme .hover\:border-ink:hover {
+    border-color: var(--folka-deep);
+  }
+  .dash-theme .hover\:bg-terracotta-dark:hover,
+  .dash-theme .hover\:bg-terracotta:hover,
+  .dash-theme .group:hover .group-hover\:bg-terracotta,
+  .dash-theme .hover\:bg-black:hover,
+  .dash-theme .hover\:bg-ink\/90:hover {
+    background-color: var(--folka-ocean);
+  }
 }
 .dash-theme .accent-terracotta {
   accent-color: var(--folka-deep);

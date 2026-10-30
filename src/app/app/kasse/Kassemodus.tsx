@@ -990,6 +990,7 @@ function StaffCard({
               <button
                 onClick={redeem}
                 disabled={busy || (hasPin && pin.length < 4)}
+                aria-busy={busy}
                 className={btnClass("primary") + " self-start"}
               >
                 {busy ? "Indløser..." : "Indløs belønning"}
@@ -1026,6 +1027,7 @@ function StaffCard({
                 <button
                   onClick={giveStamp}
                   disabled={busy}
+                  aria-busy={busy}
                   className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS} min-h-[3.6rem] text-[0.9rem]`}
                 >
                   {busy ? (
