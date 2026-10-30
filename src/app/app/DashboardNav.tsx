@@ -44,6 +44,7 @@ const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
 // menuen; siderne findes stadig paa adressen for den, der kender den.
 const SHOP_LINKS: NavLink[] = [
   { href: "/app/indstillinger", label: "Butik og adgang" },
+  { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/guide", label: "Guide til personalet" },
 ];
@@ -181,15 +182,6 @@ export function DashboardNav({
           <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
           <circle cx="16" cy="7" r="2" />
           <circle cx="10" cy="17" r="2" />
-        </>,
-      )}
-      {cardLink(
-        "/app/plakat",
-        "Plakat",
-        <>
-          <rect x="5" y="3.5" width="14" height="17" rx="1.5" />
-          <rect x="9" y="11" width="6" height="6" rx="0.8" />
-          <path d="M8.5 7.5h7" />
         </>,
       )}
       <p className="mx-3 mb-1 mt-3 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Funktioner</p>
