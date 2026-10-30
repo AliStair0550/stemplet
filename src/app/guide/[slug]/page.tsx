@@ -33,27 +33,26 @@ export default async function PublicGuidePage({
   if (!data) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12 md:py-16">
-      <header className="mb-12 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[0.7rem] font-[400] uppercase tracking-[0.14em] text-terracotta">
-            Personale-guide
-          </p>
-          <h1 className="mt-2 text-[1.9rem] font-[300] leading-tight text-ink">
-            Sådan virker det hos {data.businessName}
-          </h1>
-          <p className="mt-1.5 text-[1rem] font-[200] text-stone">
-            Læs det på tre minutter.
-          </p>
-        </div>
-        <PrintGuideButton />
-      </header>
+    <main className="dash-theme min-h-screen bg-parchment">
+      <div className="mx-auto w-full max-w-3xl px-6 py-12 md:py-16">
+        <header className="mb-10 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[0.85rem] font-medium text-stone">
+              Guide til personalet
+            </p>
+            <h1 className="mt-1 text-[1.9rem] font-bold leading-tight tracking-[-0.03em] text-ink">
+              Sådan virker det hos {data.businessName}
+            </h1>
+          </div>
+          <PrintGuideButton />
+        </header>
 
-      <GuideContent data={data} />
+        <GuideContent data={data} />
 
-      <footer className="mt-16 border-t border-fog pt-6 text-center text-[0.8rem] font-[300] tracking-[0.08em] text-slate print:hidden">
-        Lavet med Stemplet
-      </footer>
+        <footer className="mt-16 border-t border-fog pt-6 text-center text-[0.8rem] text-slate print:hidden">
+          Kundekort fra Folka
+        </footer>
+      </div>
     </main>
   );
 }

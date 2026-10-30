@@ -8,6 +8,8 @@ export const PLATFORM = {
   name: "Folka",
   url: "https://folka.dk",
   contactEmail: "hej@folka.dk",
+  /** Servicenummer til butikkerne og deres personale. */
+  supportPhone: "+45 60 51 65 38",
   /** Folkas moerkeblaa (ikonets baggrund, folka.dk). */
   color: "#061C3D",
 } as const;
