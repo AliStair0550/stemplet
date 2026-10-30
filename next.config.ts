@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import { DANISH_REDIRECTS, DANISH_ROUTES, pathVariants } from "./src/lib/danish-routes";
 
 const nextConfig: NextConfig = {
   // Pakker der bruger Node-native ting (fs, node-forge, streams) og ikke skal
@@ -57,6 +58,13 @@ const nextConfig: NextConfig = {
   // trykte QR-koder til /k/...), men /api bliver, hvor den er: Wallet-kort, der
   // allerede er hentet, kender stemplet.alius.dk som webServiceURL og skal
   // stadig kunne opdateres. Midlertidig (307), saa den kan rulles tilbage.
+  // Mappenavne i src/app skal vaere ASCII: Next' dev-server finder ikke ruter med
+  // æ/ø/å/é i mappenavnet (404 lokalt, selvom produktion virker). De danske
+  // adresser bevares udadtil via rewrites. Se tests/routes-ascii.test.ts.
+  async rewrites() {
+    // Browsere sender stien procent-kodet (/pr%C3%B8v); alle former matches.
+    return DANISH_ROUTES.flatMap(([pretty, folder]) => pathVariants(pretty).map((source) => ({ source, destination: folder })));
+  },
   async redirects() {
     return [
       {
@@ -70,6 +78,7 @@ const nextConfig: NextConfig = {
       { source: "/stemplet", destination: "/", permanent: true },
       { source: "/hvorfor", destination: "/#funktioner", permanent: true },
       { source: "/henvisninger", destination: "/#funktioner", permanent: true },
+      ...DANISH_REDIRECTS.flatMap(([pretty, to]) => pathVariants(pretty).map((source) => ({ source, destination: to, permanent: true }))),
     ];
   },
   images: {

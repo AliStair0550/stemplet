@@ -87,3 +87,16 @@ Ingen fejl, der stopper driften. De største huller er gammelt navn og gammel pr
 3. Mobil: gem-knapper, forhåndsvisning i oprettelsen, historien.
 4. Hastighed uden adfærdsændring.
 5. Dine godkendelser (punkt 1, 8, 9, 10, 18, 19, 24, 25, 28).
+
+## Status efter implementering
+
+Lavet: punkt 1 (pris), 2-7, 11-17, 20-23, 26 og udvalgte P2. Godkendt og lavet: 301 af gamle sider og databasepulje på 5 (sat i koden).
+
+Æ, ø og å i adresser: mapper i src/app er nu ASCII (proev, stempelkort-til-frisoerer, stempelkort-til-cafeer), og de danske adresser omskrives dertil (src/lib/danish-routes.ts). En test (tests/routes-ascii.test.ts) fejler, hvis nogen opretter en mappe med danske tegn.
+
+## Backlog
+
+- Pushbesked, når kortet er fuldt: "Din belønning er klar. Vis kortet ved kassen."
+- Ét samlet "Del kortet" i menuen med QR, link, plakat og visitkort.
+- Afventer svar: ét tryk til Wallet, server-redirect på henvisningslink, Wallet "siden sidst" (migration), navnefelt i oprettelsen, ny butik nr. 2 til Hjem.
+- Hastighed uden adfærdsændring: delt APNs-forbindelse, mindre data pr. stempel og pr. dashboard-kald, cache af kortopslag på Hjem.
