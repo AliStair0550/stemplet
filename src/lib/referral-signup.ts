@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { createCardholderAtomically, hasActivePickupStamp, applyStamp } from "./stamp";
-import { maybeFireCardholderThresholds, signupBlockReason } from "./billing";
+import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
 import { referralCodeCandidates } from "./referral-code";
 import { parseContact } from "./contact";
@@ -202,7 +202,7 @@ export async function signupForReferrals(
     input.deviceId ?? null,
   );
   if (!created) return { ok: false, error: "fuld" };
-  await maybeFireCardholderThresholds(shop.id);
+  await maybeFireTrialMilestones(shop.id);
 
   // Samtidig tilmelding med samme e-mail: unik-indekset vinder, og den anden
   // faar "mail_findes" (kortet er stadig enhedens eget og genbruges naeste gang).

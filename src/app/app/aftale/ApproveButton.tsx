@@ -22,7 +22,7 @@ export function ApproveButton() {
         }
         className={`${btnClass("primary", "lg")} ${CTA_EMPHASIS} w-full sm:w-auto disabled:opacity-50`}
       >
-        {pending ? "Godkender..." : "Godkend Pro-aftale"}
+        {pending ? "Bekræfter..." : "Bekræft abonnementet"}
       </button>
     </CtaGlow>
   );

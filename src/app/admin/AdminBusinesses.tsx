@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { startSupport } from "./actions";
-import { FREE_CUSTOMER_LIMIT, FREE_CUSTOMER_WARN } from "@/lib/plans";
+import { TRIAL_WARN_DAYS, trialEndsAt } from "@/lib/plans";
 import { formatDkNumber, formatDkDate, formatDkDateTime } from "@/lib/utils";
 import {
   CopyEmail,
@@ -63,12 +63,14 @@ export type Row = {
 type Filter = "all" | "over" | "near" | "pending" | "paused" | "stopped";
 type Sort = "cardholders" | "growth" | "active" | "newest";
 
-// Kanoniske tilstande, saa taeller og filter altid er enige.
-const isOver = (r: Row) => r.customers >= FREE_CUSTOMER_LIMIT;
-const isNear = (r: Row) =>
-  r.customers >= FREE_CUSTOMER_WARN && r.customers < FREE_CUSTOMER_LIMIT;
-const isPending = (r: Row) =>
-  r.customers >= FREE_CUSTOMER_WARN && !r.proApprovedAt;
+// Kanoniske tilstande (proeveperioden: tre maaneder fra oprettelsen), saa
+// taeller og filter altid er enige. "over" = skal faktureres.
+const isOver = (r: Row) => !r.isDemo && Date.now() >= trialEndsAt(r.createdAt).getTime();
+const isNear = (r: Row) => {
+  const left = trialEndsAt(r.createdAt).getTime() - Date.now();
+  return !r.isDemo && left > 0 && left <= TRIAL_WARN_DAYS * 86_400_000;
+};
+const isPending = (r: Row) => (isOver(r) || isNear(r)) && !r.proApprovedAt;
 
 export function AdminBusinesses({ rows }: { rows: Row[] }) {
   const [q, setQ] = useState("");
@@ -125,9 +127,9 @@ export function AdminBusinesses({ rows }: { rows: Row[] }) {
   }, [rows, q, filter, sort]);
 
   const attention: { key: Filter; label: string; n: number }[] = [
-    { key: "over", label: "Over 100 (fakturér)", n: counts.over },
-    { key: "near", label: "Nær grænsen (80+)", n: counts.near },
-    { key: "pending", label: "Afventer godkendelse", n: counts.pending },
+    { key: "over", label: "Gratis periode slut (fakturér)", n: counts.over },
+    { key: "near", label: "Slutter inden for 14 dage", n: counts.near },
+    { key: "pending", label: "Ikke bekræftet", n: counts.pending },
     { key: "paused", label: "På pause", n: counts.paused },
     { key: "stopped", label: "Stoppet", n: counts.stopped },
   ];
@@ -275,9 +277,9 @@ function BusinessRow({ r }: { r: Row }) {
             <span className="font-[400] text-ink">{r.name}</span>
             {r.stopped ? <Dot tone="rust" title="Stoppet" /> : null}
             {r.newSignupsPaused ? <Dot tone="amber" title="På pause" /> : null}
-            {isOver(r) ? <Dot tone="amber" title="Over 100" /> : null}
+            {isOver(r) ? <Dot tone="amber" title="Betaler" /> : null}
             {r.proApprovedAt ? (
-              <Dot tone="terracotta" title="Pro godkendt" />
+              <Dot tone="terracotta" title="Abonnement bekræftet" />
             ) : null}
           </div>
           <span className="font-[300] text-[0.72rem] text-slate">/{r.slug}</span>
@@ -407,7 +409,7 @@ function BusinessDetail({ r }: { r: Row }) {
       <div className="rounded-md border border-fog bg-white px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-[0.6rem] font-[500] uppercase tracking-[0.12em] text-slate">
-            Pro &amp; fakturering
+            Abonnement &amp; fakturering
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <PauseButton businessId={r.id} paused={r.newSignupsPaused} />
@@ -417,16 +419,18 @@ function BusinessDetail({ r }: { r: Row }) {
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5">
           <Fact
             label="Kortholdere"
-            value={`${formatDkNumber(r.customers)} / ${FREE_CUSTOMER_LIMIT}${
-              isOver(r) ? " (over)" : ""
-            }`}
+            value={formatDkNumber(r.customers)}
           />
           <Fact
-            label="Godkendt"
+            label="Gratis til"
+            value={formatDkDate(trialEndsAt(r.createdAt))}
+          />
+          <Fact
+            label="Bekræftet"
             value={r.proApprovedAt ? formatDkDateTime(r.proApprovedAt) : "Nej"}
           />
           <Fact
-            label="Krydsede 100"
+            label="Fakturering startet"
             value={r.reached100At ? formatDkDate(r.reached100At) : "-"}
           />
           <Fact

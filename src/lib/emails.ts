@@ -379,66 +379,63 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
   };
 }
 
-// ── Kortholder-varsel ved 80 (til ejeren) ────────────────────────────
-// Venligt varsel, ingen betalingsmur. Ejeren har allerede accepteret modellen
-// ved onboarding, saa det er varsling, ikke forhandling.
+// ── Proeveperioden slutter snart (til ejeren) ───────────────────────
+// Venligt varsel 14 dage foer (eller med det samme, hvis perioden allerede er
+// slut). Ingen betalingsmur; fakturering er manuel og sker foerst bagefter.
 
-export type CardholderWarningData = {
+export type TrialEndingData = {
   businessName: string;
-  cardholders: number;
-  limit: number;
+  /** "12. januar 2027" */
+  endsOn: string;
+  /** Proeveperioden er allerede slut. */
+  ended: boolean;
   priceKr: number;
   agreementUrl: string;
 };
 
-export function cardholderWarningEmail(d: CardholderWarningData): Email {
+export function trialEndingEmail(d: TrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se aftalen</a>
+      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se abonnementet</a>
     </td></tr></table>`;
+  const head = d.ended ? "Dine tre gratis måneder er gået." : `Dine tre gratis måneder slutter ${d.endsOn}.`;
+  const body = d.ended
+    ? `${d.businessName} fortsætter på Folka Kort til ${d.priceKr} kr. om måneden ekskl. moms. Du skal ikke gøre noget. Alt kører videre som i dag, og du får en faktura om måneden.`
+    : `Derefter koster Folka Kort ${d.priceKr} kr. om måneden ekskl. moms for ${d.businessName}. Du skal ikke gøre noget. Alt kører videre som i dag, og du får en faktura om måneden.`;
 
   const inner = `
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      I nærmer jer ${d.limit} kortholdere.
+      ${esc(head)}
     </p>
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      ${esc(d.businessName)} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.
+      ${esc(body)}
     </p>
     <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
-      Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen, når det passer jer.
+      Ingen binding. Ubegrænset antal kortholdere. Se dit abonnement og bekræft det, når det passer dig.
     </p>
     ${button}`;
 
-  const text = [
-    `I nærmer jer ${d.limit} kortholdere.`,
-    "",
-    `${d.businessName} har nu ${d.cardholders} kortholdere. Ved ${d.limit} fortsætter I automatisk på Pro til ${d.priceKr} kr. per måned ekskl. moms. I skal ikke gøre noget, alt fortsætter præcis som i dag.`,
-    "",
-    "Ingen betalingsmur, ingen afbrydelse. Se jeres status og godkend aftalen her:",
-    d.agreementUrl,
-    "",
-    "Kundekort fra Folka.",
-  ].join("\n");
+  const text = [head, "", body, "", "Ingen binding. Ubegrænset antal kortholdere. Se dit abonnement her:", d.agreementUrl, "", "Folka Kort."].join("\n");
 
   return {
-    subject: `I nærmer jer ${d.limit} kortholdere på Kundekort`,
-    html: shell(`${esc(d.businessName)} nærmer sig ${d.limit} kortholdere.`, inner),
+    subject: d.ended ? "Dine gratis måneder på Folka Kort er gået" : `Dine gratis måneder på Folka Kort slutter ${d.endsOn}`,
+    html: shell(head, inner),
     text,
   };
 }
 
-// ── Kortholder-varsel ved 80 (til superadmin/Ali) ────────────────────
+// ── Proeveperioden slutter snart (til superadmin/Ali) ───────────────
 
-export type SuperadminThresholdData = {
+export type SuperadminTrialEndingData = {
   businessName: string;
   slug: string;
+  endsOn: string;
   cardholders: number;
-  limit: number;
   ownerEmails: string;
   adminUrl: string;
 };
 
-export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
+export function superadminTrialEndingEmail(d: SuperadminTrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
       <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
@@ -446,49 +443,48 @@ export function superadminThresholdEmail(d: SuperadminThresholdData): Email {
 
   const inner = `
     <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      ${esc(d.businessName)} nærmer sig ${d.limit} kortholdere.
+      ${esc(d.businessName)}: gratis periode slutter ${esc(d.endsOn)}.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;">
-      ${statRow("Kortholdere", d.cardholders, `af ${d.limit}`)}
+      ${statRow("Kortholdere", d.cardholders, "i dag")}
     </table>
     <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
       Butik: ${esc(d.businessName)} (${d.slug})<br>
       Ejer: ${esc(d.ownerEmails)}
     </p>
     <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
-      Ejeren har fået varsel og et link til at godkende Pro-aftalen. Sæt evt. en individuel pris i admin, før de krydser ${d.limit}.
+      Ejeren har fået varsel og et link til abonnementet. Sæt evt. en individuel pris i admin, før perioden slutter.
     </p>
     ${button}`;
 
   const text = [
-    `${d.businessName} nærmer sig ${d.limit} kortholdere.`,
+    `${d.businessName}: gratis periode slutter ${d.endsOn}.`,
     "",
-    `Kortholdere: ${d.cardholders} af ${d.limit}`,
+    `Kortholdere i dag: ${d.cardholders}`,
     `Butik: ${d.businessName} (${d.slug})`,
     `Ejer: ${d.ownerEmails}`,
     "",
-    `Ejeren har fået varsel og et godkendelses-link. Sæt evt. en individuel pris i admin, før de krydser ${d.limit}.`,
+    "Ejeren har fået varsel. Sæt evt. en individuel pris i admin, før perioden slutter.",
     d.adminUrl,
   ].join("\n");
 
   return {
-    subject: `[Kundekort] ${d.businessName} nærmer sig ${d.limit} kortholdere`,
-    html: shell(`${esc(d.businessName)}: ${d.cardholders} kortholdere.`, inner),
+    subject: `[Folka Kort] ${d.businessName}: gratis periode slutter ${d.endsOn}`,
+    html: shell(`${esc(d.businessName)}: gratis periode slutter.`, inner),
     text,
   };
 }
 
-// ── Faktura-trigger ved 100 (til superadmin/Ali) ─────────────────────
-// 100-krydsningen ER faktureringstidspunktet i modellen, saa denne mail er selve
-// triggeren for Billy-fakturaen. Den samler alt, man skal bruge for at fakturere
-// direkte fra indbakken: navn, kortholdertal, individuel pris og hvornaar ejeren
-// godkendte aftalen.
+// ── Faktura-trigger, naar proeveperioden er slut (til superadmin/Ali) ─
+// Dagen efter de tre gratis maaneder ER faktureringstidspunktet, saa denne mail
+// er selve triggeren for Billy-fakturaen og samler alt, man skal bruge.
 
 export type SuperadminInvoiceData = {
   businessName: string;
   slug: string;
   cardholders: number;
-  limit: number;
+  /** "12. januar 2027": sidste gratis dag. */
+  trialEndedOn: string;
   priceKr: number; // effektiv maanedspris (specialpris eller standard)
   standardPriceKr: number;
   approvedLabel: string; // formateret tidsstempel for godkendelsesklik, ellers besked
@@ -497,10 +493,7 @@ export type SuperadminInvoiceData = {
 };
 
 export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
-  const priceNote =
-    d.priceKr !== d.standardPriceKr
-      ? `specialpris, standard er ${d.standardPriceKr} kr`
-      : "standardpris";
+  const priceNote = d.priceKr !== d.standardPriceKr ? `specialpris, standard er ${d.standardPriceKr} kr` : "standardpris";
 
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
@@ -515,7 +508,7 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
 
   const inner = `
     <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      ${esc(d.businessName)} har krydset ${d.limit} kortholdere.
+      ${esc(d.businessName)}: de tre gratis måneder er gået.
     </p>
     <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
       Det er faktureringstidspunktet. Her er alt, du skal bruge til Billy-fakturaen.
@@ -523,10 +516,11 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:14px 18px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-          ${detailRow("Kortholdere", `${d.cardholders} (krydsede ${d.limit})`)}
-          ${detailRow("Pro-pris", `${d.priceKr} kr/md ekskl. moms`)}
+          ${detailRow("Sidste gratis dag", d.trialEndedOn)}
+          ${detailRow("Pris", `${d.priceKr} kr/md ekskl. moms`)}
           ${detailRow("Pris-note", priceNote)}
-          ${detailRow("Aftale godkendt", d.approvedLabel)}
+          ${detailRow("Kortholdere", String(d.cardholders))}
+          ${detailRow("Abonnement bekræftet", d.approvedLabel)}
           ${detailRow("Butik", `${d.businessName} (${d.slug})`)}
           ${detailRow("Ejer", d.ownerEmails)}
         </table>
@@ -535,12 +529,13 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
     ${button}`;
 
   const text = [
-    `${d.businessName} har krydset ${d.limit} kortholdere. Det er faktureringstidspunktet.`,
+    `${d.businessName}: de tre gratis måneder er gået. Det er faktureringstidspunktet.`,
     "",
     "Til Billy-fakturaen:",
-    `Kortholdere: ${d.cardholders} (krydsede ${d.limit})`,
-    `Pro-pris: ${d.priceKr} kr/md ekskl. moms (${priceNote})`,
-    `Aftale godkendt: ${d.approvedLabel}`,
+    `Sidste gratis dag: ${d.trialEndedOn}`,
+    `Pris: ${d.priceKr} kr/md ekskl. moms (${priceNote})`,
+    `Kortholdere: ${d.cardholders}`,
+    `Abonnement bekræftet: ${d.approvedLabel}`,
     `Butik: ${d.businessName} (${d.slug})`,
     `Ejer: ${d.ownerEmails}`,
     "",
@@ -548,8 +543,8 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
   ].join("\n");
 
   return {
-    subject: `[Kundekort] Fakturér: ${d.businessName} har krydset ${d.limit} kortholdere`,
-    html: shell(`${esc(d.businessName)} skal faktureres for Pro.`, inner),
+    subject: `[Folka Kort] Fakturér: ${d.businessName} er færdig med de gratis måneder`,
+    html: shell(`${esc(d.businessName)} skal faktureres.`, inner),
     text,
   };
 }

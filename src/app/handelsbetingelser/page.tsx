@@ -27,7 +27,7 @@ export default function TermsPage() {
   return (
     <LegalLayout
       title="Handelsbetingelser"
-      updated="12. juli 2026"
+      updated="30. oktober 2026"
       intro="Disse betingelser gælder, når din butik bruger Kundekort, et digitalt kundekort fra Folka. De accepteres, når du opretter en butik."
     >
       <LegalSection title="1. Om aftalen">
@@ -49,12 +49,12 @@ export default function TermsPage() {
       <LegalSection title="3. Priser og betaling">
         <ul className="flex flex-col gap-2.5">
           <Li>
-            Kundekort er gratis op til 100 kortholdere med alle funktioner og dit
-            eget brand.
+            Folka Kort er gratis de første tre måneder fra oprettelsen, med alle
+            funktioner og ubegrænset antal kortholdere.
           </Li>
           <Li>
-            Derover koster Pro 99 kr. om måneden ekskl. moms. De til enhver tid
-            gældende priser fremgår på sitet.
+            Derefter koster Folka Kort 49 kr. om måneden ekskl. moms. De til
+            enhver tid gældende priser fremgår på sitet.
           </Li>
           <Li>
             Der er ingen binding. Du kan opsige når som helst og betaler kun for

@@ -5,7 +5,7 @@ import { PageHeading } from "@/components/dash";
 import { formatDkDate, formatDkNumber } from "@/lib/utils";
 import { ApproveButton } from "./ApproveButton";
 
-export const metadata: Metadata = { title: "Pro-aftale" };
+export const metadata: Metadata = { title: "Abonnement" };
 export const dynamic = "force-dynamic";
 
 function Term({ children }: { children: React.ReactNode }) {
@@ -32,92 +32,73 @@ function Term({ children }: { children: React.ReactNode }) {
 export default async function AftalePage() {
   const { business } = await requireBusiness();
   const v = await getAgreementView(business.id);
+  const endsOn = formatDkDate(v.trialEndsAt);
 
   const subtitle = v.approved
-    ? "Aftalen er godkendt. Alt fortsætter præcis som i dag."
-    : v.overLimit
-      ? `I er over ${v.limit} kortholdere. Godkend Pro-aftalen, så er alt på plads.`
-      : v.warned
-        ? `I nærmer jer ${v.limit} kortholdere. Se aftalen og godkend, når det passer.`
-        : `Her er jeres status og Pro-aftalen. Intet skift sker, før I krydser ${v.limit} kortholdere.`;
+    ? "Abonnementet er bekræftet. Alt kører videre som i dag."
+    : v.inTrial
+      ? `Du har gratis adgang til og med ${endsOn}. Derefter ${v.priceKr} kr. om måneden ekskl. moms.`
+      : "De gratis måneder er gået. Bekræft abonnementet, så er alt på plads.";
 
-  const pct = Math.min(100, Math.round((v.cardholders / v.limit) * 100));
+  // Fremgang gennem de tre gratis maaneder (ca. 91 dage).
+  const pct = v.inTrial ? Math.max(4, Math.min(100, Math.round(((91 - v.trialDaysLeft) / 91) * 100))) : 100;
   const special = v.priceKr !== v.standardPriceKr;
 
   return (
     <>
-      <PageHeading title="Pro-aftale" subtitle={subtitle} />
+      <PageHeading title="Abonnement" subtitle={subtitle} />
 
       <div className="flex max-w-xl flex-col gap-6">
-        {/* Status: kortholdere */}
+        {/* Status: de gratis maaneder */}
         <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
-                Kortholdere
-              </span>
-              <p className="mt-1 font-[300] text-[1.6rem] leading-none text-ink">
-                <span className="tabular-nums">
-                  {formatDkNumber(v.cardholders)}
-                </span>{" "}
-                <span className="text-[1rem] text-slate">af {v.limit}</span>
-              </p>
-            </div>
-          </div>
+          <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">Gratis periode</span>
+          <p className="mt-1 font-[300] text-[1.6rem] leading-none text-ink">
+            {v.inTrial ? (
+              <>
+                <span className="tabular-nums">{formatDkNumber(v.trialDaysLeft)}</span>{" "}
+                <span className="text-[1rem] text-slate">{v.trialDaysLeft === 1 ? "dag tilbage" : "dage tilbage"}</span>
+              </>
+            ) : (
+              <span className="text-[1.2rem]">Slut {endsOn}</span>
+            )}
+          </p>
           <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-fog">
-            <div
-              className="h-full rounded-full bg-terracotta transition-all"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="h-full rounded-full bg-terracotta transition-all" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-3 font-[300] text-[0.82rem] leading-relaxed text-slate">
-            En kortholder er ét kundekort hos jer. Gratis op til {v.limit}.
+            Tre måneder gratis fra oprettelsen, til og med {endsOn}. Du har {formatDkNumber(v.cardholders)}{" "}
+            {v.cardholders === 1 ? "kortholder" : "kortholdere"}, og der er ingen grænse.
           </p>
         </section>
 
-        {/* Aftalen */}
+        {/* Abonnementet */}
         <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
-          <h2 className="font-[300] text-[1.3rem] text-ink">Pro-aftalen</h2>
+          <h2 className="font-[300] text-[1.3rem] text-ink">Folka Kort</h2>
           <ul className="mt-5 flex flex-col gap-3.5">
             <Term>
-              <span className="font-[400] text-ink">
-                {formatDkNumber(v.priceKr)} kr. per måned ekskl. moms
-              </span>
-              {special ? (
-                <span className="text-slate">
-                  {" "}
-                  (jeres aftalte pris; standardprisen er {v.standardPriceKr} kr.)
-                </span>
-              ) : null}
+              <span className="font-[400] text-ink">{formatDkNumber(v.priceKr)} kr. om måneden ekskl. moms</span>
+              {special ? <span className="text-slate"> (din aftalte pris; standardprisen er {v.standardPriceKr} kr.)</span> : null}
             </Term>
-            <Term>Månedsvis faktura, forud</Term>
-            <Term>Ingen binding: opsig når som helst</Term>
-            <Term>
-              Betaling starter først den dag, I krydser {v.limit} kortholdere
-            </Term>
-            <Term>Ingen betalingsmur: intet stopper undervejs</Term>
+            <Term>De første tre måneder er gratis</Term>
+            <Term>Stempler, henvisninger og beskeder. Ubegrænset antal kortholdere</Term>
+            <Term>Faktura månedsvis, forud</Term>
+            <Term>Ingen binding. Opsig når som helst</Term>
+            <Term>Intet lukker undervejs</Term>
           </ul>
 
           <div className="mt-7 border-t border-fog pt-6">
             {v.approved ? (
               <div className="rounded-lg border border-terracotta bg-terracotta/5 px-5 py-4">
-                <p className="font-[400] text-[0.95rem] text-ink">
-                  Aftale godkendt
-                </p>
+                <p className="font-[400] text-[0.95rem] text-ink">Abonnement bekræftet</p>
                 <p className="mt-1 font-[300] text-[0.85rem] text-stone">
-                  Godkendt{" "}
-                  {v.approvedAt ? formatDkDate(v.approvedAt) : ""}. I skal ikke
-                  gøre mere. Faktura sendes månedsvis, når I er over {v.limit}{" "}
-                  kortholdere.
+                  Bekræftet {v.approvedAt ? formatDkDate(v.approvedAt) : ""}. Du skal ikke gøre mere. Første faktura kommer efter de gratis måneder.
                 </p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
                 <p className="font-[300] text-[0.88rem] leading-relaxed text-stone">
-                  Ved at godkende accepterer I Pro-aftalen ovenfor. I har allerede
-                  sagt ja til prismodellen i handelsbetingelserne ved oprettelsen,
-                  så det er blot en bekræftelse. Godkendelsen noteres med
-                  tidspunkt.
+                  Ved at bekræfte siger du ja til abonnementet ovenfor. Du sagde allerede ja til prisen i handelsbetingelserne ved
+                  oprettelsen, så det er blot en bekræftelse. Den noteres med tidspunkt.
                 </p>
                 <ApproveButton />
               </div>

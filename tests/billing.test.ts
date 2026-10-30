@@ -8,9 +8,12 @@ process.env.DATABASE_URL =
   process.env.DATABASE_URL ?? "postgresql://u:p@localhost:5432/db";
 
 import {
-  processCardholderThresholds,
+  processTrialMilestones,
   sweepPendingThresholdEmails,
 } from "../src/lib/billing";
+
+const DAY = 86_400_000;
+const daysAgo = (n: number) => new Date(Date.now() - n * DAY);
 
 // De to typer, funktionerne forventer for db og mailer. Vi udleder dem, saa vi
 // ikke skal importere selve prisma-vaerdien (og konstruere den).
@@ -26,6 +29,7 @@ type BizRow = {
   id: string;
   slug: string;
   name: string;
+  createdAt: Date;
   cardholderWarnedAt: Date | null;
   cardholderWarnEmailSentAt: Date | null;
   reached100At: Date | null;
@@ -37,9 +41,17 @@ type BizRow = {
   cards: { id: string }[];
 };
 
-function matchWhere(row: Record<string, unknown>, where: Record<string, unknown>) {
+function matchWhere(row: Record<string, unknown>, where: Record<string, unknown>): boolean {
   for (const [k, v] of Object.entries(where)) {
     const cur = row[k];
+    if (k === "OR" && Array.isArray(v)) {
+      if (!v.some((w) => matchWhere(row, w as Record<string, unknown>))) return false;
+      continue;
+    }
+    if (v && typeof v === "object" && "lte" in v) {
+      if (!(cur instanceof Date) || cur.getTime() > (v as { lte: Date }).lte.getTime()) return false;
+      continue;
+    }
     if (v === null) {
       if (cur != null) return false;
     } else if (v && typeof v === "object" && "not" in v) {
@@ -144,12 +156,14 @@ function baseRow(
 ): Omit<BizRow, "cards"> & { cardholderCount: number } {
   return {
     name: "Butik",
+    // I varsel-vinduet (gratis i ca. 91 dage, varsel 14 dage foer).
+    createdAt: daysAgo(80),
     cardholderWarnedAt: null,
     cardholderWarnEmailSentAt: null,
     reached100At: null,
     reached100EmailSentAt: null,
     proApprovedAt: null,
-    proPriceKr: 99,
+    proPriceKr: 49,
     proPriceUntil: null,
     memberships: [{ user: { email: "ejer@butik.dk" } }],
     cardholderCount: 0,
@@ -159,8 +173,8 @@ function baseRow(
 
 // ── Fejlscenarie 1: mail fejler ved krydsning -> sweepet samler varslet op ──
 
-test("sweep genopsamler 80-varslet efter et mail-blip", async () => {
-  // Butik HAR krydset 80 (Warned sat), men mailen fejlede (EmailSent stadig null).
+test("sweep genopsamler varslet efter et mail-blip", async () => {
+  // Varslet ER givet (Warned sat), men mailen fejlede (EmailSent stadig null).
   const { client, businesses } = makeFakeDb([
     baseRow({
       id: "b1",
@@ -208,13 +222,13 @@ test("sweep genopsamler 80-varslet efter et mail-blip", async () => {
 
 // ── Fejlscenarie 2: to samtidige krydsninger -> praecis eet varsel ──────
 
-test("to samtidige krydsninger af 80 giver praecis eet varsel (fire-once)", async () => {
+test("to samtidige kald giver praecis eet varsel (fire-once)", async () => {
   const { client, businesses } = makeFakeDb([
     baseRow({
       id: "b2",
       slug: "vinbar",
       name: "Vinbar",
-      cardholderCount: 80, // netop krydset 80 (ikke 100)
+      cardholderCount: 12,
     }),
   ]);
 
@@ -225,16 +239,16 @@ test("to samtidige krydsninger af 80 giver praecis eet varsel (fire-once)", asyn
     return true;
   };
 
-  // To samtidige "det 80. kort blev lige oprettet"-kald mod SAMME butik.
+  // To samtidige kald (fx nyt kort + cron) mod SAMME butik i varsel-vinduet.
   await Promise.all([
-    processCardholderThresholds("b2", client, mailer),
-    processCardholderThresholds("b2", client, mailer),
+    processTrialMilestones("b2", client, mailer),
+    processTrialMilestones("b2", client, mailer),
   ]);
 
   assert.notEqual(
     businesses.get("b2")!.cardholderWarnedAt,
     null,
-    "taersklen blev registreret",
+    "varslet blev registreret",
   );
   assert.equal(
     sends,
@@ -248,20 +262,20 @@ test("to samtidige krydsninger af 80 giver praecis eet varsel (fire-once)", asyn
   );
 });
 
-// ── Fuld flow: Resend-fejl PRAECIS ved 80-krydsningen, saa sweep-genopretning ──
+// ── Fuld flow: Resend-fejl PRAECIS ved varslet, saa sweep-genopretning ──
 // Adskilt fra "sweep genopsamler" ovenfor: her sker fejlen under selve krydsningen
-// (processCardholderThresholds), ikke fra en for-udfyldt tilstand.
+// (processTrialMilestones), ikke fra en for-udfyldt tilstand.
 
-test("Resend-fejl ved 80-krydsning: warnedAt saettes, sentAt null, sweep gensender", async () => {
+test("Resend-fejl ved varslet: warnedAt saettes, sentAt null, sweep gensender", async () => {
   const { client, businesses } = makeFakeDb([
-    baseRow({ id: "bx", slug: "shop", name: "Shop", cardholderCount: 80 }),
+    baseRow({ id: "bx", slug: "shop", name: "Shop", cardholderCount: 12 }),
   ]);
 
-  // Krydsningen sker med en FEJLENDE mailer.
+  // Varslet sker med en FEJLENDE mailer.
   const failing: MailArg = async () => {
     throw new Error("resend nede");
   };
-  await processCardholderThresholds("bx", client, failing);
+  await processTrialMilestones("bx", client, failing);
 
   const b = businesses.get("bx")!;
   assert.notEqual(
@@ -284,4 +298,40 @@ test("Resend-fejl ved 80-krydsning: warnedAt saettes, sentAt null, sweep gensend
     null,
     "warnEmailSentAt sat efter bekraeftet gensendelse",
   );
+});
+
+// ── Proeveperioden ───────────────────────────────────────────────────
+
+test("foer varsel-vinduet sker der intet", async () => {
+  const { client, businesses } = makeFakeDb([baseRow({ id: "n1", slug: "ny", createdAt: daysAgo(10) })]);
+  let sends = 0;
+  await processTrialMilestones("n1", client, async () => (sends++, true));
+  assert.equal(sends, 0);
+  assert.equal(businesses.get("n1")!.cardholderWarnedAt, null);
+  assert.equal(businesses.get("n1")!.reached100At, null);
+});
+
+test("efter de tre maaneder: varsel og faktura-trigger, hver kun een gang", async () => {
+  const { client, businesses } = makeFakeDb([baseRow({ id: "o1", slug: "gammel", createdAt: daysAgo(100) })]);
+  let sends = 0;
+  const mailer: MailArg = async () => (sends++, true);
+  await processTrialMilestones("o1", client, mailer);
+  const b = businesses.get("o1")!;
+  assert.notEqual(b.cardholderWarnedAt, null, "varsel givet");
+  assert.notEqual(b.reached100At, null, "fakturering startet");
+  assert.notEqual(b.reached100EmailSentAt, null, "faktura-trigger leveret");
+  assert.equal(sends, 3, "ejer + superadmin (varsel) + superadmin (faktura)");
+  await processTrialMilestones("o1", client, mailer);
+  assert.equal(sends, 3, "intet sendes igen");
+});
+
+test("sweep finder butikker, hvis milepael er naaet", async () => {
+  const { client, businesses } = makeFakeDb([
+    baseRow({ id: "s1", slug: "klar", createdAt: daysAgo(80) }),
+    baseRow({ id: "s2", slug: "for-ny", createdAt: daysAgo(5) }),
+  ]);
+  const r = await sweepPendingThresholdEmails(client, async () => true);
+  assert.notEqual(businesses.get("s1")!.cardholderWarnedAt, null, "varslet for den, der er i vinduet");
+  assert.equal(businesses.get("s2")!.cardholderWarnedAt, null, "ingen varsel for en ny butik");
+  assert.equal(r.warns, 0, "varslet blev leveret med det samme, intet tilbage at gensende");
 });

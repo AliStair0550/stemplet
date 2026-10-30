@@ -139,7 +139,7 @@ export const FRISOERER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
   cardExample: {
@@ -224,7 +224,7 @@ export const KAFFEBARER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
   cardExample: {
@@ -304,7 +304,7 @@ export const NEGLESALONER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr. om måneden ekskl. moms. Ingen binding.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
   cardExample: {
@@ -380,7 +380,7 @@ export const PIZZERIAER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {
@@ -460,7 +460,7 @@ export const BAGERIER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {
@@ -535,7 +535,7 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {
@@ -630,7 +630,7 @@ export const CAFEER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {
@@ -727,7 +727,7 @@ export const ISBUTIKKER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {
@@ -835,7 +835,7 @@ export const BARER: BrancheContent = {
     },
     {
       q: "Hvad koster det?",
-      a: "Ingenting op til 100 kortholdere. Derefter 99 kr./md. ekskl. moms.",
+      a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
   cardExample: {

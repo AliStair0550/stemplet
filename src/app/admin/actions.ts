@@ -80,7 +80,7 @@ export async function setPlan(businessId: string, plan: Plan): Promise<void> {
 
 /**
  * Sæt butikkens Pro-pris (individuel, fx founding member), et valgfrit udløb for
- * specialprisen (derefter standard 99), og sidste faktureringsdato (vedligeholdes
+ * specialprisen (derefter standard 49), og sidste faktureringsdato (vedligeholdes
  * manuelt, da fakturering sker via Billy). Alt superadmin-gated.
  */
 export async function setBilling(

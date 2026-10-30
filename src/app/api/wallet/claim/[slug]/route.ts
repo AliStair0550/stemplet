@@ -4,7 +4,7 @@ import { headers, cookies } from "next/headers";
 import { WALLET_ENABLED, APP_URL } from "@/lib/env";
 import { resolveOrCreateCard } from "@/lib/claim";
 import { loadCCForWallet, buildPkpass } from "@/lib/wallet/build";
-import { maybeFireCardholderThresholds } from "@/lib/billing";
+import { maybeFireTrialMilestones } from "@/lib/billing";
 import {
   cardCookieName,
   cardCookieOptions,
@@ -70,7 +70,7 @@ export async function GET(
   if (!r.ok) return back(r.error === "kontakt" ? `/k/${slug}` : `/k/${slug}?fejl=${r.error}`);
 
   // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.
-  if (r.created) await maybeFireCardholderThresholds(r.businessId);
+  if (r.created) await maybeFireTrialMilestones(r.businessId);
 
   // Kort-cookien (+ enheds-cookien) saettes paa svaret (mest paalidelige maade i
   // en route-handler).

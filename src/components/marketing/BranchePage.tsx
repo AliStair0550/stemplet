@@ -2,7 +2,6 @@ import Image from "next/image";
 import Nav from "@/components/site/Nav";
 import Footer from "@/components/site/Footer";
 import { Section, Container, Eyebrow } from "@/components/ui";
-import { FREE_CUSTOMER_LIMIT } from "@/lib/plans";
 import { type BrancheContent } from "@/lib/brancher";
 import { StampCard } from "@/components/StampCard";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
@@ -144,8 +143,8 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             </p>
             <BrancheExamples examples={b.examples} />
             <p className="mx-auto mt-7 max-w-md text-[1rem] leading-[1.7] text-stone">
-              Sæt dit eget kort op på få minutter. Ingen app, ingen binding, gratis
-              op til {FREE_CUSTOMER_LIMIT} kortholdere.
+              Sæt dit eget kort op på få minutter. Ingen app, ingen binding, tre
+              måneder gratis.
             </p>
           </div>
         </Section>

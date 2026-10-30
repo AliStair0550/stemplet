@@ -64,8 +64,8 @@ const SHOP_LINKS: NavLink[] = [
   { href: "/app/indstillinger", label: "Indstillinger" },
   { href: "/app/guide", label: "Service" },
 ];
-// "Pro-aftale" vises kun naar butikken er varslet (>=80) eller har godkendt.
-const AGREEMENT_LINK: NavLink = { href: "/app/aftale", label: "Pro-aftale" };
+// "Abonnement": de gratis maaneder, prisen og bekraeftelsen.
+const AGREEMENT_LINK: NavLink = { href: "/app/aftale", label: "Abonnement" };
 
 function ScanIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
