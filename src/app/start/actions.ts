@@ -3,7 +3,6 @@
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { unstable_rethrow, redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
 import { createOnboardingToken } from "@/lib/onboarding-token";
 import { durableRateLimit } from "@/lib/rate-limit";
@@ -13,11 +12,9 @@ import { sendEmail } from "@/lib/send-email";
 import { superadminRecipients } from "@/lib/superadmin-emails";
 import { superadminNewBusinessEmail } from "@/lib/emails";
 import { captureServerError } from "@/lib/sentry";
-import { createReferralBusiness, ReferralOnboardingError } from "@/lib/referral-onboarding";
-import { createStampBusiness, StampOnboardingError } from "@/lib/stamp-onboarding";
+import { createLoyaltyBusiness, LoyaltyOnboardingError, type LoyaltyInput } from "@/lib/loyalty-onboarding";
 
-// Faelles for de selvbetjente oprettelser (Henvisninger og Stemplet): IP fra
-// Vercel-headeren til rate-limit.
+// IP fra Vercel-headeren til rate-limit paa den selvbetjente oprettelse.
 async function requestIp(): Promise<string> {
   const h = await headers();
   return h.get("x-real-ip")?.trim() || h.get("x-forwarded-for")?.split(",")[0]?.trim() || "ukendt";
@@ -30,15 +27,10 @@ async function finishSelfServeSignup(o: {
   email: string;
   userId: string;
   slug: string;
-  contactName?: string;
   category: string;
   pageUrl: string;
   dest: string;
 }): Promise<string> {
-  const contactName = o.contactName?.trim();
-  if (contactName) {
-    await prisma.user.update({ where: { id: o.userId }, data: { name: contactName.slice(0, 80) } }).catch(() => {});
-  }
   try {
     await signIn("resend", { email: o.email, redirect: false, redirectTo: o.dest });
   } catch (e) {
@@ -73,16 +65,15 @@ async function finishSelfServeSignup(o: {
 type SelfServeResult = { ok: true; loginToken: string } | { ok: false; error: string; field?: "email" };
 
 /**
- * Selvbetjent oprettelse via Henvisninger: butikken oprettes straks med
- * Henvisninger slaaet til (Stemplet fra) og rabatordningen som regel. Svaret
- * giver et kortlivet login-token, saa ejeren kommer direkte ind i dashboardet.
+ * Selvbetjent oprettelse af loyalitetskortet (/start): butikken vaelger, hvad
+ * kortet kan fra start (henvisninger, stempler eller begge), og logges direkte
+ * ind paa Hjem, hvor "Kom i gang" venter.
  */
-export async function createReferralBusinessAction(input: {
+export async function createLoyaltyBusinessAction(input: {
   name: string;
   email: string;
-  contactName?: string;
-  friendReward: string;
-  referrerReward: string;
+  stamps: LoyaltyInput["stamps"];
+  referral: LoyaltyInput["referral"];
   acceptedTerms: boolean;
 }): Promise<SelfServeResult> {
   if (!input.acceptedTerms) {
@@ -92,19 +83,19 @@ export async function createReferralBusinessAction(input: {
   if (!base.success) {
     return { ok: false, error: base.error.issues[0]?.message ?? "Tjek felterne." };
   }
-  if (!(await durableRateLimit("start-henvisninger", await requestIp(), 5, 3600))) {
+  if (!(await durableRateLimit("start-loyalitet", await requestIp(), 5, 3600))) {
     return { ok: false, error: "For mange forsøg. Prøv igen om lidt." };
   }
   let created: { businessId: string; userId: string; slug: string };
   try {
-    created = await createReferralBusiness({
+    created = await createLoyaltyBusiness({
       name: base.data.name,
       email: base.data.email,
-      friendReward: input.friendReward,
-      referrerReward: input.referrerReward,
+      stamps: input.stamps,
+      referral: input.referral,
     });
   } catch (e) {
-    if (e instanceof ReferralOnboardingError) {
+    if (e instanceof LoyaltyOnboardingError) {
       return { ok: false, error: e.message, field: e.code === "EMAIL_TAKEN" ? "email" : undefined };
     }
     throw e;
@@ -114,62 +105,9 @@ export async function createReferralBusinessAction(input: {
     email: base.data.email,
     userId: created.userId,
     slug: created.slug,
-    contactName: input.contactName,
-    category: "Henvisninger (uden Stemplet)",
+    category: [input.referral ? "Henvisninger" : null, input.stamps ? "Stempler" : null].filter(Boolean).join(" + "),
     pageUrl: `${APP_URL}/k/${created.slug}`,
-    dest: "/app/henvisninger",
-  });
-  return { ok: true, loginToken };
-}
-
-/**
- * Selvbetjent oprettelse af Stemplet (/start): butik og stempelkort med det
- * samme, og ejeren logges direkte ind paa Stemplets overblik, hvor linket og
- * QR-koden ligger klar.
- */
-export async function createStampBusinessAction(input: {
-  name: string;
-  email: string;
-  contactName?: string;
-  rewardText: string;
-  stampsRequired: number;
-  stampIcon: string;
-  acceptedTerms: boolean;
-}): Promise<SelfServeResult> {
-  if (!input.acceptedTerms) {
-    return { ok: false, error: "Du skal acceptere betingelserne for at oprette en butik." };
-  }
-  const base = onboardingStartSchema.safeParse({ name: input.name, email: input.email });
-  if (!base.success) {
-    return { ok: false, error: base.error.issues[0]?.message ?? "Tjek felterne." };
-  }
-  if (!(await durableRateLimit("start-stemplet", await requestIp(), 5, 3600))) {
-    return { ok: false, error: "For mange forsøg. Prøv igen om lidt." };
-  }
-  let created: { businessId: string; userId: string; slug: string };
-  try {
-    created = await createStampBusiness({
-      name: base.data.name,
-      email: base.data.email,
-      rewardText: input.rewardText,
-      stampsRequired: input.stampsRequired,
-      stampIcon: input.stampIcon,
-    });
-  } catch (e) {
-    if (e instanceof StampOnboardingError) {
-      return { ok: false, error: e.message, field: e.code === "EMAIL_TAKEN" ? "email" : undefined };
-    }
-    throw e;
-  }
-  const loginToken = await finishSelfServeSignup({
-    name: base.data.name,
-    email: base.data.email,
-    userId: created.userId,
-    slug: created.slug,
-    contactName: input.contactName,
-    category: "Stemplet",
-    pageUrl: `${APP_URL}/k/${created.slug}`,
-    dest: "/app/stemplet",
+    dest: "/app",
   });
   return { ok: true, loginToken };
 }
