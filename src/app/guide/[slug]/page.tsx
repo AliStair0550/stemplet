@@ -38,7 +38,7 @@ export default async function PublicGuidePage({
         <header className="mb-10 flex items-start justify-between gap-4">
           <div>
             <p className="text-[0.85rem] font-medium text-stone">
-              Guide til personalet
+              Service
             </p>
             <h1 className="mt-1 text-[1.9rem] font-bold leading-tight tracking-[-0.03em] text-ink">
               Sådan virker det hos {data.businessName}

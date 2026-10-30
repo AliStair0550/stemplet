@@ -4,7 +4,7 @@ import { requireStampsBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
-import { KunderTabs } from "../kunder/KunderTabs";
+import { KommunikationTabs } from "../beskeder/KommunikationTabs";
 import { CampaignManager } from "./CampaignManager";
 import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
@@ -46,7 +46,7 @@ export default async function KampagnerPage() {
 
   return (
     <>
-      <KunderTabs active="kampagner" showCampaigns />
+      <KommunikationTabs active="kampagner" showCampaigns />
       <PageHeading
         title="Kampagner"
         subtitle="Giv dine kunder en grund til at komme igen: velkomststempel, ekstra stempler i en periode, eller del dit kort."

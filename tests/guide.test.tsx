@@ -3,8 +3,7 @@ import assert from "node:assert/strict";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { GuideData } from "../src/lib/guide";
 import { GuideContent } from "../src/components/guide/GuideContent";
-import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "../src/lib/system-config";
-import { formatCooldown, formatMinutes } from "../src/lib/utils";
+import { formatCooldown } from "../src/lib/utils";
 
 const sample: GuideData = {
   businessName: "Test Café",
@@ -31,13 +30,6 @@ test("guiden viser reward og antal stempler fra databasen", () => {
   const html = renderToStaticMarkup(<GuideContent data={sample} />);
   assert.match(html, /8 stempler/); // stampsRequired
   assert.match(html, /10\. kop er gratis/); // rewardText
-});
-
-test("guiden viser PIN-regler fra system-config (ikke hardcodet)", () => {
-  const html = renderToStaticMarkup(<GuideContent data={sample} />);
-  // Faelder, hvis nogen hardcoder tallene i stedet for at bruge system-config.
-  assert.ok(html.includes(`${PIN_MAX_ATTEMPTS} gange`));
-  assert.ok(html.includes(formatMinutes(PIN_LOCK_SECONDS)));
 });
 
 // ── Kampagne-sektion renderes kun naar der er en aktiv kampagne ──────

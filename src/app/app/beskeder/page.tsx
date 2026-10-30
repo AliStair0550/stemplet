@@ -27,7 +27,7 @@ export default async function BeskederPage() {
 
   return (
     <>
-      <KommunikationTabs active="beskeder" />
+      <KommunikationTabs active="beskeder" showCampaigns={business.stampsEnabled} />
       <PageHeading
         title="Pushbeskeder"
         subtitle="Send en kort nyhed direkte til dine kunders iPhone. Den vises på låseskærmen, ligesom en besked fra en app, og står på kortet bagefter."

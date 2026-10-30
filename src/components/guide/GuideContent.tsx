@@ -5,8 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────
 import type { GuideData } from "@/lib/guide";
 import { APP_HOST, PLATFORM } from "@/lib/platform";
-import { PIN_MAX_ATTEMPTS, PIN_LOCK_SECONDS } from "@/lib/system-config";
-import { formatMinutes, formatDkDate } from "@/lib/utils";
+import { formatDkDate } from "@/lib/utils";
 
 // ── Ikoner ───────────────────────────────────────────────────────────
 function IconStamp() {
@@ -66,7 +65,6 @@ function QA({ q, a }: { q: string; a: string }) {
 
 // ── Selve guiden: kort og med saa lidt tekst som muligt ──────────────
 export function GuideContent({ data }: { data: GuideData }) {
-  const lockText = formatMinutes(PIN_LOCK_SECONDS);
   const tel = PLATFORM.supportPhone.replace(/\s/g, "");
 
   return (
@@ -97,10 +95,6 @@ export function GuideContent({ data }: { data: GuideData }) {
           steps={["Scan det fulde kort.", "Tast PIN, hvis I har en.", "Tryk Indløs belønning."]}
         />
       </div>
-
-      <p className="-mt-3 text-[0.92rem] text-slate">
-        Forkert PIN {PIN_MAX_ATTEMPTS} gange låser indløsning i {lockText}.
-      </p>
 
       {data.campaigns.length > 0 ? (
         <div className="flex flex-col gap-2">
