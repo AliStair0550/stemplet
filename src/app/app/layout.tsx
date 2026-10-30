@@ -35,8 +35,8 @@ export default async function AppLayout({
         showReferrals={business.referralsEnabled}
         showStamps={business.stampsEnabled}
       />
-      {/* pb-24 paa mobil: plads til fanerne i bunden. */}
-      <main className="pb-24 md:pb-0 md:pl-60 print:!pl-0 print:!pb-0">
+      {/* Plads i bunden paa mobil til den svaevende glasbjaelke. */}
+      <main className="pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-60 print:!pl-0 print:!pb-0">
         {support ? (
           // Support-tilstand: tydeligt, at superadmin arbejder i en kundes butik.
           <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 bg-[#061C3D] px-5 py-2.5 text-[0.85rem] text-white md:px-10 print:hidden">

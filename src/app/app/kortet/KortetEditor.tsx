@@ -392,7 +392,7 @@ export function KortetEditor({
           </div>
         </section>
 
-        <div className="sticky bottom-[calc(3.75rem+env(safe-area-inset-bottom))] md:bottom-0 z-20 -mx-1 flex flex-wrap items-center gap-3 bg-parchment px-1 py-4">
+        <div className="sticky bottom-[calc(4.9rem+env(safe-area-inset-bottom))] md:bottom-0 z-20 -mx-1 flex flex-wrap items-center gap-3 bg-parchment px-1 py-4">
           <button onClick={save} disabled={pending || uploading} className={btnClass("primary")}>
             {pending ? "Gemmer..." : "Gem kortet"}
           </button>
