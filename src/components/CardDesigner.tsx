@@ -474,7 +474,7 @@ export function CardDesigner({
 
         {/* Navn og logo */}
         {showLook ? (
-        <Section boxed={boxed} title="Navn og logo" hint="Det, der står øverst på kortet.">
+        <Section boxed={boxed} title="Navn og logo">
           <div className="flex flex-col gap-2">
             <span className="text-[0.85rem] font-[400] text-ink">
               Butiksnavn
@@ -487,8 +487,7 @@ export function CardDesigner({
               className="border border-clay bg-parchment px-4 py-2.5 font-[300] text-[0.95rem] text-ink outline-none placeholder:text-slate focus:border-terracotta"
             />
             <p className="text-[0.72rem] font-[300] leading-relaxed text-stone">
-              Det navn dine kunder ser på kortet. Lad feltet stå tomt for at
-              bruge firmanavnet ({businessName}).
+              Det navn dine kunder ser på kortet.
             </p>
           </div>
 
@@ -528,37 +527,6 @@ export function CardDesigner({
                 <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>
               ) : null}
 
-              {/* Logo-stoerrelse: kun relevant naar der ER et logo. */}
-              {value.logoUrl ? (
-                <label className="mt-2 flex flex-col gap-1.5 border-t border-fog pt-4">
-                  <span className="flex items-baseline justify-between gap-2">
-                    <span className="text-[0.85rem] font-[400] text-ink">
-                      Logo-størrelse
-                    </span>
-                    {Math.abs((value.logoScale ?? 1) - 1) > 0.001 ? (
-                      <button
-                        type="button"
-                        onClick={() => set("logoScale", 1)}
-                        className="text-[0.7rem] font-[400] text-terracotta transition-opacity hover:opacity-70"
-                      >
-                        Nulstil
-                      </button>
-                    ) : null}
-                  </span>
-                  <input
-                    type="range"
-                    min={0.6}
-                    max={2.2}
-                    step={0.05}
-                    value={value.logoScale ?? 1}
-                    onChange={(e) => set("logoScale", Number(e.target.value))}
-                    className="accent-terracotta"
-                  />
-                  <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-                    Træk for at gøre logoet større eller mindre på kortet.
-                  </span>
-                </label>
-              ) : null}
             </div>
           ) : null}
         </Section>

@@ -113,9 +113,8 @@ export function isStampIcon(v: string): v is StampIconKey {
   return STAMP_ICONS.some((i) => i.key === v);
 }
 
-// Seks indbyggede temaer, hvert med sit eget navn: gennemtaenkte farvepar, saa
-// enhver kan lave et flot, laesbart kort i eet klik. Raekkefoelgen er bevidst:
-// varm -> koel, med en enkelt lys i bunden til dem der vil have et lyst kort.
+// Seks indbyggede temaer i Folkas stil: tre moerke og tre lyse, gennemtaenkte
+// farvepar, saa enhver kan lave et flot, laesbart kort i eet klik.
 // Ud over disse kan man altid vaelge sin egen farve (custom).
 export type CardTheme = {
   name: string;
@@ -124,12 +123,12 @@ export type CardTheme = {
 };
 
 export const CARD_THEMES: CardTheme[] = [
-  { name: "Mørk", primary: "#2A1A10", text: "#F6EEE4" },
-  { name: "Terrakotta", primary: "#8A3B24", text: "#FBEDE6" },
-  { name: "Skov", primary: "#1F3A2E", text: "#F3F7F4" },
-  { name: "Midnat", primary: "#101F33", text: "#EAF0F8" },
-  { name: "Bordeaux", primary: "#5E2438", text: "#F7E7EE" },
-  { name: "Sand", primary: "#E8E2D6", text: "#3B2F1E" },
+  { name: "Midnat", primary: "#061C3D", text: "#EAF1FB" },
+  { name: "Ocean", primary: "#1B5EAE", text: "#FFFFFF" },
+  { name: "Grafit", primary: "#1E2633", text: "#F2F5F9" },
+  { name: "Is", primary: "#E8F0FB", text: "#061C3D" },
+  { name: "Hvid", primary: "#FFFFFF", text: "#0B1628" },
+  { name: "Sand", primary: "#EFEBE3", text: "#1E2633" },
 ];
 
 /** Navnet paa et indbygget tema der matcher farverne, ellers null (custom). */
