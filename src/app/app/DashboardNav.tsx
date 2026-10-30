@@ -91,10 +91,26 @@ export function DashboardNav({
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  // Fanen lyser op med det samme ved tryk, foer den nye side er hentet, saa
+  // telefonen foeles hurtig. Nulstilles, naar siden faktisk skifter.
+  const [tapped, setTapped] = useState<string | null>(null);
   const shopLinks = showAgreement ? [...SHOP_LINKS, AGREEMENT_LINK] : SHOP_LINKS;
 
-  // "Mere" lukkes, naar man navigerer.
-  useEffect(() => setMoreOpen(false), [pathname]);
+  // Menuen lukkes, naar man navigerer.
+  useEffect(() => {
+    setMoreOpen(false);
+    setTapped(null);
+  }, [pathname]);
+  // Siden bagved staar stille, mens menuen er aaben (ingen scroll igennem).
+  useEffect(() => {
+    if (!moreOpen) return;
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prev;
+    };
+  }, [moreOpen]);
   // Arket opfoerer sig som en dialog: fokus flyttes ind, Escape lukker, og
   // fokus vender tilbage til knappen.
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -266,19 +282,19 @@ export function DashboardNav({
       </aside>
 
       {/* Mobil: butik oeverst, faner i bunden */}
-      <div className="sticky top-0 z-30 border-b border-fog bg-parchment/95 px-5 py-3 backdrop-blur-md md:hidden print:hidden">
+      <div className="sticky top-0 z-30 border-b border-fog bg-parchment px-5 py-3 md:hidden print:hidden">
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} />
       </div>
 
       {moreOpen ? (
-        <div className="fixed inset-x-0 bottom-[4.25rem] top-0 z-40 flex flex-col justify-end bg-ink/20 md:hidden" onClick={() => setMoreOpen(false)}>
+        <div className="sheet-backdrop fixed inset-0 z-40 flex flex-col justify-end bg-ink/25 md:hidden" onClick={() => setMoreOpen(false)}>
           <div
             ref={sheetRef}
-            id="mere-menu"
+            id="menu-ark"
             role="dialog"
             aria-modal="true"
-            aria-label="Mere"
-            className="max-h-full overflow-y-auto rounded-t-2xl border-t border-fog bg-white px-4 pb-5 pt-4 shadow-lift"
+            aria-label="Menu"
+            className="sheet-panel max-h-full overflow-y-auto overscroll-contain rounded-t-[28px] border-t border-fog bg-white px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-4 shadow-lift"
             onClick={(e) => e.stopPropagation()}
           >
             {[
@@ -310,15 +326,16 @@ export function DashboardNav({
 
       <nav
         aria-label="Hovedmenu"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-fog bg-white pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
+        // Svaevende glasbjaelke som paa iPhone: indholdet skinner sloeret igennem.
+        className="fixed inset-x-3 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-4 gap-1 rounded-[30px] border border-white/70 bg-white/60 p-1.5 shadow-[0_12px_40px_-14px_rgba(6,28,61,0.45),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl backdrop-saturate-[1.8] md:hidden print:hidden"
       >
-        <TabLink href="/app" label="Hjem" active={isActive("/app")}>
+        <TabLink href="/app" label="Hjem" active={!moreOpen && (tapped ? tapped === "/app" : isActive("/app"))} onTap={setTapped}>
           <path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z" />
         </TabLink>
-        <TabLink href={SCAN.href} label="Scan" active={isActive(SCAN.href)}>
+        <TabLink href={SCAN.href} label="Scan" active={!moreOpen && (tapped ? tapped === SCAN.href : isActive(SCAN.href))} onTap={setTapped}>
           <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
         </TabLink>
-        <TabLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder")}>
+        <TabLink href="/app/kunder" label="Kunder" active={!moreOpen && (tapped ? tapped === "/app/kunder" : isActive("/app/kunder"))} onTap={setTapped}>
           <circle cx="9" cy="8" r="3.5" />
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
         </TabLink>
@@ -327,20 +344,16 @@ export function DashboardNav({
           type="button"
           onClick={() => setMoreOpen((o) => !o)}
           aria-expanded={moreOpen}
-          aria-controls="mere-menu"
+          aria-controls="menu-ark"
           className={cn(
-            "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.72rem]",
-            moreOpen || (!isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder"))
-              ? "font-[500] text-ink"
-              : "text-slate",
+            TAB,
+            moreOpen || (!tapped && !isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder")) ? TAB_ON : TAB_OFF,
           )}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" className="h-[1.35rem] w-[1.35rem]" aria-hidden>
-            <circle cx="5" cy="12" r="1.3" />
-            <circle cx="12" cy="12" r="1.3" />
-            <circle cx="19" cy="12" r="1.3" />
-          </svg>
-          Mere
+          <TabIcon>
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </TabIcon>
+          Menu
         </button>
       </nav>
     </>
@@ -418,29 +431,42 @@ function ProductGroup({
   );
 }
 
+// Fanerne i glasbjaelken: den aktive faar en lys glaskapsel (som iOS), og alle
+// trykkes en anelse ind ved beroering.
+const TAB =
+  "flex min-h-[3.4rem] flex-col items-center justify-center gap-0.5 rounded-[24px] text-[0.7rem] transition-[background-color,box-shadow,transform] duration-200 active:scale-95";
+const TAB_ON = "bg-white/90 font-[600] text-ink shadow-[0_2px_10px_-3px_rgba(6,28,61,0.25)]";
+const TAB_OFF = "text-[#4A5568]";
+
+function TabIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-[1.35rem] w-[1.35rem]" aria-hidden>
+      {children}
+    </svg>
+  );
+}
+
 function TabLink({
   href,
   label,
   active,
+  onTap,
   children,
 }: {
   href: string;
   label: string;
   active: boolean;
+  onTap: (href: string) => void;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
+      onClick={() => onTap(href)}
       aria-current={active ? "page" : undefined}
-      className={cn(
-        "flex min-h-[3.75rem] flex-col items-center justify-center gap-1 text-[0.72rem]",
-        active ? "font-[500] text-ink" : "text-slate",
-      )}
+      className={cn(TAB, active ? TAB_ON : TAB_OFF)}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[1.35rem] w-[1.35rem]" aria-hidden>
-        {children}
-      </svg>
+      <TabIcon>{children}</TabIcon>
       {label}
     </Link>
   );

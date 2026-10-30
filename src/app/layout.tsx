@@ -119,7 +119,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="da" className={`${instrument.variable} ${fraunces.variable} ${inter.variable}`}>
+    <html lang="da" data-scroll-behavior="smooth" className={`${instrument.variable} ${fraunces.variable} ${inter.variable}`}>
       <body className="antialiased">
         <ScrollReset />
         {children}

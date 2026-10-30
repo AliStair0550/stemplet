@@ -282,7 +282,7 @@ export function RuleForm({
         </div>
       </section>
 
-      <div className="sticky bottom-[calc(3.75rem+env(safe-area-inset-bottom))] md:bottom-0 z-20 -mx-1 flex items-center gap-4 bg-parchment/95 px-1 py-4 backdrop-blur">
+      <div className="sticky bottom-[calc(4.9rem+env(safe-area-inset-bottom))] md:bottom-0 z-20 -mx-1 flex items-center gap-4 bg-parchment px-1 py-4">
         <button type="submit" disabled={pending} className={btnClass("primary", "lg")}>
           {pending ? "Gemmer" : "Gem"}
         </button>

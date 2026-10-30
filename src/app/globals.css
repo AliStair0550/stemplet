@@ -49,7 +49,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   /* Lys-only side: undgaar sort UA-baggrund paa telefoner i moerk tilstand. */
   color-scheme: light;
   /* Brand-baggrunden allerede paa rod-elementet, saa foerste paint er pergament
@@ -60,6 +59,14 @@ html {
      (og udloese "zoom-ud", naar man traekker). "clip" laver ingen scroll-
      container, saa position: sticky virker stadig. */
   overflow-x: clip;
+}
+
+/* Bloed scroll kun til anker-links paa de offentlige sider. Ikke i dashboardet:
+   dér faar programmatiske scroll (navigation, fokus) iOS til at kaempe med
+   fingeren, saa siden "scroller selv". data-scroll-behavior paa <html> lader
+   Next slaa det fra under navigation (Next 16 goer det ikke selv laengere). */
+html:not(:has(.dash-theme)) {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -612,6 +619,45 @@ textarea:focus-visible {
 .dash-theme {
   --btn-primary: #061c3d;
   --btn-primary-hover: #0a2d5a;
+}
+
+/* Dashboardet paa telefon: foeles som en app. Intet graat blink ved tryk, ingen
+   dobbelttryk-zoom-forsinkelse, og felter paa mindst 16 px, saa iPhone ikke
+   zoomer ind (og hopper), hver gang man trykker i et felt. */
+.dash-theme {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+@media (max-width: 767px) {
+  .dash-theme input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  .dash-theme textarea,
+  .dash-theme select {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Menuen paa telefon glider op fra bunden over en bloed toning. */
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes sheetFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sheet-backdrop {
+  animation: sheetFade 0.2s ease-out both;
+}
+.sheet-panel {
+  animation: sheetUp 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 /* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden

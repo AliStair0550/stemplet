@@ -65,3 +65,6 @@ export async function getDeviceId(): Promise<string> {
   const c = await cookies();
   return c.get(DEVICE_ID_COOKIE)?.value ?? "ukendt";
 }
+
+/** Butikker, hvor ejeren har lukket "Din første kunde i dag" paa Hjem (id'er med punktum). */
+export const ONBOARDING_HIDDEN_COOKIE = "folka_skjul_start";

@@ -13,6 +13,9 @@ import { AddToHomeButton } from "./AddToHomeButton";
 import { formatDkNumber } from "@/lib/utils";
 import { DEFAULT_PRIMARY } from "@/lib/brand";
 import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
+import { cookies } from "next/headers";
+import { ONBOARDING_HIDDEN_COOKIE } from "@/lib/cookies";
+import { dismissOnboardingAction } from "./actions";
 
 export const metadata = { title: { absolute: "Hjem - Folka Kort" } };
 
@@ -115,6 +118,7 @@ export default async function HomePage() {
         : "Hent kortet på din telefon, og se det, dine kunder ser.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true, done: false },
   ];
   const doneCount = steps.filter((s) => s.done).length;
+  const onboardingHidden = ((await cookies()).get(ONBOARDING_HIDDEN_COOKIE)?.value ?? "").split(".").includes(business.id);
 
   return (
     <>
@@ -140,11 +144,24 @@ export default async function HomePage() {
       </header>
 
       {/* Ny butik (ingen kortholdere endnu): de tre skridt til det foerste kort. */}
-      {stats.totalCustomers === 0 ? (
+      {stats.totalCustomers === 0 && !onboardingHidden ? (
         <section aria-labelledby="kom-i-gang" className="mb-10 rounded-[22px] bg-[#061C3D] p-6 text-white md:p-7">
-          <div className="flex items-baseline justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             <h2 id="kom-i-gang" className="text-[1.25rem] font-semibold tracking-[-0.02em]">Din første kunde i dag</h2>
-            <span className="text-[0.9rem] font-semibold tabular-nums text-[#7CC4FF]">{doneCount}/3</span>
+            <span className="flex items-center gap-2">
+              <span className="text-[0.9rem] font-semibold tabular-nums text-[#7CC4FF]">{doneCount}/3</span>
+              <form action={dismissOnboardingAction}>
+                <button
+                  type="submit"
+                  aria-label="Luk"
+                  className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
+                >
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+                    <path d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                </button>
+              </form>
+            </span>
           </div>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
             <div className="h-full rounded-full bg-[#7CC4FF] transition-[width] duration-700" style={{ width: `${Math.max(4, (doneCount / 3) * 100)}%` }} />
