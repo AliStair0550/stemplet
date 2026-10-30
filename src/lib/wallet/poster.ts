@@ -64,15 +64,13 @@ export function posterFields(c: PosterContent): PosterFields {
 export type FeaturedActionInput = {
   actions: CardAction[];
   bookingUrl: string | null;
-  /** Kundens egen henvisningsside (henvis en ven / se belønninger). */
-  referralPageUrl: string | null;
-  /** Kundens stempelkort-side (se belønninger uden Henvisninger). */
-  cardPageUrl: string;
+  /** Kundens egen side "Tilbud og fordele". */
+  benefitsUrl: string;
 };
 
 export type FeaturedAction = {
   identifier: string;
-  type: "bookAppointment" | "viewOffersRewards" | "membershipBenefits";
+  type: "bookAppointment" | "viewOffersRewards";
   url: string;
 };
 
@@ -82,10 +80,8 @@ export function featuredActionsFor(i: FeaturedActionInput): FeaturedAction[] {
   for (const a of i.actions) {
     if (a === "book" && i.bookingUrl && /^https?:\/\//i.test(i.bookingUrl)) {
       out.push({ identifier: "book", type: "bookAppointment", url: i.bookingUrl });
-    } else if (a === "henvis" && i.referralPageUrl) {
-      out.push({ identifier: "henvis", type: "viewOffersRewards", url: i.referralPageUrl });
-    } else if (a === "beloenninger") {
-      out.push({ identifier: "beloenninger", type: "membershipBenefits", url: i.referralPageUrl ?? i.cardPageUrl });
+    } else if (a === "fordele") {
+      out.push({ identifier: "fordele", type: "viewOffersRewards", url: i.benefitsUrl });
     }
     if (out.length === 2) break;
   }

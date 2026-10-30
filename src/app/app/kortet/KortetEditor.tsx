@@ -230,7 +230,7 @@ export function KortetEditor({
         {/* Knapper */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
           <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Knapper på kortet</h2>
-          <p className="mt-0.5 text-[0.88rem] text-stone">Op til to genveje under kortet i Wallet (iOS 27). Vælg ingen, hvis du ikke vil have knapper.</p>
+          <p className="mt-0.5 text-[0.88rem] text-stone">Genveje under kortet i Wallet (iOS 27). Kunden trykker på dem direkte fra kortet.</p>
           <div className="mt-4 flex flex-col gap-2">
             {CARD_ACTIONS.map((a) => {
               const reason = actionUnavailableReason(a, ctx);

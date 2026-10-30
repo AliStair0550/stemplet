@@ -14,10 +14,12 @@ test("stil: Stempler kraever Stemplet, billede kraever et billede", () => {
   assert.equal(effectiveStyle("ukendt", both, true), "color");
 });
 
-test("knapper: kun tilgaengelige, ingen dubletter, hoejst to", () => {
-  assert.deepEqual(normalizeActions(["henvis", "book", "beloenninger"], both), ["henvis", "book"]);
-  assert.deepEqual(normalizeActions(["book", "henvis", "beloenninger"], stampOnly), ["beloenninger"]);
-  assert.deepEqual(normalizeActions(["beloenninger", "beloenninger", "x"], both), ["beloenninger"]);
+test("knapper: kun tilgaengelige, ingen dubletter, hoejst to; gamle valg bliver Tilbud og fordele", () => {
+  assert.deepEqual(normalizeActions(["fordele", "book"], both), ["fordele", "book"]);
+  assert.deepEqual(normalizeActions(["book", "fordele"], stampOnly), ["fordele"]);
+  assert.deepEqual(normalizeActions(["book", "fordele"], both), ["fordele", "book"], "fast raekkefoelge");
+  assert.deepEqual(normalizeActions(["henvis", "book", "beloenninger"], both), ["fordele", "book"]);
+  assert.deepEqual(normalizeActions(["beloenninger", "henvis", "x"], refOnly), ["fordele"]);
   assert.match(actionUnavailableReason("book", refOnly) ?? "", /booking-link/);
 });
 

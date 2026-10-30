@@ -22,6 +22,7 @@ import { createReferralBusiness, ReferralOnboardingError } from "@/lib/referral-
 import { saveReferralRule } from "@/lib/referral";
 import { signIn } from "@/lib/auth";
 import { captureServerError } from "@/lib/sentry";
+import { WALLET_ENABLED } from "@/lib/env";
 
 // Alle admin-handlinger er superadmin-gated paa serveren (ikke kun i UI'et), saa
 // de ikke kan kaldes af andre. Ud over email-gaten kraeves ogsaa, at admin er
@@ -416,4 +417,21 @@ export async function createBusinessForCustomer(
   console.info(`[support] ${admin} oprettede og aabnede ${created.slug}`);
   revalidatePath("/admin");
   redirect("/app/kortet");
+}
+
+/**
+ * Opdater alle kort i Wallet: sender en stille opdatering til hvert kort, saa
+ * en aendring (design, knapper, plakatkort) naar ud uden at vente paa et stempel.
+ */
+export async function pushAllCardsAction(): Promise<{ ok: true; pushed: number } | { ok: false; error: string }> {
+  await requireAdmin();
+  if (!WALLET_ENABLED) return { ok: false, error: "Wallet er slået fra i dette miljø." };
+  try {
+    const { pushAllWalletPasses } = await import("@/lib/wallet/build");
+    const { pushed } = await pushAllWalletPasses();
+    return { ok: true, pushed };
+  } catch (e) {
+    captureServerError(e, { route: "admin/pushAllCards" });
+    return { ok: false, error: "Opdateringen fejlede. Prøv igen om lidt." };
+  }
 }

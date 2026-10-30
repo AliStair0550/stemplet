@@ -551,14 +551,11 @@ async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null)
   poster.backFields.push(...pass.types[0]!.backFields);
   pass.types.push(poster);
 
-  // "Se tilbud og bonusser" og "Se dine belønninger" aabner kundens egen side
-  // med fordele (stempler, tilbud lige nu og henvisning).
-  const benefits = memberUrl(input.serial);
+  // "Tilbud og fordele" aabner kundens egen side (stempler, tilbud, henvisning).
   const actions = featuredActionsFor({
     actions: normalizeActions(look.actions, ctx),
     bookingUrl: look.bookingUrl,
-    referralPageUrl: input.referral ? benefits : null,
-    cardPageUrl: benefits,
+    benefitsUrl: memberUrl(input.serial),
   });
   if (actions.length > 0) pass.featuredActions = actions;
 }

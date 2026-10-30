@@ -80,7 +80,10 @@ function artworkStyle(p: WalletCardPreviewProps): React.CSSProperties {
   if (p.style === "pattern") {
     const markup = STAMP_ICON_PATHS[p.stampIcon] ?? STAMP_ICON_PATHS.custom;
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="${p.textColor}" stroke-opacity="0.2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${markup}</svg>`;
-    return { background: `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / 44px 44px, ${p.primaryColor}` };
+    // Moensteret toner ud mod toppen, saa navn/logo og stempler staar frit (som i Wallet).
+    return {
+      background: `linear-gradient(180deg, ${p.primaryColor} 17%, ${p.primaryColor}00 32%), url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / 44px 44px, ${p.primaryColor}`,
+    };
   }
   return { background: p.primaryColor };
 }
@@ -220,9 +223,9 @@ export function WalletCardPreview(props: WalletCardPreviewProps) {
             {p.actions.map((a) => (
               <div key={a} className="flex min-w-0 items-center gap-2 rounded-[14px] bg-[#f5f5f7] px-3 py-2.5 text-[12.5px] font-semibold text-[#111]">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111] text-[11px] text-white">
-                  {a === "book" ? "◷" : a === "henvis" ? "+" : "★"}
+                  {a === "book" ? "◷" : "★"}
                 </span>
-                <span className="truncate">{CARD_ACTION_LABEL[a]}</span>
+                <span className="leading-tight">{CARD_ACTION_LABEL[a]}</span>
               </div>
             ))}
           </div>
