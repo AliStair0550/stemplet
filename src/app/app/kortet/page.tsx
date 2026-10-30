@@ -50,7 +50,6 @@ export default async function KortetPage() {
         initialStyle={effectiveStyle(business.cardStyle, ctx, !!business.cardArtwork)}
         initialArtwork={business.cardArtwork}
         initialActions={actions}
-        initialCardName={business.cardName ?? ""}
         ctx={ctx}
         businessName={business.name}
         friendReward={rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "100 kr."}

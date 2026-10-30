@@ -111,6 +111,7 @@ export function KortEditor({
           allowLogo
           boxed
           parts="rules"
+          hidePreview
         />
         <div className="mt-6 flex flex-wrap items-center gap-3 py-2 md:sticky md:bottom-0 md:z-20 md:-mx-1 md:bg-parchment/95 md:px-1 md:py-4 md:backdrop-blur">
           <button

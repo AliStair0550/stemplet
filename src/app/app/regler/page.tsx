@@ -12,6 +12,8 @@ import { KortEditor } from "../kort/KortEditor";
 import { RuleForm } from "../henvisninger/RuleForm";
 import { FeatureSwitch } from "./FeatureSwitch";
 import { KundekortShare } from "./KundekortShare";
+import { CardNameForm } from "./CardNameForm";
+import { autoCardName } from "@/lib/card-name";
 import type { Feature } from "./actions";
 
 export const metadata: Metadata = { title: "Regler for dit kort" };
@@ -153,7 +155,17 @@ async function StampRules({ business }: { business: Biz }) {
 async function CardShare({ business }: { business: Biz }) {
   const url = `${APP_URL}/k/${business.slug}`;
   const qrDataUrl = await QRCode.toDataURL(url, { margin: 2, width: 800, color: { dark: "#111111", light: "#FFFFFF" } });
-  return <KundekortShare url={url} qrDataUrl={qrDataUrl} shopName={cardTitle(business)} />;
+  return (
+    <>
+      <CardNameForm
+        initialName={business.cardName ?? ""}
+        autoName={autoCardName(cardTitle(business))}
+        primaryColor={business.primaryColor}
+        textColor={business.textColor}
+      />
+      <KundekortShare url={url} qrDataUrl={qrDataUrl} shopName={cardTitle(business)} />
+    </>
+  );
 }
 
 async function ReferralRules({ business }: { business: Biz }) {

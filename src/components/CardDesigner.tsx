@@ -302,7 +302,7 @@ export function CardDesigner({
 
         {/* Farver: tema eller egne farver */}
         {showLook ? (
-        <Section boxed={boxed} title="Farver" hint="Kortets farve og tekstfarve, som kunden ser i Wallet.">
+        <Section boxed={boxed} title="Farver">
 
           <div className="flex flex-col gap-2.5">
             <div className="flex items-baseline justify-between">
@@ -448,7 +448,7 @@ export function CardDesigner({
 
         {/* Ikon: hoerer til udseendet (stempelfelter, moenster og logo-felt). */}
         {showLook ? (
-        <Section boxed={boxed} title="Ikon" hint="Bruges i stempelfelterne og i mønsteret på kortet.">
+        <Section boxed={boxed} title="Ikon">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap gap-2">
               {STAMP_ICONS.map((icon) => (

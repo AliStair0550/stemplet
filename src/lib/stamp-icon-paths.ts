@@ -81,5 +81,14 @@ export const STAMP_ICON_PATHS: Record<StampIconKey, string> = {
   star: '<path d="M12 4l2.3 4.9 5.2.7-3.8 3.7.9 5.2L12 16.9 7.4 18.2l.9-5.2L4.5 9.3l5.2-.7L12 4Z"/>',
   crown:
     '<path d="M4.5 8.5l3 3 4.5-5 4.5 5 3-3-1 9.5H5.5Z"/><path d="M5.5 21h13"/>',
+  dumbbell:
+    '<path d="M8.5 12h7"/><rect x="5.5" y="8" width="3" height="8" rx="1"/><rect x="15.5" y="8" width="3" height="8" rx="1"/><path d="M3.5 10.5v3M20.5 10.5v3"/>',
+  car: '<path d="M4.5 16v-3.2l1.8-4.6a1.5 1.5 0 0 1 1.4-.9h8.6a1.5 1.5 0 0 1 1.4.9l1.8 4.6V16a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1Z"/><path d="M4.8 12.6h14.4"/><circle cx="8" cy="17.3" r="1.5"/><circle cx="16" cy="17.3" r="1.5"/>',
+  glasses:
+    '<circle cx="7.3" cy="13.5" r="3.3"/><circle cx="16.7" cy="13.5" r="3.3"/><path d="M10.6 13c.9-.7 1.9-.7 2.8 0"/><path d="M4 13.2 5.2 8.5M20 13.2 18.8 8.5"/>',
+  shirt:
+    '<path d="M9 4.5 4 7.2l1.8 3.6 2.2-1V19.5h8V9.8l2.2 1L20 7.2l-5-2.7c-.5 1.4-1.6 2.2-3 2.2s-2.5-.8-3-2.2Z"/>',
+  book: '<path d="M12 6.5C10.2 5.3 7.8 4.9 4.5 5.2v12.6c3.3-.3 5.7.1 7.5 1.3 1.8-1.2 4.2-1.6 7.5-1.3V5.2c-3.3-.3-5.7.1-7.5 1.3Z"/><path d="M12 6.5v12.6"/>',
+  bike: '<circle cx="6.3" cy="15.5" r="3.4"/><circle cx="17.7" cy="15.5" r="3.4"/><path d="M6.3 15.5 9.6 9.2h5.3l2.8 6.3M9.6 9.2l2.6 6.3h-5.9M12 6.8h-2.8M14.9 9.2l.9-2.4h1.8"/>',
   custom: '<circle cx="12" cy="12" r="6" fill="currentColor" stroke="none"/>',
 };
