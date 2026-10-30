@@ -208,9 +208,23 @@ export default async function HomePage() {
       <section className="mb-12 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-10">
         <div className="flex flex-col items-center gap-4 lg:items-stretch">
           <p className="w-full max-w-[300px] text-[0.85rem] font-[600] text-stone">Dit kort</p>
-          <WalletCardPreview os="27" {...preview} />
+          {/* Genvej til QR-koden, der kan vises til kunden direkte fra telefonen. */}
+          <Link
+            href="/app/regler?f=kundekort"
+            className="flex min-h-12 w-full max-w-[300px] items-center justify-center gap-2 rounded-full bg-ink px-4 text-[0.92rem] font-[600] text-white hover:bg-[#0A2D5A]"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+              <rect x="4" y="4" width="6" height="6" rx="1" />
+              <rect x="14" y="4" width="6" height="6" rx="1" />
+              <rect x="4" y="14" width="6" height="6" rx="1" />
+              <path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18v2M18 14h2" />
+            </svg>
+            Vis QR-kode
+          </Link>
+          {/* Knapperne under kortet i Wallet vises under Design, ikke her. */}
+          <WalletCardPreview os="27" {...preview} actions={[]} />
           <div className="flex w-full max-w-[300px] gap-2">
-            <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-ink px-4 text-[0.88rem] font-[600] text-white hover:bg-[#0A2D5A]">
+            <Link href="/app/kortet" className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-4 text-[0.88rem] font-[500] text-ink hover:border-ink">
               Design kortet
             </Link>
             <a
