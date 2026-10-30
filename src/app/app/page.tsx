@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireBusiness } from "@/lib/session";
-import { getBusinessStats, getRecentActivity, getOverviewPulse } from "@/lib/stats";
-import { getReferralOverview, type ReferralRow } from "@/lib/referral-desk";
+import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
+import { getReadyCustomers } from "@/lib/ready-customers";
+import { getReferralOverview } from "@/lib/referral-desk";
 import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
 import { APP_URL } from "@/lib/env";
 import { AddToHomeButton } from "./AddToHomeButton";
-import { cn, formatDkNumber, relativeDk } from "@/lib/utils";
+import { formatDkNumber } from "@/lib/utils";
 
 export const metadata = { title: { absolute: "Hjem - Kundekort" } };
 
@@ -18,39 +19,8 @@ export const dynamic = "force-dynamic";
 // Hjem: kundernes kort i centrum. Til venstre butikkens kort, som det ser ud i
 // Wallet (design under Kortet); til hoejre de funktioner, der ligger paa kortet
 // (Stemplet, Henvisninger og dem, der kommer), hver med dagens tal og regler, og
-// "Tilfoej" for dem, butikken ikke har endnu. Nederst een aktivitetsliste paa
-// tvaers, hvor prikken viser funktionen (Stemplet terrakotta, Henvisninger sort).
-
-const STAMP_LABEL: Record<string, string> = {
-  STAMP: "Stempel givet",
-  REDEEM: "Belønning indløst",
-  PIN_FAIL: "Forkert PIN",
-  FLAGGED: "Mistænkelig aktivitet",
-};
-
-type Activity = {
-  id: string;
-  at: Date;
-  text: string;
-  product: "stemplet" | "henvisninger";
-  alert?: boolean;
-};
-
-function referralText(r: ReferralRow): string {
-  const referrer = r.referrer.name ?? r.referrer.code ?? "En kunde";
-  const referred = r.referred.name ?? "en ny kunde";
-  switch (r.status) {
-    case "REWARDED":
-      return `${referred} kom via ${referrer}. Første besøg registreret.`;
-    case "CREATED":
-    case "VISITED":
-      return `${referrer} har henvist ${referred}.`;
-    case "EXPIRED":
-      return `Henvisningen af ${referred} er udløbet.`;
-    default:
-      return `Henvisningen af ${referred} er annulleret.`;
-  }
-}
+// "Tilfoej" for dem, butikken ikke har endnu. "Klar til belønning" viser kunder,
+// der venter paa noget ved kassen, med et tryk til at tjekke dem ind.
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
@@ -115,10 +85,10 @@ function AddFeature({ href, logo, title, text }: { href: string; logo: ReactNode
 
 export default async function HomePage() {
   const { business } = await requireBusiness();
-  const [stats, pulse, stampActivity, referrals, preview] = await Promise.all([
+  const [stats, pulse, ready, referrals, preview] = await Promise.all([
     getBusinessStats(business.id),
     getOverviewPulse(business.id),
-    getRecentActivity(business.id, 6),
+    getReadyCustomers(business),
     business.referralsEnabled ? getReferralOverview(business.id) : Promise.resolve(null),
     loadCardPreview(business),
   ]);
@@ -133,23 +103,6 @@ export default async function HomePage() {
     month: "long",
   }).format(now);
 
-  const activity: Activity[] = [
-    ...stampActivity.map((a) => ({
-      id: a.id,
-      at: a.createdAt,
-      text: STAMP_LABEL[a.action] ?? a.action,
-      product: "stemplet" as const,
-      alert: a.action === "FLAGGED" || a.action === "PIN_FAIL",
-    })),
-    ...(referrals?.recent ?? []).slice(0, 6).map((r) => ({
-      id: r.id,
-      at: new Date(r.createdAt),
-      text: referralText(r),
-      product: "henvisninger" as const,
-    })),
-  ]
-    .sort((a, b) => b.at.getTime() - a.at.getTime())
-    .slice(0, 6);
 
   return (
     <>
@@ -201,6 +154,38 @@ export default async function HomePage() {
               </li>
             ))}
           </ol>
+        </section>
+      ) : null}
+
+      {/* Klar til belønning: kunder, der venter paa noget ved kassen. Et tryk
+          aabner kunden i kassen (samme kundekort som ved scan). */}
+      {ready.customers.length > 0 ? (
+        <section className="mb-12">
+          <SectionHeader title="Klar til belønning" />
+          <Panel>
+            <ul className="flex flex-col divide-y divide-fog">
+              {ready.customers.map((c) => (
+                <li key={c.id}>
+                  <Link
+                    href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`}
+                    className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[0.95rem] font-[600] text-ink">{c.name ?? "Kortholder"}</span>
+                      <span className="block truncate text-[0.8rem] text-stone">
+                        {c.reasons
+                          .map((r) => (r === "stamps" ? "Fuldt stempelkort" : r === "reward" ? "Belønning fra henvisning" : "Første besøg via en ven"))
+                          .join(" · ")}
+                      </span>
+                    </span>
+                    <span className="inline-flex min-h-10 shrink-0 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white">
+                      Tjek ind
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Panel>
         </section>
       ) : null}
 
@@ -300,40 +285,17 @@ export default async function HomePage() {
         />
       </div>
 
-      <section>
-        <SectionHeader title="Seneste aktivitet" />
-        <Panel>
-          {activity.length === 0 ? (
+      {/* Ingen venter: en kort note nederst (listen staar oeverst, naar der er nogen). */}
+      {ready.customers.length === 0 ? (
+        <section>
+          <SectionHeader title="Klar til belønning" />
+          <Panel>
             <p className="py-1 text-[0.88rem] text-stone">
-              Ingen aktivitet endnu.{" "}
-              <Link href="/app/plakat" className="font-[600] text-ink underline underline-offset-4">
-                Hent QR-koden
-              </Link>{" "}
-              og sæt den op ved kassen, så begynder det at tælle.
+              Ingen venter lige nu. Når en kunde har et fuldt kort, en belønning til gode eller kommer første gang via en ven, står de her.
             </p>
-          ) : (
-            <ol className="flex flex-col divide-y divide-fog">
-              {activity.map((a) => (
-                <li key={`${a.product}-${a.id}`} className="flex items-baseline justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                  <span className="flex items-baseline gap-3">
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "inline-block h-[7px] w-[7px] shrink-0 rounded-full",
-                        a.alert ? "bg-rust" : a.product === "stemplet" ? "" : "bg-ink",
-                      )}
-                      // Stemplets produktfarve (fast, saa dashboardets stil ikke rammer den).
-                      style={!a.alert && a.product === "stemplet" ? { backgroundColor: "#1B5EAE" } : undefined}
-                    />
-                    <span className={cn("text-[0.9rem]", a.alert ? "text-rust" : "text-ink")}>{a.text}</span>
-                  </span>
-                  <span className="shrink-0 text-[0.75rem] text-slate">{relativeDk(a.at)}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Panel>
-      </section>
+          </Panel>
+        </section>
+      ) : null}
     </>
   );
 }

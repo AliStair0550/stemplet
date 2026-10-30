@@ -59,7 +59,7 @@ function formatPhone(p: string | null): string | null {
   return m ? `${m[1]} ${m[2]} ${m[3]} ${m[4]}` : p;
 }
 
-export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
+export function ReferralDesk({ hasPin, initialSerial = null }: { hasPin: boolean; initialSerial?: string | null }) {
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<DeskHit[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -93,6 +93,11 @@ export function ReferralDesk({ hasPin }: { hasPin: boolean }) {
       setNote({ ok: false, text: res.message ?? "Kunden blev ikke fundet." });
     }
   }, []);
+
+  // Aabnet med en bestemt kunde (fra Kunder eller Hjem: ?kort=).
+  useEffect(() => {
+    if (initialSerial) void open({ serial: initialSerial });
+  }, [initialSerial, open]);
 
   function reset() {
     setCustomer(null);

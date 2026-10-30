@@ -5,10 +5,6 @@ import { PageHeading } from "@/components/dash";
 import { Kassemodus, type KioskCard } from "./Kassemodus";
 import type { StampIconKey } from "@/lib/brand";
 import { ReferralDesk } from "@/components/referral/ReferralDesk";
-import {
-  KasseViewSwitch,
-  kasseViewFor,
-} from "@/components/referral/KasseViewSwitch";
 
 export const metadata: Metadata = { title: "Scan" };
 export const dynamic = "force-dynamic";
@@ -16,12 +12,13 @@ export const dynamic = "force-dynamic";
 export default async function KassePage({
   searchParams,
 }: {
-  searchParams: Promise<{ visning?: string }>;
+  searchParams: Promise<{ kort?: string }>;
 }) {
   const { business } = await requireBusiness();
-  // Henvisninger (kun naar modulet er slaaet til): skift oeverst + egen visning.
-  // Uden modulet er siden uaendret.
-  const { view, showSwitch } = kasseViewFor(business, (await searchParams).visning);
+  // Een kasse: med Stemplet viser kunden ved scan baade stempler og (hvis slaaet
+  // til) henvisningens foerste besoeg og beloenninger. Kun Henvisninger: soeg/scan.
+  const kort = (await searchParams).kort?.trim().slice(0, 40) || null;
+  const onlyReferrals = business.referralsEnabled && !business.stampsEnabled;
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },
     orderBy: { createdAt: "asc" },
@@ -40,25 +37,24 @@ export default async function KassePage({
   return (
     <>
       <PageHeading
-        title={view === "henvisninger" ? "Henvisninger" : "Scan"}
+        title="Scan"
         subtitle={
-          view === "henvisninger"
+          onlyReferrals
             ? "Søg eller scan kunden. Registrér første besøg eller indløs en belønning."
             : business.selfScanEnabled
               ? "Scan kundens kort, vis stempel-QR eller åbn kassemodus på en skærm ved disken."
-              : "Scan kundens kort for at give stempler eller indløse en belønning."
+              : "Scan kundens kort. Du ser med det samme, om kunden skal have stempler, rabat eller en belønning."
         }
       />
-      {showSwitch ? (
-        <KasseViewSwitch basePath="/app/kasse" view={view} />
-      ) : null}
-      {view === "henvisninger" ? (
-        <ReferralDesk hasPin={business.staffPin != null} />
+      {onlyReferrals ? (
+        <ReferralDesk hasPin={business.staffPin != null} initialSerial={kort} />
       ) : (
         <Kassemodus
           card={kioskCard}
           selfScan={business.selfScanEnabled}
           hasPin={business.staffPin != null}
+          referrals={business.referralsEnabled}
+          initialSerial={kort}
         />
       )}
     </>
