@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { rgba } from "@/lib/brand";
+import { WalletIcon } from "@/components/ui";
 
 // Kundekortet til deling. Oeverst et udstillingskort i butikkens farver med
 // QR-koden (det, man viser over disken), derunder linket til kundesiden.
@@ -44,9 +46,24 @@ function QrTile({ qrDataUrl, s, big }: { qrDataUrl: string; s: Showcase; big?: b
   );
 }
 
-export function KundekortShare({ url, qrDataUrl, showcase: s }: { url: string; qrDataUrl: string; showcase: Showcase }) {
+export function KundekortShare({
+  url,
+  qrDataUrl,
+  showcase: s,
+  autoOpen = false,
+  walletPassUrl = null,
+}: {
+  url: string;
+  qrDataUrl: string;
+  showcase: Showcase;
+  /** Aabn fuld skaerm med det samme (fx "Vis QR-kode" paa Hjem). */
+  autoOpen?: boolean;
+  /** Butikkens eget QR-kort til ejerens Wallet. */
+  walletPassUrl?: string | null;
+}) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
-  const [full, setFull] = useState(false);
+  const [full, setFull] = useState(autoOpen);
   const [canShare, setCanShare] = useState(false);
   const wake = useRef<WakeLockLike | null>(null);
   const shown = url.replace(/^https?:\/\//, "");
@@ -58,7 +75,16 @@ export function KundekortShare({ url, qrDataUrl, showcase: s }: { url: string; q
     void wake.current?.release().catch(() => {});
     wake.current = null;
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
-  }, []);
+    // Kom man direkte fra "Vis QR-kode", gaar luk tilbage dertil.
+    if (autoOpen && window.history.length > 1) router.back();
+  }, [autoOpen, router]);
+
+  // Aabnet direkte: hold skaermen taendt med det samme.
+  useEffect(() => {
+    if (!autoOpen) return;
+    const wl = (navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<WakeLockLike> } }).wakeLock;
+    wl?.request("screen").then((l) => (wake.current = l)).catch(() => {});
+  }, [autoOpen]);
 
   async function open() {
     setFull(true);
@@ -139,6 +165,12 @@ export function KundekortShare({ url, qrDataUrl, showcase: s }: { url: string; q
             >
               Vis til kunden
             </button>
+            {walletPassUrl ? (
+              <a href={walletPassUrl} className={btn} style={{ background: "#000", color: "#fff" }}>
+                <WalletIcon />
+                Læg i din Wallet
+              </a>
+            ) : null}
             <a
               href={qrDataUrl}
               download={`${s.shopName}-qr.png`}
@@ -175,7 +207,7 @@ export function KundekortShare({ url, qrDataUrl, showcase: s }: { url: string; q
           role="dialog"
           aria-modal="true"
           aria-label="QR-kode til kunden"
-          className="fixed inset-0 z-50 flex flex-col items-center justify-between overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-between overflow-y-auto px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-center"
           style={{ background: `${glow}, ${s.primaryColor}`, color: s.textColor }}
         >
           <div className="flex w-full items-center justify-between">

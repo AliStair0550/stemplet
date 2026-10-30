@@ -109,7 +109,7 @@ export default async function CustomersPage({
             <p className="text-[1.05rem] font-[600] text-ink">Ingen kunder endnu.</p>
             <p className="-mt-2 text-[0.9rem] text-stone">Hæng QR-koden op, så kommer de første.</p>
             <div className="flex flex-wrap gap-2">
-              <Link href="/app/regler?f=kundekort" className={btnClass("primary")}>
+              <Link href="/app/regler?f=kundekort&vis=1" className={btnClass("primary")}>
                 Vis QR-kode
               </Link>
               <Link href="/app/plakat" className={btnClass("outline")}>

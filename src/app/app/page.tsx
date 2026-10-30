@@ -8,7 +8,8 @@ import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-te
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
-import { APP_URL } from "@/lib/env";
+import { APP_URL, WALLET_ENABLED } from "@/lib/env";
+import { WalletIcon } from "@/components/ui";
 import { AddToHomeButton } from "./AddToHomeButton";
 import { formatDkNumber } from "@/lib/utils";
 import { DEFAULT_PRIMARY } from "@/lib/brand";
@@ -236,7 +237,7 @@ export default async function HomePage() {
           <p className="w-full max-w-[300px] text-[0.85rem] font-[600] text-stone">Dit kort</p>
           {/* Genvej til QR-koden, der kan vises til kunden direkte fra telefonen. */}
           <Link
-            href="/app/regler?f=kundekort"
+            href="/app/regler?f=kundekort&vis=1"
             className="flex min-h-12 w-full max-w-[300px] items-center justify-center gap-2 rounded-full bg-ink px-4 text-[0.92rem] font-[600] text-white hover:bg-[#0A2D5A]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
@@ -247,6 +248,16 @@ export default async function HomePage() {
             </svg>
             Vis QR-kode
           </Link>
+          {WALLET_ENABLED ? (
+            // Butikkens eget QR-kort i ejerens Wallet: hurtigst at vise kunderne.
+            <a
+              href="/api/wallet/butikkort"
+              className="-mt-1 flex min-h-11 w-full max-w-[300px] items-center justify-center gap-2 rounded-full bg-black px-4 text-[0.88rem] font-[600] text-white"
+            >
+              <WalletIcon />
+              Læg QR-koden i din Wallet
+            </a>
+          ) : null}
           {/* Knapperne under kortet i Wallet vises under Design, ikke her. */}
           <WalletCardPreview os="27" {...preview} actions={[]} />
           <p className="-mt-1 w-full max-w-[300px] text-center text-[0.75rem] text-slate">Eksempel på en kundes kort</p>

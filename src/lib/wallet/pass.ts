@@ -564,3 +564,58 @@ async function addPoster(pass: PKPass, input: PassInput, logoBuf: Buffer | null)
   });
   if (actions.length > 0) pass.featuredActions = actions;
 }
+
+/**
+ * Butikkens eget QR-kort til ejerens Wallet: butikkens logo og farver og en stor
+ * QR-kode til kundesiden. Ejeren viser det over disken, saa kunden scanner og
+ * henter sit eget kort. Statisk (ingen web service): hentes igen for at opdatere.
+ */
+export async function buildShopQrPass(input: {
+  businessId: string;
+  businessName: string;
+  pageUrl: string;
+  primaryColor: string;
+  textColor: string;
+  logoUrl: string | null;
+  stampIcon: string;
+  lines: string[];
+}): Promise<Buffer> {
+  const { passTypeIdentifier, teamIdentifier } = walletIds();
+  const certificates = walletCertificates();
+  const [icon, logoBuf] = await Promise.all([
+    renderPassIcon({
+      logoKey: input.logoUrl,
+      loadLogo: () => (input.logoUrl ? fetchLogo(input.logoUrl) : Promise.resolve(null)),
+      primaryColor: input.primaryColor,
+      textColor: input.textColor,
+      stampIcon: input.stampIcon,
+    }),
+    loadLogo(input.logoUrl, 1),
+  ]);
+  const { backgroundColor: bg, foregroundColor: fg, labelColor: labelCol } = passColors(input.primaryColor, input.textColor);
+
+  const images: Record<string, Buffer> = { "icon.png": icon.x1, "icon@2x.png": icon.x2, "icon@3x.png": icon.x3 };
+  if (logoBuf) {
+    images["logo.png"] = logoBuf;
+    images["logo@2x.png"] = logoBuf;
+    images["logo@3x.png"] = logoBuf;
+  }
+
+  const pass = new PKPass(images, certificates, {
+    passTypeIdentifier,
+    teamIdentifier,
+    organizationName: input.businessName,
+    description: `QR-kode til ${input.businessName}s kort`,
+    serialNumber: `butik-${input.businessId}`,
+    foregroundColor: fg,
+    backgroundColor: bg,
+    labelColor: labelCol,
+    ...(logoBuf ? {} : { logoText: input.businessName }),
+  });
+  pass.type = "storeCard";
+  pass.primaryFields.push({ key: "cta", label: "TIL DINE KUNDER", value: "Scan og hent kortet" });
+  input.lines.slice(0, 2).forEach((l, i) => pass.secondaryFields.push({ key: `line${i}`, label: i === 0 ? "DE FÅR" : "OG", value: l }));
+  pass.backFields.push({ key: "how", label: "Sådan", value: "Vis koden til kunden. Kunden åbner kameraet, scanner og lægger sit eget kort i Wallet. Ingen app." });
+  pass.setBarcodes({ format: "PKBarcodeFormatQR", message: input.pageUrl, messageEncoding: "iso-8859-1", altText: "Scan med kameraet" });
+  return pass.getAsBuffer();
+}
