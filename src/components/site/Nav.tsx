@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
 
 const LINKS = [
-  { href: "/hvorfor", label: "Fordele" },
+  { href: "/#funktioner", label: "Funktioner" },
   { href: "/#pris", label: "Pris" },
 ];
 

@@ -65,6 +65,11 @@ const nextConfig: NextConfig = {
         destination: "https://kort.folka.dk/:path",
         permanent: false,
       },
+      // De gamle produktsider (Stemplet-look, gammel pris) er afloest af forsiden.
+      // Kun de praecise stier: /henvisninger/[slug] er butikkernes egne sider.
+      { source: "/stemplet", destination: "/", permanent: true },
+      { source: "/hvorfor", destination: "/#funktioner", permanent: true },
+      { source: "/henvisninger", destination: "/#funktioner", permanent: true },
     ];
   },
   images: {

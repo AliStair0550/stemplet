@@ -401,7 +401,7 @@ function Footer() {
         ["/login", "Log ind"],
         ["/prøv", "Prøv kortet"],
         ["/brancher", "Brancher"],
-        ["/henvisninger", "Henvisninger"],
+        ["/#historien", "Sådan virker det"],
       ],
     ],
     [

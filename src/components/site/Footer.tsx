@@ -5,7 +5,7 @@ import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 
 const LINKS = [
   { href: "/login", label: "Log ind" },
-  { href: "/hvorfor", label: "Fordele" },
+  { href: "/#funktioner", label: "Funktioner" },
   { href: "/brancher", label: "Brancher" },
   { href: "/#pris", label: "Pris" },
   { href: "/start", label: "Kom gratis i gang" },
