@@ -38,7 +38,7 @@ async function iconBackground(
   for (let y = -tile; y < H + tile; y += tile) {
     for (let x = -tile; x < W + tile; x += tile) {
       const ox = (Math.floor(y / tile) % 2) * (tile / 2);
-      tiles += `<g transform="translate(${x + ox},${y}) scale(${iconScale}) rotate(-8)"><g fill="none" stroke="${text}" stroke-opacity="0.08" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${markup}</g></g>`;
+      tiles += `<g transform="translate(${x + ox},${y}) scale(${iconScale}) rotate(-8)"><g fill="none" stroke="${text}" color="${text}" opacity="0.08" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${markup}</g></g>`;
     }
   }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="${bg}"/>${tiles}</svg>`;

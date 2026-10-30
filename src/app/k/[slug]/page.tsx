@@ -11,6 +11,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, shade, rgba, hexToRgb, type StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
+import { ClaimHeading } from "./ClaimHeading";
 import { cardShortName } from "@/lib/card-name";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { optimizedLogoDataUri } from "@/lib/logo";
@@ -202,12 +203,7 @@ export default async function ClaimPage({
               style={{ height: `${4 * capScale}rem`, maxWidth: "min(60vw, 14rem)" }}
             />
           ) : null}
-          <h1
-            className="font-[300] text-[1.5rem] leading-tight"
-            style={{ color: text }}
-          >
-            Dit kort hos {cardTitle(business)}
-          </h1>
+          <ClaimHeading slug={slug} shop={cardTitle(business)} gift={referral?.newCustomerReward ?? null} color={text} />
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
@@ -221,7 +217,6 @@ export default async function ClaimPage({
             logoUrl={logoSrc}
             actions={[]}
             sampleStamps={0}
-            sampleCode="Din kode"
             fresh
           />
         </div>
@@ -277,10 +272,8 @@ export default async function ClaimPage({
             className="max-w-xs text-center text-[0.72rem] font-[300] leading-relaxed"
             style={{ color: rgba(text, 0.55) }}
           >
-            Når du henter kortet, gemmer {business.name} dit navn, din e-mail og
-            din historik på kortet, så du kan optjene og få dine belønninger.
-            Nyheder på mail får du kun, hvis du siger ja tak. Korte beskeder
-            på kortet i Wallet kan du slå fra på kortets bagside. Se{" "}
+            {business.name} gemmer dit navn, din e-mail og dine stempler til
+            kortet. Mails får du kun, hvis du siger ja tak. Se{" "}
             <a
               href="/privatliv"
               target="_blank"

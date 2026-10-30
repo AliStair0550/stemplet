@@ -22,7 +22,7 @@ export async function generateMetadata({
   const { serial } = await params;
   const cc = await getCard(serial);
   return {
-    title: cc ? `Dit kort hos ${cc.card.business.name}` : "Stempelkort",
+    title: cc ? `Dit kort hos ${cc.card.business.name}` : "Kundekort",
     robots: { index: false },
   };
 }

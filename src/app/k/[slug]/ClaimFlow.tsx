@@ -11,10 +11,10 @@ import type { ShopStatus } from "@/app/api/k/[slug]/status/route";
 
 // Fejl-koder (fra claim-ruten via ?fejl=) oversat til en klar besked.
 const ERRORS: Record<string, string> = {
-  lukket: "Stempelkortet er ikke aktivt lige nu. Spørg personalet i butikken.",
+  lukket: "Kortet er ikke aktivt lige nu. Spørg personalet i butikken.",
   fuld: "Butikken kan ikke tage imod flere kort lige nu. Spørg personalet.",
   pause: "Butikken tager ikke imod nye kort lige nu. Spørg personalet.",
-  stoppet: "Stempelkortet er sat på pause lige nu. Spørg personalet i butikken.",
+  stoppet: "Kortet er sat på pause lige nu. Spørg personalet i butikken.",
   // Forbigaaende serverfejl (fx en kortvarig database-blip): kunden kan bare
   // proeve igen om et oejeblik, saa vi viser en "Proev igen"-knap.
   serverfejl: "Der opstod en kortvarig fejl. Prøv igen om et øjeblik.",
@@ -873,15 +873,6 @@ export function ClaimFlow({
     const friend = status?.friend ?? null;
     return (
       <div className="flex w-full flex-col items-center gap-4">
-        {referral && friend ? (
-          <p
-            className="w-full rounded-2xl px-5 py-4 text-center text-[1rem] font-[500] leading-snug"
-            style={{ background: rgba(ctaBg, 0.12), border: `1px solid ${rgba(ctaBg, 0.25)}` }}
-          >
-            {friend.firstName ?? "Din ven"} har givet dig {referral.newCustomerReward} hos {shopName}. Hent kortet, så
-            ligger rabatten klar til dit første besøg.
-          </p>
-        ) : null}
         {status?.invalidCode ? (
           <p role="alert" className="w-full rounded-lg border border-rust/40 bg-rust/10 px-4 py-3 text-center text-[0.85rem] text-rust">
             Vi kunne ikke finde koden. Tjek at den er skrevet rigtigt, eller bed din ven om linket.

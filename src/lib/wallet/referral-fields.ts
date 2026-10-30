@@ -64,8 +64,10 @@ export function referralFrontFields(info: ReferralPassInfo): PassField[] {
         : "Du har nu %@ til gode.";
   }
   return [
-    // "Henvis en ven" fortaeller, hvad koden er til (Alis test: "Din kode" var uklart).
-    { key: "ref-code", label: "HENVIS EN VEN", value: info.code, textAlignment: "PKTextAlignmentCenter" },
+    // En opfordring i stedet for selve koden (Alis test: koden alene siger intet,
+    // foer man deler linket). Koden og linket staar paa bagsiden; knappen under
+    // kortet aabner "Tilbud og fordele", hvor man deler.
+    { key: "ref-code", label: "DEL MED EN VEN", value: `Giv ${info.newCustomerReward}`, textAlignment: "PKTextAlignmentCenter" },
     owed,
   ];
 }
@@ -120,9 +122,9 @@ export function referralOnlyFrontFields(info: ReferralPassInfo): { primary: Pass
     primary: [{ key: code!.key, label: code!.label, value: code!.value }],
     secondary: [
       {
-        key: "ref-friend",
-        label: "DIN VEN FÅR",
-        value: info.newCustomerReward,
+        key: "ref-you",
+        label: "DU FÅR",
+        value: info.referrerReward,
         textAlignment: "PKTextAlignmentLeft",
       },
       owed!,

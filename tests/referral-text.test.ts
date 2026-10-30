@@ -102,10 +102,11 @@ test("wallet: til gode lægger beløb sammen, ellers behandling eller antal", ()
   );
 });
 
-test("wallet: forsiden viser kode og til gode, altid begge felter", () => {
+test("wallet: forsiden opfordrer til at dele og viser til gode, altid begge felter", () => {
   const f = referralFrontFields(info());
   assert.deepEqual(f.map((x) => x.key), ["ref-code", "ref-owed"]);
-  assert.equal(f[0]!.value, "SARA-K8");
+  assert.equal(f[0]!.label, "DEL MED EN VEN");
+  assert.equal(f[0]!.value, `Giv 100${NBSP}kr.`);
   assert.equal(f[1]!.value, "Intet endnu");
   assert.equal(f[1]!.changeMessage, undefined);
 });
@@ -145,16 +146,16 @@ test("kode: tolerant over for mellemrum, tankestreg, smaa bogstaver og manglende
   assert.deepEqual(referralCodeCandidates("   "), []);
 });
 
-test("wallet uden Stemplet: koden er primaerfelt, vennens rabat og til gode under", () => {
+test("wallet uden Stemplet: opfordringen er primaerfelt, din beloenning og til gode under", () => {
   const f = referralOnlyFrontFields(info({ rewards: [{ type: "SERVICE", value: "Gratis klip" }], announce: true, referralsDone: 1 }));
   assert.deepEqual(
     f.primary.map((x) => [x.key, x.value]),
-    [["ref-code", "SARA-K8"]],
+    [["ref-code", `Giv 100${NBSP}kr.`]],
   );
   assert.deepEqual(
     f.secondary.map((x) => [x.key, x.value]),
     [
-      ["ref-friend", `100${NBSP}kr.`],
+      ["ref-you", "gratis klip"],
       ["ref-owed", "Gratis klip"],
     ],
   );

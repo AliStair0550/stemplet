@@ -32,9 +32,12 @@ export function cardShortName(b: { cardName?: string | null; displayName?: strin
   return b.cardName?.trim() || autoCardName(b.displayName?.trim() || b.name);
 }
 
-/** "Hent dit Sara Salon-kort" (egennavn + kort skrives med bindestreg). */
+/**
+ * "Hent dit Sara Salon-kort" (egennavn + kort skrives med bindestreg). Ender
+ * navnet allerede paa "kort" (fx "Klubkort"), tilfoejes intet: "Hent dit Klubkort".
+ */
 export function claimCta(shortName: string): string {
-  return `Hent dit ${shortName}-kort`;
+  return /kort$/i.test(shortName.trim()) ? `Hent dit ${shortName.trim()}` : `Hent dit ${shortName}-kort`;
 }
 
 /** Tomt = automatisk navn. For langt eller kun tegn giver en fejl. */

@@ -40,7 +40,7 @@ export function posterFields(c: PosterContent): PosterFields {
     return {
       header: [{ ...owed!, textAlignment: undefined }],
       primary: [{ key: code!.key, label: code!.label, value: code!.value }],
-      footer: [{ key: "footer", label: "", value: `Din ven får ${c.referral.newCustomerReward} ved første besøg` }],
+      footer: [{ key: "footer", label: "", value: `Du får ${c.referral.referrerReward}, når din ven har været her` }],
     };
   }
   if (c.referral) {
