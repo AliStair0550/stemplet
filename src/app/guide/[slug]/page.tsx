@@ -50,7 +50,7 @@ export default async function PublicGuidePage({
         <GuideContent data={data} />
 
         <footer className="mt-16 border-t border-fog pt-6 text-center text-[0.8rem] text-slate print:hidden">
-          Kundekort fra Folka
+          Folka Kort
         </footer>
       </div>
     </main>

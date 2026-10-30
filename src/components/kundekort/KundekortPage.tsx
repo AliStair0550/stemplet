@@ -7,22 +7,24 @@ import { CARDS, MemberCard, type MemberCardData } from "./MemberCard";
 import { Story } from "./Story";
 import "./kundekort.css";
 
-// Kundekort: forsiden paa kort.folka.dk. Folkas udtryk (Inter, natteblaa,
-// blaat lys) og historien om et kort, kunderne kommer igen med. Stemplets og
-// Henvisningers egne forsider ligger fortsat paa /stemplet og /henvisninger.
+// Folka Kort: forsiden paa kort.folka.dk. Navnet er "Folka Kort" (altid stort K);
+// "kundekort" bruges kun som forklaring. Tone: som en dygtig ven, der selv har
+// haft butik. Korte saetninger, du-form, konkrete tal, ingen udraabstegn.
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-kk", display: "swap" });
 
 const FAN: { card: MemberCardData; x: number; y: number; r: number; d: number; z: number; hideSm?: boolean }[] = [
-  { card: CARDS.bager!, x: -330, y: 46, r: -16, d: 0.6, z: 1, hideSm: true },
-  { card: CARDS.salon!, x: -168, y: 14, r: -8, d: 1.4, z: 2 },
+  { card: CARDS.museum!, x: -480, y: 92, r: -22, d: 1.8, z: 0, hideSm: true },
+  { card: CARDS.blomster!, x: -330, y: 46, r: -15, d: 0.6, z: 1, hideSm: true },
+  { card: CARDS.salon!, x: -168, y: 14, r: -7, d: 1.4, z: 2 },
   { card: CARDS.cafe!, x: 0, y: 0, r: 0, d: 0, z: 5 },
-  { card: CARDS.barber!, x: 168, y: 14, r: 8, d: 2.1, z: 2 },
-  { card: CARDS.blomster!, x: 330, y: 46, r: 16, d: 1, z: 1, hideSm: true },
+  { card: CARDS.havn!, x: 168, y: 14, r: 7, d: 2.1, z: 2 },
+  { card: CARDS.bar!, x: 330, y: 46, r: 15, d: 1, z: 1, hideSm: true },
+  { card: CARDS.bager!, x: 480, y: 92, r: 22, d: 2.6, z: 0, hideSm: true },
 ];
 
-const ROW_A = [CARDS.cafe, CARDS.negle, CARDS.barber, CARDS.blomster, CARDS.pizza] as MemberCardData[];
-const ROW_B = [CARDS.bar, CARDS.bager, CARDS.salon, CARDS.is, CARDS.pizza] as MemberCardData[];
+const ROW_A = [CARDS.cafe, CARDS.museum, CARDS.negle, CARDS.havn, CARDS.barber, CARDS.blomster, CARDS.pizza] as MemberCardData[];
+const ROW_B = [CARDS.bar, CARDS.bager, CARDS.salon, CARDS.is, CARDS.museum, CARDS.havn, CARDS.pizza] as MemberCardData[];
 
 const TRADES = ["Caféer", "Frisører", "Barberer", "Bagerier", "Pizzeriaer", "Blomsterbutikker", "Neglesaloner", "Isbutikker", "Ølbarer", "Kaffebarer", "Klinikker", "Butikker"];
 
@@ -32,7 +34,7 @@ function Wordmark({ dark = false }: { dark?: boolean }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={dark ? "/folka-logo-hvid.svg" : "/folka-logo.svg"} alt="Folka" width={189} height={105} className="h-8 w-auto" />
       <span className={dark ? "h-5 w-px bg-white/20" : "h-5 w-px bg-[#CAD2DD]"} aria-hidden />
-      <span className={dark ? "text-[15px] font-medium text-white/80" : "text-[15px] font-medium text-[#5F6B7E]"}>Kundekort</span>
+      <span className={dark ? "text-[15px] font-medium text-white/80" : "text-[15px] font-medium text-[#5F6B7E]"}>Kort</span>
     </span>
   );
 }
@@ -41,7 +43,7 @@ function Header() {
   return (
     <header className="absolute inset-x-0 top-0 z-30">
       <div className="mx-auto flex h-20 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" aria-label="Kundekort, til forsiden">
+        <Link href="/" aria-label="Folka Kort, til forsiden">
           <Wordmark dark />
         </Link>
         <nav className="kk-glass-pill hidden items-center gap-1 p-1 text-[14px] text-white/75 md:flex" aria-label="Sektioner">
@@ -63,7 +65,7 @@ function Header() {
             href="/start"
             className="rounded-full bg-white px-4 py-2 text-[14px] font-semibold text-[#061C3D] transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
-            Kom i gang
+            Opret dit kort
           </Link>
         </div>
       </div>
@@ -89,25 +91,21 @@ function Hero() {
     <section className="kk-dark pb-0 pt-32 sm:pt-36">
       <Lights />
       <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6">
-        <p className="kk-glass-pill mx-auto inline-flex items-center gap-2 px-4 py-1.5 text-[13px] text-white/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#7CC4FF]" aria-hidden />
-          Stempler og henvisninger i Apple Wallet
-        </p>
-        <h1 className="mx-auto mt-6 text-[clamp(2.5rem,6.6vw,5.2rem)] font-semibold leading-[1] tracking-[-0.045em]">
-          Kunderne kommer igen.
+        <h1 className="mx-auto text-[clamp(2.5rem,6.6vw,5.2rem)] font-semibold leading-[1] tracking-[-0.045em]">
+          Dit kort. Dine kunder.
           <br />
-          <span className="text-white/45">Kortet sørger for det.</span>
+          <span className="text-white/45">Din kanal.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-[34rem] text-[1.08rem] leading-relaxed text-white/70">
-          Ét kundekort med dit navn og dine farver, i kundens telefon. Stempler, henvisninger og belønninger samlet. Ingen
-          app. Kun navn og e-mail.
+          Folka Kort er dit eget kundekort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder, uden at du
+          skal bede om nogens mail.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/start"
             className="rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold text-[#061C3D] transition-transform hover:scale-[1.03] active:scale-[0.98]"
           >
-            Kom gratis i gang
+            Opret dit kort gratis
           </Link>
           <Link
             href="/prøv"
@@ -116,7 +114,7 @@ function Hero() {
             Prøv kortet på din telefon
           </Link>
         </div>
-        <p className="mt-4 text-[13px] text-white/50">Gratis op til 100 kortholdere. Intet kreditkort.</p>
+        <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden. Ingen binding.</p>
       </div>
 
       {/* Viften af kort: forskellige butikker, samme kort. */}
@@ -222,7 +220,7 @@ function Gallery() {
       <SectionHead
         kicker="Dit udtryk"
         title="Ét kort. Din butik."
-        text="Dit billede eller dine farver, dit ikon og dine ord. Kortet ligner din butik, ikke os. Vælg stempler, henvisninger eller begge dele."
+        text="Dine farver, dit ikon og dine ord. Kortet ligner din butik, ikke os. Stempler, henvisninger og beskeder på det samme kort."
       />
       <div className="mt-14 grid gap-2" aria-hidden>
         <CardRow cards={ROW_A} t="70s" />
@@ -287,11 +285,12 @@ function Features() {
             <span className="rounded-full bg-[#E8F0FB] px-4 py-2 text-[14px] font-semibold text-[#1B5EAE]">Louise: 25 kr. rabat</span>
           </div>
         </Tile>
-        <Tile icon="sparkle" title="Kampagner" text="Dobbeltstempel på stille dage, velkomstbonus til nye kunder og stempel ved afhentning." className="md:col-span-2" />
-        <Tile icon="hand" title="Ved kassen" text="Personalet stempler med deres egen telefon. Belønninger kræver personalets PIN." className="md:col-span-2" />
+        <Tile icon="sparkle" title="Beskeder" text="Send en kort besked direkte til kundens telefon. Den lander på låseskærmen. Én om dagen." className="md:col-span-2" />
+        <Tile icon="star" title="Tilbud og kampagner" text="Dobbeltstempel på stille dage, tilbud kun for kortholdere og rabatter hos dine samarbejdspartnere." className="md:col-span-2" />
+        <Tile icon="hand" title="Ved kassen" text="Ét scan viser stempler, rabat og belønninger. Belønninger kræver personalets PIN." className="md:col-span-2" />
         <Tile icon="gift" title="Plakater og visitkort" text="Din QR-kode på plakat, bordskilt og visitkort. Klar til print på et øjeblik." className="md:col-span-2" />
-        <Tile icon="leaf" title="Overblik" text="Kortholdere, genbesøg, indløste belønninger og tiden til et fuldt kort. Uge for uge." className="md:col-span-3" />
-        <Tile icon="drop" title="Kortet følger kunden" text="Ny telefon? Kunden får kortet tilbage via sin e-mail, med alle stempler og belønninger." className="md:col-span-3" />
+        <Tile icon="leaf" title="Overblik" text="Kortholdere, genbesøg, indløste belønninger og tiden til et fuldt kort. Uge for uge." className="md:col-span-2" />
+        <Tile icon="drop" title="Kortet følger kunden" text="Ny telefon? Kunden får kortet tilbage via sin e-mail, med alle stempler og belønninger." className="md:col-span-2" />
       </div>
     </section>
   );
@@ -330,42 +329,40 @@ function Security() {
 }
 
 function Pricing() {
-  const free = ["Stempler og henvisninger", "Dit eget design, intet logo fra os", "Kampagner og statistik", "Plakater, bordskilte og visitkort"];
-  const pro = ["Ubegrænset antal kortholdere", "Fuldt overblik over dine stamkunder", "Hjælp til at komme godt fra start"];
+  const included = [
+    "Stempler, henvisninger og beskeder",
+    "Ubegrænset antal kortholdere",
+    "Dit eget design, intet logo fra os",
+    "Tilbud, kampagner og statistik",
+    "Plakater, bordskilte og visitkort",
+  ];
   return (
     <section id="pris" className="scroll-mt-4 bg-white py-24 sm:py-32">
-      <SectionHead kicker="Pris" title="Gratis op til 100 kortholdere." text="Ingen binding. Intet kreditkort for at starte." />
-      <div className="mx-auto mt-14 grid max-w-[880px] gap-4 px-4 sm:px-6 md:grid-cols-2">
-        <div className="kk-reveal rounded-[28px] bg-[#F2F5F9] p-8">
-          <p className="text-[15px] font-semibold">Gratis</p>
-          <p className="mt-3 text-[3rem] font-semibold leading-none tracking-[-0.04em]">0 kr.</p>
-          <p className="mt-2 text-[14px] text-[#5F6B7E]">om måneden, til dig der er ved at komme i gang</p>
-          <ul className="mt-6 grid gap-2.5 text-[0.98rem]">
-            {free.map((f) => (
-              <li key={f} className="flex gap-2.5">
-                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#1B5EAE]" aria-hidden />
-                {f}
-              </li>
-            ))}
-          </ul>
-          <Link href="/start" className="mt-8 flex justify-center rounded-full bg-[#061C3D] px-6 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-[#0A2D5A]">
-            Kom gratis i gang
-          </Link>
-        </div>
-        <div className="kk-reveal kk-dark rounded-[28px] p-8">
+      <SectionHead kicker="Pris" title="Tre måneder gratis. Derefter 49 kr. om måneden." text="Alle tre moduler er med. Ubegrænset antal kortholdere." />
+      <div className="mx-auto mt-14 max-w-[560px] px-4 sm:px-6">
+        <div className="kk-reveal kk-dark rounded-[28px] p-8 sm:p-10">
           <Lights />
-          <p className="text-[15px] font-semibold">Pro</p>
-          <p className="mt-3 text-[3rem] font-semibold leading-none tracking-[-0.04em]">99 kr.</p>
-          <p className="mt-2 text-[14px] text-white/60">om måneden ekskl. moms, når du har flere end 100 kortholdere</p>
-          <ul className="mt-6 grid gap-2.5 text-[0.98rem] text-white/85">
-            {pro.map((f) => (
+          <p className="text-[15px] font-semibold">Folka Kort</p>
+          <p className="mt-3 flex items-baseline gap-2">
+            <span className="text-[3.4rem] font-semibold leading-none tracking-[-0.04em]">49 kr.</span>
+            <span className="text-[15px] text-white/60">om måneden</span>
+          </p>
+          <p className="mt-2 text-[14px] text-white/60">De første tre måneder er gratis.</p>
+          <ul className="mt-7 grid gap-2.5 text-[0.98rem] text-white/85">
+            {included.map((f) => (
               <li key={f} className="flex gap-2.5">
                 <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#7CC4FF]" aria-hidden />
                 {f}
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-[13px] text-white/55">Vi siger til, når du nærmer dig 100. Du skifter først, når du selv siger ja.</p>
+          <Link
+            href="/start"
+            className="mt-8 flex justify-center rounded-full bg-white px-6 py-3.5 text-[15px] font-semibold text-[#061C3D] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Opret dit kort gratis
+          </Link>
+          <p className="mt-4 text-center text-[13px] text-white/55">Ingen binding, ingen opstartsgebyr, intet kort på forhånd.</p>
         </div>
       </div>
     </section>
@@ -388,7 +385,7 @@ function FinalCta() {
             Hent et prøvekort
           </Link>
           <Link href="/start" className="kk-glass-pill px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/15">
-            Kom gratis i gang
+            Opret dit kort gratis
           </Link>
         </div>
         <p className="mt-6 text-[14px] text-white/55">
@@ -405,9 +402,9 @@ function FinalCta() {
 function Footer() {
   const cols: [string, [string, string][]][] = [
     [
-      "Kundekort",
+      "Folka Kort",
       [
-        ["/start", "Kom i gang"],
+        ["/start", "Opret dit kort"],
         ["/login", "Log ind"],
         ["/prøv", "Prøv kortet"],
         ["/stemplet", "Stempelkortet"],
@@ -430,7 +427,7 @@ function Footer() {
         <div>
           <Wordmark dark />
           <p className="mt-4 max-w-[22rem] text-[14px] leading-relaxed">
-            Kundekort er et produkt fra Folka. Teknologi, der forbinder mennesker. Enkle produkter til små virksomheder.
+            Folka Kort er dit eget kundekort. Et produkt fra Folka. Teknologi, der forbinder mennesker.
           </p>
           <a href={`mailto:${PLATFORM.contactEmail}`} className="mt-4 inline-block text-[14px] text-white/80 hover:text-white">
             {PLATFORM.contactEmail}

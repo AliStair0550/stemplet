@@ -3,11 +3,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 
-// Delings-billede (1200x630) for kort.folka.dk: Folka | Kundekort, overskrift og
+// Delings-billede (1200x630) for kort.folka.dk: Folka | Kort, overskrift og
 // et kundekort med stempler. Vises naar et link deles paa fx iMessage, Slack,
 // Facebook, LinkedIn og X.
 export const runtime = "nodejs";
-export const alt = "Kundekort fra Folka: stempler og henvisninger i Apple Wallet";
+export const alt = "Folka Kort: dit eget kundekort";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -42,19 +42,19 @@ export default async function OpengraphImage() {
           padding: "60px 76px",
         }}
       >
-        {/* Venstre: Folka | Kundekort + overskrift */}
+        {/* Venstre: Folka | Kort + overskrift */}
         <div style={{ display: "flex", flexDirection: "column", width: 600 }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logoUri} height={52} width={94} alt="" />
             <div style={{ display: "flex", width: 2, height: 34, background: "rgba(234,241,251,0.35)", margin: "0 22px" }} />
-            <div style={{ display: "flex", fontSize: 30, color: "rgba(234,241,251,0.8)" }}>Kundekort</div>
+            <div style={{ display: "flex", fontSize: 30, color: "rgba(234,241,251,0.8)" }}>Kort</div>
           </div>
           <div style={{ display: "flex", fontSize: 64, lineHeight: 1.08, fontWeight: 700, color: TINT, marginTop: 44, letterSpacing: -2 }}>
-            Kundekortet, der skaber flere gensyn.
+            Dit kort. Dine kunder. Din kanal.
           </div>
           <div style={{ display: "flex", fontSize: 27, color: "rgba(234,241,251,0.72)", marginTop: 26 }}>
-            Stempler og henvisninger i Apple Wallet.
+            Folka Kort er dit eget kundekort.
           </div>
         </div>
 

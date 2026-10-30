@@ -75,7 +75,7 @@ export function KundekortMark({ className }: { className?: string }) {
     <span className={cn("inline-flex items-center gap-3", className)}>
       <FolkaLogo className="h-8" />
       <span aria-hidden className="h-5 w-px bg-[#CAD2DD]" />
-      <span className="text-[15px] font-medium text-[#5F6B7E]">Kundekort</span>
+      <span className="text-[15px] font-medium text-[#5F6B7E]">Kort</span>
     </span>
   );
 }

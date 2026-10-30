@@ -48,12 +48,12 @@ const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Kundekort fra Folka",
-    template: "%s - Kundekort",
+    default: "Folka Kort",
+    template: "%s - Folka Kort",
   },
   description:
-    "Ét kundekort i Apple Wallet med stempler og henvisninger. Kunderne scanner en QR-kode og har kortet på få sekunder. Ingen app. Kun navn og e-mail. Et produkt fra Folka.",
-  applicationName: "Kundekort",
+    "Folka Kort er dit eget kundekort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder. Et produkt fra Folka.",
+  applicationName: "Folka Kort",
   keywords: [
     "stempelkort",
     "digitalt stempelkort",
@@ -63,7 +63,8 @@ export const metadata: Metadata = {
     "loyalitetsprogram",
     "genbesøg",
     "café loyalitet",
-    "Kundekort",
+    "kundekort",
+    "Folka Kort",
     "Folka",
   ],
   authors: [{ name: "Folka", url: "https://folka.dk" }],
@@ -73,23 +74,21 @@ export const metadata: Metadata = {
     : undefined,
   appleWebApp: {
     capable: true,
-    title: "Kundekort",
+    title: "Folka Kort",
     statusBarStyle: "default",
   },
   openGraph: {
-    title: "Kundekort fra Folka",
-    description:
-      "Stempler og henvisninger på ét kort i kundens Apple Wallet. Ingen app, kun navn og e-mail.",
+    title: "Folka Kort",
+    description: "Dit kort. Dine kunder. Din kanal. Stempler, henvisninger og beskeder på kundens telefon.",
     url: appUrl,
-    siteName: "Kundekort",
+    siteName: "Folka Kort",
     locale: "da_DK",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kundekort fra Folka",
-    description:
-      "Stempler og henvisninger på ét kort i kundens Apple Wallet. Ingen app, kun navn og e-mail.",
+    title: "Folka Kort",
+    description: "Dit kort. Dine kunder. Din kanal. Stempler, henvisninger og beskeder på kundens telefon.",
   },
   icons: {
     // Folkas f (samme som folka.dk): kort.folka.dk er Folkas. SVG er skarp paa
