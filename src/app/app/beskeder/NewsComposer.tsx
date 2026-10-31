@@ -64,6 +64,7 @@ function LockScreen({ shopName, text, landed = false }: { shopName: string; text
 
 export function NewsComposer({
   shopName,
+  initialText = "",
   current,
   sentAt,
   nextAllowedAt,
@@ -72,6 +73,7 @@ export function NewsComposer({
   history,
 }: {
   shopName: string;
+  initialText?: string;
   current: string | null;
   sentAt: string | null;
   nextAllowedAt: string | null;
@@ -79,7 +81,7 @@ export function NewsComposer({
   optedOut: number;
   history: Sent[];
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText);
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<number | null>(null);
   const [sentText, setSentText] = useState("");
@@ -154,6 +156,11 @@ export function NewsComposer({
             <p className="mt-2 text-[0.92rem] leading-relaxed text-stone">
               Du kan sende den næste {nextAllowedAt ? when(nextAllowedAt) : "i morgen"}. Én om dagen, så kunderne bliver glade, når den kommer.
             </p>
+            {initialText ? (
+              <p className="mt-3 rounded-xl bg-[#F2F5F9] px-4 py-3 text-[0.86rem] leading-relaxed text-ink">
+                Tilbuddet er gemt, og kunderne kan se det under kortet. Vil du sende det som pushbesked, så tryk på &quot;Send som pushbesked&quot; under Tilbud igen {nextAllowedAt ? when(nextAllowedAt) : "i morgen"}.
+              </p>
+            ) : null}
           </section>
         ) : (
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
