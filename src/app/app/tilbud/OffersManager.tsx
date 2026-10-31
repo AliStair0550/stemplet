@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { cn, formatDkDate } from "@/lib/utils";
-import { OFFER_TEXT_MAX, OFFER_TITLE_MAX, offerPushText, type OfferKind } from "@/lib/member-offers";
+import { OFFER_TEXT_MAX, OFFER_TITLE_MAX, offerPushText, type OfferKind } from "@/lib/member-offers-shared";
 import { createOfferAction, deleteOfferAction, setOfferActiveAction, updateOfferAction } from "./actions";
 
 export type OfferRow = {

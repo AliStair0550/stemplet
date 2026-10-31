@@ -9,6 +9,7 @@ import { CampaignManager } from "./CampaignManager";
 import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
+import { optimizedLogoDataUri } from "@/lib/logo";
 
 export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
@@ -41,7 +42,7 @@ export default async function KampagnerPage() {
     stampIcon: (card?.stampIcon ?? "coffee") as StampIconKey,
     primaryColor: business.primaryColor,
     textColor: business.textColor,
-    logoUrl: (await businessImages(business.id)).logoUrl,
+    logoUrl: await optimizedLogoDataUri((await businessImages(business.id)).logoUrl, 256),
   };
 
   return (

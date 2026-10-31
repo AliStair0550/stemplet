@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
+import { getBusinessCards } from "./cards";
 
 export type ReadyCustomer = { id: string; serial: string; name: string | null; reasons: ("stamps" | "reward" | "visit")[] };
 
@@ -31,11 +32,7 @@ export async function getReadyCustomers(
   take = 6,
   now: Date = new Date(),
 ): Promise<{ customers: ReadyCustomer[]; required: number }> {
-  const card = await prisma.card.findFirst({
-    where: { businessId: b.id, active: true },
-    orderBy: { createdAt: "asc" },
-    select: { id: true, stampsRequired: true },
-  });
+  const card = (await getBusinessCards(b.id)).find((c) => c.active) ?? null;
   const required = card?.stampsRequired ?? 10;
   const or = readyConditions(b, card, now);
   if (or.length === 0) return { customers: [], required };

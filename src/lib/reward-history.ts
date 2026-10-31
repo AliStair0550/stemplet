@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { getBusinessCards } from "./cards";
 import { rewardPhrase } from "./referral-text";
 
 // Belønningshistorik til Hjem ("Givet for nylig"): fulde stempelkort, der er
@@ -36,7 +37,7 @@ export async function getRewardHistory(
       take,
       select: { id: true, redeemedAt: true, type: true, value: true, cardId: true, referral: { select: { referredCardId: true } }, card },
     }),
-    prisma.card.findFirst({ where: { businessId: b.id }, orderBy: { createdAt: "asc" }, select: { rewardText: true } }),
+    getBusinessCards(b.id).then((cards) => cards[0] ?? null),
   ]);
 
   const stampWhat = stampCard?.rewardText?.trim() || "fuldt stempelkort";

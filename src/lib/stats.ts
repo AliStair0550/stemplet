@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
+import { getBusinessCards } from "./cards";
 
 type PerDay = { date: string; label: string; weekday: string; count: number };
 
@@ -206,10 +207,7 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
 // Scan-naere taellere: kun 14-dages vinduer (billige, indekserede queries).
 // Regnes ALTID friskt, saa "i dag" og grafen rykker straks efter et stempel.
 async function computeLiveStats(businessId: string): Promise<LiveStats> {
-  const cards = await prisma.card.findMany({
-    where: { businessId },
-    select: { id: true },
-  });
+  const cards = await getBusinessCards(businessId);
   const cardIds = cards.map((c) => c.id);
   if (cardIds.length === 0) {
     return {
@@ -429,10 +427,7 @@ function zeroPulse(): OverviewPulse {
 export async function getOverviewPulse(
   businessId: string,
 ): Promise<OverviewPulse> {
-  const cards = await prisma.card.findMany({
-    where: { businessId },
-    select: { id: true },
-  });
+  const cards = await getBusinessCards(businessId);
   const cardIds = cards.map((c) => c.id);
   if (cardIds.length === 0) return zeroPulse();
 

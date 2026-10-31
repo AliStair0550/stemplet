@@ -1,15 +1,12 @@
 import { z } from "zod";
+import { OFFER_KINDS, OFFER_TITLE_MAX, OFFER_TEXT_MAX } from "./member-offers-shared";
 
 // Butikkens egne tilbud og samarbejdspartnere til kortholdere ("Tilbud og
 // fordele"). Ren logik (validering og hvornaar et tilbud vises), saa den kan
 // enhedstestes og bruges i baade dashboardet og paa kundens side.
 
-export const OFFER_KINDS = ["OFFER", "PARTNER"] as const;
-export type OfferKind = (typeof OFFER_KINDS)[number];
-export const MAX_OFFERS_PER_KIND = 12;
-export const OFFER_TITLE_MAX = 60;
-export const OFFER_TEXT_MAX = 200;
-
+export { OFFER_KINDS, MAX_OFFERS_PER_KIND, OFFER_TITLE_MAX, OFFER_TEXT_MAX, offerPushText } from "./member-offers-shared";
+export type { OfferKind } from "./member-offers-shared";
 const optionalText = (max: number, msg: string) =>
   z
     .string()
@@ -33,15 +30,6 @@ export function normalizeOfferLink(raw: string): string {
   return `https://${v.replace(/^\/+/, "")}`;
 }
 
-/** Faerdig pushbesked om et nyt tilbud eller en ny partner (rettes, foer den sendes). */
-export function offerPushText(o: { kind: OfferKind; title: string; partnerName?: string | null }, max = 150): string {
-  const t = o.title.trim().replace(/[.:]+$/, "");
-  const text =
-    o.kind === "PARTNER" && o.partnerName
-      ? `Ny fordel med kortet: ${t} hos ${o.partnerName.trim()}. Vis kortet, så får du rabatten.`
-      : `Nyt tilbud til dig med kortet: ${t}. Se det under Tilbud og fordele.`;
-  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
-}
 
 export const offerInputSchema = z
   .object({
