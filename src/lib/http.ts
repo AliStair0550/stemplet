@@ -20,6 +20,23 @@ export function isCrossSite(req: NextRequest): boolean {
   return req.headers.get("sec-fetch-site") === "cross-site";
 }
 
+/** Noegle til lofter pr. afsender. IPv6 samles pr. /64 (de foerste fire
+ *  grupper), fordi en enkelt tilslutning normalt har en hel /64 og ellers kan
+ *  skifte adresse for hvert forsoeg. */
+export function ipRateKey(ip: string | null): string {
+  if (!ip) return "ukendt";
+  if (!ip.includes(":")) return ip;
+  return ip.split(":").slice(0, 4).join(":") + "::/64";
+}
+
+/** Samlet loft for hele formularen pr. time, ud over loftet pr. afsender, saa
+ *  mange skiftende IP-adresser ikke kan sende ubegraenset mange mails fra Folka. */
+export const FORM_GLOBAL_PER_HOUR = {
+  "marketing-signup": 100,
+  "start-request": 30,
+  "start-loyalitet": 30,
+} as const;
+
 export function apiError(
   code: string,
   message: string,

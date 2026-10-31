@@ -18,6 +18,7 @@ const FONT = 'var(--font-kk), -apple-system, BlinkMacSystemFont, "SF Pro Text", 
 const ERRORS: Record<string, string> = {
   kode: "Koden passer ikke, eller den er udløbet. Tjek mailen, eller bed om en ny.",
   mange: "For mange forsøg. Vent et kvarter, eller bed om en ny kode.",
+  server: "Noget drillede et øjeblik. Prøv linket eller koden igen.",
 };
 
 export default async function CheckMailPage({

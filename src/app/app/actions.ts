@@ -535,7 +535,7 @@ export async function deleteCampaign(id: string): Promise<Result> {
   if (!campaign || campaign.card.businessId !== business.id) {
     return { ok: false, error: "Kampagnen findes ikke." };
   }
-  await prisma.campaign.delete({ where: { id } });
+  await prisma.campaign.deleteMany({ where: { id } });
   revalidatePath("/app/kampagner");
   return { ok: true };
 }

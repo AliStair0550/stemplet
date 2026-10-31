@@ -140,6 +140,12 @@ test("undoLastStamp traekker relativt fra (mister ikke et samtidigt stempel)", a
         return { id: "s-last" };
       },
     },
+    // Ingen indloesning endnu: fortryd er tilladt.
+    redemption: {
+      async findFirst() {
+        return null;
+      },
+    },
     auditLog: {
       async create() {
         return {};

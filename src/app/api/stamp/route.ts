@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyStampToken, consumeJti } from "@/lib/tokens";
-import { getCardToken, cardCookieName, cardCookieOptions } from "@/lib/cookies";
+import { getCardToken, cardCookieName, cardCookieOptions, DEVICE_ID_COOKIE } from "@/lib/cookies";
 import {
   loadCardByToken,
   applyStamp,
@@ -98,7 +98,10 @@ export async function POST(req: NextRequest) {
         429,
       );
     }
-    const created = await createCustomerCard(payload.businessId);
+    const created = await createCustomerCard(
+      payload.businessId,
+      req.cookies.get(DEVICE_ID_COOKIE)?.value ?? null,
+    );
     if (!created.ok) {
       // Butikken har ramt sit gratis-loft: send til claim-siden i stedet for
       // en blindgyde. (Sjaeldent: kun paa Gratis ved loftet.)

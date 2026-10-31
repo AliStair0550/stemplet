@@ -306,6 +306,10 @@ export async function createReferral(
       data: { referredByCardId: referrer.id, businessId: opts.businessId },
     });
     if (claimed.count === 0) {
+      // Samme kobling igen (dobbelttryk eller genforsoeg efter et tabt svar):
+      // svar med den henvisning, der allerede findes, i stedet for en fejl.
+      const existing = await tx.referral.findUnique({ where: { referredCardId: referred.id } });
+      if (existing && existing.referrerCardId === referrer.id) return existing;
       throw new ReferralError("ALREADY_REFERRED", "Kunden er allerede henvist.");
     }
 

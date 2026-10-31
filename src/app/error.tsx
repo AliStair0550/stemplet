@@ -6,10 +6,12 @@ import { btnClass } from "@/components/ui";
 
 export default function Error({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  // Henter siden igen (Next 16). reset() viste kun den samme fejl igen, fordi
+  // den ikke henter fra serveren, saa et databaseblip blev staaende.
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     // Log lokalt (Sentry er slaaet fra i udvikling) og rapportér i produktion,
@@ -43,7 +45,7 @@ export default function Error({
           forbigående.
         </p>
       </div>
-      <button onClick={reset} className={btnClass("primary")}>
+      <button onClick={() => unstable_retry()} className={btnClass("primary")}>
         Prøv igen
       </button>
     </main>
