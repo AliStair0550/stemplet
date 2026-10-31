@@ -40,8 +40,10 @@ export default async function KasseRegisterPage({
     );
   }
 
+  // Uden billederne (op til ca. 2 MB): kassen viser dem ikke.
   const business = await prisma.business.findUnique({
     where: { id: access.businessId },
+    omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true, businessCardDesign: true },
     include: {
       cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
     },
@@ -55,7 +57,6 @@ export default async function KasseRegisterPage({
   const onlyReferrals = business.referralsEnabled && !business.stampsEnabled;
   const kioskCard: KioskCard = {
     businessName: business.name,
-    logoUrl: business.logoUrl,
     primaryColor: business.primaryColor,
     textColor: business.textColor,
     stampIcon: (card?.stampIcon ?? "coffee") as StampIconKey,

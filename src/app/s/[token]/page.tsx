@@ -8,6 +8,7 @@ import { WALLET_ENABLED } from "@/lib/env";
 import { cardTitle } from "@/lib/brand";
 import { ButtonLink } from "@/components/ui";
 import { StampConfirm } from "./StampConfirm";
+import { optimizedLogoDataUri } from "@/lib/logo";
 
 // Delelink med engangs-token. Ogsaa disallow'd i robots.txt (/s/), men
 // noindex her holder den ude af indekset, selv hvis linket skulle blive delt.
@@ -57,7 +58,8 @@ export default async function StampPage({
         name: cardTitle(business),
         primaryColor: business.primaryColor,
         textColor: business.textColor,
-        logoUrl: business.logoUrl,
+        // Lille webp i stedet for det fulde logo (det sendes med i siden).
+        logoUrl: await optimizedLogoDataUri(business.logoUrl, 240),
         logoScale: business.logoScale,
         stampIcon: business.cards[0]?.stampIcon ?? "coffee",
         rewardText: business.cards[0]?.rewardText ?? "din belønning",

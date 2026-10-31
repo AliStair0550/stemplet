@@ -13,6 +13,8 @@ import { StampIcon } from "@/components/StampIcon";
 import { Confetti } from "@/components/Celebrate";
 import { ShareReferral } from "./ShareReferral";
 import { safeDecode } from "@/lib/utils";
+import { withDbRetry } from "@/lib/db-retry";
+import { optimizedLogoDataUri } from "@/lib/logo";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: { absolute: "Tilbud og fordele" }, robots: { index: false } };
@@ -24,30 +26,39 @@ export const metadata: Metadata = { title: { absolute: "Tilbud og fordele" }, ro
 
 type Offer = { title: string; text: string | null; until?: Date | null; link?: string | null };
 
-// Indgang: sektionerne glider ind efter hinanden.
-const rise = (i: number): CSSProperties => ({ animation: `fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) ${0.08 + i * 0.09}s both` });
+// Indgang: sektionerne glider ind efter hinanden. Kort og taet, saa indholdet
+// staar fuldt fremme paa ca. et halvt sekund (foer: ca. 1,4 sek.).
+const rise = (i: number): CSSProperties => ({ animation: `fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.04}s both` });
 
 export default async function BenefitsPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const serial = verifyMemberToken(safeDecode(token));
   if (!serial) notFound();
   const now = new Date();
-  const cc = await prisma.customerCard.findUnique({
-    where: { serial },
-    include: {
-      card: {
-        include: {
-          business: true,
-          campaigns: { where: { startsAt: { lte: now }, endsAt: { gt: now } }, orderBy: { endsAt: "asc" } },
+  // Siden aabnes sjaeldent, saa databasen sover ofte: korte genforsoeg. Billederne
+  // (op til ca. 2 MB) hentes ikke med; logoet hentes for sig som en lille webp.
+  const cc = await withDbRetry(() =>
+    prisma.customerCard.findUnique({
+      where: { serial },
+      include: {
+        card: {
+          include: {
+            business: { omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true, businessCardDesign: true } },
+            campaigns: { where: { startsAt: { lte: now }, endsAt: { gt: now } }, orderBy: { endsAt: "asc" } },
+          },
         },
       },
-    },
-  });
+    }),
+  );
   if (!cc) notFound();
   const b = cc.card.business;
-  const [referral, memberOffers] = await Promise.all([
+  const [referral, memberOffers, logo] = await Promise.all([
     loadReferralPassInfo(cc, now).catch(() => null),
     prisma.memberOffer.findMany({ where: { businessId: b.id, active: true }, orderBy: { createdAt: "desc" } }),
+    prisma.business
+      .findUnique({ where: { id: b.id }, select: { logoUrl: true } })
+      .then((r) => optimizedLogoDataUri(r?.logoUrl ?? null, 160))
+      .catch(() => null),
   ]);
   const liveOffers = memberOffers.filter((o) => offerIsLive(o, now));
   const partners = liveOffers.filter((o) => o.kind === "PARTNER");
@@ -97,9 +108,9 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
     >
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
         <header className="flex flex-col items-center gap-3 pb-2 text-center" style={rise(section++)}>
-          {b.logoUrl ? (
+          {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={b.logoUrl} alt={shop} className="h-12 w-auto max-w-[60%] object-contain" />
+            <img src={logo} alt={shop} className="h-12 w-auto max-w-[60%] object-contain" />
           ) : (
             <span className="text-[1.1rem] font-bold tracking-[-0.02em]">{shop}</span>
           )}
@@ -224,7 +235,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
                 style={{
                   background: fg,
                   color: bg,
-                  animation: `fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) ${0.5 + i * 0.1}s both`,
+                  animation: `fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) ${0.15 + i * 0.05}s both`,
                   boxShadow: `0 18px 40px -20px ${rgba(fg, 0.55)}`,
                 }}
               >

@@ -74,7 +74,6 @@ function GiftGlyph({ className }: { className?: string }) {
 
 export type KioskCard = {
   businessName: string;
-  logoUrl: string | null;
   primaryColor: string;
   textColor: string;
   stampIcon: StampIconKey;
