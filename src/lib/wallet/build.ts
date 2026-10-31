@@ -12,8 +12,14 @@ import { getRedis, redisConfigured } from "../redis";
 export function loadCCForWallet(serial: string) {
   return prisma.customerCard.findUnique({
     where: { serial },
-    include: { card: { include: { business: true } } },
+    // Plakatfoto og visitkort-design bruges ikke i passet (op til ca. 1 MB).
+    include: { card: { include: { business: { omit: { posterPhoto: true, businessCardDesign: true } } } } },
   });
+}
+
+/** Kun det, Apples registrering skal bruge: kortets id og token til tjekket. */
+export function loadCCAuth(serial: string) {
+  return prisma.customerCard.findUnique({ where: { serial }, select: { id: true, authToken: true } });
 }
 
 type LoadedCC = NonNullable<Awaited<ReturnType<typeof loadCCForWallet>>>;
