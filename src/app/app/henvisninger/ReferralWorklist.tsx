@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn, relativeDk } from "@/lib/utils";
-import { rewardPhrase } from "@/lib/referral-text";
+import { redeemLabel, redeemReceipt, rewardPhrase } from "@/lib/referral-text";
 import { CelebrationToast } from "@/components/Celebrate";
 import type { OwedRow, WaitingRow } from "@/lib/referral-desk";
 
@@ -32,8 +32,6 @@ function formatPhone(p: string | null): string | null {
 function contactLine(c: { email: string | null; phone: string | null }): string | null {
   return c.email ?? formatPhone(c.phone);
 }
-
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 type Toast = { title: string; text?: string };
 
@@ -112,10 +110,7 @@ export function ReferralWorklist({
   async function redeem(row: OwedRow) {
     const data = await post(row.rewardId, "/api/henvisninger/kasse/indloes", { rewardId: row.rewardId });
     if (!data) return;
-    setToast({
-      title: `${cap(rewardPhrase(row.type, row.value))} er indløst`,
-      text: `${row.card.name ?? "Kunden"} har fået sin belønning.`,
-    });
+    setToast(redeemReceipt(row.type, row.value, row.card.name));
     router.refresh();
   }
 
@@ -249,7 +244,7 @@ export function ReferralWorklist({
                 </div>
                 <button type="button" disabled={busy !== null} onClick={() => redeem(o)} className={buttonCls}>
                   <GiftIcon />
-                  {busy === o.rewardId ? "Et øjeblik" : `Indløs ${rewardPhrase(o.type, o.value)}`}
+                  {busy === o.rewardId ? "Et øjeblik" : redeemLabel(o.type, o.value)}
                 </button>
               </li>
             ))}

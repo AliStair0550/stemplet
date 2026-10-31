@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   rewardPhrase,
+  redeemLabel,
+  redeemReceipt,
   firstName,
   referralShareUrl,
   referralShareText,
@@ -185,4 +187,16 @@ test("oprettelse: beloenning som fri tekst bliver beloeb eller behandling", () =
   assert.deepEqual(parseRewardInput("20%"), { type: "PERCENT", value: "20" });
   assert.deepEqual(parseRewardInput("150 %"), { type: "SERVICE", value: "150 %" });
   assert.equal(parseRewardInput("   "), null);
+});
+
+test("stempel-beloenning staar som en handling ved kassen, ikke som givet", () => {
+  assert.equal(redeemLabel("STAMPS", "3"), `Giv 3${NBSP}stempler`);
+  assert.equal(redeemLabel("AMOUNT", "100"), `Indløs 100${NBSP}kr.`);
+  const r = redeemReceipt("STAMPS", "3", "Sara");
+  assert.equal(r.title, `Giv 3${NBSP}stempler på kortet`);
+  assert.match(r.text, /Scan kortet/);
+  assert.deepEqual(redeemReceipt("SERVICE", "Gratis klip", null), {
+    title: "Gratis klip er indløst",
+    text: "Kunden har fået sin belønning.",
+  });
 });

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { firstName, rewardPhrase } from "@/lib/referral-text";
+import { firstName, redeemReceipt, rewardPhrase } from "@/lib/referral-text";
 import type { DeskCustomer } from "@/lib/referral-desk";
 import { CelebrationToast } from "@/components/Celebrate";
 
@@ -101,7 +101,7 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
     if (res.ok) {
       delete keys.current[r.id];
       setPin("");
-      setToast({ title: `${cap(rewardPhrase(r.type, r.value))} er indløst`, text: `${customer?.name ?? "Kunden"} har fået sin belønning.` });
+      setToast(redeemReceipt(r.type, r.value, customer?.name));
       await load();
     } else {
       setNote({ ok: false, text: res.message ?? "Noget gik galt. Prøv igen." });
@@ -162,7 +162,7 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
             aria-busy={busy === r.id}
             className={cn(btnClass("primary"), "shrink-0")}
           >
-            {busy === r.id ? "Et øjeblik" : "Indløs"}
+            {busy === r.id ? "Et øjeblik" : r.type === "STAMPS" ? "Giv" : "Indløs"}
           </button>
         </div>
       ))}
