@@ -34,7 +34,10 @@ export default async function KassePage({
   };
 
   return (
-    <>
+    <div className="group/kasse">
+      {/* Paa mobil forsvinder overskriften, naar et kort er scannet, saa
+          stempel- og belønningsknapperne kan ses uden at rulle. */}
+      <div className="max-md:group-has-[[data-kasse-kort]]/kasse:hidden">
       <PageHeading
         title="Scan"
         subtitle={
@@ -45,6 +48,7 @@ export default async function KassePage({
               : "Scan kundens kort. Du ser med det samme, om kunden skal have stempler, rabat eller en belønning."
         }
       />
+      </div>
       {onlyReferrals ? (
         <ReferralDesk hasPin={business.staffPin != null} initialSerial={kort} />
       ) : (
@@ -56,6 +60,6 @@ export default async function KassePage({
           initialSerial={kort}
         />
       )}
-    </>
+    </div>
   );
 }

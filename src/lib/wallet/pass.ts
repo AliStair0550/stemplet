@@ -571,7 +571,8 @@ export async function buildShopQrPass(input: {
   textColor: string;
   logoUrl: string | null;
   stampIcon: string;
-  lines: string[];
+  /** Hoejst to korte felter, fx { label: "EFTER 10 STEMPLER", value: "Gratis klip" }. */
+  fields: { label: string; value: string }[];
 }): Promise<Buffer> {
   const { passTypeIdentifier, teamIdentifier } = walletIds();
   const certificates = walletCertificates();
@@ -607,7 +608,8 @@ export async function buildShopQrPass(input: {
   });
   pass.type = "storeCard";
   pass.primaryFields.push({ key: "cta", label: "TIL DINE KUNDER", value: "Scan og hent kortet" });
-  input.lines.slice(0, 2).forEach((l, i) => pass.secondaryFields.push({ key: `line${i}`, label: i === 0 ? "DE FÅR" : "OG", value: l }));
+  // Korte vaerdier under en etiket: lange saetninger skaeres af paa iPhone.
+  input.fields.slice(0, 2).forEach((f, i) => pass.secondaryFields.push({ key: `line${i}`, label: f.label, value: f.value }));
   pass.backFields.push({ key: "how", label: "Sådan", value: "Vis koden til kunden. Kunden åbner kameraet, scanner og lægger sit eget kort i Wallet. Ingen app." });
   pass.setBarcodes({ format: "PKBarcodeFormatQR", message: input.pageUrl, messageEncoding: "iso-8859-1", altText: "Scan med kameraet" });
   return pass.getAsBuffer();

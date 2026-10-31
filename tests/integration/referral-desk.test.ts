@@ -323,6 +323,23 @@ test("wallet: ambassadoeren faar besked ved ny beloenning, ikke efter indloesnin
   }
 });
 
+test("wallet: vennens rabat staar som Til gode, til hun har vaeret her", async () => {
+  const s = await makeShop();
+  try {
+    const sara = await makeCustomer(s, "Sara Jensen", "+4511111111");
+    const mikkel = await makeCustomer(s, "Mikkel Holm", "+4522222222");
+    const ref = await createReferral({ businessId: s.bizId, referrerCardId: sara.id, referredCardId: mikkel.id, source: "LINK" });
+    const before = await loadReferralPassInfo(await loadForWallet(mikkel.id));
+    assert.deepEqual(before?.rewards, [{ type: "AMOUNT", value: "100" }], "rabatten ligger klar");
+
+    await recordFirstVisit({ referralId: ref.id, businessId: s.bizId, staffDeviceId: s.deviceId, redeemNewCustomerReward: true });
+    const after = await loadReferralPassInfo(await loadForWallet(mikkel.id));
+    assert.deepEqual(after?.rewards, [], "givet ved kassen: intet til gode");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});
+
 // ── Arbejdslisten og "Rabat givet" ───────────────────────────────────
 
 import { getReferralWorklist } from "../../src/lib/referral-desk";

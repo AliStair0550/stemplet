@@ -133,7 +133,7 @@ export default async function HomePage() {
   const steps = [
     { kind: "see", title: "Se kortet på din telefon", text: "Hent det selv, så ser du det som dine kunder.", href: shareUrl, cta: "Se kortet", done: seen },
     { kind: "design", title: "Gør det til dit", text: "Logo, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
-    { kind: "share", title: "Del med dine første kunder", text: "Send linket, eller vis QR-koden ved kassen.", href: shareUrl, cta: "Del kortet", done: shared },
+    { kind: "share", title: "Del med dine første kunder", text: WALLET_ENABLED ? "Vis QR-koden fra din Wallet ved kassen, eller send linket." : "Send linket, eller vis QR-koden ved kassen.", href: shareUrl, cta: "Del kortet", done: shared },
   ] as const;
   const doneCount = steps.filter((s) => s.done).length;
   const nextStep = steps.find((s) => !s.done);
@@ -206,7 +206,17 @@ export default async function HomePage() {
                 <span className="mt-1 text-[0.85rem] leading-snug text-white/70">{s.text}</span>
                 {s.kind === "share" ? (
                   <>
-                    <span className="mt-4 flex flex-wrap gap-2">
+                    {/* Hurtigst ved kassen: QR-koden i din egen Wallet, klar til at vise. */}
+                    {WALLET_ENABLED ? (
+                      <a
+                        href="/api/wallet/butikkort"
+                        className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-black px-4 text-[0.88rem] font-semibold text-white ring-1 ring-inset ring-white/25"
+                      >
+                        <WalletIcon />
+                        Føj til Apple Wallet
+                      </a>
+                    ) : null}
+                    <span className={`${WALLET_ENABLED ? "mt-2" : "mt-4"} flex flex-wrap gap-2`}>
                       <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} tone="light" />
                       <Link
                         href="/app/regler?f=kundekort&vis=1"
@@ -215,11 +225,6 @@ export default async function HomePage() {
                         Vis QR-kode
                       </Link>
                     </span>
-                    {WALLET_ENABLED ? (
-                      <a href="/api/wallet/butikkort" className="mt-3 w-fit text-[0.82rem] font-medium text-[#7CC4FF] hover:text-white">
-                        Læg QR-koden i din Wallet
-                      </a>
-                    ) : null}
                   </>
                 ) : s.kind === "see" ? (
                   <SeeCardLink

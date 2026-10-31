@@ -11,6 +11,7 @@ import { redeemReward, ReferralError } from "@/lib/referral";
 import { IdempotencyInFlight } from "@/lib/idempotency";
 import { apiError, clientIp } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
+import { expireBusinessStats } from "@/lib/stats";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
       idempotencyKey: parsed.data.idempotencyKey,
     });
     pushReferralWallet([res.cardId]);
+    expireBusinessStats(kasse.businessId);
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof ReferralError) return referralErrorResponse(e);

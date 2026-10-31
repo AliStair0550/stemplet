@@ -169,6 +169,13 @@ export function KundekortShare({
             </div>
           ) : null}
           <div className="mt-1 flex flex-wrap justify-center gap-2">
+            {/* Hurtigst ved kassen: QR-koden i ejerens egen Wallet. */}
+            {walletPassUrl ? (
+              <a href={walletPassUrl} className={`${btn} w-full sm:w-auto`} style={{ background: "#000", color: "#fff" }}>
+                <WalletIcon />
+                Føj til Apple Wallet
+              </a>
+            ) : null}
             <button
               type="button"
               onClick={open}
@@ -177,12 +184,6 @@ export function KundekortShare({
             >
               Vis til kunden
             </button>
-            {walletPassUrl ? (
-              <a href={walletPassUrl} className={btn} style={{ background: "#000", color: "#fff" }}>
-                <WalletIcon />
-                Læg i din Wallet
-              </a>
-            ) : null}
             <a
               href={qrDataUrl}
               download={`${s.shopName}-qr.png`}

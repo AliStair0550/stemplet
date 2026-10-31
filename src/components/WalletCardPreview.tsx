@@ -40,6 +40,8 @@ export type WalletCardPreviewProps = {
   fresh?: boolean;
   /** Uden den tegnede QR-kode (kundesiden: kunden skal ikke tro, den skal scannes). */
   hideQr?: boolean;
+  /** "Til gode" i stedet for eksemplet (vennens rabat paa kundesiden). */
+  owed?: string;
 };
 
 const EXAMPLE_STAMPS = 3;
@@ -114,7 +116,7 @@ function Qr({ size }: { size: number }) {
 function Poster(p: WalletCardPreviewProps) {
   const fg = p.textColor;
   const n = p.sampleStamps ?? EXAMPLE_STAMPS;
-  const owed = p.fresh ? "Intet endnu" : cap(p.referrerReward);
+  const owed = p.owed ? cap(p.owed) : p.fresh ? "Intet endnu" : cap(p.referrerReward);
   const stamps = p.product !== "henvisninger";
   const refs = p.product !== "stemplet";
   const header = stamps

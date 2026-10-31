@@ -8,6 +8,7 @@ import { WALLET_ENABLED } from "./env";
 import { generateSerial, generateAuthToken } from "./ids";
 import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
 import { captureServerError } from "./sentry";
+import { expireBusinessStats } from "./stats";
 
 /**
  * Opretter EET kundekort race-sikkert, dedup'et pr. enhed. Der er intet loft paa
@@ -63,7 +64,9 @@ export async function createCardholderAtomically(
     }
   };
 
-  return createDeduped();
+  const card = await createDeduped();
+  if (card.isNew) expireBusinessStats(businessId);
+  return card;
 }
 
 /**
@@ -480,6 +483,7 @@ export async function applyStamp(opts: {
     ),
   );
   pushWallet(opts.customerCardId);
+  expireBusinessStats(result.businessId);
 
   return {
     serial: result.serial,
@@ -535,6 +539,7 @@ export async function undoLastStamp(
         rewardReady: cc.stamps >= required,
         lifetimeStamps: cc.lifetimeStamps,
         replayed: true,
+        businessId: cc.card.businessId,
       };
     }
 
@@ -604,11 +609,15 @@ export async function undoLastStamp(
       rewardReady: updated.stamps >= required,
       lifetimeStamps: updated.lifetimeStamps,
       replayed: false,
+      businessId: cc.card.businessId,
     };
   });
 
-  const { replayed, ...out } = res;
-  if (!replayed) pushWallet(opts.customerCardId);
+  const { replayed, businessId, ...out } = res;
+  if (!replayed) {
+    pushWallet(opts.customerCardId);
+    expireBusinessStats(businessId);
+  }
   return out;
 }
 
@@ -709,6 +718,7 @@ export async function redeemReward(opts: {
     ),
   );
   pushWallet(opts.customerCardId);
+  expireBusinessStats(res.businessId);
   return {
     serial: res.serial,
     completedCount: res.completedCount,
