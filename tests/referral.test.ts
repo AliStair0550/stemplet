@@ -163,6 +163,10 @@ function makeCreateDb(opts: {
         created.push(data);
         return { id: "r1", ...(data as object) };
       },
+      // Den eksisterende henvisning er fra en ANDEN henviser.
+      async findUnique() {
+        return { id: "r0", referrerCardId: "en-anden" };
+      },
     },
   };
   const db = {

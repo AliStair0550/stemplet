@@ -414,3 +414,17 @@ test("slettes henviserens kort, bliver henvisningen; vennen kan ikke henvises ig
     await cleanup(s.bizId);
   }
 });
+
+test("samme kobling to gange (dobbelttryk): samme henvisning, ingen fejl", async () => {
+  const biz = await makeBiz();
+  try {
+    const referrer = await makeCard(biz.cardId);
+    const referred = await makeCard(biz.cardId);
+    const opts = { businessId: biz.bizId, referrerCardId: referrer.id, referredCardId: referred.id, source: "MANUAL_AT_DESK" as const };
+    const [a, b] = await Promise.all([createReferral(opts), createReferral(opts)]);
+    assert.equal(a.id, b.id);
+    assert.equal(await prisma.referral.count({ where: { referredCardId: referred.id } }), 1);
+  } finally {
+    await cleanup(biz.bizId);
+  }
+});

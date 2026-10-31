@@ -19,6 +19,20 @@ export async function sendNewsAction(text: string): Promise<NewsResult> {
   const parsed = parseNews(text);
   if (!parsed.ok) return parsed;
   if (nextNewsAllowedAt(business.newsSentAt)) {
+    // Genforsoeg efter et tabt svar: den samme besked er netop sendt. Svar som
+    // ved succes i stedet for "én i døgnet", saa ejeren ikke tror, den fejlede.
+    if (
+      sameAsCurrent(parsed.value, business.newsText) &&
+      business.newsSentAt &&
+      Date.now() - business.newsSentAt.getTime() < 2 * 60 * 1000
+    ) {
+      const last = await prisma.newsMessage.findFirst({
+        where: { businessId: business.id },
+        orderBy: { sentAt: "desc" },
+        select: { recipients: true },
+      });
+      return { ok: true, recipients: last?.recipients ?? 0 };
+    }
     return { ok: false, error: "Du kan sende én pushbesked i døgnet. Prøv igen senere." };
   }
   if (sameAsCurrent(parsed.value, business.newsText)) {

@@ -108,6 +108,9 @@ export async function createCardholderAtomically(
  */
 export async function createCustomerCard(
   businessId: string,
+  // Enheds-cookien, hvis telefonen har en: et genforsoeg fra samme telefon faar
+  // saa det samme kort i stedet for et nyt (dedup pr. kort og enhed).
+  deviceId: string | null = null,
 ): Promise<
   | { ok: true; id: string; serial: string; authToken: string }
   | { ok: false; reason: "full" | "error" | "paused" }
@@ -136,6 +139,8 @@ export async function createCustomerCard(
     business.plan,
     businessId,
     business.cards[0].id,
+    prisma,
+    deviceId,
   );
   if (!created) return { ok: false, reason: "full" };
   // Fyr kortholder-taerskler (80-varsel / 100-krydsning), fire-once, efter svar.
@@ -567,6 +572,20 @@ export async function undoLastStamp(
     });
     if (!last) {
       throw new StampError("NOT_FOUND", "Der er ikke noget stempel at fortryde.");
+    }
+    // Stemplet hoerer til en runde, der allerede er indloest: fortryd ville
+    // fjerne et stempel, belønningen er givet for, og faa taellerne ud af trit.
+    // Kortet starter forfra efter en indloesning, saa der er intet at fortryde.
+    const lastRedeem = await tx.redemption.findFirst({
+      where: { customerCardId: cc.id },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    if (cc.stamps <= 0 || (lastRedeem && lastRedeem.createdAt >= last.createdAt)) {
+      throw new StampError(
+        "NOT_FOUND",
+        "Stemplet hører til en belønning, der er givet. Det kan ikke fortrydes.",
+      );
     }
 
     await tx.stamp.delete({ where: { id: last.id } });

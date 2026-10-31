@@ -19,7 +19,8 @@ export async function deleteCustomerAction(customerCardId: string): Promise<{ ok
   if (!cc || cc.card.businessId !== business.id) {
     return { ok: false, error: "Kunden findes ikke." };
   }
-  await prisma.customerCard.delete({ where: { id: cc.id } });
+  // deleteMany: slettes kunden to gange (dobbelttryk, to faner), er det ikke en fejl.
+  await prisma.customerCard.deleteMany({ where: { id: cc.id } });
   revalidatePath("/app/kunder");
   revalidatePath("/app");
   return { ok: true };
