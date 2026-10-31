@@ -66,8 +66,10 @@ export async function buildStripImages(opts: {
   stampIcon: string;
   primaryColor: string;
   textColor: string;
+  /** Tryk (plakaten): tomme felter som tydelige, hele ringe i stedet for svage stiplede. */
+  print?: boolean;
 }): Promise<{ x1: Buffer; x2: Buffer; x3: Buffer }> {
-  const cacheKey = `${opts.stamps}|${opts.required}|${opts.stampIcon}|${opts.primaryColor}|${opts.textColor}`;
+  const cacheKey = `${opts.stamps}|${opts.required}|${opts.stampIcon}|${opts.primaryColor}|${opts.textColor}|${opts.print ? "p" : ""}`;
   const hit = stripCache.get(cacheKey);
   if (hit) return hit;
 
@@ -160,7 +162,9 @@ export async function buildStripImages(opts: {
           'stroke-width="1.4" stroke-opacity="0.4"',
         );
     } else {
-      cells += `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${tc}" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="${dash}"/>`;
+      cells += opts.print
+        ? `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${tc}" stroke-opacity="0.6" stroke-width="5"/>`
+        : `<circle cx="${esc(cx)}" cy="${esc(cy)}" r="${esc(R)}" fill="none" stroke="${tc}" stroke-opacity="0.28" stroke-width="4" stroke-dasharray="${dash}"/>`;
     }
   }
 

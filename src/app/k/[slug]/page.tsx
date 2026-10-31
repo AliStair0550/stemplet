@@ -190,7 +190,7 @@ export default async function ClaimPage({
 
   return (
     <main
-      className="isolate flex min-h-screen flex-col items-center justify-center px-6 py-16"
+      className="isolate flex min-h-screen flex-col items-center justify-center px-6 py-10 sm:py-16"
       style={bgStyle}
     >
       {/* Ikon-moensteret holder sig i siderne, vaek fra tekst og formular. */}
@@ -205,7 +205,7 @@ export default async function ClaimPage({
         }}
       />
       <BackToDashboard />
-      <div className="flex w-full max-w-sm flex-col items-center gap-8">
+      <div className="flex w-full max-w-sm flex-col items-center gap-6 sm:gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           {logoSrc ? (
             // Brand-logo i vilkaarligt format: <img> beholder logoets egne
@@ -224,7 +224,8 @@ export default async function ClaimPage({
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
-        <div className="w-full" style={{ filter: cardShadow }}>
+        {/* Lidt mindre paa telefonen, saa felterne og knappen kommer tidligere frem. */}
+        <div className="mx-auto w-full max-w-[250px] sm:max-w-none" style={{ filter: cardShadow }}>
           <ClaimCardPreview
             gift={referral?.newCustomerReward ?? null}
             os="27"

@@ -525,7 +525,7 @@ function ScanPanel({
             <input
               value={manualVal}
               onChange={(e) => setManualVal(e.target.value)}
-              placeholder="Kort-id eller link"
+              placeholder="Kortnummer eller link"
               autoFocus
               className="min-w-0 flex-1 border border-clay bg-parchment px-3 py-2 text-[0.85rem] text-ink outline-none focus:border-terracotta"
             />
@@ -539,7 +539,7 @@ function ScanPanel({
             onClick={() => setShowManual(true)}
             className="text-[0.78rem] font-[300] text-slate underline underline-offset-2 transition-colors hover:text-ink"
           >
-            Kan QR&apos;en ikke scannes? Indtast kort-id
+            Kan koden ikke scannes? Skriv kortnummeret
           </button>
         )}
       </div>
