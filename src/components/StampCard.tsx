@@ -17,7 +17,6 @@ export type StampCardProps = {
   stamps: number;
   required: number;
   rewardText: string;
-  showPoweredBy?: boolean;
   serial?: string;
   /** Animer det senest tilføjede stempel (bruges i hero og ved stempling). */
   pop?: boolean;
@@ -78,7 +77,6 @@ export function StampCard({
   stamps,
   required,
   rewardText,
-  showPoweredBy = false,
   serial,
   pop = false,
   shine = false,
@@ -301,14 +299,6 @@ export function StampCard({
           </div>
         ) : null}
 
-        {showPoweredBy ? (
-          <div
-            className="text-center text-[0.6rem] font-[300] tracking-[0.08em]"
-            style={{ color: rgba(textColor, 0.5) }}
-          >
-            Drevet af Folka
-          </div>
-        ) : null}
       </div>
     </div>
   );

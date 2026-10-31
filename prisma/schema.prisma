@@ -32,7 +32,6 @@ model Business {
   primaryColor     String     @default("#EFEBE3")
   textColor        String     @default("#1E2633")
   plan             Plan       @default(FREE)
-  stripeCustomerId String?
   staffPin         String? // hashet (bcrypt). Null = ingen PIN kraevet ved indloesning (standard; kan slaas til i indstillinger)
   stampCooldownMin Int        @default(15)
   apiKey           String?    @unique // til det offentlige API (Bearer + webhook-signatur)
@@ -404,10 +403,6 @@ model Stamp {
   // Udloeste denne stempling et fuldt kort? Billigt at logge nu, dyrt at udlede
   // bagud. Historik: false (kan ikke rekonstrueres praecist).
   filledCard     Boolean      @default(false)
-  // Fremtidssikring til per-butik statistik (lokations-model paa roadmap Q1 2027).
-  // Ingen Location-tabel eller logik endnu - kun feltet, saa historik ikke gaar
-  // tabt, naar featuren bygges.
-  locationId     String?
   idempotencyKey String?
   createdAt      DateTime     @default(now())
 
@@ -592,8 +587,7 @@ model WalletRegistration {
 // Dobbelt opt-in: raekken oprettes ved tilmelding (confirmedAt = null), og
 // samtykket er foerst aktivt, naar bekraeftelseslinket er klikket (confirmedAt
 // sat + IP gemt som dokumentation). email er unik, saa gentilmelding opdaterer
-// samme raekke i stedet for at lave dubletter. unsubscribed er med fra start, saa
-// et senere nyhedsbrevsmodul kan slaa afmelding op uden en ny migration.
+// samme raekke i stedet for at lave dubletter.
 // ─────────────────────────────────────────────────────────────
 
 enum MarketingStatus {
@@ -613,33 +607,11 @@ model MarketingSignup {
   signedUpAt   DateTime        @default(now()) // tidsstempel for tilmelding
   confirmedAt  DateTime? // tidsstempel for bekraeftelse (dobbelt opt-in)
   confirmIp    String? // IP ved bekraeftelse (samtykkedokumentation)
-  unsubscribed Boolean         @default(false) // forberedt til afmelding senere
 
   // Nyeste oeverst i admin; kilde-fordeling og "bekraeftede/nye" i tællekortene.
   @@index([signedUpAt])
   @@index([confirmedAt])
   @@index([source])
-}
-
-// Oprettelsesanmodning: en butik der gerne vil have et stempelkort. I stedet for
-// selvbetjent oprettelse udfylder de en kort formular (virksomhed, oensket
-// beloenning i fri tekst, kontakt), superadmin faar en mail og laver et udkast +
-// gaar i dialog. Ingen konto oprettes her.
-model SignupRequest {
-  id           String   @id @default(cuid())
-  businessName String
-  reward       String // oensket beloenning, fri tekst
-  wantsReferrals Boolean @default(false) // Henvisninger valgt
-  wantsStamps    Boolean @default(true) // stempelkort valgt (fra = kun Henvisninger)
-  referralReward String? // oenskede henvisningsbeloenninger, fri tekst
-  contactName  String? // valgfrit
-  email        String
-  phone        String? // valgfrit
-  note         String? // frit notefelt (admin, senere)
-  createdIp    String?
-  createdAt    DateTime @default(now())
-
-  @@index([createdAt])
 }
 
 model AuditLog {
@@ -680,20 +652,6 @@ model PinAttempt {
   updatedAt   DateTime  @updatedAt
 
   @@unique([businessId, lockId])
-}
-
-// Onboarding-funnel: anonyme trin-visninger paa /start, saa vi kan se HVOR folk
-// falder fra, foer de opretter en butik. anonId er et tilfaeldigt id gemt i
-// browserens localStorage (ingen persondata). Een raekke pr. (anonId, step):
-// foerste gang trinet naaes. Trin: 0 Din butik, 1 Design, 2 Opsaetning, 3 Klar.
-model OnboardingEvent {
-  id        String   @id @default(cuid())
-  anonId    String
-  step      Int
-  createdAt DateTime @default(now())
-
-  @@unique([anonId, step])
-  @@index([step, createdAt])
 }
 
 // Gendan kortet med e-mail: kunden faar et link paa mail, der virker een gang og

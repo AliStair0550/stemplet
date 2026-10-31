@@ -112,14 +112,7 @@ export async function resolveOrCreateCard(
   }
 
   // Loftet (hvis aktivt) haandhaeves atomisk pr. butik. Null = loftet er naaet.
-  const created = await createCardholderAtomically(
-    business.plan,
-    business.id,
-    card.id,
-    prisma,
-    deviceId,
-  );
-  if (!created) return { ok: false, error: "fuld" };
+  const created = await createCardholderAtomically(business.id, card.id, prisma, deviceId);
 
   // Samtidig oprettelse med samme e-mail (fx dobbelttryk fra en ny telefon, hvor
   // hvert tryk fik sit eget enheds-id): unik-indekset vinder. Det tomme kort, som

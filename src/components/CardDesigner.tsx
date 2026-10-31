@@ -180,7 +180,6 @@ export function CardDesigner({
   onChange,
   businessName,
   allowLogo = false,
-  showPoweredBy = false,
   hidePreview = false,
   boxed = false,
   parts = "all",
@@ -190,7 +189,6 @@ export function CardDesigner({
   onChange: (next: CardDesign) => void;
   businessName: string;
   allowLogo?: boolean;
-  showPoweredBy?: boolean;
   // Skjul CardDesigners eget preview (fx naar forlaelderen viser eet vedvarende
   // preview ved siden af). Saa staar der kun kontrollerne.
   hidePreview?: boolean;
@@ -645,7 +643,6 @@ export function CardDesigner({
             stamps={Math.min(3, value.stampsRequired)}
             required={value.stampsRequired}
             rewardText={value.rewardText}
-            showPoweredBy={showPoweredBy}
             serial="STEMPLET01"
             serialLabel={businessName}
           />

@@ -25,13 +25,8 @@ const ACTION_LABEL: Record<string, string> = {
   FLAGGED: "Markeret",
 };
 
-export default async function IndstillingerPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ betaling?: string; fejl?: string }>;
-}) {
+export default async function IndstillingerPage() {
   const { business, userId, email } = await requireBusiness();
-  const { betaling } = await searchParams;
   const trialLeft = trialDaysLeft(business.createdAt);
 
   const [logs, devices, memberships, sole] = await Promise.all([
@@ -70,12 +65,6 @@ export default async function IndstillingerPage({
         title="Indstillinger"
         subtitle="Butik, PIN, kasse-enheder, kort-oplevelse og abonnement."
       />
-
-      {betaling === "ok" ? (
-        <div className="mb-6 rounded-lg border border-terracotta bg-terracotta/5 px-5 py-3 text-[0.85rem] font-[200] text-terracotta">
-          Tak. Din betaling er registreret.
-        </div>
-      ) : null}
 
       <h2 className="mb-4 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
         Din butik

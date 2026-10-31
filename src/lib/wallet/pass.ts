@@ -16,7 +16,6 @@ import {
 } from "./referral-fields";
 import { isPrivateAddress } from "../integrations";
 import { APP_URL } from "../env";
-import { PLATFORM, APP_HOST } from "../platform";
 import { newsBackFields } from "../news";
 import { memberUrl } from "../member-link";
 import {
@@ -49,7 +48,6 @@ type PassInput = {
   lifetimeStamps: number;
   /** Antal fyldte kort / beloenninger optjent. */
   completedCount: number;
-  showPoweredBy: boolean;
   latitude: number | null;
   longitude: number | null;
   /** Henvisninger (kun naar butikken har modulet og kunden har en kode). Uden
@@ -409,14 +407,6 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
     });
   }
 
-  if (input.showPoweredBy) {
-    pass.backFields.push({
-      key: "poweredby",
-      label: "Drevet af",
-      value: `Kundekort fra ${PLATFORM.name}. ${APP_HOST}`,
-    });
-  }
-
   if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
 
   pass.setBarcodes({
@@ -491,14 +481,6 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
   pass.secondaryFields.push(...front.secondary);
   pass.backFields.push(...newsBackFields(input));
   pass.backFields.push(...referralBackFields(input.referral));
-  if (input.showPoweredBy) {
-    pass.backFields.push({
-      key: "poweredby",
-      label: "Drevet af",
-      value: `Kundekort fra ${PLATFORM.name}. ${APP_HOST}`,
-    });
-  }
-
   if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
 
   pass.setBarcodes({

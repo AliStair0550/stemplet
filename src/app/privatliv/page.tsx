@@ -93,8 +93,8 @@ export default function PrivatlivPage() {
             snyd og misbrug.
           </Li>
           <Li>
-            <strong>Betaling:</strong> hvis din butik opgraderer, håndteres
-            kortbetaling af Stripe. Vi gemmer aldrig dine kortoplysninger.
+            <strong>Betaling:</strong> butikker betaler mod faktura. Vi gemmer
+            aldrig kortoplysninger.
           </Li>
         </ul>
       </LegalSection>
@@ -155,7 +155,6 @@ export default function PrivatlivPage() {
           <Li>Neon og Vercel, database og drift i EU.</Li>
           <Li>Upstash, midlertidig cache og sikkerhed.</Li>
           <Li>Resend, udsendelse af login-mails (USA).</Li>
-          <Li>Stripe, betaling ved opgradering (kun hvis aktivt).</Li>
         </ul>
         <p>
           Enkelte underleverandører behandler oplysninger i USA. Det sker på
