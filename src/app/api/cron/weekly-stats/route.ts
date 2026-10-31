@@ -6,6 +6,7 @@ import { sendEmail } from "@/lib/send-email";
 import { signUnsubscribeToken } from "@/lib/tokens";
 import { APP_URL } from "@/lib/env";
 import { bearerAuthorized } from "@/lib/secret";
+import { sendOnce } from "@/lib/email-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +53,8 @@ export async function GET(req: NextRequest) {
   // Per-butik-arbejde med begraenset samtidighed (chunks paa 5) i stedet for en
   // fuldt sekventiel loop, saa cron'en holder sig godt under maxDuration selv
   // naar kundebasen vokser. Hver butik returnerer antal sendte mails.
+  const weekKind = `weekly:${new Date().toISOString().slice(0, 10)}`;
+
   async function processBusiness(b: (typeof businesses)[number]): Promise<number> {
     try {
       const stats = await getWeeklyStats(b.id);
@@ -73,15 +76,18 @@ export async function GET(req: NextRequest) {
           ? [chosen]
           : allEmails;
 
+      // Hoejst een ugemail pr. modtager pr. uge, ogsaa hvis cronen koerer to gange.
       let count = 0;
       for (const to of recipients) {
-        const ok = await sendEmail({
-          to,
-          subject: mail.subject,
-          html: mail.html,
-          text: mail.text,
-        });
-        if (ok) count += 1;
+        const r = await sendOnce({ businessId: b.id, kind: weekKind, recipient: to }, () =>
+          sendEmail({
+            to,
+            subject: mail.subject,
+            html: mail.html,
+            text: mail.text,
+          }),
+        );
+        if (r === "sent") count += 1;
       }
       return count;
     } catch (e) {

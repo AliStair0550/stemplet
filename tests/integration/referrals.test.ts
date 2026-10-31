@@ -384,3 +384,33 @@ test("kode: to kunder med samme navn i samme butik faar forskellige koder", asyn
     await cleanup(biz.bizId);
   }
 });
+
+// ── R19: slettet henviser ────────────────────────────────────────────
+
+test("slettes henviserens kort, bliver henvisningen; vennen kan ikke henvises igen", async () => {
+  const s = await setup();
+  try {
+    await prisma.customerCard.delete({ where: { id: s.referrer.id } });
+    const r = await prisma.referral.findUniqueOrThrow({ where: { id: s.referral.id } });
+    assert.equal(r.referrerCardId, null);
+
+    // Besoeget gennemfoeres stadig: vennen faar sin rabat, ingen henviser-beloenning.
+    const res = await recordFirstVisit({
+      referralId: s.referral.id,
+      businessId: s.bizId,
+      staffDeviceId: s.deviceId,
+      idempotencyKey: "slettet-1",
+    });
+    assert.equal(res.status, "REWARDED");
+    const rewards = await prisma.reward.findMany({ where: { referralId: r.id } });
+    assert.deepEqual(rewards.map((x) => x.cardId), [s.referred.id]);
+
+    // En ny henviser kan ikke henvise den samme ven igen.
+    const other = await makeCard(s.cardId);
+    await assert.rejects(
+      createReferral({ businessId: s.bizId, referrerCardId: other.id, referredCardId: s.referred.id, source: "LINK" }),
+    );
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

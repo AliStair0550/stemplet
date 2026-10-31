@@ -84,7 +84,35 @@ function makeFakeDb(
     cardOwner.set(cardId, b.id);
   }
 
+  // EmailLog i hukommelsen: unik pr. (butik, slags, modtager) som i databasen.
+  type LogRow = { id: string; businessId: string; kind: string; recipient: string; sentAt: Date | null; createdAt: Date };
+  const logs = new Map<string, LogRow>();
+  const logKey = (k: { businessId: string; kind: string; recipient: string }) => `${k.businessId}|${k.kind}|${k.recipient}`;
   const client = {
+    emailLog: {
+      async create({ data }: { data: { businessId: string; kind: string; recipient: string } }) {
+        const k = logKey(data);
+        if (logs.has(k)) throw Object.assign(new Error("unique"), { code: "P2002" });
+        const row = { ...data, id: k, sentAt: null, createdAt: new Date() };
+        logs.set(k, row);
+        return { id: row.id };
+      },
+      async findUnique({ where }: { where: { businessId_kind_recipient: { businessId: string; kind: string; recipient: string } } }) {
+        return logs.get(logKey(where.businessId_kind_recipient)) ?? null;
+      },
+      async updateMany() {
+        return { count: 0 };
+      },
+      async update({ where, data }: { where: { id: string }; data: Partial<LogRow> }) {
+        const row = logs.get(where.id)!;
+        Object.assign(row, data);
+        return row;
+      },
+      async delete({ where }: { where: { id: string } }) {
+        logs.delete(where.id);
+        return null;
+      },
+    },
     business: {
       async findUnique({ where }: { where: { id: string } }) {
         const row = businesses.get(where.id);
@@ -220,6 +248,33 @@ test("sweep genopsamler varslet efter et mail-blip", async () => {
   // Tredje sweep: intet tilbage at gensende (idempotent, ingen dubletter).
   const r3 = await sweepPendingThresholdEmails(client, ok, NOW);
   assert.equal(r3.warns, 0, "ingen dubletter ved naeste sweep");
+});
+
+// ── R17: fejler een modtager, faar de andre ikke mailen igen ─────────
+
+test("ved gensendelse faar kun den modtager, der fejlede, mailen", async () => {
+  const { client } = makeFakeDb([
+    baseRow({
+      id: "b9",
+      slug: "to-ejere",
+      name: "To ejere",
+      cardholderWarnedAt: new Date(),
+      memberships: [{ user: { email: "a@butik.dk" } }, { user: { email: "b@butik.dk" } }],
+    }),
+  ]);
+  const got: string[] = [];
+  let failB = true;
+  const mailer: MailArg = async ({ to }) => {
+    if (to === "b@butik.dk" && failB) throw new Error("blip");
+    got.push(to);
+    return true;
+  };
+  await sweepPendingThresholdEmails(client, mailer, NOW);
+  failB = false;
+  await sweepPendingThresholdEmails(client, mailer, NOW);
+  await sweepPendingThresholdEmails(client, mailer, NOW);
+  assert.equal(got.filter((t) => t === "a@butik.dk").length, 1, "a fik mailen een gang");
+  assert.equal(got.filter((t) => t === "b@butik.dk").length, 1, "b fik den ved gensendelsen");
 });
 
 // ── Fejlscenarie 2: to samtidige krydsninger -> praecis eet varsel ──────

@@ -238,6 +238,30 @@ export function computeScanIncrement(
   return { baseIncrement, hasWelcome, qty, scanIncrement: baseIncrement * qty };
 }
 
+/** Svaret for et stempel, der allerede er givet med denne noegle (eller null). */
+async function replayStamp(customerCardId: string, key: string): Promise<StampResult | null> {
+  const s = await prisma.stamp.findUnique({
+    where: { customerCardId_idempotencyKey: { customerCardId, idempotencyKey: key } },
+    select: {
+      multiplier: true,
+      lifetimeAfter: true,
+      customerCard: { select: { serial: true, stamps: true, lifetimeStamps: true, card: { select: { stampsRequired: true } } } },
+    },
+  });
+  if (!s) return null;
+  const required = s.customerCard.card.stampsRequired;
+  const stamps = Math.min(s.customerCard.stamps, required);
+  return {
+    serial: s.customerCard.serial,
+    stamps,
+    required,
+    rewardReady: stamps >= required,
+    justCompleted: false,
+    increment: s.multiplier,
+    lifetimeStamps: s.lifetimeAfter ?? s.customerCard.lifetimeStamps,
+  };
+}
+
 /**
  * Kernen. Al stempel-logik sker på serveren, aldrig på klienten.
  * Tjekker cooldown, lægger kampagne-multiplier på, håndterer fuldt kort,
@@ -255,8 +279,19 @@ export async function applyStamp(opts: {
   /** Medarbejder-attribution: sat naar kassen er ejer-login hhv. parret enhed. */
   staffUserId?: string | null;
   staffDeviceId?: string | null;
+  /** Kassens noegle for trykket. Samme noegle giver aldrig to stempler (R10). */
+  idempotencyKey?: string | null;
 }): Promise<StampResult> {
   const now = new Date();
+  const key = opts.idempotencyKey || null;
+
+  // Samme tryk igen (retry efter tabt svar): svar med det stempel, der allerede
+  // blev givet, uden at stemple igen. Den unikke noegle paa Stamp er garantien;
+  // dette opslag giver bare et paent svar uden at koere transaktionen.
+  if (key) {
+    const replay = await replayStamp(opts.customerCardId, key);
+    if (replay) return replay;
+  }
 
   const result = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
@@ -399,6 +434,7 @@ export async function applyStamp(opts: {
         staffDeviceId: opts.staffDeviceId ?? null,
         lifetimeAfter: lifetimeStamps,
         filledCard: rewardReady,
+        idempotencyKey: key,
       },
     });
 
@@ -429,7 +465,16 @@ export async function applyStamp(opts: {
       webhookUrl: business.webhookUrl,
       apiKey: business.apiKey,
     };
+  }).catch(async (e) => {
+    // To samtidige forsoeg med samme noegle: det andet ruller tilbage paa den
+    // unikke noegle (eller ser et fuldt kort). Svar med det stempel, det foerste gav.
+    if (key && ((e as { code?: string }).code === "P2002" || e instanceof StampError)) {
+      const replay = await replayStamp(opts.customerCardId, key);
+      if (replay) return { replay };
+    }
+    throw e;
   });
+  if ("replay" in result) return result.replay;
 
   // Bivirkninger efter commit. Anomali-tjekket (flere Redis-kald) maa ikke
   // forsinke kassen: det paavirker ikke svaret, saa det koerer bagefter.
@@ -479,6 +524,8 @@ export async function undoLastStamp(
   opts: {
     customerCardId: string;
     ip?: string | null;
+    /** Kassens noegle for trykket. Samme noegle fortryder kun een gang (R10). */
+    idempotencyKey?: string | null;
   },
   db: typeof prisma = prisma,
 ): Promise<{
@@ -488,6 +535,7 @@ export async function undoLastStamp(
   rewardReady: boolean;
   lifetimeStamps: number;
 }> {
+  const key = opts.idempotencyKey || null;
   const res = await db.$transaction(async (tx) => {
     // Laas kortraekken foerst, saa undo er fuldt serialiseret mod samtidige
     // stemplinger: applyStamp's guardede update blokerer paa laasen, indtil vi
@@ -498,6 +546,20 @@ export async function undoLastStamp(
       include: { card: true },
     });
     if (!cc) throw new StampError("NOT_FOUND", "Kortet blev ikke fundet.");
+
+    // Samme tryk igen (retry efter tabt svar): fortrydelsen er allerede sket.
+    // Raekken er laast, saa to samtidige forsoeg kan ikke begge slippe forbi.
+    if (key && cc.lastUndoKey === key) {
+      const required = cc.card.stampsRequired;
+      return {
+        serial: cc.serial,
+        stamps: cc.stamps,
+        required,
+        rewardReady: cc.stamps >= required,
+        lifetimeStamps: cc.lifetimeStamps,
+        replayed: true,
+      };
+    }
 
     const last = await tx.stamp.findFirst({
       where: { customerCardId: cc.id },
@@ -528,6 +590,7 @@ export async function undoLastStamp(
         stamps: { decrement: removed },
         lifetimeStamps: { decrement: lifeRemoved },
         lastStampAt: prev?.createdAt ?? null,
+        lastUndoKey: key,
       },
       select: { stamps: true, lifetimeStamps: true },
     });
@@ -548,23 +611,50 @@ export async function undoLastStamp(
       required,
       rewardReady: updated.stamps >= required,
       lifetimeStamps: updated.lifetimeStamps,
+      replayed: false,
     };
   });
 
-  pushWallet(opts.customerCardId);
-  return res;
+  const { replayed, ...out } = res;
+  if (!replayed) pushWallet(opts.customerCardId);
+  return out;
+}
+
+type RedeemStampsResult = {
+  serial: string;
+  completedCount: number;
+  stamps: number;
+  required: number;
+};
+
+/** Svaret for en indloesning, der allerede er sket med denne noegle (eller null). */
+async function replayRedeem(customerCardId: string, key: string): Promise<RedeemStampsResult | null> {
+  const r = await prisma.redemption.findUnique({
+    where: { customerCardId_idempotencyKey: { customerCardId, idempotencyKey: key } },
+    select: {
+      customerCard: { select: { serial: true, completedCount: true, stamps: true, card: { select: { stampsRequired: true } } } },
+    },
+  });
+  if (!r) return null;
+  const cc = r.customerCard;
+  return { serial: cc.serial, completedCount: cc.completedCount, stamps: cc.stamps, required: cc.card.stampsRequired };
 }
 
 /** Indløsning kræver PIN (tjekkes af kalderen). Nulstiller til ny runde. */
 export async function redeemReward(opts: {
   customerCardId: string;
   ip?: string | null;
-}): Promise<{
-  serial: string;
-  completedCount: number;
-  stamps: number;
-  required: number;
-}> {
+  /** Kassens noegle for trykket. Samme noegle indloeser aldrig to gange (R10). */
+  idempotencyKey?: string | null;
+}): Promise<RedeemStampsResult> {
+  const key = opts.idempotencyKey || null;
+  // Samme tryk igen: kortet er allerede indloest, svar med kortets tilstand i
+  // stedet for "Kortet er ikke fuldt endnu".
+  if (key) {
+    const replay = await replayRedeem(opts.customerCardId, key);
+    if (replay) return replay;
+  }
+
   const res = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
       where: { id: opts.customerCardId },
@@ -585,7 +675,7 @@ export async function redeemReward(opts: {
       throw new StampError("FULL", "Kortet er ikke fuldt endnu.");
     }
 
-    await tx.redemption.create({ data: { customerCardId: cc.id } });
+    await tx.redemption.create({ data: { customerCardId: cc.id, idempotencyKey: key } });
     const updated = await tx.customerCard.findUnique({
       where: { id: cc.id },
       select: { completedCount: true, stamps: true },
@@ -612,7 +702,16 @@ export async function redeemReward(opts: {
       webhookUrl: cc.card.business.webhookUrl,
       apiKey: cc.card.business.apiKey,
     };
+  }).catch(async (e) => {
+    // Samtidigt forsoeg med samme noegle: det andet ruller tilbage paa noeglen
+    // eller ser kortet som "ikke fuldt", fordi det foerste lige har indloest.
+    if (key && ((e as { code?: string }).code === "P2002" || e instanceof StampError)) {
+      const replay = await replayRedeem(opts.customerCardId, key);
+      if (replay) return { replay };
+    }
+    throw e;
   });
+  if ("replay" in res) return res.replay;
 
   runAfterResponse(() =>
     fireWebhook(

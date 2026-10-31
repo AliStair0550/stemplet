@@ -371,7 +371,7 @@ test("arbejdsliste: vennen kan findes paa begge parters navn, og Rabat givet ind
 
 // ── GDPR: sletning af en kortholder ──────────────────────────────────
 
-test("sletning: kortholder med henvisning og beloenninger slettes helt, vennen bliver", async () => {
+test("sletning: kortholderens kort og beloenninger slettes, henvisningen bliver uden henviser", async () => {
   const s = await makeShop();
   try {
     const { sara, mikkel, ref } = await rewardedPair(s);
@@ -380,7 +380,11 @@ test("sletning: kortholder med henvisning og beloenninger slettes helt, vennen b
 
     assert.equal(await prisma.customerCard.findUnique({ where: { id: sara.id } }), null);
     assert.equal(await prisma.reward.count({ where: { cardId: sara.id } }), 0, "beloenninger slettet");
-    assert.equal(await prisma.referral.findUnique({ where: { id: ref.id } }), null, "henvisningen slettet");
+    // R19: henvisningen bliver liggende uden henviser (intet om den slettede
+    // kunde), saa vennen ikke kan henvises igen og faa velkomstrabatten to gange.
+    const left = await prisma.referral.findUnique({ where: { id: ref.id } });
+    assert.ok(left, "henvisningen findes stadig");
+    assert.equal(left.referrerCardId, null, "uden kobling til den slettede kunde");
     const friend = await prisma.customerCard.findUnique({ where: { id: mikkel.id } });
     assert.ok(friend, "vennens kort findes stadig");
     assert.equal(friend.referredByCardId, null, "vennen peger ikke laengere paa det slettede kort");
