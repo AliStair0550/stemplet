@@ -338,7 +338,7 @@ export function KortetEditor({
         {/* Knapper */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
           <h2 className="text-[1.15rem] font-semibold tracking-[-0.015em] text-ink">Knapper på kortet</h2>
-          <p className="mt-0.5 text-[0.88rem] text-stone">Genveje under kortet i Wallet (iOS 27). Kunden trykker på dem direkte fra kortet.</p>
+          <p className="mt-0.5 text-[0.88rem] text-stone">Genveje under kortet i Wallet. Kunden trykker på dem direkte fra kortet.</p>
           <div className="mt-4 flex flex-col gap-2">
             {CARD_ACTIONS.map((a) => {
               // Book tid kan altid vaelges: mangler linket, indsaettes det lige herunder.
@@ -394,7 +394,9 @@ export function KortetEditor({
           </div>
         </section>
 
-        <div className="sticky bottom-[calc(4.9rem+env(safe-area-inset-bottom))] md:bottom-0 z-20 -mx-1 flex flex-wrap items-center gap-3 bg-parchment px-1 py-4">
+        {/* Paa mobil gaar bjaelkens baggrund helt ned bag bundmenuen, saa der ikke
+            titter indhold frem mellem knappen og menuen. */}
+        <div className="sticky bottom-0 z-20 -mx-1 flex flex-wrap items-center gap-3 bg-parchment px-1 pb-[calc(5.6rem+env(safe-area-inset-bottom))] pt-4 md:pb-4">
           <button onClick={save} disabled={pending || uploading} className={btnClass("primary")}>
             {pending ? "Gemmer..." : "Gem kortet"}
           </button>
@@ -418,7 +420,7 @@ export function KortetEditor({
           <div className="flex rounded-full bg-[#F2F5F9] p-1">
             {(
               [
-                ["27", "iOS 27"],
+                ["27", "Ny iPhone"],
                 ["old", "Ældre iPhone"],
               ] as const
             ).map(([v, l]) => (
@@ -457,8 +459,8 @@ export function KortetEditor({
           />
           <p className="max-w-[300px] text-center text-[0.78rem] text-slate">
             {os === "27"
-              ? "Eksempel på en kundes kort. Plakatkortet på iOS 27."
-              : "Eksempel på en kundes kort. Ældre iPhones får det klassiske kort."}
+              ? "Eksempel på en kundes kort."
+              : "Eksempel på en kundes kort. Ældre iPhones viser det sådan."}
           </p>
         </div>
       </aside>
