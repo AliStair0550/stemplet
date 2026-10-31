@@ -18,10 +18,15 @@ export async function GET() {
     prisma.card.findFirst({ where: { businessId: business.id }, orderBy: { createdAt: "asc" }, select: { rewardText: true, stampsRequired: true, stampIcon: true } }),
     business.referralsEnabled ? prisma.referralRule.findUnique({ where: { businessId: business.id } }) : null,
   ]);
-  const lines = [
-    ...(business.stampsEnabled && card ? [`${card.rewardText} efter ${card.stampsRequired} stempler`] : []),
-    ...(rule ? [`Henvis en ven, og få ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  const fields = [
+    ...(business.stampsEnabled && card ? [{ label: `EFTER ${card.stampsRequired} STEMPLER`, value: cap(card.rewardText) }] : []),
+    ...(rule ? [{ label: "HENVIS EN VEN", value: cap(rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)) }] : []),
   ];
+  // QR-koden i Wallet er til at vise kunderne: Kom i gang krydser "del" af.
+  if (!business.sharedAt) {
+    await prisma.business.updateMany({ where: { id: business.id, sharedAt: null }, data: { sharedAt: new Date() } }).catch(() => {});
+  }
   try {
     const buf = await buildShopQrPass({
       businessId: business.id,
@@ -31,7 +36,7 @@ export async function GET() {
       textColor: business.textColor,
       logoUrl: business.logoUrl,
       stampIcon: card?.stampIcon ?? "coffee",
-      lines,
+      fields,
     });
     return new Response(new Uint8Array(buf), {
       headers: {

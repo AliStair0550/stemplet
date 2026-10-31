@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { rgba } from "@/lib/brand";
 import type { ShopStatus } from "@/app/api/k/[slug]/status/route";
 
+export const GIFT_EVENT = "folka:gave";
+
 // Overskriften over kortet. Kommer kunden via en vens link (?k=), siger den
 // straks, at der ligger en gave ("Emma har givet dig 100 kr."), saa man ved,
 // hvad det handler om, foer man ser kortet. Vennens fornavn hentes bagefter.
@@ -30,7 +32,11 @@ export function ClaimHeading({
       .then((r) => r.json() as Promise<ShopStatus>)
       .then((s) => {
         if (s.invalidCode || s.known) setInvalid(true);
-        else setFriend(s.friend?.firstName ?? null);
+        else {
+          setFriend(s.friend?.firstName ?? null);
+          // Kortet paa siden viser gaven som "Til gode" (se ClaimCardPreview).
+          window.dispatchEvent(new CustomEvent(GIFT_EVENT));
+        }
       })
       .catch(() => {});
   }, [slug, gift]);

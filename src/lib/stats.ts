@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
-import { unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import { getBusinessCards } from "./cards";
 
@@ -253,6 +253,19 @@ function cachedHeavyStats(businessId: string): Promise<HeavyStats> {
     ["business-stats-heavy", businessId],
     { revalidate: 60, tags: [`business-stats:${businessId}`] },
   )();
+}
+
+/**
+ * Nulstil butikkens cachede tal med det samme (ikke stale-while-revalidate),
+ * saa Hjem viser den foerste kunde og det foerste stempel, saa snart de sker.
+ * Kaldes efter stempel, indloesning, nyt kort og vennebesoeg.
+ */
+export function expireBusinessStats(businessId: string): void {
+  try {
+    revalidateTag(`business-stats:${businessId}`, { expire: 0 });
+  } catch {
+    // Uden en request-kontekst (tests, scripts) er der ingen cache at nulstille.
+  }
 }
 
 // Slaar de cachede totaler sammen med de altid-friske scan-naere taellere.

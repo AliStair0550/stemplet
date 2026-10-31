@@ -384,7 +384,9 @@ function ReferralPanel({
       </button>
       {me.rewards.length > 0 ? (
         <p className="border-t pt-3 text-[0.88rem]" style={{ borderColor: rgba(ctaBg, 0.18) }}>
-          Du har til gode: <span className="font-[600]">{me.rewards.join(", ")}</span>. Vis kortet ved kassen.
+          Du har til gode: <span className="font-[600]">{me.rewards.join(", ")}</span>
+          {/* "100 kr." slutter allerede med punktum. */}
+          {me.rewards.join(", ").endsWith(".") ? "" : "."} Vis kortet ved kassen.
         </p>
       ) : null}
     </section>
@@ -803,6 +805,8 @@ export function ClaimFlow({
         <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg}>
           Hent kortet igen
         </CtaLink>
+        {/* Kortet er hentet: del det med en ven med det samme. */}
+        {referralPanel}
       </div>
     );
   }
@@ -923,6 +927,24 @@ export function ClaimFlow({
     );
   }
 
+  // Kunden har allerede kortet i Wallet: henvis en ven er det vigtigste, og
+  // kortet aabnes med et diskret link (ikke "Hent dit kort" igen).
+  if (status?.inWallet && !justCreated && !recovered && referralPanel) {
+    return (
+      <div className="flex w-full flex-col items-center gap-3">
+        {referralPanel}
+        <a
+          href={claimUrl}
+          onClick={onTap}
+          className="text-[0.85rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
+          style={{ color: ctaBg }}
+        >
+          Åbn kortet i Apple Wallet
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full flex-col items-center gap-3">
       {justCreated || recovered ? (
@@ -933,7 +955,13 @@ export function ClaimFlow({
       ) : null}
       <CtaLink href={claimUrl} onTap={onTap} ctaBg={ctaBg} ctaFg={ctaFg} withGlow>
         <WalletIcon />
-        {(justCreated || recovered) && ios && walletEnabled ? "Tilføj til Apple Wallet" : cta}
+        {(justCreated || recovered) && ios && walletEnabled
+          ? "Tilføj til Apple Wallet"
+          : status?.inWallet
+            ? "Åbn kortet i Apple Wallet"
+            : status?.known
+              ? "Åbn dit kort"
+              : cta}
       </CtaLink>
       {status?.friend && !justCreated ? (
         <p className="text-center text-[0.84rem] font-[300]" style={{ color: rgba(ctaBg, 0.8) }}>

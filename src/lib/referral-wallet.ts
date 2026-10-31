@@ -42,7 +42,7 @@ export async function loadReferralPassInfo(
   const code = cc.referralCode ?? (await assignReferralCode({ customerCardId: cc.id }, db).catch(() => null));
   if (!code) return null;
 
-  const [rewards, lastRedeemed, referralsDone, referralsMade] = await Promise.all([
+  const [rewards, lastRedeemed, referralsDone, referralsMade, welcomeWaiting] = await Promise.all([
     db.reward.findMany({
       where: { cardId: cc.id, status: "AVAILABLE", expiresAt: { gt: now } },
       orderBy: { createdAt: "asc" },
@@ -56,7 +56,12 @@ export async function loadReferralPassInfo(
     db.referral.count({ where: { referrerCardId: cc.id, status: "REWARDED" } }),
     // Venner, der har hentet kortet via kunden (ogsaa dem, der ikke har vaeret der endnu).
     db.referral.count({ where: { referrerCardId: cc.id, status: { in: ["CREATED", "VISITED", "REWARDED"] } } }),
+    // Kunden kom via en ven og har ikke vaeret her endnu: vennens rabat ligger
+    // klar og staar som "Til gode", til den er givet ved kassen.
+    db.referral.count({ where: { referredCardId: cc.id, status: "CREATED" } }),
   ]);
+  const owed = rewards.map((r) => ({ type: r.type, value: r.value }));
+  if (welcomeWaiting > 0) owed.unshift({ type: rule.newCustomerRewardType, value: rule.newCustomerRewardValue });
 
   // Besked kun naar seneste aendring var en ny beloenning (ikke en indloesning).
   const newest = rewards.at(-1)?.createdAt?.getTime() ?? 0;
@@ -71,7 +76,7 @@ export async function loadReferralPassInfo(
     referrerReward: rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue),
     referralsDone,
     referralsMade,
-    rewards: rewards.map((r) => ({ type: r.type, value: r.value })),
+    rewards: owed,
     announce: newest > redeemed,
   };
 }

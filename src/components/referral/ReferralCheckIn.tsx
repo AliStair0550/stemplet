@@ -5,7 +5,6 @@ import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { firstName, redeemReceipt, rewardPhrase } from "@/lib/referral-text";
 import type { DeskCustomer } from "@/lib/referral-desk";
-import { CelebrationToast } from "@/components/Celebrate";
 
 // Henvisningen ved kassen, samlet med stempelkortet efter et scan (eller fra
 // Kunder): viser KUN det, der kraever handling, i den raekkefoelge personalet
@@ -44,8 +43,6 @@ async function api(path: string, body?: unknown): Promise<ApiResult> {
   }
 }
 
-const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
 // Kassen henter kortet og henvisningsoplysningerne samtidig: StaffCard starter
 // denne hentning, saa snart kortet er scannet, og ReferralCheckIn bruger svaret,
 // naar den vises (foer: foerst efter kortet var hentet, to rundture i traek).
@@ -61,7 +58,9 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
   const [busy, setBusy] = useState<string | null>(null);
   const [pin, setPin] = useState("");
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
-  const [toast, setToast] = useState<{ title: string; text?: string } | null>(null);
+  // Kvitteringer bliver staaende (ogsaa naar der ikke er mere at goere), saa
+  // personalet kan se, hvad der lige er givet. En toast forsvandt med boksen.
+  const [receipts, setReceipts] = useState<{ title: string; text: string }[]>([]);
   const keys = useRef<Record<string, string>>({});
   const keyFor = (k: string) => (keys.current[k] ??= newIdemKey());
 
@@ -80,7 +79,8 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
 
   if (!customer) return null;
   const ref = customer.openReferral && !customer.openReferral.stale ? customer.openReferral : null;
-  if (!ref && customer.rewards.length === 0) return null;
+  if (!ref && customer.rewards.length === 0 && receipts.length === 0) return null;
+  const name = firstName(customer.name);
 
   async function visit() {
     if (!ref || busy) return;
@@ -94,12 +94,16 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
       const amb = (res.rewards as { role: string; type: "AMOUNT" | "PERCENT" | "STAMPS" | "SERVICE"; value: string }[]).find(
         (r) => r.role === "referrer",
       );
-      setToast({
-        title: `${customer?.name ?? "Kunden"} har fået sin rabat`,
-        text: amb
-          ? `${ref.referrerName ?? "Vennen"} har nu ${rewardPhrase(amb.type, amb.value)} til gode.`
-          : `${ref.referrerName ?? "Vennen"} har nået månedens loft, så der er ingen ny belønning.`,
-      });
+      const referrer = firstName(ref.referrerName) ?? "Vennen";
+      setReceipts((rs) => [
+        ...rs,
+        {
+          title: `${name ?? "Kunden"} har fået ${ref.friendReward ?? "rabatten"}`,
+          text: amb
+            ? `${referrer} har nu ${rewardPhrase(amb.type, amb.value)} til gode.`
+            : `${referrer} har nået månedens loft, så der er ingen ny belønning.`,
+        },
+      ]);
       await load();
     } else {
       setNote({ ok: false, text: res.message ?? "Noget gik galt. Prøv igen." });
@@ -115,7 +119,7 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
     if (res.ok) {
       delete keys.current[r.id];
       setPin("");
-      setToast(redeemReceipt(r.type, r.value, customer?.name));
+      setReceipts((rs) => [...rs, redeemReceipt(r.type, r.value, name)]);
       await load();
     } else {
       setNote({ ok: false, text: res.message ?? "Noget gik galt. Prøv igen." });
@@ -124,7 +128,19 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
 
   return (
     <div className="flex w-full flex-col gap-3">
-      {toast ? <CelebrationToast title={toast.title} text={toast.text} onDone={() => setToast(null)} /> : null}
+      {receipts.map((r, i) => (
+        <div key={i} role="status" className="flex items-start gap-3 rounded-lg bg-[#E8F0FB] p-4" style={{ animation: "fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both" }}>
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#061C3D] text-white">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M5 12.5l4.5 4.5L19 7.5" />
+            </svg>
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[1rem] font-semibold leading-snug text-ink">{r.title}</span>
+            <span className="mt-0.5 block text-[0.88rem] leading-snug text-stone">{r.text}</span>
+          </span>
+        </div>
+      ))}
 
       {/* PIN foer knapperne, den laaser op. */}
       {hasPin ? (
@@ -158,28 +174,33 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
             aria-busy={busy === "visit"}
             className={btnClass("primary", "lg")}
           >
-            {busy === "visit" ? "Et øjeblik" : `${firstName(customer.name) ?? "Kunden"} har fået rabatten`}
+            {busy === "visit" ? "Et øjeblik" : `${name ?? "Kunden"} har fået rabatten`}
           </button>
         </div>
       ) : null}
 
-      {customer.rewards.map((r) => (
-        <div key={r.id} className="flex items-center justify-between gap-3 rounded-lg border border-ink bg-white p-4 shadow-card">
-          <div className="min-w-0">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate">Til gode fra henvisning</p>
-            <p className="text-[1.05rem] font-semibold text-ink">{cap(rewardPhrase(r.type, r.value))}</p>
+      {/* Samme moenster som vennens rabat: hvad du skal give, og en knap der
+          siger, at det er sket. */}
+      {customer.rewards.map((r) => {
+        const phrase = rewardPhrase(r.type, r.value);
+        return (
+          <div key={r.id} className="flex flex-col gap-3 rounded-lg border border-ink bg-white p-5 shadow-card">
+            <div>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate">Til gode fra henvisning</p>
+              <p className="mt-1 text-[1.2rem] font-bold leading-tight text-ink">Giv {name ?? "kunden"} {phrase}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => redeem(r)}
+              disabled={busy !== null || (hasPin && pin.length < 4)}
+              aria-busy={busy === r.id}
+              className={btnClass("primary", "lg")}
+            >
+              {busy === r.id ? "Et øjeblik" : r.type === "STAMPS" ? `Giv ${phrase}` : `${name ?? "Kunden"} har fået ${phrase}`}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => redeem(r)}
-            disabled={busy !== null || (hasPin && pin.length < 4)}
-            aria-busy={busy === r.id}
-            className={cn(btnClass("primary"), "shrink-0")}
-          >
-            {busy === r.id ? "Et øjeblik" : r.type === "STAMPS" ? "Giv" : "Indløs"}
-          </button>
-        </div>
-      ))}
+        );
+      })}
 
       {note ? (
         <p role="status" className={cn("text-center text-[0.9rem]", note.ok ? "text-ink" : "text-rust")}>

@@ -894,6 +894,9 @@ function StaffCard({
         </div>
       ) : card ? (
         <>
+          <span data-kasse-kort hidden />
+          {/* Uden stregkode: kortet er lige scannet, og pladsen skal bruges til
+              knapperne, saa de kan ses uden at rulle. */}
           <div className="relative">
             <div
               key={`card-${pulse}`}
@@ -914,7 +917,6 @@ function StaffCard({
                 stamps={card.stamps}
                 required={card.required}
                 rewardText={card.rewardText}
-                serial={card.serial}
               />
             </div>
             {pulse > 0 ? (
@@ -1023,7 +1025,7 @@ function StaffCard({
               </button>
               <div className="flex w-full flex-wrap justify-center gap-2">
                 <button type="button" onClick={() => setGiven(null)} className={`${btnClass("outline")} flex-1`}>
-                  Et stempel mere
+                  +1 stempel
                 </button>
                 <button type="button" onClick={undo} disabled={busy} aria-busy={busy} className={`${btnClass("outline")} flex-1 !text-rust`}>
                   {busy ? "Fortryder..." : given.inc === 1 ? "Fortryd" : `Fortryd (fjern ${given.inc})`}

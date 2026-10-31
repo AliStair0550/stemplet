@@ -256,9 +256,9 @@ export function StampCard({
                   boxShadow: "0 3px 8px rgba(0,0,0,0.18)",
                 }
               : {
-                  background: rgba(textColor, 0.08),
-                  color: rgba(textColor, 0.5),
-                  border: `1px solid ${rgba(textColor, 0.28)}`,
+                  // Tomt felt: en tom ring som paa Wallet-kortet, saa 0/10 ikke
+                  // ligner ti graa stempler.
+                  border: `1.5px solid ${rgba(textColor, 0.33)}`,
                 };
             return (
               <div
@@ -270,7 +270,7 @@ export function StampCard({
                 )}
                 style={chipStyle}
               >
-                <StampIcon icon={stampIcon} className={iconCls} />
+                {filled ? <StampIcon icon={stampIcon} className={iconCls} /> : null}
               </div>
             );
           })}

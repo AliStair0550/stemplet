@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { WalletCardPreview } from "@/components/WalletCardPreview";
+import { ClaimCardPreview } from "./ClaimCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
 import { rewardPhrase } from "@/lib/referral-text";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
@@ -225,7 +225,8 @@ export default async function ClaimPage({
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
         <div className="w-full" style={{ filter: cardShadow }}>
-          <WalletCardPreview
+          <ClaimCardPreview
+            gift={referral?.newCustomerReward ?? null}
             os="27"
             {...preview}
             // Henvisningskoden vises foerst, naar kunden har kortet: her handler det om at hente det.

@@ -48,7 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
       select: {
         id: true,
         referralsEnabled: true,
-        referralRule: { select: { id: true } },
+        referralRule: { select: { id: true, newCustomerRewardType: true, newCustomerRewardValue: true } },
         cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1, select: { id: true } },
       },
     }),
@@ -68,19 +68,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
     // Kort fra foer henvisningerne (eller uden navn) faar en kode nu, saa
     // "Henvis en ven" altid virker for en kendt kunde.
     const code = visitor.referralCode ?? (await assignReferralCode({ customerCardId: visitor.id, name: visitor.name }));
-    const [rewards, made] = await Promise.all([
+    const [rewards, made, welcomeWaiting] = await Promise.all([
       prisma.reward.findMany({
         where: { cardId: visitor.id, status: "AVAILABLE", expiresAt: { gt: new Date() } },
         orderBy: { createdAt: "asc" },
         select: { type: true, value: true },
       }),
       prisma.referral.count({ where: { referrerCardId: visitor.id, status: { in: ["CREATED", "VISITED", "REWARDED"] } } }),
+      // Kom via en ven og har ikke vaeret her endnu: vennens rabat ligger klar.
+      prisma.referral.count({ where: { referredCardId: visitor.id, status: "CREATED" } }),
     ]);
+    const rule = shop.referralRule!;
+    const owed = rewards.map((r) => rewardPhrase(r.type, r.value));
+    if (welcomeWaiting > 0) owed.unshift(rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue));
     me = {
       code,
       shareUrl: referralShareUrl(APP_URL, slug, code),
       referred: visitor.referredByCardId !== null,
-      rewards: rewards.map((r) => rewardPhrase(r.type, r.value)),
+      rewards: owed,
       made,
     };
   }
