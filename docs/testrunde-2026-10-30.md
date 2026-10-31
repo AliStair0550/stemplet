@@ -67,6 +67,6 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 | F2 | Belønningshistorik (ud over Klar til belønning) | Lavet (batch 10) |
 | F3 | Kommunikation er ikke tydelig nok på telefon | Lavet (batch 11) |
 | F4 | Fejring, når en pushbesked er sendt | Lavet (batch 11) |
-| F5 | Tilbud: kan ikke redigeres; https skal tilføjes automatisk | Venter |
-| F6 | Del et nyt tilbud eller en samarbejdspartner som pushbesked | Venter |
+| F5 | Tilbud: kan ikke redigeres; https skal tilføjes automatisk | Lavet (batch 12) |
+| F6 | Del et nyt tilbud eller en samarbejdspartner som pushbesked | Lavet (batch 12) |
 | F7 | Alt optimeret til telefon | Løbende |

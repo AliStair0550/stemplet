@@ -19,6 +19,30 @@ const optionalText = (max: number, msg: string) =>
     .nullable()
     .optional();
 
+/**
+ * Butikken skriver ofte bare "dinbutik.dk": https:// saettes paa, og http://
+ * goeres til https://. Tomt forbliver tomt.
+ */
+export function normalizeOfferLink(raw: string): string {
+  const v = raw.trim();
+  if (!v) return "";
+  if (/^https:\/\//i.test(v)) return v;
+  if (/^http:\/\//i.test(v)) return `https://${v.slice(7)}`;
+  // Andet skema (fx mailto: eller javascript:) roeres ikke og afvises af valideringen.
+  if (/^[a-z][a-z0-9+.-]*:(?!\d)/i.test(v)) return v;
+  return `https://${v.replace(/^\/+/, "")}`;
+}
+
+/** Faerdig pushbesked om et nyt tilbud eller en ny partner (rettes, foer den sendes). */
+export function offerPushText(o: { kind: OfferKind; title: string; partnerName?: string | null }, max = 150): string {
+  const t = o.title.trim().replace(/[.:]+$/, "");
+  const text =
+    o.kind === "PARTNER" && o.partnerName
+      ? `Ny fordel med kortet: ${t} hos ${o.partnerName.trim()}. Vis kortet, så får du rabatten.`
+      : `Nyt tilbud til dig med kortet: ${t}. Se det under Tilbud og fordele.`;
+  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+}
+
 export const offerInputSchema = z
   .object({
     kind: z.enum(OFFER_KINDS),
@@ -27,8 +51,8 @@ export const offerInputSchema = z
     partnerName: optionalText(60, "Partnerens navn er for langt."),
     link: z
       .string()
-      .trim()
-      .max(300, "Linket er for langt.")
+      .transform(normalizeOfferLink)
+      .pipe(z.string().max(300, "Linket er for langt."))
       .refine((v) => v === "" || /^https:\/\/[^\s]+\.[^\s]+$/i.test(v), "Linket skal starte med https://")
       .transform((v) => v || null)
       .nullable()

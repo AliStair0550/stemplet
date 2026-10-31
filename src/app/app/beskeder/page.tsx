@@ -3,7 +3,7 @@ import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import { cardTitle } from "@/lib/brand";
-import { nextNewsAllowedAt } from "@/lib/news";
+import { NEWS_MAX, nextNewsAllowedAt } from "@/lib/news";
 import { newsOptOutCount, walletCardCount } from "@/lib/news-reach";
 import { KommunikationTabs } from "./KommunikationTabs";
 import { NewsComposer } from "./NewsComposer";
@@ -11,8 +11,10 @@ import { NewsComposer } from "./NewsComposer";
 export const metadata: Metadata = { title: "Pushbeskeder" };
 export const dynamic = "force-dynamic";
 
-export default async function BeskederPage() {
+export default async function BeskederPage({ searchParams }: { searchParams: Promise<{ tekst?: string }> }) {
   const { business } = await requireBusiness();
+  // Udfyldt besked fra Tilbud ("Send som pushbesked"); ejeren retter og sender selv.
+  const preset = ((await searchParams).tekst ?? "").slice(0, NEWS_MAX);
   const [inWallet, optedOut, history] = await Promise.all([
     walletCardCount(business.id),
     newsOptOutCount(business.id),
@@ -34,6 +36,7 @@ export default async function BeskederPage() {
       />
       <NewsComposer
         shopName={cardTitle(business)}
+        initialText={preset}
         current={business.newsText}
         sentAt={business.newsSentAt?.toISOString() ?? null}
         nextAllowedAt={next?.toISOString() ?? null}
