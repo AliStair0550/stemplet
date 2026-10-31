@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { requireBusinessWithImages } from "@/lib/session";
+import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
 import { getReadyCustomers } from "@/lib/ready-customers";
 import { getReferralOverview } from "@/lib/referral-desk";
@@ -92,7 +92,7 @@ function AddFeature({ href, logo, title, text }: { href: string; logo: ReactNode
 }
 
 export default async function HomePage() {
-  const { business } = await requireBusinessWithImages();
+  const { business } = await requireBusiness();
   const [stats, pulse, ready, referrals, preview, history] = await Promise.all([
     getBusinessStats(business.id),
     getOverviewPulse(business.id),
@@ -124,7 +124,7 @@ export default async function HomePage() {
   // Kom i gang: kortet, rabatten og saa det vigtigste: del kortet. Rabatten er
   // sat ved oprettelsen, saa den staar som klaret med de rigtige tal, og kan
   // rettes. Delt = link delt/kopieret, QR-koden vist eller plakaten hentet.
-  const designed = business.primaryColor !== DEFAULT_PRIMARY || !!business.logoUrl || !!business.cardArtwork;
+  const designed = business.primaryColor !== DEFAULT_PRIMARY || !!preview.logoUrl || !!preview.artwork || business.cardStyle === "photo";
   const shared = !!business.sharedAt || !!business.posterMadeAt;
   const stampReward = business.stampsEnabled
     ? `${preview.stampsRequired} stempler giver ${midSentence(preview.rewardText)}.`

@@ -20,9 +20,12 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { business, email } = await requireBusiness();
-  const businesses = await getMyBusinesses();
-  const support = await getSupportBusiness();
+  // Samtidig, ikke efter hinanden: alle tre bygger kun paa sessionen.
+  const [{ business, email }, businesses, support] = await Promise.all([
+    requireBusiness(),
+    getMyBusinesses(),
+    getSupportBusiness(),
+  ]);
   // "Abonnement" i menuen: altid, saa ejeren kan se de gratis maaneder og prisen.
   const showAgreement = true;
 

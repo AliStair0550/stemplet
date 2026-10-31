@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { requireBusinessWithImages } from "@/lib/session";
+import { businessImages, requireBusiness, type SessionBusiness } from "@/lib/session";
+import { optimizedLogoDataUri } from "@/lib/logo";
 import { prisma } from "@/lib/prisma";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
@@ -52,7 +53,13 @@ const FEATURES: Record<Feature, { title: string; text: string; offWarning: strin
 };
 
 export default async function ReglerPage({ searchParams }: { searchParams: Promise<{ f?: string; vis?: string }> }) {
-  const { business } = await requireBusinessWithImages();
+  const { business: base } = await requireBusiness();
+  // Kun logoet, som en lille webp: siden viser det i forhaandsvisninger og skal
+  // ikke sende det fulde billede (eller kortbilledet) med til telefonen.
+  const business: Biz = {
+    ...base,
+    logoUrl: await optimizedLogoDataUri((await businessImages(base.id)).logoUrl, 256),
+  };
   const { f, vis } = await searchParams;
 
   const enabled: Record<Feature, boolean> = {
@@ -130,7 +137,7 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
   );
 }
 
-type Biz = Awaited<ReturnType<typeof requireBusinessWithImages>>["business"];
+type Biz = SessionBusiness & { logoUrl: string | null };
 
 async function StampRules({ business }: { business: Biz }) {
   const card = await prisma.card.findFirst({ where: { businessId: business.id }, orderBy: { createdAt: "asc" } });
