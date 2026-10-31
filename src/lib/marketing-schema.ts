@@ -10,6 +10,8 @@ import { z } from "zod";
 export const marketingSignupSchema = z.object({
   name: z.string().trim().max(80, "Navnet er for langt").optional(),
   storeName: z.string().trim().max(80, "Butiksnavnet er for langt").optional(),
+  // Mobil fra "Hør mere" (saa vi kan ringe). Normaliseres i ruten.
+  phone: z.string().trim().max(30, "Nummeret er for langt").optional(),
   email: z
     .string()
     .trim()

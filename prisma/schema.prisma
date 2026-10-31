@@ -600,6 +600,7 @@ model MarketingSignup {
   id           String          @id @default(cuid())
   name         String? // valgfrit (footer-varianten har kun mail)
   storeName    String? // butiksnavn, valgfrit
+  phone        String? // mobil (normaliseret), fra "Hør mere", saa vi kan ringe
   email        String          @unique
   source       String // "forside", branche-slug (fx /stempelkort-til-kaffebarer) eller "footer"
   status       MarketingStatus @default(NEW) // saettes manuelt i admin

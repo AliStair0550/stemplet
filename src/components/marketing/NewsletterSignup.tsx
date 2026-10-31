@@ -4,11 +4,12 @@ import { useState } from "react";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
-type Variant = "full" | "compact";
+// lead: "Hør mere" (navn, butik, mobil og mail), saa vi kan ringe.
+type Variant = "full" | "compact" | "lead";
 type Tone = "light" | "dark";
 type Status = "idle" | "sending" | "done" | "error";
 
-// "Skriv mig op"-formular med dobbelt opt-in. To varianter: fuld (navn,
+// "Skriv mig op"-formular med dobbelt opt-in. Varianter: fuld (navn,
 // butiksnavn, mail) og kompakt (kun mail, til footeren). Poster til
 // /api/marketing/signup; ved svar vises en bekraeftelsesbesked. tone styrer
 // farverne, saa den ogsaa staar rent paa footerens moerke baggrund.
@@ -40,6 +41,7 @@ export function NewsletterSignup({
     const payload = {
       name: String(data.get("name") ?? "").trim() || undefined,
       storeName: String(data.get("storeName") ?? "").trim() || undefined,
+      phone: String(data.get("phone") ?? "").trim() || undefined,
       email: String(data.get("email") ?? "").trim(),
       source,
     };
@@ -68,14 +70,14 @@ export function NewsletterSignup({
 
   // Skrevet-op-tilstand: erstat formularen med en dopamin-kvittering.
   if (status === "done") {
-    return <SignupCelebration tone={tone} already={already} />;
+    return <SignupCelebration tone={tone} already={already} lead={variant === "lead"} />;
   }
 
   const errorClass = tone === "dark" ? "text-[#F0B7A3]" : "text-rust";
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3">
-      {variant === "full" ? (
+      {variant === "full" || variant === "lead" ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <input
             name="name"
@@ -94,6 +96,19 @@ export function NewsletterSignup({
             className={input}
           />
         </div>
+      ) : null}
+
+      {variant === "lead" ? (
+        <input
+          name="phone"
+          type="tel"
+          required
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder="Dit mobilnummer"
+          aria-label="Dit mobilnummer"
+          className={input}
+        />
       ) : null}
 
       <div className={cn(variant === "compact" ? "flex flex-col gap-3 sm:flex-row" : "flex flex-col gap-3")}>
@@ -134,14 +149,19 @@ export function NewsletterSignup({
 function SignupCelebration({
   tone,
   already,
+  lead = false,
 }: {
   tone: Tone;
   already: boolean;
+  lead?: boolean;
 }) {
-  const heading = already ? "Du er allerede skrevet op." : "Du er skrevet op!";
-  const sub = already
-    ? "Tak, fordi du holder kontakten."
-    : "Vi holder dig opdateret. Ingen spam, kun gode idéer.";
+  // "Hør mere": vi ringer. Ellers: holde kontakten.
+  const heading = lead ? "Tak. Vi ringer snart." : already ? "Du er allerede skrevet op." : "Du er skrevet op.";
+  const sub = lead
+    ? "Vi ringer og fortæller, hvordan Folka Kort kan virke i din butik."
+    : already
+      ? "Tak, fordi du holder kontakten."
+      : "Vi holder dig opdateret. Ingen spam, kun gode idéer.";
 
   return (
     <div

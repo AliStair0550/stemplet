@@ -113,7 +113,7 @@ function Hero() {
             href="/hør-mere"
             className="kk-glass-pill px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/15"
           >
-            Hør mere og prøv kortet
+            Hør mere
           </Link>
         </div>
         <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden. Ingen binding.</p>

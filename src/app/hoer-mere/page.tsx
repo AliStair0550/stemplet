@@ -7,9 +7,8 @@ import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 import { CARDS, MemberCard } from "@/components/kundekort/MemberCard";
 import "@/components/kundekort/kundekort.css";
 
-// "Hør mere": til den, der gerne vil vide mere, foer de opretter sig. Skriv dig op
-// (samme dobbelte opt-in som footeren) eller proev kortet paa din egen telefon
-// (/prøv). Paa en computer viser vi en QR-kode, saa telefonen kan aabne demoen.
+// "Hør mere": til den, der gerne vil vide mere, foer de opretter sig. Proev kortet
+// paa din egen telefon (/prøv), og skriv dig op med mobilnummer, saa Ali kan ringe. Paa en computer viser vi en QR-kode, saa telefonen kan aabne demoen.
 // Samme moerke udtryk som forsidens hero.
 
 export const metadata: Metadata = {
@@ -45,24 +44,12 @@ export default async function HoerMerePage() {
           Vil du høre mere?
         </h1>
         <p className="mx-auto mt-4 max-w-[32rem] text-[1.05rem] leading-relaxed text-white/70">
-          Skriv dig op, så hører du fra os med idéer og nyt. Eller prøv kortet på din egen telefon lige nu.
+          Prøv kortet på din egen telefon, og skriv dig op. Så ringer vi og fortæller, hvordan Folka Kort kan give din
+          butik flere stamkunder.
         </p>
       </div>
 
       <div className="mx-auto mt-10 grid max-w-[1000px] gap-5 px-4 sm:px-6 md:grid-cols-2">
-        {/* Skriv dig op */}
-        {/* dash-theme: Folkas moerkeblaa knap (ikke Stemplets gamle rustfarve). */}
-        <section className="dash-theme rounded-[28px] bg-white p-7 text-left text-[#0B1628] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
-          <p className="text-[#1B5EAE]" style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase" }}>
-            Skriv dig op
-          </p>
-          <h2 className="mt-2 text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.03em]">Hør fra os, når der er nyt.</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-[#5F6B7E]">Idéer til flere stamkunder og nyt fra Folka Kort. Ingen spam.</p>
-          <div className="mt-6">
-            <NewsletterSignup variant="full" source="hoer-mere" />
-          </div>
-        </section>
-
         {/* Proev kortet */}
         <section className="flex flex-col overflow-hidden rounded-[28px] bg-white/[0.06] p-7 text-left shadow-[inset_0_0_0_1px_rgba(255,255,255,0.12)] backdrop-blur-xl sm:p-8">
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/60">Prøv kortet</p>
@@ -73,7 +60,7 @@ export default async function HoerMerePage() {
 
           <div className="mt-6 flex flex-1 items-center gap-6">
             <div className="w-[150px] shrink-0 -rotate-6 drop-shadow-[0_20px_40px_rgba(0,0,0,0.45)] sm:w-[170px]" aria-hidden>
-              <MemberCard card={CARDS.cafe!} sizes="170px" />
+              <MemberCard card={CARDS.cafe!} sizes="170px" hideShop />
             </div>
             {/* Computer: scan med telefonen. Mobil: knappen nedenfor. */}
             <div className="hidden flex-col items-center gap-2 md:flex">
@@ -90,6 +77,20 @@ export default async function HoerMerePage() {
             Prøv kortet på din telefon
           </Link>
         </section>
+        {/* Skriv dig op. dash-theme: Folkas moerkeblaa knap (ikke Stemplets gamle rustfarve). */}
+        <section className="dash-theme rounded-[28px] bg-white p-7 text-left text-[#0B1628] shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:p-8">
+          <p className="text-[#1B5EAE]" style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+            Skriv dig op
+          </p>
+          <h2 className="mt-2 text-[1.6rem] font-semibold leading-[1.1] tracking-[-0.03em]">Skriv dig op, så rækker vi ud.</h2>
+          <p className="mt-2 text-[15px] leading-relaxed text-[#5F6B7E]">
+            Vi ringer, svarer på dine spørgsmål og hjælper dig i gang med kortet i din butik.
+          </p>
+          <div className="mt-6">
+            <NewsletterSignup variant="lead" source="hoer-mere" />
+          </div>
+        </section>
+
       </div>
 
       <p className="mx-auto mt-10 max-w-[1000px] px-4 text-center text-[14px] text-white/60 sm:px-6">
