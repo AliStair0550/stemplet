@@ -6,6 +6,17 @@ import { auth } from "./auth";
 import { getSessionBusinessId } from "./session";
 import QRCode from "qrcode";
 import { APP_URL } from "./env";
+import { after } from "next/server";
+
+// Koer efter svaret; uden en request (fx et script) bare med det samme.
+function runAfter(task: () => Promise<unknown>) {
+  const run = () => task().catch(() => {});
+  try {
+    after(run);
+  } catch {
+    void run();
+  }
+}
 
 // ── Kasse-adgang: parret enhed ELLER ejer-login ──────────────────────
 // En parret enhed har et langtidsholdbart, begraenset token (kun kassen).
@@ -75,9 +86,9 @@ export async function kasseAccess(touch = false): Promise<KasseAccess | null> {
         (!device.lastSeenAt ||
           Date.now() - device.lastSeenAt.getTime() > TOUCH_EVERY_MS)
       ) {
-        await prisma.device
-          .update({ where: { id: device.id }, data: { lastSeenAt: new Date() } })
-          .catch(() => {});
+        // Efter svaret: "sidst set" maa ikke forsinke stemplet.
+        const id = device.id;
+        runAfter(() => prisma.device.update({ where: { id }, data: { lastSeenAt: new Date() } }));
       }
       return { businessId: device.businessId, source: "device", deviceId: device.id };
     }

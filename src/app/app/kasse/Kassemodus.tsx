@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { ReferralCheckIn } from "@/components/referral/ReferralCheckIn";
+import { ReferralCheckIn, prefetchDeskCustomer } from "@/components/referral/ReferralCheckIn";
 import { StampCard } from "@/components/StampCard";
 import { StampIcon } from "@/components/StampIcon";
 import { Celebration } from "@/components/Celebration";
@@ -11,12 +11,15 @@ import { btnClass, CtaGlow, CTA_EMPHASIS } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { hexToRgb, type StampIconKey } from "@/lib/brand";
 
-// Kamera-scanneren (med jsQR) loades foerst, naar kameraet aabnes, saa den ikke
-// ligger i kasse-sidens initiale JS-bundle.
+// Kamera-scanneren (med jsQR) ligger i sin egen fil, saa den ikke er en del af
+// kasse-sidens initiale JS-bundle.
 const Scanner = dynamic(
   () => import("@/components/Scanner").then((m) => ({ default: m.Scanner })),
   { ssr: false },
 );
+// Den hentes dog straks, mens siden indlaeses: kameraet aabner med det samme
+// ved kassen, saa ellers ventede kameraet paa endnu en hentning.
+if (typeof window !== "undefined") void import("@/components/Scanner");
 
 // fetch med timeout: en STALLED forbindelse (ikke fejlet) faar ellers loeftet
 // aldrig til at settle, saa den primaere knap haenger paa "Et oejeblik..." for
@@ -651,8 +654,10 @@ function StaffCard({
   }, []);
 
   useEffect(() => {
+    // Henvisningsoplysningerne hentes samtidig med kortet (se ReferralCheckIn).
+    if (referrals) prefetchDeskCustomer(serial);
     loadCard(serial);
-  }, [serial, loadCard]);
+  }, [serial, loadCard, referrals]);
 
   async function giveStamp() {
     if (!card || busyRef.current) return;

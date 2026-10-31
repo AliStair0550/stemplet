@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { kasseAccess } from "@/lib/kasse";
-import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
+import { cardIdInBusiness, applyStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
   const parsed = staffStampSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Ugyldigt kort.");
 
-  const cc = await loadCardBySerial(parsed.data.serial);
-  if (!cc || cc.card.businessId !== access.businessId) {
+  const ccId = await cardIdInBusiness(parsed.data.serial, access.businessId);
+  if (!ccId) {
     return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // give kunden endnu et stempel. Noeglen gemmes paa stemplet i databasen
     // (unik pr. kort), saa det holder ogsaa uden Redis.
     const res = await applyStamp({
-      customerCardId: cc.id,
+      customerCardId: ccId,
       method: "STAFF_SCAN",
       ip: clientIp(req),
       // Personalet staar ved disken - ingen cooldown paa manuel stempling.

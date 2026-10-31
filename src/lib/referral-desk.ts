@@ -127,14 +127,15 @@ export async function getDeskCustomer(
   // Butikken afgoeres af kortets skabelon (ogsaa for stempelkunder uden businessId).
   if (!cc || cc.card.businessId !== businessId) return null;
 
-  const rule = await db.referralRule.findUnique({
-    where: { businessId },
-    select: { rewardExpiryDays: true, newCustomerRewardType: true, newCustomerRewardValue: true },
-  });
+  // Uafhaengige opslag: samtidig, ikke efter hinanden.
+  const [rule, referralsDone] = await Promise.all([
+    db.referralRule.findUnique({
+      where: { businessId },
+      select: { rewardExpiryDays: true, newCustomerRewardType: true, newCustomerRewardValue: true },
+    }),
+    db.referral.count({ where: { referrerCardId: cc.id, status: "REWARDED" } }),
+  ]);
   const received = cc.referralReceived;
-  const referralsDone = await db.referral.count({
-    where: { referrerCardId: cc.id, status: "REWARDED" },
-  });
 
   return {
     id: cc.id,

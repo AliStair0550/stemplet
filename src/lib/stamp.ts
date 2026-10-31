@@ -150,6 +150,19 @@ export function loadCardBySerial(serial: string) {
   });
 }
 
+/**
+ * Kortets id, hvis kortet hoerer til butikken, ellers null. Eet lille opslag til
+ * kassens og API'ets ejerskabstjek (foer: hele kortet med butik og kampagner,
+ * 3-4 opslag, kun for at sammenligne butikken).
+ */
+export async function cardIdInBusiness(serial: string, businessId: string): Promise<string | null> {
+  const cc = await prisma.customerCard.findFirst({
+    where: { serial, card: { businessId } },
+    select: { id: true },
+  });
+  return cc?.id ?? null;
+}
+
 export function loadCardByToken(authToken: string) {
   return prisma.customerCard.findUnique({
     where: { authToken },
@@ -249,13 +262,10 @@ export async function applyStamp(opts: {
   const now = new Date();
   const key = opts.idempotencyKey || null;
 
-  // Samme tryk igen (retry efter tabt svar): svar med det stempel, der allerede
-  // blev givet, uden at stemple igen. Den unikke noegle paa Stamp er garantien;
-  // dette opslag giver bare et paent svar uden at koere transaktionen.
-  if (key) {
-    const replay = await replayStamp(opts.customerCardId, key);
-    if (replay) return replay;
-  }
+  // Samme tryk igen (retry efter tabt svar) fanges af transaktionen: den unikke
+  // noegle paa Stamp (P2002) eller et kort, der nu er fuldt (StampError), giver
+  // svaret fra det stempel, der allerede blev givet (se catch nedenfor). Intet
+  // ekstra opslag paa den normale vej.
 
   const result = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
@@ -630,12 +640,8 @@ export async function redeemReward(opts: {
   idempotencyKey?: string | null;
 }): Promise<RedeemStampsResult> {
   const key = opts.idempotencyKey || null;
-  // Samme tryk igen: kortet er allerede indloest, svar med kortets tilstand i
-  // stedet for "Kortet er ikke fuldt endnu".
-  if (key) {
-    const replay = await replayRedeem(opts.customerCardId, key);
-    if (replay) return replay;
-  }
+  // Samme tryk igen: kortet er allerede indloest, saa transaktionen fejler med
+  // "ikke fuldt" (eller P2002 paa noeglen), og catch svarer med kortets tilstand.
 
   const res = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({

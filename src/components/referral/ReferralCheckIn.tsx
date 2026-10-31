@@ -46,6 +46,16 @@ async function api(path: string, body?: unknown): Promise<ApiResult> {
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+// Kassen henter kortet og henvisningsoplysningerne samtidig: StaffCard starter
+// denne hentning, saa snart kortet er scannet, og ReferralCheckIn bruger svaret,
+// naar den vises (foer: foerst efter kortet var hentet, to rundture i traek).
+const prefetched = new Map<string, Promise<ApiResult>>();
+
+export function prefetchDeskCustomer(serial: string): void {
+  // Altid en frisk hentning pr. scanning (aldrig et gammelt svar fra sidst).
+  prefetched.set(serial, api(`${BASE}/kunde?serial=${encodeURIComponent(serial)}`));
+}
+
 export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: boolean }) {
   const [customer, setCustomer] = useState<DeskCustomer | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -56,7 +66,11 @@ export function ReferralCheckIn({ serial, hasPin }: { serial: string; hasPin: bo
   const keyFor = (k: string) => (keys.current[k] ??= newIdemKey());
 
   const load = useCallback(async () => {
-    const res = await api(`${BASE}/kunde?serial=${encodeURIComponent(serial)}`);
+    // Foerste gang: den hentning, StaffCard allerede har startet. Senere (efter
+    // en handling): en frisk hentning.
+    const early = prefetched.get(serial);
+    prefetched.delete(serial);
+    const res = await (early ?? api(`${BASE}/kunde?serial=${encodeURIComponent(serial)}`));
     setCustomer(res.ok ? (res.customer as DeskCustomer) : null);
   }, [serial]);
 

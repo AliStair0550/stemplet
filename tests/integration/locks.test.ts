@@ -14,6 +14,7 @@ import {
   applyStamp,
   undoLastStamp,
   redeemReward,
+  cardIdInBusiness,
 } from "../../src/lib/stamp";
 import { checkStampInvariant } from "../../src/lib/billing";
 
@@ -292,5 +293,20 @@ test("PIN: mange samtidige gaet giver hoejst loftet, derefter laas", async () =>
     assert.equal(await reservePinAttempt(bizId, "ip-test"), false);
   } finally {
     await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});
+
+test("ejerskabstjek: et kort fra en anden butik findes ikke", async () => {
+  const a = await makeBiz();
+  const b = await makeBiz();
+  try {
+    const ccA = await makeCard(a.cardId);
+    const serial = (await prisma.customerCard.findUniqueOrThrow({ where: { id: ccA.id } })).serial;
+    assert.equal(await cardIdInBusiness(serial, a.bizId), ccA.id);
+    assert.equal(await cardIdInBusiness(serial, b.bizId), null);
+    assert.equal(await cardIdInBusiness("findes-ikke", a.bizId), null);
+  } finally {
+    await prisma.business.delete({ where: { id: a.bizId } }).catch(() => {});
+    await prisma.business.delete({ where: { id: b.bizId } }).catch(() => {});
   }
 });

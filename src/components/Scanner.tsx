@@ -4,6 +4,34 @@ import { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 
 // Letvægts QR-scanner i browseren. Bruger bagkameraet og jsQR.
+
+// Kameraet deles mellem scanninger: ved kassen scannes kunde efter kunde, og at
+// starte kameraet forfra koster 0,3-1 sek. hver gang paa iPhone. Efter en
+// scanning holdes det kørende i et minut og slukkes saa, saa kameralampen ikke
+// lyser, naar ingen scanner.
+const IDLE_STOP_MS = 60_000;
+let sharedStream: MediaStream | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+function liveStream(): MediaStream | null {
+  return sharedStream?.getVideoTracks().some((t) => t.readyState === "live") ? sharedStream : null;
+}
+
+function releaseStream() {
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    sharedStream?.getTracks().forEach((t) => t.stop());
+    sharedStream = null;
+    idleTimer = null;
+  }, IDLE_STOP_MS);
+}
+
+// QR-koden sidder i midten af sigtefeltet: afkod kun et centreret kvadrat,
+// nedskaleret til hoejst 480 px, ca. 15 gange i sekundet. Fuld opløsning i hver
+// frame tog 20-150 ms paa hovedtraaden.
+const DECODE_SIZE = 480;
+const DECODE_EVERY_MS = 66;
+
 export function Scanner({
   onResult,
   onClose,
@@ -60,10 +88,18 @@ export function Scanner({
 
     async function start() {
       try {
-        if (!navigator.mediaDevices?.getUserMedia) throw new Error("no-media");
-        const stream = await getStream();
+        if (idleTimer) {
+          clearTimeout(idleTimer);
+          idleTimer = null;
+        }
+        let stream = liveStream();
+        if (!stream) {
+          if (!navigator.mediaDevices?.getUserMedia) throw new Error("no-media");
+          stream = await getStream();
+          sharedStream = stream;
+        }
         if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
+          releaseStream();
           return;
         }
         streamRef.current = stream;
@@ -85,19 +121,26 @@ export function Scanner({
       }
     }
 
-    function tick() {
+    let lastDecode = 0;
+    function tick(now = 0) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       if (!video || !canvas || doneRef.current || cancelled) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      if (video.readyState === video.HAVE_ENOUGH_DATA && now - lastDecode >= DECODE_EVERY_MS) {
+        lastDecode = now;
         const w = video.videoWidth;
         const h = video.videoHeight;
-        canvas.width = w;
-        canvas.height = h;
+        // Centreret kvadrat (det, sigtefeltet viser), nedskaleret.
+        const side = Math.min(w, h);
+        const size = Math.min(side, DECODE_SIZE);
+        if (canvas.width !== size) {
+          canvas.width = size;
+          canvas.height = size;
+        }
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (ctx && w && h) {
-          ctx.drawImage(video, 0, 0, w, h);
-          const img = ctx.getImageData(0, 0, w, h);
+          ctx.drawImage(video, (w - side) / 2, (h - side) / 2, side, side, 0, 0, size, size);
+          const img = ctx.getImageData(0, 0, size, size);
           const code = jsQR(img.data, img.width, img.height, {
             inversionAttempts: "dontInvert",
           });
@@ -124,7 +167,8 @@ export function Scanner({
       cancelled = true;
       clearTimeout(startTimeout);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
+      // Slukkes ikke straks: naeste scanning genbruger kameraet (se releaseStream).
+      if (streamRef.current) releaseStream();
     };
     // Kameraet startes een gang (og ved "Prøv igen" via retryKey); ikke af
     // almindelige re-renders, som ellers ville rive kameraet ned midt i en scan.

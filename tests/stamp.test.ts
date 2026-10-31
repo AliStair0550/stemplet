@@ -190,14 +190,19 @@ test("stempel-ruter tjekker businessId FOER de stempler (cross-tenant guard)", (
   const routes = [
     "../src/app/api/v1/stamp/route.ts",
     "../src/app/api/staff/stamp/route.ts",
+    "../src/app/api/v1/redeem/route.ts",
+    "../src/app/api/staff/redeem/route.ts",
+    "../src/app/api/staff/unstamp/route.ts",
   ];
   for (const rel of routes) {
     const src = readFileSync(join(here, rel), "utf8");
-    assert.match(
-      src,
-      /cc\.card\.businessId\s*!==/,
-      `${rel} mangler cross-tenant guard (cc.card.businessId !== ...)`,
-    );
-    assert.match(src, /applyStamp/, `${rel} skal stemple via applyStamp`);
+    // Kortet slaas op med butikken i filteret (cardIdInBusiness), og ruten
+    // stopper, hvis kortet ikke hoerer til butikken.
+    assert.match(src, /cardIdInBusiness\(/, `${rel} mangler cross-tenant guard (cardIdInBusiness)`);
+    assert.match(src, /if \(!ccId\)/, `${rel} skal stoppe, naar kortet ikke hoerer til butikken`);
+    assert.match(src, /customerCardId: ccId/, `${rel} skal bruge det tjekkede kort-id`);
   }
+  // Selve tjekket: butikken er en del af opslaget.
+  const lib = readFileSync(join(here, "../src/lib/stamp.ts"), "utf8");
+  assert.match(lib, /where: \{ serial, card: \{ businessId \} \}/, "cardIdInBusiness skal filtrere paa butikken");
 });
