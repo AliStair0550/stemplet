@@ -588,3 +588,12 @@ export async function dismissOnboardingAction(): Promise<void> {
   });
   revalidatePath("/app");
 }
+
+// Kom i gang: kortet er delt (link delt/kopieret eller QR-koden vist). Kun
+// foerste gang skrives; derefter er det en billig no-op.
+export async function markCardShared(): Promise<void> {
+  const { business } = await requireBusiness();
+  if (business.sharedAt) return;
+  await prisma.business.updateMany({ where: { id: business.id, sharedAt: null }, data: { sharedAt: new Date() } });
+  revalidatePath("/app");
+}

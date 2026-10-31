@@ -31,14 +31,21 @@ export function ShareLinkButton({
   label = "Del kortet",
   className,
   tone = "default",
+  text,
+  onShared,
 }: {
   businessName: string;
   url: string;
   label?: string;
   className?: string;
+  /** Faerdig besked foran linket (fx butikkens besked til sine kunder). */
+  text?: string;
+  /** Kaldes, naar linket er delt eller kopieret. */
+  onShared?: () => void;
   // "onDark": arver tekstfarven (currentColor) og faar en haarfin ramme, saa
   // knappen passer paa en moerk, brandet flade (fx kortets landingsside).
-  tone?: "default" | "onDark";
+  // "primary": fyldt hovedknap. "light": hvid knap paa en moerk flade (Kom i gang).
+  tone?: "default" | "onDark" | "primary" | "light";
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -50,13 +57,15 @@ export function ShareLinkButton({
         // ren og klikbar.
         await navigator.share({
           title: `Kundekort hos ${businessName}`,
+          ...(text ? { text } : {}),
           url,
         });
       } else {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(text ? `${text} ${url}` : url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
+      onShared?.();
     } catch {
       // brugeren annullerede, eller deling er ikke understoettet
     }
@@ -81,7 +90,12 @@ export function ShareLinkButton({
   return (
     <button
       onClick={share}
-      className={cn(btnClass("outline", "md"), "gap-2", className)}
+      className={cn(
+        tone === "light"
+          ? "inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] transition-transform hover:bg-[#E8F0FB] active:scale-[0.98]"
+          : cn(btnClass(tone === "primary" ? "primary" : "outline", "md"), "gap-2"),
+        className,
+      )}
     >
       <ShareIcon />
       {copied ? "Link kopieret" : label}

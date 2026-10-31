@@ -69,3 +69,30 @@ export function referralSummaryLine(p: { totalCustomers: number; newThisMonth: n
   } via henvisninger denne måned.`;
   return p.waiting > 0 ? `${base} ${formatDkNumber(p.waiting)} venter på første besøg.` : base;
 }
+
+/** Foerste bogstav smaat midt i en saetning ("Gratis kaffe" -> "gratis kaffe"), ikke forkortelser. */
+export function midSentence(v: string): string {
+  const t = v.trim();
+  return /^\p{Lu}\p{Ll}/u.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
+}
+
+/**
+ * Butikkens faerdige besked, naar den deler kortet med sine kunder ("Del
+ * kortet" paa Hjem). Linket saettes efter teksten af delingen selv.
+ */
+export function cardShareText(o: {
+  stampsEnabled: boolean;
+  stampsRequired: number;
+  rewardText: string;
+  friendReward: string | null;
+  referrerReward: string | null;
+}): string {
+  const intro = "Hent vores kundekort på telefonen.";
+  if (o.stampsEnabled && o.rewardText.trim()) {
+    return `${intro} ${o.stampsRequired} stempler giver ${midSentence(o.rewardText)}:`;
+  }
+  if (o.friendReward && o.referrerReward) {
+    return `${intro} Del det med en ven: vennen får ${o.friendReward}, og du får ${o.referrerReward}:`;
+  }
+  return `${intro} Det tager få sekunder:`;
+}

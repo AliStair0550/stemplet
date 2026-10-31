@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { rgba } from "@/lib/brand";
 import { WalletIcon } from "@/components/ui";
+import { markCardShared } from "../actions";
 
 // Kundekortet til deling. Oeverst et udstillingskort i butikkens farver med
 // QR-koden (det, man viser over disken), derunder linket til kundesiden.
@@ -67,6 +68,13 @@ export function KundekortShare({
   const [canShare, setCanShare] = useState(false);
   const wake = useRef<WakeLockLike | null>(null);
   const shown = url.replace(/^https?:\/\//, "");
+  // Kom i gang: QR-koden vist eller linket delt taeller som "kortet er delt".
+  const marked = useRef(false);
+  const markShared = useCallback(() => {
+    if (marked.current) return;
+    marked.current = true;
+    void markCardShared().catch(() => {});
+  }, []);
 
   useEffect(() => setCanShare(typeof navigator.share === "function"), []);
 
@@ -82,12 +90,14 @@ export function KundekortShare({
   // Aabnet direkte: hold skaermen taendt med det samme.
   useEffect(() => {
     if (!autoOpen) return;
+    markShared();
     const wl = (navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<WakeLockLike> } }).wakeLock;
     wl?.request("screen").then((l) => (wake.current = l)).catch(() => {});
-  }, [autoOpen]);
+  }, [autoOpen, markShared]);
 
   async function open() {
     setFull(true);
+    markShared();
     // Hold skaermen taendt, mens koden vises (hvor browseren kan).
     try {
       const wl = (navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<WakeLockLike> } }).wakeLock;
@@ -118,6 +128,7 @@ export function KundekortShare({
   async function copy() {
     try {
       await navigator.clipboard.writeText(url);
+      markShared();
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -128,6 +139,7 @@ export function KundekortShare({
   async function share() {
     try {
       await navigator.share({ title: s.shopName, text: s.headline, url });
+      markShared();
     } catch {
       /* delingen blev annulleret */
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { CardDesigner, type CardDesign } from "@/components/CardDesigner";
 import { WalletCardPreview, type PreviewProduct } from "@/components/WalletCardPreview";
 import { btnClass } from "@/components/ui";
@@ -91,6 +92,7 @@ export function KortetEditor({
   businessName,
   friendReward,
   referrerReward,
+  shared = true,
 }: {
   initial: CardDesign;
   initialStyle: CardStyle;
@@ -102,6 +104,8 @@ export function KortetEditor({
   businessName: string;
   friendReward: string;
   referrerReward: string;
+  /** Er kortet delt endnu? Nej: efter Gem peger vi videre til delingen paa Hjem. */
+  shared?: boolean;
 }) {
   const [design, setDesign] = useState<CardDesign>(initial);
   const [style, setStyle] = useState<CardStyle>(initialStyle);
@@ -398,6 +402,11 @@ export function KortetEditor({
             <span className="text-[0.82rem] text-slate">Ikke gemt endnu</span>
           ) : msg ? (
             <span className={cn("text-[0.82rem]", msg.ok ? "text-ink" : "text-rust")}>{msg.text}</span>
+          ) : null}
+          {!dirty && msg?.ok && !shared ? (
+            <Link href="/app" className="text-[0.82rem] font-semibold text-ink underline underline-offset-4">
+              Næste skridt: del kortet
+            </Link>
           ) : null}
           {dirty && msg && !msg.ok ? <span className="text-[0.82rem] text-rust">{msg.text}</span> : null}
         </div>
