@@ -81,10 +81,10 @@ export default function PrivatlivPage() {
             den, der åbner dit link.
           </Li>
           <Li>
-            <strong>Nyheder på mail (kun med dit samtykke):</strong> sætter du
-            selv flueben ved &quot;Ja tak til nyheder og tilbud&quot;, gemmer vi
-            dit samtykke og tidspunktet for det, så butikken senere kan sende
-            dig nyheder og tilbud på mail. Uden flueben bruges din e-mail ikke
+            <strong>Mails fra butikken (kun med dit samtykke):</strong> sætter
+            du selv flueben ved &quot;må kontakte mig på mail&quot;, gemmer vi
+            dit samtykke og tidspunktet for det, så butikken senere kan skrive
+            til dig på mail, fx med tilbud. Uden flueben bruges din e-mail ikke
             til markedsføring.
           </Li>
           <Li>
@@ -112,8 +112,8 @@ export default function PrivatlivPage() {
             art. 6, stk. 1, litra b).
           </Li>
           <Li>
-            At sende dig nyheder og tilbud fra butikken på mail, men kun hvis
-            du har sagt ja tak (samtykke, art. 6, stk. 1, litra a, og
+            At butikken kan skrive til dig på mail, fx med tilbud, men kun hvis
+            du har sagt ja (samtykke, art. 6, stk. 1, litra a, og
             markedsføringslovens § 10). Du kan altid trække samtykket tilbage.
           </Li>
           <Li>

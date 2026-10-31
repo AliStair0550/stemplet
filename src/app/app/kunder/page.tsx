@@ -14,34 +14,27 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Kunder" };
 export const dynamic = "force-dynamic";
 
-// Kunder: alle butikkens kortholdere paa tvaers af produkterne, i een oversigt.
-// Maerker viser produktet: Stemplet (har stempler eller et rent stempelkort) og
-// Henvisninger (har en henvisningskode; den gives kun ved tilmelding via
-// henvisningssiden). En kunde kan have begge. Har butikken begge produkter, kan
-// oversigten filtreres. "Tjek ind" aabner kunden i kassen (samme kundekort som
-// ved scan), saa man kan give stempler, rabat eller indloese uden at scanne.
-// Oeverst fire tal (i alt, nye, aktive, klar til beloenning), der ogsaa er
-// genveje til filtrene.
+// Kunder: butikkens kartotek. Her finder man en kunde, ser hvor langt de er, og
+// sletter en kunde, der beder om det. Det daglige arbejde sker paa Scan og Hjem
+// (hvem venter paa noget), saa siden er bygget til at slaa op: soegning oeverst,
+// filtre med tal i, og rene raekker. Et tryk paa en kunde aabner den i kassen
+// (samme kundekort som ved scan), hvor man giver stempler, rabat eller
+// belønning. "Slet" ligger under "Rediger" (?rediger=1), ikke paa hver raekke.
 
 type Vis = "alle" | "klar" | "nye" | "stemplet" | "henvisninger";
 const DAY = 24 * 60 * 60 * 1000;
 
 const PAGE_SIZE = 50;
 
-function formatPhone(p: string | null): string | null {
-  if (!p) return null;
-  const m = /^\+45(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(p);
-  return m ? `${m[1]} ${m[2]} ${m[3]} ${m[4]}` : p;
-}
-
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; vis?: string }>;
+  searchParams: Promise<{ q?: string; vis?: string; rediger?: string }>;
 }) {
   const { business } = await requireBusiness();
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 60);
+  const editing = sp.rediger === "1";
   const both = business.stampsEnabled && business.referralsEnabled;
   const vis: Vis =
     sp.vis === "klar" || sp.vis === "nye" || (both && (sp.vis === "stemplet" || sp.vis === "henvisninger")) ? sp.vis : "alle";
@@ -61,7 +54,6 @@ export default async function CustomersPage({
   const scope: Prisma.CustomerCardWhereInput = { card: { businessId: business.id } };
   const readyWhere: Prisma.CustomerCardWhereInput = ready.length ? { OR: ready } : { id: "__ingen__" };
   const newWhere: Prisma.CustomerCardWhereInput = { createdAt: { gte: monthAgo } };
-  const activeWhere: Prisma.CustomerCardWhereInput = { lastStampAt: { gte: monthAgo } };
   const digits = q.replace(/\D/g, "");
   const product: Prisma.CustomerCardWhereInput =
     vis === "henvisninger"
@@ -91,10 +83,9 @@ export default async function CustomersPage({
       }
     : { AND: [scope, product] };
 
-  const [total, newCount, activeCount, readyCount, cards] = await Promise.all([
+  const [total, newCount, readyCount, cards] = await Promise.all([
     prisma.customerCard.count({ where: scope }),
     prisma.customerCard.count({ where: { AND: [scope, newWhere] } }),
-    prisma.customerCard.count({ where: { AND: [scope, activeWhere] } }),
     prisma.customerCard.count({ where: { AND: [scope, readyWhere] } }),
     prisma.customerCard.findMany({
       where,
@@ -147,88 +138,87 @@ export default async function CustomersPage({
     );
   }
 
+  // Bevar filter og soegning, naar man skifter til og fra Rediger.
+  const listHref = (extra: Record<string, string | undefined>) => {
+    const params = new URLSearchParams();
+    if (vis !== "alle") params.set("vis", vis);
+    if (q) params.set("q", q);
+    for (const [k, v] of Object.entries(extra)) if (v) params.set(k, v);
+    const qs = params.toString();
+    return qs ? `/app/kunder?${qs}` : "/app/kunder";
+  };
+
+  const filters: [Vis, string, number | null][] = [
+    ["alle", "Alle", total],
+    ["klar", "Klar til belønning", readyCount],
+    ["nye", "Nye", newCount],
+    ...(both
+      ? ([
+          ["stemplet", "Stempler", null],
+          ["henvisninger", "Henvisninger", null],
+        ] as [Vis, string, null][])
+      : []),
+  ];
+
   return (
     <>
-      <PageHeading title="Kunder" />
+      <PageHeading title="Kunder" subtitle="Find en kunde og se, hvor langt de er. Tryk på en kunde for at give stempler eller en belønning." />
 
-      {/* Fire tal, der ogsaa er genveje til filtrene. */}
-      <div className="mb-5 grid grid-cols-2 gap-2.5 md:grid-cols-4">
-        {(
-          [
-            ["alle", formatDkNumber(total), total === 1 ? "kortholder" : "kortholdere"],
-            ["nye", formatDkNumber(newCount), "nye de sidste 30 dage"],
-            ...(business.stampsEnabled ? ([[null, formatDkNumber(activeCount), "har fået stempel på 30 dage"]] as const) : []),
-            ["klar", formatDkNumber(readyCount), "klar til belønning"],
-          ] as const
-        ).map(([v, value, label], i) => {
-          const body = (
-            <>
-              <span className={cn("block text-[1.6rem] font-bold leading-none tracking-[-0.03em] tabular-nums", v === "klar" && readyCount > 0 ? "text-[#1B5EAE]" : "text-ink")}>
-                {value}
-              </span>
-              <span className="mt-1.5 block text-[0.76rem] leading-snug text-slate">{label}</span>
-            </>
-          );
-          return v ? (
-            <Link
-              key={i}
-              href={v === "alle" ? "/app/kunder" : `/app/kunder?vis=${v}`}
-              className={cn(
-                "rounded-[16px] border bg-white p-4 shadow-card transition-colors active:scale-[0.98]",
-                vis === v && v !== "alle" ? "border-ink" : "border-fog hover:border-clay",
-              )}
-            >
-              {body}
-            </Link>
-          ) : (
-            <div key={i} className="rounded-[16px] border border-fog bg-white p-4 shadow-card">
-              {body}
-            </div>
-          );
-        })}
-      </div>
+      <form className="mb-3" role="search">
+        {vis !== "alle" ? <input type="hidden" name="vis" value={vis} /> : null}
+        <label className="relative block">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className="pointer-events-none absolute left-4 top-1/2 h-[1.1rem] w-[1.1rem] -translate-y-1/2 text-slate" aria-hidden>
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16 16 4 4" />
+          </svg>
+          <input
+            type="search"
+            name="q"
+            defaultValue={q}
+            placeholder="Søg på navn, e-mail eller mobil"
+            aria-label="Søg kunde"
+            enterKeyHint="search"
+            className="min-h-12 w-full rounded-full border border-clay bg-white pl-11 pr-5 text-[1rem] text-ink outline-none focus:border-ink"
+          />
+        </label>
+      </form>
 
-      <nav aria-label="Vis kunder" className="-mx-4 mb-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0">
-        {(
-          [
-            ["alle", "Alle"],
-            ["klar", "Klar til belønning"],
-            ["nye", "Nye"],
-            ...(both
-              ? ([
-                  ["stemplet", "Stempler"],
-                  ["henvisninger", "Henvisninger"],
-                ] as const)
-              : []),
-          ] as const
-        ).map(([v, label]) => (
+      <nav aria-label="Vis kunder" className="-mx-5 mb-4 flex gap-1.5 overflow-x-auto px-5 [scrollbar-width:none] md:mx-0 md:px-0">
+        {filters.map(([v, label, count]) => (
           <Link
             key={v}
             href={v === "alle" ? "/app/kunder" : `/app/kunder?vis=${v}`}
             aria-current={vis === v ? "page" : undefined}
             className={cn(
-              "shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-[0.85rem] transition-colors",
+              "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 py-2 text-[0.85rem] transition-colors",
               vis === v ? "border-ink bg-ink font-[600] text-white" : "border-clay bg-white text-ink hover:border-ink",
             )}
           >
             {label}
+            {count !== null ? (
+              <span
+                className={cn(
+                  "tabular-nums",
+                  vis === v ? "text-white/70" : v === "klar" && count > 0 ? "font-[600] text-[#1B5EAE]" : "text-slate",
+                )}
+              >
+                {formatDkNumber(count)}
+              </span>
+            ) : null}
           </Link>
         ))}
       </nav>
 
-      <form className="mb-5 flex gap-2" role="search">
-        {vis !== "alle" ? <input type="hidden" name="vis" value={vis} /> : null}
-        <input
-          name="q"
-          defaultValue={q}
-          placeholder="Søg på navn, e-mail, mobil, kode eller kortnummer"
-          aria-label="Søg kunde"
-          className="min-h-11 flex-1 rounded-full border border-clay bg-white px-5 text-[0.92rem] text-ink outline-none focus:border-ink"
-        />
-        <button type="submit" className={btnClass("primary")}>
-          Søg
-        </button>
-      </form>
+      <div className="mb-2 flex items-center justify-between px-1">
+        <p className="text-[0.8rem] text-slate">
+          {q ? `Søgning: ${q}` : vis === "alle" ? "Senest besøgt først" : null}
+        </p>
+        {cards.length > 0 ? (
+          <Link href={listHref({ rediger: editing ? undefined : "1" })} className="rounded-full px-3 py-1.5 text-[0.85rem] font-[500] text-ink hover:bg-sand">
+            {editing ? "Færdig" : "Rediger"}
+          </Link>
+        ) : null}
+      </div>
 
       <Panel className="p-0">
         {cards.length === 0 ? (
@@ -240,83 +230,77 @@ export default async function CustomersPage({
                 : vis === "nye"
                   ? "Ingen nye kunder de sidste 30 dage."
                   : vis === "stemplet"
-                ? "Ingen stempelkunder endnu."
-                : vis === "henvisninger"
-                  ? "Ingen kunder via henvisninger endnu."
-                  : "Ingen kortholdere endnu."}
+                    ? "Ingen stempelkunder endnu."
+                    : vis === "henvisninger"
+                      ? "Ingen kunder via henvisninger endnu."
+                      : "Ingen kortholdere endnu."}
           </p>
         ) : (
           <ul className="divide-y divide-fog">
-            {cards.map((c) => (
-              <li key={c.id} className="px-5 py-4 sm:px-6">
-                {/* Navn og Tjek ind paa samme linje, saa knappen altid er inden for tommelfingeren. */}
-                <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[0.95rem] font-[600] text-ink">
-                    {c.name ?? "Kortholder"}
-                    {!c.name ? <span className="ml-2 text-[0.75rem] text-slate">#{c.serial.slice(0, 6)}</span> : null}
-                  </p>
-                  <p className="truncate text-[0.76rem] text-slate">
-                    {[c.contactEmail ?? formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                  <span className="shrink-0">
-                  <Link href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`} className="inline-flex min-h-10 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white hover:bg-[#0A2D5A]">
-                    Tjek ind
-                  </Link>
+            {cards.map((c) => {
+              const showStamps = business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode);
+              const rewardReady = (business.stampsEnabled && c.stamps >= required) || c._count.rewards > 0;
+              const firstVisit = c.referralReceived?.status === "CREATED";
+              // Een linje om, hvor kunden er: stempler eller henvisning, og hvornaar.
+              const status = [
+                showStamps ? `${Math.min(c.stamps, required)} af ${required} stempler` : null,
+                c.referredBy?.name ? `henvist af ${c.referredBy.name}` : null,
+                c._count.referralsMade > 0 ? `har henvist ${c._count.referralsMade}` : null,
+                c.lastStampAt ? relativeDk(c.lastStampAt) : `ny ${formatDkDate(c.createdAt)}`,
+              ]
+                .filter(Boolean)
+                .join(" · ");
+              const name = c.name ?? `Kortholder #${c.serial.slice(0, 6)}`;
+              const body = (
+                <>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sand text-[0.95rem] font-[600] text-ink" aria-hidden>
+                    {(c.name ?? "#").trim().charAt(0).toUpperCase()}
                   </span>
-                </div>
-                <div className="mt-2.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {(business.stampsEnabled && c.stamps >= required) || c._count.rewards > 0 ? (
-                      <span className="inline-flex items-center rounded-full bg-[#1B5EAE] px-2.5 py-0.5 text-[0.74rem] font-[600] text-white">
-                        Belønning klar
-                      </span>
-                    ) : null}
-                    {c.referralReceived?.status === "CREATED" ? (
-                      <span className="inline-flex items-center rounded-full bg-[#E8F0FB] px-2.5 py-0.5 text-[0.74rem] font-[600] text-[#1B5EAE]">
-                        Første besøg
-                      </span>
-                    ) : null}
-                    {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
-                        <span className="font-[600]">Stempler</span>
-                      </span>
-                    ) : null}
-                    {c.referralCode ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#061C3D] px-2.5 py-0.5 text-[0.74rem] text-white">
-                        <span className="font-[600]">Henvisning</span>
-                        {c.referredBy?.name ? <span className="text-white/75">henvist af {c.referredBy.name}</span> : null}
-                      </span>
-                    ) : null}
-                    {c._count.referralsMade > 0 ? (
-                      <span className="inline-flex items-center rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
-                        Har henvist {c._count.referralsMade}
-                      </span>
-                    ) : null}
-                  </div>
-                {/* Stempler kun, naar butikken har Stemplet (ikke kun Henvisninger). */}
-                {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
-                  <div className="w-full text-[0.8rem] text-stone sm:w-40 sm:text-right">
-                    <span className="tabular-nums text-ink">
-                      {Math.min(c.stamps, required)}/{required}
-                    </span>{" "}
-                    stempler
-                    {c.completedCount > 0 ? `, ${c.completedCount} fulde kort` : ""}
-                    <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#E8EDF3]" aria-hidden>
-                      <span className="block h-full rounded-full bg-[#1B5EAE]" style={{ width: `${Math.min(100, (c.stamps / required) * 100)}%` }} />
+                  <span className="min-w-0 flex-1">
+                    {/* Navn og evt. maerke oeverst, saa statuslinjen faar hele bredden. */}
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-[0.98rem] font-[600] text-ink">{name}</span>
+                      {rewardReady || firstVisit ? (
+                        <span
+                          className={cn(
+                            "shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-[600]",
+                            rewardReady ? "bg-[#1B5EAE] text-white" : "bg-[#E8F0FB] text-[#1B5EAE]",
+                          )}
+                        >
+                          {rewardReady ? "Belønning klar" : "Første besøg"}
+                        </span>
+                      ) : null}
                     </span>
-                    <span className="mt-1 block text-[0.72rem] text-slate">
-                      {c.lastStampAt ? `sidst ${relativeDk(c.lastStampAt)}` : "ingen besøg endnu"}
-                    </span>
-                  </div>
-                ) : null}
-                </div>
-                <div className="mt-1 flex justify-end">
-                  <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
-                </div>
-              </li>
-            ))}
+                    <span className="block truncate text-[0.8rem] text-stone first-letter:uppercase">{status}</span>
+                    {showStamps ? (
+                      <span className="mt-1.5 block h-1 w-full max-w-[12rem] overflow-hidden rounded-full bg-[#E8EDF3]" aria-hidden>
+                        <span className="block h-full rounded-full bg-[#1B5EAE]" style={{ width: `${Math.min(100, (c.stamps / required) * 100)}%` }} />
+                      </span>
+                    ) : null}
+                  </span>
+                </>
+              );
+              return (
+                <li key={c.id}>
+                  {editing ? (
+                    <div className="flex items-center gap-3 px-5 py-3.5 sm:px-6">
+                      {body}
+                      <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
+                    </div>
+                  ) : (
+                    <Link
+                      href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`}
+                      className="flex items-center gap-3 px-5 py-3.5 transition-colors active:bg-sand/70 sm:px-6 md:hover:bg-sand/40"
+                    >
+                      {body}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0 text-slate" aria-hidden>
+                        <path d="m9 6 6 6-6 6" />
+                      </svg>
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </Panel>
