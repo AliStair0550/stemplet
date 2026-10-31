@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { clientIp, apiError } from "@/lib/http";
+import { clientIp, apiError, ipRateKey, FORM_GLOBAL_PER_HOUR } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { startRequestSchema } from "@/lib/start-request-schema";
 import { sendEmail } from "@/lib/send-email";
@@ -33,9 +33,13 @@ export async function POST(req: NextRequest) {
   const contactName = parsed.data.contactName?.trim() || null;
   const phone = parsed.data.phone?.trim() || null;
 
-  // Misbrugsvaern: hver anmodning koster en Resend-afsendelse, saa loft pr. IP.
+  // Misbrugsvaern: hver anmodning koster en Resend-afsendelse, saa loft pr. IP
+  // (IPv6 pr. /64) og et samlet loft for formularen.
   const ip = clientIp(req);
-  if (!(await durableRateLimit("start-request", ip ?? "ukendt", 5, 3600))) {
+  if (
+    !(await durableRateLimit("start-request", ipRateKey(ip), 5, 3600)) ||
+    !(await durableRateLimit("start-request-alle", "alle", FORM_GLOBAL_PER_HOUR["start-request"], 3600))
+  ) {
     return apiError("RATE_LIMIT", "For mange forsøg. Prøv igen om lidt.", 429);
   }
 

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { clientIp, apiError } from "@/lib/http";
+import { clientIp, apiError, ipRateKey, FORM_GLOBAL_PER_HOUR } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { marketingSignupSchema } from "@/lib/marketing-schema";
 import { marketingSourceLabel } from "@/lib/marketing";
@@ -38,9 +38,12 @@ export async function POST(req: NextRequest) {
   const storeName = parsed.data.storeName?.trim() || null;
 
   // Misbrugsvaern: hver tilmelding koster en Resend-afsendelse, saa loft pr. IP
-  // (DB-backet, saa det holder selv uden Redis).
+  // (IPv6 pr. /64) og et samlet loft for formularen (DB-backet, ogsaa uden Redis).
   const ip = clientIp(req);
-  if (!(await durableRateLimit("marketing-signup", ip ?? "ukendt", 5, 3600))) {
+  if (
+    !(await durableRateLimit("marketing-signup", ipRateKey(ip), 5, 3600)) ||
+    !(await durableRateLimit("marketing-signup-alle", "alle", FORM_GLOBAL_PER_HOUR["marketing-signup"], 3600))
+  ) {
     return apiError("RATE_LIMIT", "For mange forsøg. Prøv igen om lidt.", 429);
   }
 

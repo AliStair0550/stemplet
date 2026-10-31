@@ -8,10 +8,12 @@ import { useEffect } from "react";
 // Sentry (kun i produktion, jf. init).
 export default function GlobalError({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  // Henter siden igen (Next 16). reset() viste kun den samme fejl igen, fordi
+  // den ikke henter fra serveren, saa et databaseblip blev staaende.
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     Sentry.captureException(error);
@@ -51,7 +53,7 @@ export default function GlobalError({
           Vi kunne ikke vise siden lige nu. Prøv igen.
         </p>
         <button
-          onClick={reset}
+          onClick={() => unstable_retry()}
           style={{
             background: "#1C1917",
             color: "#FAF8F4",

@@ -128,6 +128,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             text: mail.text,
             attachments: mail.attachments,
           }),
+          // Haenger Resend, maa login-hjulet ikke dreje, til funktionen doer.
+          signal: AbortSignal.timeout(10_000),
         });
         if (!res.ok) {
           const detail = await res.text().catch(() => "");
