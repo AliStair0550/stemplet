@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { btnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { rewardPhrase } from "@/lib/referral-text";
+import { redeemLabel, redeemReceipt, rewardPhrase } from "@/lib/referral-text";
 import type { DeskCustomer, DeskHit } from "@/lib/referral-desk";
 import { CelebrationToast } from "@/components/Celebrate";
 
@@ -267,10 +267,7 @@ function CustomerCard({
     if (res.ok) {
       redeemKey.current = newIdemKey();
       setPin("");
-      onCelebrate({
-        title: `${capitalize(rewardPhrase(reward.type, reward.value))} er indløst`,
-        text: `${customer.name ?? "Kunden"} har fået sin belønning.`,
-      });
+      onCelebrate(redeemReceipt(reward.type, reward.value, customer.name));
       await onReload();
     } else {
       if (res.code === "PIN") setNeedPin(true);
@@ -351,7 +348,9 @@ function CustomerCard({
           {busy === "redeem"
             ? "Et øjeblik"
             : reward
-              ? `Belønning indløst: ${rewardPhrase(reward.type, reward.value)}`
+              ? reward.type === "STAMPS"
+                ? redeemLabel(reward.type, reward.value)
+                : `Belønning indløst: ${rewardPhrase(reward.type, reward.value)}`
               : "Belønning indløst"}
         </button>
         <button type="button" onClick={onDone} className={btnClass("ghost")}>
@@ -433,8 +432,4 @@ function LinkReferrer({
       ) : null}
     </div>
   );
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }

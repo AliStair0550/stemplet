@@ -18,6 +18,32 @@ export function rewardPhrase(type: RewardType, value: string): string {
   return /^\p{Lu}\p{Ll}/u.test(v) ? v.charAt(0).toLowerCase() + v.slice(1) : v;
 }
 
+/** Knappen ved kassen. Stempler gives ikke automatisk ved indløsning, saa de
+ *  skal staa som en handling for personalet ("Giv 3 stempler"), ikke som noget,
+ *  der allerede er sket. */
+export function redeemLabel(type: RewardType, value: string): string {
+  return type === "STAMPS" ? `Giv ${rewardPhrase(type, value)}` : `Indløs ${rewardPhrase(type, value)}`;
+}
+
+/** Kvitteringen efter indløsning. For stempler: bed personalet stemple kortet. */
+export function redeemReceipt(
+  type: RewardType,
+  value: string,
+  customerName: string | null | undefined,
+): { title: string; text: string } {
+  const phrase = rewardPhrase(type, value);
+  if (type === "STAMPS") {
+    return {
+      title: `Giv ${phrase} på kortet`,
+      text: `Stemplerne kommer ikke af sig selv. Scan kortet og giv ${phrase}.`,
+    };
+  }
+  return {
+    title: `${phrase.charAt(0).toUpperCase()}${phrase.slice(1)} er indløst`,
+    text: `${customerName ?? "Kunden"} har fået sin belønning.`,
+  };
+}
+
 /** Foerste fornavn til overskriften "Sara har givet dig ...". */
 export function firstName(name: string | null | undefined): string | null {
   const first = (name ?? "").trim().split(/\s+/)[0];

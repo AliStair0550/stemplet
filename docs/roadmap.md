@@ -97,7 +97,7 @@ I anbefalet rækkefølge:
 ## Besluttet
 
 - **Flere stempler på kortet (R16), 31. okt:** kunden beholder sine stempler og skal samle de ekstra for at få belønningen (fx 10 af 12). Sådan virker koden allerede, så der skal intet ændres.
-- **Stempler som henvisningsbelønning (R4), 31. okt:** bygges ikke nu. Valget bliver, og personalet giver stemplerne i hånden ved kassen.
+- **Stempler som henvisningsbelønning (R4), 31. okt:** bygges ikke nu. Valget bliver, og personalet giver stemplerne i hånden ved kassen. Kassen siger nu "Giv 3 stempler" i stedet for "indløst", så ingen tror, at de er givet automatisk.
 - **Backup (R8), 31. okt:** vi bliver på gratisplanen hos Neon og venter med egen backup. Tages op igen, når systemet kører med betalende butikker (se backloggen).
 
 ## Beslutninger hos Ali
