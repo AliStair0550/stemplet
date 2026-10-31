@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { WALLET_ENABLED } from "@/lib/env";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
+import { logoForSave } from "@/lib/logo";
 import { prisma } from "@/lib/prisma";
 import { cardDesignSchema } from "@/lib/validation";
 import { isCardStyle, normalizeActions } from "@/lib/card-look";
@@ -29,7 +30,7 @@ export async function saveCardLook(input: {
   /** Booking-link (Book tid-knappen); undefined = uaendret, "" = fjern. */
   bookingUrl?: string;
 }): Promise<Result> {
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   const parsed = cardDesignSchema.safeParse(input.design);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Tjek felterne." };
   if (!isCardStyle(input.style)) return { ok: false, error: "Vælg en stil." };
@@ -67,6 +68,9 @@ export async function saveCardLook(input: {
     bookingUrl,
   });
 
+  const logo = await logoForSave(parsed.data.logoUrl, business.id);
+  if (!logo.ok) return { ok: false, error: logo.error };
+
   // Ikonet hoerer til udseendet, men gemmes paa stempelkortet (som i Wallet).
   const card = await prisma.card.findFirst({
     where: { businessId: business.id },
@@ -82,7 +86,7 @@ export async function saveCardLook(input: {
     data: {
       primaryColor: parsed.data.primaryColor,
       textColor: parsed.data.textColor,
-      logoUrl: parsed.data.logoUrl ?? null,
+      logoUrl: logo.value,
       logoScale: parsed.data.logoScale,
       displayName: parsed.data.displayName?.trim() || null,
       ...(parsed.data.cardHeader ? { cardHeader: parsed.data.cardHeader } : {}),
@@ -104,8 +108,8 @@ export async function saveCardLook(input: {
   // stille opdatering (efter svaret, saa gem er hurtigt).
   if (WALLET_ENABLED) {
     after(async () => {
-      const { pushAllWalletPasses } = await import("@/lib/wallet/build");
-      await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+      const { pushBusinessWalletPasses } = await import("@/lib/wallet/build");
+      await pushBusinessWalletPasses(business.id).catch(() => {});
     });
   }
   return { ok: true };

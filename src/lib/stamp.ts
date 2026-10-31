@@ -168,18 +168,28 @@ export type StampResult = {
   lifetimeStamps: number;
 };
 
+/**
+ * Butikkens raekke uden billederne. Logo, kortbillede og plakatfoto ligger som
+ * tekst i raekken (op til ca. 2 MB pr. butik), og stempel, indloesning og kassens
+ * opslag bruger dem ikke. Uden dem er hvert stempel en lille forespoergsel.
+ * Wallet-passet og webkortet henter billederne for sig.
+ */
+export const BUSINESS_NO_IMAGES = {
+  omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true },
+} as const;
+
 /** Live-opslag af kort via serial (webkort) med virksomhed og skabelon. */
 export function loadCardBySerial(serial: string) {
   return prisma.customerCard.findUnique({
     where: { serial },
-    include: { card: { include: { business: true, campaigns: true } } },
+    include: { card: { include: { business: BUSINESS_NO_IMAGES, campaigns: true } } },
   });
 }
 
 export function loadCardByToken(authToken: string) {
   return prisma.customerCard.findUnique({
     where: { authToken },
-    include: { card: { include: { business: true } } },
+    include: { card: { include: { business: BUSINESS_NO_IMAGES } } },
   });
 }
 
@@ -251,7 +261,7 @@ export async function applyStamp(opts: {
   const result = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
       where: { id: opts.customerCardId },
-      include: { card: { include: { business: true, campaigns: true } } },
+      include: { card: { include: { business: BUSINESS_NO_IMAGES, campaigns: true } } },
     });
     if (!cc) throw new StampError("NOT_FOUND", "Kortet blev ikke fundet.");
     if (!cc.card.active) {
@@ -558,7 +568,7 @@ export async function redeemReward(opts: {
   const res = await prisma.$transaction(async (tx) => {
     const cc = await tx.customerCard.findUnique({
       where: { id: opts.customerCardId },
-      include: { card: { include: { business: true } } },
+      include: { card: { include: { business: BUSINESS_NO_IMAGES } } },
     });
     if (!cc) throw new StampError("NOT_FOUND", "Kortet blev ikke fundet.");
     const required = cc.card.stampsRequired;

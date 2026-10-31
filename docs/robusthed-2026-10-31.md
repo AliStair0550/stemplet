@@ -66,6 +66,8 @@ Butikker er adskilt overalt (hver handling tjekker butikken). Stempel, fuldt kor
 
 **Bølge 1 (sikre og små, kan laves med det samme):** R1, R2 (tidsgrænser), R5, R6, R7, R11, R12, R14, R15, R18, R20, P3 `?tekst=` og længdegrænser.
 
+**Status bølge 2 (31. okt):** lavet: R3 (hent kun det nødvendige), statistikken (4 forespørgsler i stedet for 15), R2 (én forbindelse til Apple pr. 500 kort, hurtige Gem samles), R13, R9 og R21. Fravalgt: R22, fordi Apple næsten kun henter kortet lige efter et push, hvor kortet altid er ændret, og et 304 kunne skjule en ændring, når kunden selv opdaterer. Tilbage: genoptagelse af en afbrudt udsendelse og billeder til Vercel Blob (bølge 3).
+
 **Bølge 2 (vækst):** R3 (hent kun det nødvendige), R2 (delt forbindelse, samling af Gem, genoptagelse), R13, R22, R9, R21, statistikken bag forbindelses-fejlen.
 
 **Bølge 3 (datamodel, godkendes først):** R10, R17, R19, API-nøgle som hash, billeder til Vercel Blob.

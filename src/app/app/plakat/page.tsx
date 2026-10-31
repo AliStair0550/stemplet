@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
 import { PageHeading } from "@/components/dash";
 import { cardShortName, claimCta } from "@/lib/card-name";
 import { createHash } from "node:crypto";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 // Fokus er enten at hente kortet eller at henvise en ven. Selve PDF'en laves af
 // /api/materials/[type]; siden er valgene og en live-visning af den rigtige PDF.
 export default async function PlakatPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   return (
     <>
       <PageHeading
