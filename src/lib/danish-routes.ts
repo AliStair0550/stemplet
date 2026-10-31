@@ -4,6 +4,7 @@
 // de danske adresser hertil. Ny side med æ/ø/å i adressen: tilfoej den her.
 export const DANISH_ROUTES: [pretty: string, folder: string][] = [
   ["/prøv", "/proev"],
+  ["/hør-mere", "/hoer-mere"],
   ["/stempelkort-til-frisører", "/stempelkort-til-frisoerer"],
   ["/stempelkort-til-caféer", "/stempelkort-til-cafeer"],
 ];

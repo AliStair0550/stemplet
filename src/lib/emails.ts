@@ -26,30 +26,11 @@ const C = {
 export type MailAttachment = { filename: string; content: string; content_id: string };
 type Email = { subject: string; html: string; text: string; attachments?: MailAttachment[] };
 
+// Mails til butiksejeren (ugemail, proeveperiode, superadmin): samme ramme som
+// login og velkomst, saa alle Folkas mails ser ens ud. footerExtra er fx et
+// afmeldingslink under kortet.
 function shell(preheader: string, inner: string, footerExtra = ""): string {
-  return `<!doctype html>
-<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
-<body style="margin:0;padding:0;background:${C.parchment};">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.parchment};">
-  <tr><td align="center" style="padding:40px 20px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
-      <tr><td style="padding:0 4px 20px;">
-        <img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="50" height="28" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:26px;font-style:italic;color:${PLATFORM.color};">
-      </td></tr>
-      <tr><td style="background:${C.card};border-radius:20px;padding:36px 32px;">
-        ${inner}
-      </td></tr>
-      <tr><td style="padding:20px 4px 0;">
-        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
-          Folka Kort. Stempler, henvisninger og beskeder i kundens Wallet.
-        </p>
-        ${footerExtra}
-      </td></tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>`;
+  return folkaShell(preheader, inner, undefined, footerExtra);
 }
 
 // Login og velkomst er faelles for alle Folka-produkter (Stemplet og
@@ -71,7 +52,7 @@ export function folkaSender(from: string | undefined): string | undefined {
  * butiksejeren); med `shopName` staar butikkens navn (mails til slutkunder,
  * som skal se butikken og ikke Folka).
  */
-function folkaShell(preheader: string, inner: string, shopName?: string): string {
+function folkaShell(preheader: string, inner: string, shopName?: string, footerExtra = ""): string {
   const header = shopName
     ? `<span style="font-family:${FONT};font-size:20px;font-weight:700;letter-spacing:-.02em;color:${A.ink};">${shopName}</span>`
     : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="50" height="28" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
@@ -90,13 +71,55 @@ function folkaShell(preheader: string, inner: string, shopName?: string): string
       </td></tr>
       <tr><td align="center" style="padding:22px 16px 0;">
         <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          ${shopName ? `Sendt for ${shopName} af ` : ""}<a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>${shopName ? "" : ". Folka Kort."}
+          ${shopName ? `Sendt for ${shopName} af <a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>` : `Folka Kort &middot; <a href="https://kort.folka.dk" style="color:${A.muted};text-decoration:none;">kort.folka.dk</a>`}
         </p>
+        ${footerExtra}
       </td></tr>
     </table>
   </td></tr>
 </table>
 </body></html>`;
+}
+
+// Velkomstkortet oeverst i velkomstmails: et lille Wallet-kort i Folkas farve med
+// stempler, saa mailen viser, hvad butikken har faaet, i stedet for kun tekst.
+// Tabeller og inline styles, saa det holder i alle mailprogrammer (Outlook viser
+// stemplerne som firkanter, men kortet staar stadig).
+function welcomeCard(): string {
+  const dot = (filled: boolean) =>
+    `<td style="padding:0 5px 0 0;"><div style="width:22px;height:22px;border-radius:11px;${
+      filled ? "background:#FFFFFF;" : "border:2px solid rgba(255,255,255,.45);box-sizing:border-box;"
+    }"></div></td>`;
+  const row = (from: number) =>
+    `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;"><tr>${Array.from({ length: 5 }, (_, k) => dot(from + k < 3)).join("")}</tr></table>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+      <tr><td style="background:${PLATFORM.color};background-image:linear-gradient(135deg,${PLATFORM.color} 0%,#1B5EAE 100%);border-radius:18px;padding:20px 22px 18px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-family:${FONT};font-size:15px;font-weight:700;color:#FFFFFF;">Din butik</td>
+            <td align="right" style="font-family:${FONT};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);">Stempler <span style="font-size:15px;letter-spacing:0;color:#FFFFFF;">3/10</span></td>
+          </tr>
+          <tr><td colspan="2" style="padding:18px 0 6px;">${row(0)}${row(5)}</td></tr>
+          <tr><td colspan="2" style="border-top:1px solid rgba(255,255,255,.2);padding:12px 0 0;font-family:${FONT};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);">Belønning<br><span style="font-size:15px;letter-spacing:0;text-transform:none;color:#FFFFFF;">Din belønning til stamkunder</span></td></tr>
+        </table>
+      </td></tr>
+    </table>`;
+}
+
+/** Nummererede trin med smaa blaa cirkler. */
+function welcomeSteps(title: string, steps: string[]): string {
+  const list = steps
+    .map(
+      (t, i) => `<tr>
+        <td valign="top" style="padding:6px 12px 6px 0;width:26px;">
+          <div style="width:24px;height:24px;border-radius:12px;background:${C.tint};font-family:${FONT};font-size:13px;line-height:24px;font-weight:700;text-align:center;color:${C.terracotta};">${i + 1}</div>
+        </td>
+        <td valign="top" style="padding:8px 0 6px;font-family:${FONT};font-size:15px;line-height:1.5;color:${A.ink};">${t}</td>
+      </tr>`,
+    )
+    .join("");
+  return `<p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">${title}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px;">${list}</table>`;
 }
 
 function folkaButton(url: string, label: string): string {
@@ -108,8 +131,8 @@ function folkaButton(url: string, label: string): string {
 
 function folkaFallback(url: string, note: string): string {
   return `<p style="margin:28px 0 0;padding:24px 0 0;border-top:1px solid ${A.line};font-family:${FONT};font-size:13px;line-height:1.6;color:${A.muted};">${note}</p>
-    <p style="margin:12px 0 0;font-family:${FONT};font-size:12px;line-height:1.5;color:${A.muted};word-break:break-all;">
-      Virker knappen ikke? Kopiér linket: <a href="${url}" style="color:${A.muted};">${url}</a>
+    <p style="margin:10px 0 0;font-family:${FONT};font-size:12px;line-height:1.5;color:${A.muted};">
+      Virker knappen ikke? <a href="${url}" style="color:${A.muted};text-decoration:underline;">Åbn linket her</a>.
     </p>`;
 }
 
@@ -139,6 +162,13 @@ function folkaCode(code: string): string {
         <p style="margin:0;font-family:'SF Mono',Menlo,Consolas,monospace;font-size:34px;line-height:1.1;font-weight:700;letter-spacing:.12em;color:${A.ink};">${formatLoginCode(code)}</p>
       </td></tr>
     </table>`;
+}
+
+/** Koden i en lille linje (velkomst): den vigtige del af mailen er velkomsten. */
+function folkaCodeCompact(code: string): string {
+  return `<p style="margin:0 0 14px;font-family:${FONT};font-size:14px;color:${A.muted};">
+      Din login-kode: <span style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:17px;font-weight:700;letter-spacing:.08em;color:${A.ink};">${formatLoginCode(code)}</span>
+    </p>`;
 }
 
 function folkaTip(tip: string): string {
@@ -213,28 +243,15 @@ export function welcomeEmail(url: string, code: string): Email {
     "Hæng QR-koden op ved kassen.",
     "Slå henvisninger til under Regler, når du er klar.",
   ];
-  const list = steps
-    .map(
-      (t, i) => `<tr>
-        <td valign="top" style="padding:7px 12px 7px 0;font-family:${FONT};font-size:15px;font-weight:700;color:${A.ink};">${i + 1}</td>
-        <td valign="top" style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:1.5;color:${A.ink};">${t}</td>
-      </tr>`,
-    )
-    .join("");
-
   const inner = `
+    ${welcomeCard()}
     <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka Kort</h1>
-    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+    <p style="margin:0 0 26px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Din butik er klar. Om lidt har dine kunder dit kort i lommen, og hvert besøg bliver en grund til at komme igen.
     </p>
-    ${folkaCode(code)}
-    ${folkaButton(url, "Gå til dit dashboard")}
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 0;background:${A.surface};border-radius:16px;">
-      <tr><td style="padding:18px 20px;">
-        <p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">Kom godt fra start</p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
-      </td></tr>
-    </table>
+    ${welcomeSteps("Kom godt fra start", steps)}
+    ${folkaCodeCompact(code)}
+    ${folkaButton(url, "Log ind")}
     ${folkaFallback(url, `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Har du ikke oprettet en butik, kan du roligt ignorere denne mail.`)}`;
 
   const text = [
@@ -263,25 +280,13 @@ export function welcomeEmail(url: string, code: string): Email {
 // velkomst, de tre naeste skridt og en knap til dashboardet.
 export function signupWelcomeEmail(dashboardUrl: string): Email {
   const steps = ["Giv kortet dine farver og dit logo under Design.", "Hæng QR-koden op ved kassen.", "Del kortet med dine kunder."];
-  const list = steps
-    .map(
-      (t, i) => `<tr>
-        <td valign="top" style="padding:7px 12px 7px 0;font-family:${FONT};font-size:15px;font-weight:700;color:${A.ink};">${i + 1}</td>
-        <td valign="top" style="padding:7px 0;font-family:${FONT};font-size:15px;line-height:1.5;color:${A.ink};">${t}</td>
-      </tr>`,
-    )
-    .join("");
   const inner = `
+    ${welcomeCard()}
     <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Velkommen til Folka Kort</h1>
-    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+    <p style="margin:0 0 26px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
       Din butik er klar. Om lidt har dine kunder dit kort i lommen, og hvert besøg bliver en grund til at komme igen.
     </p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;background:${A.surface};border-radius:16px;">
-      <tr><td style="padding:18px 20px;">
-        <p style="margin:0 0 6px;font-family:${FONT};font-size:14px;font-weight:600;color:${A.muted};">Tre skridt, så er du i gang</p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${list}</table>
-      </td></tr>
-    </table>
+    ${welcomeSteps("Tre skridt, så er du i gang", steps)}
     ${folkaButton(dashboardUrl, "Gå til dit dashboard")}`;
   const text = [
     "Velkommen til Folka Kort",
@@ -309,16 +314,22 @@ export type WeeklyEmailData = {
   churn: number;
   topStamps: number;
   regulars: number;
+  /** Henvisninger: nye venner, foerste besoeg og belønninger fra henvisninger givet. */
+  referralsNew: number;
+  referralVisits: number;
+  referralRewards: number;
+  stampsEnabled: boolean;
+  referralsEnabled: boolean;
   dashboardUrl: string;
   unsubscribeUrl: string;
 };
 
 function statRow(label: string, value: number, note: string): string {
   return `<tr>
-    <td style="padding:14px 0;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;">
+    <td style="padding:14px 0;border-top:1px solid ${C.fog};font-family:${FONT};">
       <span style="font-size:14px;color:${C.stone};">${label}</span>
     </td>
-    <td align="right" style="padding:14px 0;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;">
+    <td align="right" style="padding:14px 0;border-top:1px solid ${C.fog};font-family:${FONT};">
       <span style="font-size:20px;font-weight:600;color:${C.ink};">${value}</span>
       ${note ? `<br><span style="font-size:12px;">${note}</span>` : ""}
     </td>
@@ -333,11 +344,26 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
         ? `<span style="color:${C.slate};">&#9660; ${Math.abs(d.stampsDelta)} færre end ugen før</span>`
         : `<span style="color:${C.slate};">samme som ugen før</span>`;
 
+  // Belønninger givet: fulde stempelkort og belønninger fra henvisninger.
+  const rewardsGiven = d.redemptions + d.referralRewards;
+  const rewardsNote =
+    d.stampsEnabled && d.referralsEnabled && rewardsGiven > 0
+      ? `<span style="color:${C.slate};">${d.redemptions} stempelkort, ${d.referralRewards} fra henvisninger</span>`
+      : "";
   const stats = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;">
-    ${statRow("Stempler denne uge", d.stampsWeek, delta)}
+    ${d.stampsEnabled ? statRow("Stempler", d.stampsWeek, delta) : ""}
     ${statRow("Nye kunder", d.newCustomers, "")}
-    ${statRow("Indløsninger", d.redemptions, "")}
+    ${statRow("Belønninger givet", rewardsGiven, rewardsNote)}
   </table>`;
+
+  // Henvisninger: kun for butikker med modulet.
+  const referralBlock = d.referralsEnabled
+    ? `<p style="margin:26px 0 4px;font-family:${FONT};font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${C.terracotta};">Henvisninger</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${statRow("Venner henvist", d.referralsNew, "")}
+      ${statRow("Første besøg", d.referralVisits, "")}
+    </table>`
+    : "";
 
   // Loyalitets-hoejdepunkt: en lille dopamin-hilsen til ejeren om deres stamkunder.
   const regularsNote =
@@ -347,7 +373,7 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
   const loyaltyBlock =
     d.topStamps > 0
       ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 0;background:${C.tint};border-radius:10px;">
-      <tr><td style="padding:16px 18px;font-family:Arial,Helvetica,sans-serif;">
+      <tr><td style="padding:16px 18px;font-family:${FONT};">
         <span style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${C.terracotta};">Stamkunder</span>
         <p style="margin:6px 0 0;font-size:14px;line-height:1.6;color:${C.stone};">
           Din mest trofaste kunde har <span style="font-weight:700;color:${C.ink};">${d.topStamps}</span> stempler.${regularsNote}
@@ -358,26 +384,22 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
 
   const churnBlock =
     d.churn > 0
-      ? `<p style="margin:20px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+      ? `<p style="margin:20px 0 0;font-family:${FONT};font-size:14px;line-height:1.6;color:${C.stone};">
       ${d.churn} ${d.churn === 1 ? "kunde er" : "kunder er"} ved at glide fra dig. Et lille skub kan hente dem tilbage.
     </p>`
       : "";
 
-  const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
-    <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.dashboardUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se dit dashboard</a>
-    </td></tr></table>`;
-
   const inner = `
-    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
-      Her er din uge hos ${esc(d.businessName)}.
-    </p>
+    <h1 style="margin:0 0 6px;font-family:${FONT};font-size:26px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Din uge hos ${esc(d.businessName)}</h1>
+    <p style="margin:0 0 16px;font-family:${FONT};font-size:15px;line-height:1.55;color:${A.muted};">De seneste syv dage.</p>
     ${stats}
-    ${loyaltyBlock}
-    ${churnBlock}
-    ${button}`;
+    ${referralBlock}
+    ${d.stampsEnabled ? loyaltyBlock : ""}
+    ${d.stampsEnabled ? churnBlock : ""}
+    <div style="height:26px;line-height:26px;">&nbsp;</div>
+    ${folkaButton(d.dashboardUrl, "Se dit dashboard")}`;
 
-  const footerExtra = `<p style="margin:8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:${C.slate};">
+  const footerExtra = `<p style="margin:8px 0 0;font-family:${FONT};font-size:11px;line-height:1.6;color:${C.slate};">
     Vil du ikke have ugebrevet? <a href="${d.unsubscribeUrl}" style="color:${C.slate};">Afmeld</a>.
   </p>`;
 
@@ -392,7 +414,8 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
           : "samme som ugen før"
     })`,
     `Nye kunder: ${d.newCustomers}`,
-    `Indløsninger: ${d.redemptions}`,
+    `Belønninger givet: ${d.redemptions + d.referralRewards}`,
+    ...(d.referralsEnabled ? [`Venner henvist: ${d.referralsNew}`, `Første besøg: ${d.referralVisits}`] : []),
     ...(d.topStamps > 0
       ? [
           "",
@@ -413,7 +436,9 @@ export function weeklyStatsEmail(d: WeeklyEmailData): Email {
   ].join("\n");
 
   return {
-    subject: `Din uge hos ${d.businessName}: ${d.stampsWeek} stempler`,
+    subject: d.stampsEnabled
+      ? `Din uge hos ${d.businessName}: ${d.stampsWeek} stempler`
+      : `Din uge hos ${d.businessName}: ${d.referralsNew} ${d.referralsNew === 1 ? "ven henvist" : "venner henvist"}`,
     html: shell("Din uge med Folka Kort.", inner, footerExtra),
     text,
   };
@@ -436,7 +461,7 @@ export type TrialEndingData = {
 export function trialEndingEmail(d: TrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se abonnementet</a>
+      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se abonnementet</a>
     </td></tr></table>`;
   const head = d.ended ? "Dine tre gratis måneder er gået." : `Dine tre gratis måneder slutter ${d.endsOn}.`;
   const body = d.ended
@@ -444,13 +469,13 @@ export function trialEndingEmail(d: TrialEndingData): Email {
     : `Derefter koster Folka Kort ${d.priceKr} kr. om måneden ekskl. moms for ${d.businessName}. Du skal ikke gøre noget. Alt kører videre som i dag, og du får en faktura om måneden.`;
 
   const inner = `
-    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       ${esc(head)}
-    </p>
-    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    </h1>
+    <p style="margin:0 0 16px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       ${esc(body)}
     </p>
-    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    <p style="margin:0;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       Ingen binding. Ubegrænset antal kortholdere. Se dit abonnement og bekræft det, når det passer dig.
     </p>
     ${button}`;
@@ -478,21 +503,21 @@ export type SuperadminTrialEndingData = {
 export function superadminTrialEndingEmail(d: SuperadminTrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const inner = `
-    <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       ${esc(d.businessName)}: gratis periode slutter ${esc(d.endsOn)}.
-    </p>
+    </h1>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;">
       ${statRow("Kortholdere", d.cardholders, "i dag")}
     </table>
-    <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+    <p style="margin:16px 0 0;font-family:${FONT};font-size:14px;line-height:1.6;color:${C.stone};">
       Butik: ${esc(d.businessName)} (${d.slug})<br>
       Ejer: ${esc(d.ownerEmails)}
     </p>
-    <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+    <p style="margin:12px 0 0;font-family:${FONT};font-size:14px;line-height:1.6;color:${C.stone};">
       Ejeren har fået varsel og et link til abonnementet. Sæt evt. en individuel pris i admin, før perioden slutter.
     </p>
     ${button}`;
@@ -537,20 +562,20 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
 
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
     <tr>
-      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
+      <td style="padding:7px 0;font-family:${FONT};font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:${FONT};font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `
-    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       ${esc(d.businessName)}: de tre gratis måneder er gået.
-    </p>
-    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    </h1>
+    <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       Det er faktureringstidspunktet. Her er alt, du skal bruge til Billy-fakturaen.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
@@ -606,20 +631,20 @@ export type SuperadminNewBusinessData = {
 export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
     <tr>
-      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
+      <td style="padding:7px 0;font-family:${FONT};font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:${FONT};font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `
-    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       Ny butik oprettet: ${esc(d.businessName)}.
-    </p>
-    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    </h1>
+    <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       Endnu en butik er kommet med på Kundekort.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
@@ -632,7 +657,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
         </table>
       </td></tr>
     </table>
-    <p style="margin:18px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:${C.stone};">
+    <p style="margin:18px 0 0;font-family:${FONT};font-size:14px;line-height:1.6;color:${C.stone};">
       Kortlink: <a href="${d.cardUrl}" style="color:${C.terracotta};">${d.cardUrl}</a>
     </p>
     ${button}`;
@@ -665,13 +690,13 @@ export function marketingWelcomeEmail(name?: string | null): Email {
   const hej = name && name.trim() ? `Hej ${name.trim()}.` : "Hej.";
 
   const inner = `
-    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       ${esc(hej)} Du er skrevet op.
-    </p>
-    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    </h1>
+    <p style="margin:0 0 8px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       Tak, fordi du vil holde kontakten. Du hører fra os, når vi har inspiration, idéer eller nye muligheder at dele. Ingen spam, kun gode idéer.
     </p>
-    <p style="margin:20px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:${C.slate};">
+    <p style="margin:20px 0 0;padding-top:20px;border-top:1px solid ${C.fog};font-family:${FONT};font-size:12px;line-height:1.6;color:${C.slate};">
       Har du ikke selv skrevet dig op, så skriv til os på hej@folka.dk, så fjerner vi dig med det samme.
     </p>`;
 
@@ -707,20 +732,20 @@ export function superadminMarketingSignupEmail(
 ): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn Marketing</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn Marketing</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
     <tr>
-      <td style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${C.slate};">${label}</td>
-      <td align="right" style="padding:7px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
+      <td style="padding:7px 0;font-family:${FONT};font-size:14px;color:${C.slate};">${label}</td>
+      <td align="right" style="padding:7px 0;font-family:${FONT};font-size:14px;font-weight:600;color:${C.ink};">${esc(value)}</td>
     </tr>`;
 
   const inner = `
-    <p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:17px;line-height:1.5;color:${C.ink};">
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
       Ny bekræftet tilmelding.
-    </p>
-    <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:${C.stone};">
+    </h1>
+    <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
       En ny person har bekræftet, at de gerne vil holde kontakten.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
