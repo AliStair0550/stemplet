@@ -57,8 +57,9 @@ const HENVISNINGER_LINKS: NavLink[] = [
 const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
 const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, { href: "/app/kunder", label: "Kunder" }, COMMS];
 
-// Fanerne i bunden paa mobil, i den raekkefoelge de staar. Scan i midten.
-const TABS = ["/app", "/app/kunder", "/app/kasse", "/app/beskeder", "menu"] as const;
+// Fanerne i bunden paa mobil, i den raekkefoelge de staar. Kunder (kartoteket)
+// ligger i Menu; det daglige sker paa Hjem og Scan.
+const TABS = ["/app", "/app/kasse", "/app/beskeder", "menu"] as const;
 type Tab = (typeof TABS)[number];
 
 // "Integrationer" (API/webhooks) er skjult fra
@@ -161,13 +162,11 @@ export function DashboardNav({
     (TABS as readonly string[]).includes(href) ? (href as Tab) : "menu";
   const pageTab: Tab = isActive("/app")
     ? "/app"
-    : isActive("/app/kunder")
-      ? "/app/kunder"
-      : isActive(SCAN.href)
-        ? "/app/kasse"
-        : inComms
-          ? "/app/beskeder"
-          : "menu";
+    : isActive(SCAN.href)
+      ? "/app/kasse"
+      : inComms
+        ? "/app/beskeder"
+        : "menu";
   const activeTab: Tab = moreOpen ? "menu" : tapped ? tabOf(tapped) : pageTab;
   // Tryk i arket: luk det med det samme og lad Menu lyse, mens siden hentes.
   const onSheetTap = (href: string) => {
@@ -349,6 +348,7 @@ export function DashboardNav({
             }}
           >
             <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-fog" aria-hidden />
+            <SheetLink href="/app/kunder" label="Kunder" active={isActive("/app/kunder")} onTap={onSheetTap} icon={ICONS.customers} />
             <SheetSection title="Dit kort">
               <SheetLink href="/app/kortet" label="Design" active={isActive("/app/kortet")} onTap={onSheetTap} icon={ICONS.design} />
               <SheetLink href="/app/regler" label="Regler" active={isActive("/app/regler")} onTap={onSheetTap} icon={ICONS.rules} />
@@ -402,43 +402,24 @@ export function DashboardNav({
         aria-label="Hovedmenu"
         // Svaevende glasbjaelke som paa iPhone. Fast, let graa tone, saa glasset
         // ser ens ud, uanset om der ligger et moerkt kort eller en hvid side bag.
-        className="fixed inset-x-2.5 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-5 gap-1 rounded-[30px] border border-white/60 bg-[rgba(226,230,236,0.82)] p-1.5 shadow-[0_12px_40px_-14px_rgba(6,28,61,0.45),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl backdrop-saturate-[1.6] md:hidden print:hidden"
+        className="fixed inset-x-2.5 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-4 gap-1 rounded-[30px] border border-white/60 bg-[rgba(226,230,236,0.82)] p-1.5 shadow-[0_12px_40px_-14px_rgba(6,28,61,0.45),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl backdrop-saturate-[1.6] md:hidden print:hidden"
       >
-        {/* Den lyse kapsel glider hen under den aktive fane. Scan har sin egen. */}
+        {/* Den lyse kapsel glider hen under den aktive fane. */}
         <span
           aria-hidden
           className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 rounded-[24px] bg-white/95 shadow-[0_2px_10px_-3px_rgba(6,28,61,0.25)] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{
-            width: "calc((100% - 0.75rem - 1rem) / 5)",
+            width: "calc((100% - 0.75rem - 0.75rem) / 4)",
             transform: `translateX(calc(${TABS.indexOf(activeTab)} * (100% + 0.25rem)))`,
-            opacity: activeTab === "/app/kasse" ? 0 : 1,
           }}
         />
         <TabLink href="/app" label="Hjem" active={activeTab === "/app"} onTap={setTapped}>
           <path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z" />
         </TabLink>
-        <TabLink href="/app/kunder" label="Kunder" active={activeTab === "/app/kunder"} onTap={setTapped}>
-          <circle cx="9" cy="8" r="3.5" />
-          <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
+        <TabLink href={SCAN.href} label="Scan" active={activeTab === "/app/kasse"} onTap={setTapped}>
+          <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
         </TabLink>
-        {/* Scan i midten med fokus: moerk kapsel, det man bruger ved kassen. */}
-        <Link
-          href={SCAN.href}
-          onClick={() => setTapped(SCAN.href)}
-          aria-current={activeTab === "/app/kasse" ? "page" : undefined}
-          className={cn(
-            TAB,
-            "bg-ink font-[600] text-parchment shadow-[0_6px_16px_-6px_rgba(6,28,61,0.6)]",
-            activeTab === "/app/kasse" && "ring-2 ring-white/90",
-          )}
-        >
-          <TabIcon>
-            <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
-          </TabIcon>
-          Scan
-        </Link>
-        {/* "Kommunikation" er for langt til en af fem faner (75 px mod ca. 60). */}
-        <TabLink href={COMMS.href} label="Beskeder" active={activeTab === "/app/beskeder"} onTap={setTapped}>
+        <TabLink href={COMMS.href} label="Kommunikation" active={activeTab === "/app/beskeder"} onTap={setTapped}>
           <path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16h-7l-4.5 3.5V16H5a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 5 5z" />
           <path d="M8 9.5h8M8 12.5h5" />
         </TabLink>
@@ -534,8 +515,10 @@ function ProductGroup({
 // Fanerne i glasbjaelken: en lys glaskapsel glider hen under den aktive (som
 // iOS), og alle trykkes en anelse ind ved beroering.
 const TAB =
-  "relative z-10 flex min-h-[3.4rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 text-[0.66rem] tracking-[-0.01em] transition-[color,transform] duration-200 active:scale-95";
-// Den aktive fane faar den glidende kapsel (se nav'en); her kun skriften.
+  "relative z-10 flex min-h-[3.4rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 text-[0.66rem] tracking-[-0.01em] max-[370px]:text-[0.6rem] max-[340px]:text-[0.54rem] transition-[color,transform] duration-200 active:scale-95";
+// Den aktive fane faar den glidende kapsel (se nav'en); her kun skriften. Paa
+// smalle telefoner (under 370 px) bliver skriften lidt mindre, saa
+// "Kommunikation" kan staa helt.
 const TAB_ON = "font-[600] text-ink";
 const TAB_OFF = "text-[#4A5568]";
 
@@ -575,6 +558,12 @@ function TabLink({
 
 // Ikoner til menu-arket (samme streg som resten).
 const ICONS: Record<string, React.ReactNode> = {
+  customers: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
+    </>
+  ),
   design: (
     <>
       <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
