@@ -91,18 +91,19 @@ I anbefalet rækkefølge:
 - **Pushbeskeder:**
   - Målgrupper og planlægning.
   - Kunder-filtre (i Wallet, fravalgt).
+- **Backup (når der er betalende butikker):** ugentlig krypteret kopi af databasen via GitHub Actions, gemt i 8 uger, én prøve-gendannelse, og skift til betalt plan hos Neon med længere historik (R8).
 - **Demo-butikken:** ret logoet (data, under Design).
 
 ## Besluttet
 
 - **Flere stempler på kortet (R16), 31. okt:** kunden beholder sine stempler og skal samle de ekstra for at få belønningen (fx 10 af 12). Sådan virker koden allerede, så der skal intet ændres.
+- **Stempler som henvisningsbelønning (R4), 31. okt:** bygges ikke nu. Valget bliver, og personalet giver stemplerne i hånden ved kassen.
+- **Backup (R8), 31. okt:** vi bliver på gratisplanen hos Neon og venter med egen backup. Tages op igen, når systemet kører med betalende butikker (se backloggen).
 
 ## Beslutninger hos Ali
 
 | Emne | Spørgsmål |
 |---|---|
-| Stempler som henvisningsbelønning (R4) | Anbefaling: giv stemplerne automatisk, så snart belønningen er optjent, med opdatering i Wallet. Valget vises kun, når stempelkortet er slået til. Afventer Alis ja. |
-| Backup (R8) | Gratisplanen hos Neon (besluttet 31. okt). Anbefaling: ugentlig krypteret kopi via GitHub Actions, gemt i 8 uger, og én prøve-gendannelse. Kræver to hemmeligheder i GitHub, som Ali selv lægger ind. Skift til betalt plan ved de første betalende butikker. |
 | Roller | Ejer og ansat med forskellige rettigheder (i dag kan alle medlemmer alt, også fjerne ejeren). |
 | Betaling | Stripe: fjern, eller behold til senere? Indtil videre manuel faktura. |
 | Juridisk | CVR, juridisk navn og advokatgennemgang (privatlivspolitikken nævner ikke push). |
