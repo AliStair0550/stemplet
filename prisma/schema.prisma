@@ -98,6 +98,8 @@ model Business {
   posterPhoto        String?
   posterSettings     Json?
   posterMadeAt       DateTime?
+  // Kom i gang: foerste gang kortet blev delt (link, QR-kode vist eller kopieret).
+  sharedAt           DateTime?
   /// Knapper paa kortet (iOS 27, hoejst to): "book" | "henvis" | "beloenninger".
   cardActions        String[]  @default(["fordele"])
   /// Oeverst paa kortet: "logo" (logo, ellers navn), "name" eller "both".

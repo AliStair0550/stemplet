@@ -4,7 +4,7 @@ import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
 import { getReadyCustomers } from "@/lib/ready-customers";
 import { getReferralOverview } from "@/lib/referral-desk";
-import { greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
+import { cardShareText, greetingFor, midSentence, referralSummaryLine, summaryLine } from "@/lib/overview-text";
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
@@ -17,6 +17,7 @@ import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
 import { cookies } from "next/headers";
 import { ONBOARDING_HIDDEN_COOKIE } from "@/lib/cookies";
 import { dismissOnboardingAction } from "./actions";
+import { ShareCardButton } from "./ShareCardButton";
 
 export const metadata = { title: { absolute: "Hjem - Folka Kort" } };
 
@@ -109,16 +110,37 @@ export default async function HomePage() {
     month: "long",
   }).format(now);
 
-  // Kom i gang: flueben fra det, vi allerede ved (plakaten: hentet som PDF).
+  const shareUrl = `${APP_URL}${shareHref}`;
+  const shareText = cardShareText({
+    stampsEnabled: business.stampsEnabled,
+    stampsRequired: preview.stampsRequired,
+    rewardText: business.stampsEnabled ? preview.rewardText : "",
+    friendReward: referrals ? preview.friendReward : null,
+    referrerReward: referrals ? preview.referrerReward : null,
+  });
+
+  // Kom i gang: kortet, rabatten og saa det vigtigste: del kortet. Rabatten er
+  // sat ved oprettelsen, saa den staar som klaret med de rigtige tal, og kan
+  // rettes. Delt = link delt/kopieret, QR-koden vist eller plakaten hentet.
   const designed = business.primaryColor !== DEFAULT_PRIMARY || !!business.logoUrl || !!business.cardArtwork;
+  const shared = !!business.sharedAt || !!business.posterMadeAt;
+  const stampReward = business.stampsEnabled
+    ? `${preview.stampsRequired} stempler giver ${midSentence(preview.rewardText)}.`
+    : null;
+  const friendLine = referrals ? `En ven får ${preview.friendReward}, og den, der henviser, får ${preview.referrerReward}.` : null;
   const steps = [
-    { title: "Design kortet", text: "Navn, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
-    { title: "Hæng QR-koden op", text: "Plakat eller bordskilt ved kassen.", href: "/app/plakat", cta: "Lav plakaten", done: !!business.posterMadeAt },
-    { title: "Prøv det selv", text: business.stampsEnabled
-        ? "Hent kortet på din telefon. Find dig selv under Kunder, og giv et stempel."
-        : "Hent kortet på din telefon, og se det, dine kunder ser.", href: `${APP_URL}${shareHref}`, cta: "Åbn dit kort", external: true, done: false },
+    { title: "Design kortet", text: "Logo, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
+    {
+      title: "Tjek rabatten",
+      text: [stampReward, friendLine].filter(Boolean).join(" ") || "Sæt det, kunderne får.",
+      href: business.stampsEnabled ? "/app/regler?f=stempler" : "/app/regler?f=henvisninger",
+      cta: "Ret rabatten",
+      done: true,
+    },
+    { title: "Se kortet og del det", text: "Hent det selv på telefonen, og send linket til dine første kunder.", href: shareUrl, cta: "Se kortet", done: shared, share: true },
   ];
   const doneCount = steps.filter((s) => s.done).length;
+  const nextStep = steps.find((s) => !s.done);
   const onboardingHidden = ((await cookies()).get(ONBOARDING_HIDDEN_COOKIE)?.value ?? "").split(".").includes(business.id);
 
   return (
@@ -167,6 +189,9 @@ export default async function HomePage() {
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
             <div className="h-full rounded-full bg-[#7CC4FF] transition-[width] duration-700" style={{ width: `${Math.max(4, (doneCount / 3) * 100)}%` }} />
           </div>
+          <p className="mt-3 text-[0.9rem] text-white/70">
+            {nextStep ? "Tre trin, så er du i gang. Resten klarer kortet." : "Du er klar. Nu mangler bare den første kunde: del kortet, eller vis QR-koden ved kassen."}
+          </p>
           <ol className="mt-5 grid gap-3 md:grid-cols-3">
             {steps.map((s, i) => (
               <li key={s.title} className={`flex flex-col rounded-[16px] p-4 ring-1 ring-inset ${s.done ? "bg-white/[.03] ring-white/5" : "bg-white/[.07] ring-white/10"}`}>
@@ -182,10 +207,19 @@ export default async function HomePage() {
                 </span>
                 <span className="mt-1 text-[1rem] font-semibold">{s.title}</span>
                 <span className="mt-1 text-[0.85rem] leading-snug text-white/70">{s.text}</span>
-                {s.external ? (
-                  <a href={s.href} target="_blank" rel="noreferrer" className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]">
-                    {s.cta}
-                  </a>
+                {s.share ? (
+                  <>
+                    <span className="mt-4 flex flex-wrap gap-2">
+                      <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} tone="light" />
+                      <a href={s.href} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-full px-4 text-[0.85rem] font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10">
+                        {s.cta}
+                      </a>
+                    </span>
+                    <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[0.82rem] font-medium text-[#7CC4FF]">
+                      <Link href="/app/regler?f=kundekort&vis=1" className="hover:text-white">Vis QR-kode</Link>
+                      <Link href="/app/plakat" className="hover:text-white">Lav en plakat</Link>
+                    </span>
+                  </>
                 ) : (
                   <Link href={s.href} className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]">
                     {s.cta}
@@ -194,6 +228,20 @@ export default async function HomePage() {
               </li>
             ))}
           </ol>
+        </section>
+      ) : stats.totalCustomers === 0 && nextStep ? (
+        <section className="mb-10 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-fog bg-white p-4 shadow-card md:p-5">
+          <span className="min-w-0">
+            <span className="block text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-slate">Næste skridt</span>
+            <span className="mt-0.5 block text-[1rem] font-semibold text-ink">{nextStep.title}</span>
+          </span>
+          {nextStep.share ? (
+            <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} />
+          ) : (
+            <Link href={nextStep.href} className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-[0.88rem] font-semibold text-white hover:bg-[#0A2D5A]">
+              {nextStep.cta}
+            </Link>
+          )}
         </section>
       ) : stats.totalCustomers <= 3 ? (
         <FirstCustomerCelebration businessId={business.id} customers={stats.totalCustomers} />
@@ -235,10 +283,11 @@ export default async function HomePage() {
       <section className="mb-12 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-10">
         <div className="flex flex-col items-center gap-4 lg:items-stretch">
           <p className="w-full max-w-[300px] text-[0.85rem] font-[600] text-stone">Dit kort</p>
-          {/* Genvej til QR-koden, der kan vises til kunden direkte fra telefonen. */}
+          {/* Del kortet: QR-koden til kunden foran dig, linket til alle andre. */}
+          <div className="grid w-full max-w-[300px] grid-cols-2 gap-2">
           <Link
             href="/app/regler?f=kundekort&vis=1"
-            className="flex min-h-12 w-full max-w-[300px] items-center justify-center gap-2 rounded-full bg-ink px-4 text-[0.92rem] font-[600] text-white hover:bg-[#0A2D5A]"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-ink px-4 text-[0.92rem] font-[600] text-white hover:bg-[#0A2D5A]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
               <rect x="4" y="4" width="6" height="6" rx="1" />
@@ -248,6 +297,8 @@ export default async function HomePage() {
             </svg>
             Vis QR-kode
           </Link>
+          <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} className="min-h-12 px-4 text-[0.92rem]" />
+          </div>
           {WALLET_ENABLED ? (
             // Butikkens eget QR-kort i ejerens Wallet: hurtigst at vise kunderne.
             <a
@@ -269,7 +320,7 @@ export default async function HomePage() {
               Design kortet
             </Link>
             <a
-              href={`${APP_URL}${shareHref}`}
+              href={shareUrl}
               target="_blank"
               rel="noreferrer"
               className="flex min-h-11 flex-1 items-center justify-center rounded-full border border-clay px-4 text-[0.88rem] font-[500] text-ink hover:border-ink"

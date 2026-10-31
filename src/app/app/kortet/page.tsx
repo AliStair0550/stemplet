@@ -58,6 +58,7 @@ export default async function KortetPage() {
         businessName={business.name}
         friendReward={rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "100 kr."}
         referrerReward={rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "gratis klip"}
+        shared={!!business.sharedAt || !!business.posterMadeAt}
       />
     </>
   );
