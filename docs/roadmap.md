@@ -46,6 +46,12 @@ Fra gennemgangen 31. oktober. Ingen P0, men Wallet-udsendelse og databaseforbind
    - API-nøgle som hash.
    - Billeder til Vercel Blob.
 
+## Nu: robusthed, runde 2
+
+Fra gennemgangen 31. oktober, se [robusthed-2-2026-10-31.md](robusthed-2-2026-10-31.md). Ingen P0. Seks P1: konto-kapring ved oprettelse, login når databasen sover, login-mail uden tidsgrænse, "Prøv igen" på fejlsider, faktura-markeringer fra den gamle pris og spam via offentlige formularer. Foreslået som bølge A (små) og bølge B (en dag hver) plus fem beslutninger.
+
+Polering af ejerens oplevelse på mobil går forud for nye produktfunktioner.
+
 ## Næste: produkt
 
 I anbefalet rækkefølge:
