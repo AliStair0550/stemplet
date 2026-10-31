@@ -179,7 +179,7 @@ export function Scanner({
       role="dialog"
       aria-modal="true"
       aria-label="Scan QR-kode"
-      className={`fixed inset-0 flex flex-col items-center justify-center bg-ink/95 p-6 ${
+      className={`fixed inset-0 flex flex-col items-center justify-center bg-ink p-6 ${
         overlayClassName ?? "z-50"
       }`}
     >

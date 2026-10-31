@@ -46,7 +46,6 @@ function ContactForm({
   onReady,
   onFejl,
   onEmailTaken,
-  onRecover,
   referral,
 }: {
   slug: string;
@@ -61,7 +60,6 @@ function ContactForm({
   onFejl: (code: string) => void;
   /** E-mailen har allerede et kort i butikken: tilbyd at gendanne det. */
   onEmailTaken: (email: string) => void;
-  onRecover: () => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -188,14 +186,6 @@ function ContactForm({
           {busy ? "Henter dit kort" : cta}
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onRecover}
-        className="mt-1 self-center text-[0.84rem] font-[400] underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
-        style={{ color: ctaBg }}
-      >
-        Har du allerede et kort? Gendan det med din e-mail
-      </button>
     </form>
   );
 }
@@ -395,6 +385,46 @@ function ReferralPanel({
 
 // Den brandede CTA: creme knap (kortets tekstfarve) med kortfarvet tekst, saa
 // den altid harmonerer med brandet. Valgfri blOd gloed bagved paa hoved-CTA'en.
+// Del butikkens kortside (ikke en personlig henvisning: kunden har intet kort
+// endnu). Telefonens delemenu, ellers kopieres linket.
+function ShareShopButton({ slug, shopName, ctaBg }: { slug: string; shopName: string; ctaBg: string }) {
+  const [copied, setCopied] = useState(false);
+  async function share() {
+    const url = `${window.location.origin}/k/${slug}`;
+    const text = `Hent dit kort hos ${shopName} her:`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: shopName, text, url });
+        return;
+      }
+    } catch (e) {
+      if ((e as { name?: string }).name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Kunne ikke kopiere: intet at goere.
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={share}
+      className="group flex min-h-[3rem] w-full items-center justify-center gap-2.5 rounded-2xl px-5 text-[0.92rem] font-[500] transition-[transform,background-color] hover:bg-white/5 active:scale-[0.98]"
+      style={{ color: ctaBg, border: `1.5px solid ${rgba(ctaBg, 0.35)}` }}
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" className="h-[1.05rem] w-[1.05rem] transition-transform group-active:-translate-y-0.5" aria-hidden>
+        <path d="M12 3v12" />
+        <path d="m7 8 5-5 5 5" />
+        <path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
+      </svg>
+      {copied ? "Link kopieret" : "Del kortet med en ven"}
+    </button>
+  );
+}
+
 function CtaLink({
   href,
   onTap,
@@ -899,16 +929,26 @@ export function ClaimFlow({
           setRecover({ email, taken: true });
           setStage("recover");
         }}
-        onRecover={() => {
-          setRecover({ email: "", taken: false });
-          setStage("recover");
-        }}
       />
         {referral?.termsLine ? (
           <p className="text-center text-[0.8rem] font-[300]" style={{ color: rgba(ctaBg, 0.7) }}>
             {referral.termsLine}
           </p>
         ) : null}
+        {/* Del butikkens kort videre herfra (fx til en, der staar ved siden af). */}
+        <ShareShopButton slug={slug} shopName={shopName} ctaBg={ctaBg} />
+        {/* Gendan er for de faa: lille og nederst. */}
+        <button
+          type="button"
+          onClick={() => {
+            setRecover({ email: "", taken: false });
+            setStage("recover");
+          }}
+          className="mt-2 text-[0.76rem] font-[400] underline underline-offset-2 opacity-60 transition-opacity hover:opacity-100"
+          style={{ color: ctaBg }}
+        >
+          Har du allerede et kort? Gendan det
+        </button>
       </div>
     );
   }
