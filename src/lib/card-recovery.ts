@@ -78,7 +78,6 @@ export async function redeemCardRecovery(
     where: { tokenHash: hash(token) },
     select: {
       id: true,
-      usedAt: true,
       customerCard: {
         select: {
           id: true,
@@ -95,36 +94,41 @@ export async function redeemCardRecovery(
   // Linket hoerer til een butik: et link til en anden butiks side virker ikke.
   if (business.slug !== slug) return null;
 
-  const used = await db.cardRecoveryToken.updateMany({
-    where: { id: row.id, usedAt: null, expiresAt: { gt: new Date() } },
-    data: { usedAt: new Date() },
-  });
-  if (used.count !== 1) {
+  // Brug af linket og flytning af kortet til telefonen sker i EEN transaktion.
+  // Et samtidigt tryk venter saa paa raekke-laasen og ser bagefter, at kortet
+  // allerede ligger paa telefonen (ellers kunne det komme ind midt imellem).
+  const ok = await db.$transaction(async (tx) => {
+    const used = await tx.cardRecoveryToken.updateMany({
+      where: { id: row.id, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
+    if (used.count === 1) {
+      if (deviceId) {
+        // Een enhed = eet kort pr. butik: havde telefonen allerede et andet kort
+        // her, slippes det (kortet findes stadig), og det gendannede kort vinder.
+        const { cardId } = row.customerCard;
+        await tx.customerCard.updateMany({
+          where: { cardId, deviceId, NOT: { id: row.customerCard.id } },
+          data: { deviceId: null },
+        });
+        await tx.customerCard.update({ where: { id: row.customerCard.id }, data: { deviceId } });
+      }
+      return true;
+    }
     // Dobbelttryk eller genforsoeg efter et tabt svar: linket er netop brugt.
-    // Giv kortet igen i stedet for "linket er udloebet", men kun i to minutter.
-    // Kun den samme telefon, der fik kortet: et videresendt link kan ikke bruges
-    // fra en anden telefon.
-    const again = await db.cardRecoveryToken.findUnique({
+    // Giv kortet igen i stedet for "linket er udloebet", men kun i to minutter og
+    // kun til den samme telefon, der fik kortet (et videresendt link kan ikke
+    // bruges fra en anden telefon).
+    const again = await tx.cardRecoveryToken.findUnique({
       where: { id: row.id },
       select: { usedAt: true, customerCard: { select: { deviceId: true } } },
     });
-    const usedAt = again?.usedAt ?? row.usedAt;
+    const usedAt = again?.usedAt ?? null;
     const samePhone = !!deviceId && again?.customerCard.deviceId === deviceId;
-    if (!usedAt || !samePhone || Date.now() - usedAt.getTime() > RECENT_USE_MS) return null;
-  }
+    return !!usedAt && samePhone && Date.now() - usedAt.getTime() <= RECENT_USE_MS;
+  });
+  if (!ok) return null;
 
-  if (deviceId) {
-    // Een enhed = eet kort pr. butik: havde telefonen allerede et andet kort
-    // her, slippes det (kortet findes stadig), og det gendannede kort vinder.
-    const { cardId } = row.customerCard;
-    await db.$transaction([
-      db.customerCard.updateMany({
-        where: { cardId, deviceId, NOT: { id: row.customerCard.id } },
-        data: { deviceId: null },
-      }),
-      db.customerCard.update({ where: { id: row.customerCard.id }, data: { deviceId } }),
-    ]);
-  }
   return {
     id: row.customerCard.id,
     serial: row.customerCard.serial,
