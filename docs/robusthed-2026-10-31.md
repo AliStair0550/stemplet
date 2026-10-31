@@ -70,6 +70,6 @@ Butikker er adskilt overalt (hver handling tjekker butikken). Stempel, fuldt kor
 
 **Bølge 3 (datamodel, godkendes først):** R10, R17, R19, API-nøgle som hash, billeder til Vercel Blob.
 
-**Beslutninger hos Ali:** R4 (anbefaling: giv stemplerne automatisk, så snart de er optjent) og R8 (gratisplan hos Neon, anbefaling: ugentlig krypteret kopi via GitHub Actions). R16 er besluttet: kunden beholder stemplerne og samler de ekstra.
+**Besluttet 31. okt:** R4 bygges ikke nu (personalet giver stemplerne i hånden). R8 venter, til der er betalende butikker (gratisplan hos Neon indtil da). R16: kunden beholder stemplerne og samler de ekstra.
 
 **Status bølge 1:** R1, R2 (tidsgrænse pr. besked til Apple), R7, R14 og R15 er lavet (PR "Robusthed bølge 1, del 1").
