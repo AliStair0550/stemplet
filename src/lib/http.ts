@@ -12,6 +12,14 @@ export function clientIp(req: NextRequest): string | null {
   return null;
 }
 
+/** Kom forespoergslen fra en anden hjemmeside? Saa maa den ikke saette kundens
+ *  kort-cookie (en fremmed side kunne ellers give kunden sit eget kort, og
+ *  kundens stempler ville havne paa det). Browsere saetter Sec-Fetch-Site; vores
+ *  egne formularer og fetch er "same-origin". */
+export function isCrossSite(req: NextRequest): boolean {
+  return req.headers.get("sec-fetch-site") === "cross-site";
+}
+
 export function apiError(
   code: string,
   message: string,

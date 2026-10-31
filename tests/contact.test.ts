@@ -38,3 +38,13 @@ test("maskEmail: viser kun starten af mailen (Find kort)", () => {
   assert.equal(maskEmail("a@b.dk"), "a***@b.dk");
   assert.ok(!maskEmail("hemmelig.person@firma.dk").includes("hemmelig"));
 });
+
+test("usynlige tegn og styretegn: fjernes fra navn, afvises i e-mail", () => {
+  assert.equal(normalizeName("Sa\u200Bra\u0000"), "Sara");
+  assert.equal(normalizeName("\u200B\u200B"), null, "kun usynlige tegn");
+  assert.equal(normalizeName("Mor \u{1F469}\u200D\u{1F467}"), "Mor \u{1F469}\u200D\u{1F467}", "ZWJ-emoji bevares");
+  assert.equal(normalizeEmail("sara\u200B@gmail.com"), null);
+  assert.equal(normalizeEmail("sara\u0000@gmail.com"), null);
+  assert.equal(normalizeEmail("<sara>@gmail.com"), null);
+  assert.equal(normalizeEmail("sara,b@gmail.com"), null);
+});

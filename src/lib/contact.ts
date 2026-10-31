@@ -7,11 +7,15 @@ export const EMAIL_MAX = 254;
 
 // Bevidst enkel: noget@noget.tld uden mellemrum. Ingen bekraeftelsesmail endnu,
 // saa vi fanger kun aabenlyse tastefejl.
-const EMAIL_RE = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+const EMAIL_RE = /^[^\s@<>(),;:"\\[\]]+@[^\s@.<>(),;:"\\[\]]+(\.[^\s@.<>(),;:"\\[\]]+)+$/;
+// Usynlige tegn og styretegn (NUL, nul-bredde, retningsskift). Postgres afviser
+// NUL, og usynlige tegn kan gemme et navn eller snyde det unikke e-mail-tjek.
+// ZWJ (U+200D) beholdes, saa sammensatte emoji i navne stadig virker.
+const INVISIBLE = /(?!\u200D)[\p{Cc}\p{Cf}]/gu;
 
 /** "  Sara   Jensen " -> "Sara Jensen". Tomt eller for langt giver null. */
 export function normalizeName(input: string | null | undefined): string | null {
-  const name = (input ?? "").trim().replace(/\s+/g, " ");
+  const name = (input ?? "").normalize("NFKC").replace(INVISIBLE, "").trim().replace(/\s+/g, " ");
   if (name.length < 1 || name.length > CONTACT_NAME_MAX) return null;
   return name;
 }
@@ -20,6 +24,7 @@ export function normalizeName(input: string | null | undefined): string | null {
 export function normalizeEmail(input: string | null | undefined): string | null {
   const email = (input ?? "").trim().toLowerCase();
   if (email.length < 3 || email.length > EMAIL_MAX) return null;
+  if (new RegExp(INVISIBLE.source, "u").test(email)) return null;
   return EMAIL_RE.test(email) ? email : null;
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { loadInvite } from "./load";
 import { Forward } from "./Forward";
+import { safeDecode } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ type Params = Promise<{ slug: string; code: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug, code } = await params;
-  const invite = await loadInvite(slug, decodeURIComponent(code));
+  const invite = await loadInvite(slug, safeDecode(code));
   if (!invite) return { title: "Kundekort", robots: { index: false } };
   const who = invite.friend ?? "Din ven";
   const title = invite.gift ? `${who} har givet dig ${invite.gift} hos ${invite.shop}` : `${who} inviterer dig til ${invite.shop}`;
@@ -27,8 +28,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function InvitePage({ params }: { params: Params }) {
   const { slug, code } = await params;
-  const href = `/k/${encodeURIComponent(slug)}?k=${encodeURIComponent(decodeURIComponent(code))}`;
-  const invite = await loadInvite(slug, decodeURIComponent(code));
+  const href = `/k/${encodeURIComponent(slug)}?k=${encodeURIComponent(safeDecode(code))}`;
+  const invite = await loadInvite(slug, safeDecode(code));
   return (
     <main
       className="flex min-h-screen items-center justify-center px-6 text-center"

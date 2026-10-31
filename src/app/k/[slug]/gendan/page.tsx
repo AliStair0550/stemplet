@@ -16,10 +16,13 @@ export default async function RecoverPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ t?: string; udloebet?: string }>;
+  searchParams: Promise<{ t?: string | string[]; udloebet?: string }>;
 }) {
   const { slug } = await params;
-  const { t = "", udloebet } = await searchParams;
+  const sp = await searchParams;
+  // ?t= to gange giver en liste; brug kun en ren tekst.
+  const t = typeof sp.t === "string" ? sp.t : "";
+  const udloebet = sp.udloebet;
   const business = await prisma.business.findUnique({
     where: { slug },
     select: { name: true, displayName: true, primaryColor: true, textColor: true, stampsEnabled: true },

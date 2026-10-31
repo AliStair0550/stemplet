@@ -25,6 +25,7 @@ import {
   campaignSchema,
 } from "@/lib/validation";
 import type { CardDesign } from "@/components/CardDesigner";
+import { captureWalletError } from "@/lib/sentry";
 
 // Loft paa fritekst, der gemmes paa butikken og sendes videre (geokodning, webhooks).
 const ADDRESS_MAX = 200;
@@ -243,7 +244,9 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
   if (WALLET_ENABLED) {
     after(async () => {
       const { pushBusinessWalletPasses } = await import("@/lib/wallet/build");
-      await pushBusinessWalletPasses(business.id).catch(() => {});
+      await pushBusinessWalletPasses(business.id).catch((e) =>
+        captureWalletError(e, { operation: "apns:save", businessId: business.id }),
+      );
     });
   }
   return { ok: true };

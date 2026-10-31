@@ -97,3 +97,18 @@ test("havde telefonen allerede et andet kort i butikken, vinder det gendannede",
   assert.equal((await prisma.customerCard.findUnique({ where: { id: other.id } }))?.deviceId, null);
   assert.equal((await prisma.customerCard.findUnique({ where: { id: cc.id } }))?.deviceId, "ny-telefon");
 });
+
+test("genforsoeg fra samme telefon lige efter virker; anden telefon gor ikke", async () => {
+  const { biz, cc } = await setup();
+  const m = mailer();
+  await requestCardRecovery({ slug: biz.slug, email: "sara@test.local", baseUrl: "https://x" }, prisma, m.send);
+  const t = m.token();
+  const [a, b] = await Promise.all([
+    redeemCardRecovery(t, biz.slug, "samme-telefon"),
+    redeemCardRecovery(t, biz.slug, "samme-telefon"),
+  ]);
+  assert.equal(a?.id, cc.id);
+  assert.equal(b?.id, cc.id);
+  assert.equal(await redeemCardRecovery(t, biz.slug, "samme-telefon").then((r) => r?.id), cc.id);
+  assert.equal(await redeemCardRecovery(t, biz.slug, "anden-telefon"), null);
+});

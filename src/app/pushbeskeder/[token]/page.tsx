@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { cardTitle, rgba } from "@/lib/brand";
 import { verifyNewsOptOutToken } from "@/lib/news-optout";
 import { OptOutToggle } from "./OptOutToggle";
+import { safeDecode } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: { absolute: "Pushbeskeder" }, robots: { index: false } };
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: { absolute: "Pushbeskeder" }, robots:
 // kunden trykker paa knappen, saa et link, der bare bliver aabnet, intet aendrer.
 export default async function NewsOptOutPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const serial = verifyNewsOptOutToken(decodeURIComponent(token));
+  const serial = verifyNewsOptOutToken(safeDecode(token));
   if (!serial) notFound();
   const cc = await prisma.customerCard.findUnique({
     where: { serial },
@@ -34,7 +35,7 @@ export default async function NewsOptOutPage({ params }: { params: Promise<{ tok
     >
       <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
         <h1 className="text-[1.5rem] font-[400] leading-tight">Pushbeskeder fra {shop}</h1>
-        <OptOutToggle token={decodeURIComponent(token)} optedOut={cc.newsOptOut} shop={shop} fg={fg} bg={b.primaryColor} />
+        <OptOutToggle token={safeDecode(token)} optedOut={cc.newsOptOut} shop={shop} fg={fg} bg={b.primaryColor} />
         <p className="text-[0.82rem] font-[300] leading-relaxed" style={{ color: rgba(fg, 0.7) }}>
           Dit kort, dine stempler og belønninger virker som før, uanset hvad du vælger.
         </p>

@@ -414,3 +414,20 @@ test("slettes henviserens kort, bliver henvisningen; vennen kan ikke henvises ig
     await cleanup(s.bizId);
   }
 });
+
+test("cron: med Henvisninger slaaet fra udloeber intet (ligger klar, naar det slaas til)", async () => {
+  const s = await setup({ expiryDays: 30 });
+  try {
+    const now = new Date();
+    await prisma.referral.update({ where: { id: s.referral.id }, data: { createdAt: new Date(now.getTime() - 31 * DAY) } });
+    const reward = await prisma.reward.create({
+      data: { businessId: s.bizId, cardId: s.referrer.id, type: "AMOUNT", value: "50", expiresAt: new Date(now.getTime() - DAY) },
+    });
+    await prisma.business.update({ where: { id: s.bizId }, data: { referralsEnabled: false } });
+    await expireReferralsAndRewards(now);
+    assert.equal((await prisma.referral.findUniqueOrThrow({ where: { id: s.referral.id } })).status, "CREATED");
+    assert.equal((await prisma.reward.findUniqueOrThrow({ where: { id: reward.id } })).status, "AVAILABLE");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

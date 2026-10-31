@@ -645,8 +645,10 @@ export async function expireReferralsAndRewards(
   const referralsExpired = await db.$executeRaw`
     UPDATE "Referral" r
     SET "status" = 'EXPIRED'
-    FROM "ReferralRule" rr
+    FROM "ReferralRule" rr, "Business" b
     WHERE rr."businessId" = r."businessId"
+      AND b."id" = r."businessId"
+      AND b."referralsEnabled" = true
       AND r."status" = 'CREATED'
       AND r."createdAt" < (${now}::timestamptz AT TIME ZONE 'UTC') - make_interval(days => rr."rewardExpiryDays")
   `;
@@ -654,7 +656,10 @@ export async function expireReferralsAndRewards(
   // goer sammenligningen uafhaengig af forbindelsens tidszone.)
   // Kortene med en udloebet beloenning skal opdateres i Wallet (ellers viser de
   // stadig "til gode"), saa vi noterer dem, foer de markeres.
-  const where = { status: "AVAILABLE" as const, expiresAt: { lt: now } };
+  // Er Henvisninger slaaet fra, kan kunden ikke se belønningen og kassen ikke
+  // indloese den. Den udloeber derfor ikke, mens modulet er slaaet fra, saa den
+  // ligger klar, naar det slaas til igen (som Regler lover).
+  const where = { status: "AVAILABLE" as const, expiresAt: { lt: now }, business: { referralsEnabled: true } };
   const affected = await db.reward.findMany({ where, select: { cardId: true }, distinct: ["cardId"] });
   const rewards = await db.reward.updateMany({ where, data: { status: "EXPIRED" } });
   return { referralsExpired, rewardsExpired: rewards.count, cardIds: affected.map((r) => r.cardId) };

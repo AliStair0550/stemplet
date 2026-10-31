@@ -101,9 +101,11 @@ export async function processTrialMilestones(
 ): Promise<void> {
   const biz = await db.business.findUnique({
     where: { id: businessId },
-    select: { slug: true, createdAt: true, cardholderWarnedAt: true, reached100At: true },
+    select: { slug: true, createdAt: true, cardholderWarnedAt: true, reached100At: true, stopped: true },
   });
   if (!biz || biz.slug === DEMO_SLUG) return; // demo taeller ikke med
+  // Stoppet butik (ogsaa Folkas interne): ingen varsel og ingen faktura.
+  if (biz.stopped) return;
   const ends = trialEndsAt(biz.createdAt);
   const warnFrom = new Date(ends.getTime() - TRIAL_WARN_DAYS * 86_400_000);
 
@@ -308,6 +310,7 @@ export async function sweepPendingThresholdEmails(
   const due = await db.business.findMany({
     where: {
       slug: { not: DEMO_SLUG },
+      stopped: false,
       createdAt: { lte: warnCutoff },
       OR: [{ cardholderWarnedAt: null }, { reached100At: null }],
     },
@@ -321,6 +324,7 @@ export async function sweepPendingThresholdEmails(
         cardholderWarnedAt: { not: null },
         cardholderWarnEmailSentAt: null,
         slug: { not: DEMO_SLUG },
+        stopped: false,
       },
       select: { id: true },
     }),
@@ -329,6 +333,7 @@ export async function sweepPendingThresholdEmails(
         reached100At: { not: null },
         reached100EmailSentAt: null,
         slug: { not: DEMO_SLUG },
+        stopped: false,
       },
       select: { id: true },
     }),

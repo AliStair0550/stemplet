@@ -39,6 +39,7 @@ type BizRow = {
   proApprovedAt: Date | null;
   proPriceKr: number;
   proPriceUntil: Date | null;
+  stopped: boolean;
   memberships: { user: { email: string | null } }[];
   cards: { id: string }[];
 };
@@ -195,6 +196,7 @@ function baseRow(
     proApprovedAt: null,
     proPriceKr: 49,
     proPriceUntil: null,
+    stopped: false,
     memberships: [{ user: { email: "ejer@butik.dk" } }],
     cardholderCount: 0,
     ...over,
@@ -413,4 +415,18 @@ test("foer relanceringen sendes ingen mails, heller ikke til gamle butikker", as
   assert.equal(r.warns + r.invoices, 0);
   assert.equal(businesses.get("g1")!.cardholderWarnedAt, null);
   assert.equal(businesses.get("g1")!.reached100At, null);
+});
+
+test("stoppet butik faar hverken varsel eller faktura-mail", async () => {
+  const { client } = makeFakeDb([
+    baseRow({ id: "b10", slug: "stoppet", name: "Stoppet", stopped: true, createdAt: daysAgo(200) }),
+  ]);
+  const sent: string[] = [];
+  const mailer: MailArg = async ({ to }) => {
+    sent.push(to);
+    return true;
+  };
+  const r = await sweepPendingThresholdEmails(client, mailer, NOW);
+  assert.deepEqual(r, { warns: 0, invoices: 0 });
+  assert.equal(sent.length, 0);
 });

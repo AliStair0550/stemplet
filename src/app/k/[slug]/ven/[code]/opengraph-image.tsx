@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { ogIcon, ogRgba } from "@/lib/og";
 import { loadInvite } from "./load";
+import { safeDecode } from "@/lib/utils";
 
 // Delings-billede for "Henvis en ven": gaven til vennen i butikkens farver, saa
 // det i beskeden er tydeligt, at der ligger en rabat klar.
@@ -11,7 +12,7 @@ export const contentType = "image/png";
 
 export default async function Image({ params }: { params: Promise<{ slug: string; code: string }> }) {
   const { slug, code } = await params;
-  const invite = await loadInvite(slug, decodeURIComponent(code));
+  const invite = await loadInvite(slug, safeDecode(code));
   const bg = invite?.primaryColor ?? "#061C3D";
   const fg = invite?.textColor ?? "#EAF1FB";
   const who = invite?.friend ?? "Din ven";

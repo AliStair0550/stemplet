@@ -9,7 +9,7 @@ import {
   deviceCookieOptions,
 } from "@/lib/cookies";
 import { newDeviceId } from "@/lib/ids";
-import { clientIp, apiError } from "@/lib/http";
+import { clientIp, apiError, isCrossSite } from "@/lib/http";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureServerError } from "@/lib/sentry";
 
@@ -43,6 +43,7 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  if (isCrossSite(req)) return NextResponse.json({ ok: false, code: "serverfejl" }, { status: 403 });
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Ugyldig forespørgsel.");
 
