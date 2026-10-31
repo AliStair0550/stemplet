@@ -32,7 +32,8 @@ function fieldStyle(ctaBg: string, ctaFg: string): React.CSSProperties {
 const RETRYABLE = new Set(["serverfejl", "optaget"]);
 
 // Kontaktformularen (trin 1 for nye kunder): navn og e-mail er paakraevet, og
-// nyheder paa mail er et frivilligt, ikke-afkrydset flueben. Indsendes med
+// lov til at kontakte kunden paa mail (fx med tilbud) er et frivilligt,
+// ikke-afkrydset flueben. Indsendes med
 // fetch til ./kontakt, som opretter kortet og saetter cookies. Wallet aabnes
 // FOERST bagefter fra det rigtige link (trin 2), saa aabningen forbliver
 // paalidelig.
@@ -159,7 +160,7 @@ function ContactForm({
           style={{ accentColor: ctaBg }}
         />
         <span className="text-[0.84rem] font-[300] leading-snug" style={{ color: rgba(ctaBg, 0.85) }}>
-          Ja tak til nyheder og tilbud fra {shopName} på mail. Du kan altid
+          Ja, {shopName} må kontakte mig på mail, fx med tilbud. Du kan altid
           framelde dig igen.
         </span>
       </label>

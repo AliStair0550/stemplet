@@ -122,7 +122,7 @@ export async function signupForReferrals(
     slug: string;
     name: string;
     email: string;
-    /** Frivilligt flueben: ja tak til nyheder og tilbud paa mail. */
+    /** Frivilligt flueben: butikken maa kontakte kunden paa mail (fx tilbud). */
     consent?: boolean;
     code?: string | null;
     source?: ReferralSource;

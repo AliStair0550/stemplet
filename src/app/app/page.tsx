@@ -270,8 +270,9 @@ export default async function HomePage() {
                           .join(" · ")}
                       </span>
                     </span>
+                    {/* Knappen siger, hvad man skal goere (ikke "Tjek ind"). */}
                     <span className="inline-flex min-h-10 shrink-0 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white">
-                      Tjek ind
+                      {c.reasons.includes("stamps") || c.reasons.includes("reward") ? "Giv belønning" : "Giv velkomstrabat"}
                     </span>
                   </Link>
                 </li>
