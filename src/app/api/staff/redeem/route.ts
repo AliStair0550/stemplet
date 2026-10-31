@@ -27,8 +27,10 @@ export async function POST(req: NextRequest) {
   const parsed = redeemSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Udfyld kortet.");
 
+  // Kun PIN'en: hele raekken er op til ca. 2 MB med billederne.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
+    select: { staffPin: true },
   });
   if (!business) return apiError("UNAUTHORIZED", "Virksomhed mangler.", 401);
 

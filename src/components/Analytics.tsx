@@ -8,10 +8,12 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 //   /kort/<serienummer>  kortholderens eget kort-id
 //   /s/<token>           engangs-token til deling
 //   /kasse?kode=...      parringskode til kassen (en adgangsnoegle)
+//   /fordele/<token>     kortholderens signerede link til tilbud og fordele
+//   /pushbeskeder/<token> kortholderens signerede link til at slaa beskeder fra
 // Paa dem indlaeses gtag slet ikke, saa vaerdien aldrig kan havne i page_location
 // eller i et event. Butikkens offentlige side (/k/<slug>) er ikke personhenfoerbar
 // og maales som normalt.
-const NO_TRACK = ["/kort", "/s", "/kasse"];
+const NO_TRACK = ["/kort", "/s", "/kasse", "/fordele", "/pushbeskeder"];
 
 export function Analytics({ gaId }: { gaId: string }) {
   const pathname = usePathname() ?? "";
