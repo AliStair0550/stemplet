@@ -2,6 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { WALLET_ENABLED } from "./env";
+import { captureWalletError } from "./sentry";
 
 /**
  * Efter en aendring, der staar paa kundens kort eller butikssiden (navn, regler,
@@ -14,6 +15,8 @@ export function refreshShop(business: { id: string; slug: string }, opts: { wall
   if (opts.wallet === false || !WALLET_ENABLED) return;
   after(async () => {
     const { pushAllWalletPasses } = await import("./wallet/build");
-    await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+    await pushAllWalletPasses({ businessId: business.id }).catch((e) =>
+      captureWalletError(e, { operation: "apns:shop-refresh", businessId: business.id }),
+    );
   });
 }

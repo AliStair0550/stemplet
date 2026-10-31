@@ -34,7 +34,7 @@ Databasen løber tør for forbindelser (P2024). Ni gange siden juli, senest 30. 
 | R13 | Midlertidige Apple-fejl (overbelastning, nedbrud) prøves aldrig igen. Kortet viser først stemplet ved næste stempel. | S |
 | R14 | Den daglige cron: fejler én opgave, stopper resten (fx certifikat-varslet og udløb af henvisninger). Stopper cronen helt (fx forkert CRON_SECRET), får vi ingen besked. | S |
 | R15 | Deploy fejler, når Neon sover (P1001 under `migrate deploy`). Fejler sikkert (den gamle version kører videre), men kræver manuelt redeploy. Løsning: tre forsøg med pause. | S |
-| R16 | Hæver ejeren antal stempler (fx fra 10 til 12), mister kunder med fuldt kort deres klare belønning. | S-M. **Kræver beslutning** |
+| R16 | Hæver ejeren antal stempler (fx fra 10 til 12), mister kunder med fuldt kort deres klare belønning. | **Besluttet 31. okt:** sådan skal det være. Kunden beholder stemplerne og samler de ekstra. Ingen ændring. |
 | R17 | Mails om prøveperiode og faktura kan sendes to gange: hvis kun den ene af to mails lykkes, eller hvis cronen kører dobbelt. | S-M |
 | R18 | Admin "Nulstil stempler" nulstiller ikke livstidstælleren, så den daglige kontrol melder fejl, og milepæle senere tæller forkert. | S |
 | R19 | Slettes en henvisers kort, kan vennerne henvises igen og få velkomstrabatten to gange. | M (datamodel) |
@@ -70,4 +70,6 @@ Butikker er adskilt overalt (hver handling tjekker butikken). Stempel, fuldt kor
 
 **Bølge 3 (datamodel, godkendes først):** R10, R17, R19, API-nøgle som hash, billeder til Vercel Blob.
 
-**Beslutninger hos Ali:** R4 (stempler som henvisningsbelønning: giv stemplerne automatisk, eller fjern valget), R16 (hvad sker der med fulde kort, når antal stempler hæves), R8 (Neon-plan og backup).
+**Beslutninger hos Ali:** R4 (anbefaling: giv stemplerne automatisk, så snart de er optjent) og R8 (gratisplan hos Neon, anbefaling: ugentlig krypteret kopi via GitHub Actions). R16 er besluttet: kunden beholder stemplerne og samler de ekstra.
+
+**Status bølge 1:** R1, R2 (tidsgrænse pr. besked til Apple), R7, R14 og R15 er lavet (PR "Robusthed bølge 1, del 1").

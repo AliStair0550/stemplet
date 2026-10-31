@@ -12,12 +12,28 @@
 #    promoverer ikke deployet. Fail-closed.
 set -e
 
+# Neon sover paa gratisplanen og kan svare "Can't reach database server" (P1001),
+# mens den vaagner. Proev migrate deploy op til tre gange med pause, foer vi
+# giver op. Migrationer er idempotente (allerede anvendte springes over).
+migrate_with_retry() {
+  for attempt in 1 2 3; do
+    if prisma migrate deploy; then
+      return 0
+    fi
+    if [ "$attempt" -lt 3 ]; then
+      echo "migrate deploy fejlede (forsoeg $attempt af 3). Proever igen om 15 sek."
+      sleep 15
+    fi
+  done
+  return 1
+}
+
 prisma generate
 
 if [ "$VERCEL_ENV" = "production" ]; then
   if [ -n "$DIRECT_URL" ]; then
     echo "Produktions-build: anvender skemamigrationer (prisma migrate deploy)"
-    prisma migrate deploy
+    migrate_with_retry
   else
     echo "ADVARSEL: DIRECT_URL er ikke sat i Vercel. Springer migrate deploy over."
     echo "         Tilfoej DIRECT_URL (direkte, ikke-poolet Neon-URL) i Vercel for"
@@ -30,7 +46,7 @@ elif [ "$VERCEL_ENV" = "preview" ] && [ "$PREVIEW_DATABASE" = "1" ]; then
   echo "Preview med egen database: anvender migrationer og seed"
   # Vagt: stopper buildet, hvis databasen ligner produktion (andre butikker).
   npx tsx scripts/preview-seed.ts --guard
-  prisma migrate deploy
+  migrate_with_retry
   npx tsx scripts/preview-seed.ts
 else
   echo "Ikke-produktions-build (${VERCEL_ENV:-lokal}): springer migrationer over."

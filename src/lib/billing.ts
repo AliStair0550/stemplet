@@ -68,6 +68,7 @@ function runAfterResponse(task: () => Promise<void>) {
       await task();
     } catch (err) {
       console.error("Billing-baggrundsopgave fejlede", err);
+      captureServerError(err, { route: "background:billing" });
     }
   };
   try {

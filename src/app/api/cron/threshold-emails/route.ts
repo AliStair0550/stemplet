@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import {
   sweepPendingThresholdEmails,
   checkStampInvariant,
@@ -27,20 +28,41 @@ export const maxDuration = 60;
 //  5) Henvisninger: aabne henvisninger aeldre end reward_expiry_days og
 //     beloenninger forbi expires_at markeres expired (idempotent).
 // Beskyttet med CRON_SECRET som de oevrige cron-ruter.
+//
+// Hver opgave koerer for sig: fejler een (fx Resend nede), koerer resten
+// alligevel, og fejlen gaar til Sentry. Hele koerslen melder sig desuden som en
+// Sentry-cron-monitor, saa vi faar besked, hvis cronen slet ikke koerer (fx et
+// forkert CRON_SECRET, hvor ruten afviser kaldet).
+const MONITOR = {
+  schedule: { type: "crontab" as const, value: "0 7 * * *" },
+  checkinMargin: 60,
+  maxRuntime: 5,
+  timezone: "UTC",
+};
+
+async function task<T extends object>(name: string, run: () => Promise<T>): Promise<T | Record<string, boolean>> {
+  try {
+    return await run();
+  } catch (e) {
+    captureServerError(e, { route: `cron/${name}` });
+    return { [`${name}Failed`]: true };
+  }
+}
+
 export async function GET(req: NextRequest) {
   if (!bearerAuthorized(req.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response("Unauthorized", { status: 401 });
   }
+  return Sentry.withMonitor("daily-cron", () => runDaily(), MONITOR);
+}
+
+async function runDaily() {
   const [emails, invariant, keepalive, certs, expiry] = await Promise.all([
-    sweepPendingThresholdEmails(),
-    checkStampInvariant(),
-    redisKeepAlive(),
-    checkWalletCertExpiry(),
-    // Et fejlende udloeb maa ikke vaelte de eksisterende opgaver.
-    expireReferralsAndRewards().catch((e) => {
-      captureServerError(e, { route: "cron/referral-expiry" });
-      return { referralExpiryFailed: true };
-    }),
+    task("threshold-emails", sweepPendingThresholdEmails),
+    task("stamp-invariant", checkStampInvariant),
+    task("redis-keepalive", redisKeepAlive),
+    task("cert-expiry", checkWalletCertExpiry),
+    task("referral-expiry", expireReferralsAndRewards),
   ]);
   // Kort med en netop udloebet beloenning opdateres i Wallet.
   const { cardIds = [], ...referrals } = expiry as { cardIds?: string[] } & Record<string, unknown>;
