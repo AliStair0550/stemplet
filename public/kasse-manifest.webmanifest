@@ -1,6 +1,6 @@
 {
   "id": "/kasse",
-  "name": "Kundekort Kasse",
+  "name": "Folka Kasse",
   "short_name": "Kasse",
   "description": "Scan kundens kort og giv stempler.",
   "start_url": "/kasse",

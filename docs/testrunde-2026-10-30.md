@@ -18,9 +18,9 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 | A4 | Hent kort: viser "Hent kort" igen og kortet først 3 sekunder efter | Lavet (batch 2) |
 | A5 | Vennen ser QR-koden på iPhone efter at have hentet kortet (den tegnede QR i kortets forhåndsvisning er fjernet på kundesiden; ses en rigtig QR igen, så send et skærmbillede) | Lavet (batch 2) |
 | A6 | "Se kundekort" på iPhone (app fra hjemmeskærm) mangler en vej tilbage | Lavet (batch 2) |
-| A7 | Eget billede + lyse farver: der sker ingenting | Venter |
-| A8 | Hjemmeskærm-ikonet viser det gamle logo, ikke Folka | Venter |
-| A9 | Pushbesked, der ikke ses på låseskærmen, kan ikke findes bagefter | Venter |
+| A7 | Eget billede + lyse farver: der sker ingenting | Lavet (batch 8) |
+| A8 | Hjemmeskærm-ikonet viser det gamle logo, ikke Folka (gammelt ikon på telefonen skal slettes og tilføjes igen) | Lavet (batch 8) |
+| A9 | Pushbesked, der ikke ses på låseskærmen, kan ikke findes bagefter | Lavet (batch 8) |
 
 ## B. Oprettelse og kom i gang
 

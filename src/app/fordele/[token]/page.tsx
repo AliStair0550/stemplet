@@ -52,6 +52,12 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
   const partners = liveOffers.filter((o) => o.kind === "PARTNER");
 
   const shop = cardTitle(b);
+  // Seneste pushbesked: ses den ikke paa laaseskaermen, kan kunden finde den her
+  // (ellers kun paa kortets bagside). Vises i 30 dage.
+  const news =
+    b.newsText && b.newsSentAt && !cc.newsOptOut && now.getTime() - b.newsSentAt.getTime() < 30 * 86_400_000
+      ? { text: b.newsText, sentAt: b.newsSentAt }
+      : null;
   // Booking-link fra butikken (Design eller Regler): en tydelig "Book tid" oeverst.
   const booking = b.bookingUrl && /^https?:\/\/\S+$/i.test(b.bookingUrl) ? b.bookingUrl : null;
   const fg = b.textColor;
@@ -73,7 +79,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
     if (c.type === "WELCOME_BONUS" && cc.lifetimeStamps === 0)
       offers.push({ title: "Velkomstbonus", text: "Dit første stempel tæller ekstra.", until: c.endsAt });
   }
-  if (b.newsText && !cc.newsOptOut) offers.push({ title: `Nyt fra ${shop}`, text: b.newsText });
+  // Pushbeskeden staar oeverst ("Besked fra ..."), ikke blandt tilbuddene.
 
   const panel = { background: rgba(fg, 0.08), border: `1px solid ${rgba(fg, 0.14)}` };
   const muted = { color: rgba(fg, 0.72) };
@@ -116,6 +122,15 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
             </a>
           ) : null}
         </header>
+
+        {news ? (
+          <section className="rounded-[22px] p-5" style={{ ...panel, ...rise(section++) }}>
+            <p className={label} style={muted}>
+              Besked fra {shop} · {formatDkDate(news.sentAt)}
+            </p>
+            <p className="mt-2 text-[1.1rem] font-semibold leading-snug">{news.text}</p>
+          </section>
+        ) : null}
 
         {b.stampsEnabled ? (
           <section className="relative overflow-hidden rounded-[26px] p-5" style={{ ...panel, ...rise(section++) }}>

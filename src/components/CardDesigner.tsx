@@ -11,6 +11,7 @@ import {
   contrastText,
   isCardReadable,
   normalizeHex,
+  photoPalette,
   type StampIconKey,
 } from "@/lib/brand";
 import { REWARD_TEXT_MAX, TERMS_MAX } from "@/lib/system-config";
@@ -183,6 +184,7 @@ export function CardDesigner({
   hidePreview = false,
   boxed = false,
   parts = "all",
+  photoMode = false,
 }: {
   value: CardDesign;
   onChange: (next: CardDesign) => void;
@@ -197,6 +199,9 @@ export function CardDesigner({
   // Hvilke afsnit: "look" = udseende (farver, ikon, navn og logo; Design),
   // "rules" = stempelregler (antal, beloenning, betingelser; Regler).
   parts?: "all" | "look" | "rules";
+  /** Kortet har eget billede: Wallet bruger lys tekst paa moerk bund. Farverne
+   *  vises, som de faktisk bliver, med en forklaring. */
+  photoMode?: boolean;
 }) {
   const showLook = parts !== "rules";
   const showRules = parts !== "look";
@@ -316,8 +321,15 @@ export function CardDesigner({
                 {activeThemeName ?? "Egen farve"}
               </span>
             </div>
+            {photoMode ? (
+              <p className="text-[0.8rem] leading-snug text-slate">
+                Med dit eget billede får kortet lys tekst på en mørk bund, så teksten altid kan læses. Farverne herunder viser, hvordan det bliver.
+              </p>
+            ) : null}
             <div className="grid grid-cols-3 gap-2.5">
               {CARD_THEMES.map((t) => {
+                // Med eget billede bytter Wallet rollerne: vis det, kunden faar.
+                const shown = photoMode ? photoPalette(t.primary, t.text) : { primaryColor: t.primary, textColor: t.text };
                 const active =
                   value.primaryColor.toUpperCase() === t.primary.toUpperCase() &&
                   value.textColor.toUpperCase() === t.text.toUpperCase();
@@ -344,11 +356,11 @@ export function CardDesigner({
                   >
                     <span
                       className="flex h-11 w-full items-center justify-center rounded-[9px] ring-1 ring-black/5"
-                      style={{ background: t.primary }}
+                      style={{ background: shown.primaryColor }}
                     >
                       <span
                         className="text-[0.9rem] font-[500] leading-none"
-                        style={{ color: t.text }}
+                        style={{ color: shown.textColor }}
                       >
                         Aa
                       </span>

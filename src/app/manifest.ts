@@ -4,8 +4,8 @@ import type { MetadataRoute } from "next";
 // har hvert sit manifest, saa deres hjemmeskaerm-ikon aabner direkte dér.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Kundekort",
-    short_name: "Kundekort",
+    name: "Folka Kort",
+    short_name: "Folka Kort",
     description: "Dit kundekort. Altid ved hånden.",
     start_url: "/",
     display: "standalone",
