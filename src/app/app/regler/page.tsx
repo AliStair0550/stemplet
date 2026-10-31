@@ -170,7 +170,7 @@ async function CardShare({ business, show }: { business: Biz; show: boolean }) {
   // Det, kunden faar: stempelbeloenningen og vennens rabat (det, butikken har slaaet til).
   const lines = [
     ...(business.stampsEnabled && card ? [`${card.rewardText} efter ${card.stampsRequired} stempler`] : []),
-    ...(rule ? [`Henvis en ven: ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
+    ...(rule ? [`Henvis en ven, og få ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
   ];
   return (
     <div className="flex flex-col gap-6">

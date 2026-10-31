@@ -112,7 +112,7 @@ export function iconTileDataUri(markup: string, stroke: string): string {
     `<g transform='translate(${x},${y}) scale(1.5) rotate(-8)'>${markup}</g>`;
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${t}' height='${t}' viewBox='0 0 ${t} ${t}'>` +
-    `<g fill='none' stroke='${stroke}' stroke-opacity='0.08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
+    `<g fill='none' stroke='${stroke}' color='${stroke}' opacity='0.08' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
     `${g(16, 18)}${g(75, 78)}</g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
