@@ -2,13 +2,13 @@ import * as Sentry from "@sentry/nextjs";
 import { scrubPii } from "@/lib/sentry-scrub";
 
 // Klient-side Sentry. Kun i produktion. Session Replay tilfoejes IKKE (og
-// sample-raterne er 0), saa der optages aldrig noget af brugerens skaerm. Lav
-// tracing-sample (free tier). Ingen persondata i payloads.
+// sample-raterne er 0), saa der optages aldrig noget af brugerens skaerm. Kun
+// fejl, ingen tracing i browseren: tracing-koden fyldte i alle siders JS og blev
+// ikke brugt. Ingen persondata i payloads.
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   enabled: process.env.NODE_ENV === "production",
   environment: process.env.NEXT_PUBLIC_VERCEL_ENV ?? process.env.NODE_ENV,
-  tracesSampleRate: 0.05,
   // Session Replay HELT slaaet fra.
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
@@ -36,6 +36,3 @@ Sentry.init({
   ],
   beforeSend: scrubPii,
 });
-
-// Instrumenterer klient-navigation (App Router).
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

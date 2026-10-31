@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { WALLET_ENABLED } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
-import { loadCCForWallet, checkPassAuth } from "@/lib/wallet/build";
+import { loadCCAuth, checkPassAuth } from "@/lib/wallet/build";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!WALLET_ENABLED) return new Response(null, { status: 404 });
   const { deviceLibraryId, serialNumber } = await params;
 
-  const cc = await loadCCForWallet(serialNumber);
+  const cc = await loadCCAuth(serialNumber);
   if (!cc || !checkPassAuth(req.headers.get("authorization"), cc.authToken)) {
     return new Response(null, { status: 401 });
   }
@@ -65,7 +65,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   if (!WALLET_ENABLED) return new Response(null, { status: 404 });
   const { deviceLibraryId, serialNumber } = await params;
 
-  const cc = await loadCCForWallet(serialNumber);
+  const cc = await loadCCAuth(serialNumber);
   if (!cc || !checkPassAuth(req.headers.get("authorization"), cc.authToken)) {
     return new Response(null, { status: 401 });
   }
