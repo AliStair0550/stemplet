@@ -11,24 +11,27 @@ export function KommunikationTabs({
   showCampaigns: boolean;
 }) {
   const tabs = [
-    { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder" },
-    ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner" } as const] : []),
-    { key: "tilbud", href: "/app/tilbud", label: "Tilbud" },
-    { key: "nyhedsmail", href: "/app/nyhedsmail", label: "Nyhedsmail" },
+    { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder", short: "Push" },
+    ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner", short: "Kampagner" } as const] : []),
+    { key: "tilbud", href: "/app/tilbud", label: "Tilbud", short: "Tilbud" },
+    { key: "nyhedsmail", href: "/app/nyhedsmail", label: "Nyhedsmail", short: "Mail" },
   ] as const;
+  // Paa telefonen fylder fanerne bredden med korte navne, saa alle kan ses
+  // (ingen afskaaret fane, man skal scrolle efter).
   return (
-    <nav aria-label="Kommunikation" className="mb-6 flex w-fit max-w-full overflow-x-auto rounded-full bg-[#F2F5F9] p-1">
+    <nav aria-label="Kommunikation" className="mb-6 flex w-full rounded-full bg-[#F2F5F9] p-1 sm:w-fit">
       {tabs.map((t) => (
         <Link
           key={t.key}
           href={t.href}
           aria-current={active === t.key ? "page" : undefined}
           className={cn(
-            "shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[0.88rem]",
+            "flex-1 whitespace-nowrap rounded-full px-2 py-2 text-center text-[0.85rem] sm:flex-none sm:px-4 sm:text-[0.88rem]",
             active === t.key ? "bg-ink font-semibold text-white" : "text-stone hover:text-ink",
           )}
         >
-          {t.label}
+          <span className="sm:hidden">{t.short}</span>
+          <span className="hidden sm:inline">{t.label}</span>
         </Link>
       ))}
     </nav>
