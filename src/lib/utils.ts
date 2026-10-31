@@ -71,3 +71,13 @@ export function relativeDk(date: Date | string): string {
   if (days < 30) return `for ${days} ${days === 1 ? "dag" : "dage"} siden`;
   return formatDkDate(d);
 }
+
+/** Afkod en adressedel uden at vaelte siden. Next afkoder allerede params, saa en
+ *  ekstra afkodning af fx "%" ville kaste og give en 500. */
+export function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}

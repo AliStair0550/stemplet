@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { captureServerError } from "./sentry";
 
 type Db = typeof prisma;
 
@@ -45,7 +46,12 @@ export async function sendOnce(
     ok = false;
   }
   if (ok) {
-    await db.emailLog.update({ where: { id: claimedId }, data: { sentAt: new Date() } }).catch(() => {});
+    // Mailen er sendt: markeringen skal holde, ellers sendes den igen om ti
+    // minutter. Et forsoeg mere, og ellers til Sentry.
+    const mark = () => db.emailLog.update({ where: { id: claimedId }, data: { sentAt: new Date() } });
+    await mark()
+      .catch(mark)
+      .catch((e) => captureServerError(e, { route: "email-log:sent", businessId: key.businessId }));
     return "sent";
   }
   await db.emailLog.delete({ where: { id: claimedId } }).catch(() => {});

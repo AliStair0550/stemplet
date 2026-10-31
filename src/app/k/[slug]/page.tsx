@@ -16,6 +16,7 @@ import { cardShortName } from "@/lib/card-name";
 import { ShareLinkButton } from "@/components/ShareLinkButton";
 import { optimizedLogoDataUri } from "@/lib/logo";
 import { BackToDashboard } from "@/components/BackToDashboard";
+import { withDbRetry } from "@/lib/db-retry";
 
 // Et diskret, gentaget felt af butikkens stempel-ikon som baggrunds-tekstur.
 // Tegnet i tekstfarven ved lav opacitet, saa det giver liv uden at stjaele fokus.
@@ -51,7 +52,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const business = await prisma.business.findUnique({ where: { slug } });
+  // Kort genforsoeg ved en sovende database: det er kundens foerste scanning.
+  const business = await withDbRetry(() => prisma.business.findUnique({ where: { slug } }));
   const brandName = business ? cardTitle(business) : "";
   const title = business ? `Dit kort hos ${brandName}` : "Kort";
   const description = business
@@ -73,13 +75,15 @@ export default async function ClaimPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const business = await prisma.business.findUnique({
-    where: { slug },
-    include: {
-      cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
-      referralRule: true,
-    },
-  });
+  const business = await withDbRetry(() =>
+    prisma.business.findUnique({
+      where: { slug },
+      include: {
+        cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 },
+        referralRule: true,
+      },
+    }),
+  );
   // Een butiksside for kortet og alle dets funktioner (stempler, henvisninger).
   if (!business || (!business.stampsEnabled && !business.referralsEnabled)) notFound();
   // Lille webp-logo bages ind i den (CDN-cachede) side, saa der ikke er en ekstra

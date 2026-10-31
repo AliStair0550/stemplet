@@ -11,6 +11,7 @@ import { isCardStyle, normalizeActions } from "@/lib/card-look";
 import { processArtwork, ArtworkError } from "@/lib/card-artwork";
 import { isCardArt } from "@/lib/card-art";
 import type { CardDesign } from "@/components/CardDesigner";
+import { captureWalletError } from "@/lib/sentry";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -109,7 +110,9 @@ export async function saveCardLook(input: {
   if (WALLET_ENABLED) {
     after(async () => {
       const { pushBusinessWalletPasses } = await import("@/lib/wallet/build");
-      await pushBusinessWalletPasses(business.id).catch(() => {});
+      await pushBusinessWalletPasses(business.id).catch((e) =>
+        captureWalletError(e, { operation: "apns:save", businessId: business.id }),
+      );
     });
   }
   return { ok: true };

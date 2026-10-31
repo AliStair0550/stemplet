@@ -23,23 +23,26 @@ export async function loadReferralPassInfo(
 ): Promise<ReferralPassInfo | null> {
   const b = cc.card.business;
   if (!b.referralsEnabled) return null;
+  // Uden en gemt regel er henvisningssiden lukket (vennen kan ikke tilmelde sig),
+  // saa kortet maa ikke vise "Del med en ven" endnu, og ingen koder uddeles.
+  const rule = await db.referralRule.findUnique({
+    where: { businessId: b.id },
+    select: {
+      termsLine: true,
+      newCustomerRewardType: true,
+      newCustomerRewardValue: true,
+      referrerRewardType: true,
+      referrerRewardValue: true,
+    },
+  });
+  if (!rule) return null;
   // Kortholdere fra foer henvisninger blev slaaet til har ingen kode endnu. Giv
   // dem en nu, saa koden kommer paa kortet ved den opdatering, der netop sker
   // (ellers foerst naar kunden selv aabner butikssiden).
   const code = cc.referralCode ?? (await assignReferralCode({ customerCardId: cc.id }, db).catch(() => null));
   if (!code) return null;
 
-  const [rule, rewards, lastRedeemed, referralsDone, referralsMade] = await Promise.all([
-    db.referralRule.findUnique({
-      where: { businessId: b.id },
-      select: {
-        termsLine: true,
-        newCustomerRewardType: true,
-        newCustomerRewardValue: true,
-        referrerRewardType: true,
-        referrerRewardValue: true,
-      },
-    }),
+  const [rewards, lastRedeemed, referralsDone, referralsMade] = await Promise.all([
     db.reward.findMany({
       where: { cardId: cc.id, status: "AVAILABLE", expiresAt: { gt: now } },
       orderBy: { createdAt: "asc" },
@@ -63,9 +66,9 @@ export async function loadReferralPassInfo(
     code,
     shareUrl: referralShareUrl(APP_URL, b.slug, code),
     pageUrl: `${APP_URL}/k/${b.slug}?del=1`,
-    termsLine: rule?.termsLine ?? null,
-    newCustomerReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : "rabat",
-    referrerReward: rule ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : "en belønning",
+    termsLine: rule.termsLine ?? null,
+    newCustomerReward: rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue),
+    referrerReward: rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue),
     referralsDone,
     referralsMade,
     rewards: rewards.map((r) => ({ type: r.type, value: r.value })),

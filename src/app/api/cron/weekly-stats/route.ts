@@ -1,4 +1,7 @@
 import type { NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
+import { withDbRetry } from "@/lib/db-retry";
+import { captureServerError } from "@/lib/sentry";
 import { prisma } from "@/lib/prisma";
 import { getWeeklyStats } from "@/lib/stats";
 import { weeklyStatsEmail } from "@/lib/emails";
@@ -26,6 +29,18 @@ export async function GET(req: NextRequest) {
   if (!force && new Date().getUTCDay() !== 1) {
     return Response.json({ skipped: "koerer kun mandag" });
   }
+  // Sentry-cron-monitor: vi faar besked, hvis ugemailen ikke koerer om mandagen.
+  return Sentry.withMonitor("weekly-stats", () => runWeekly(), {
+    schedule: { type: "crontab", value: "0 6 * * 1" },
+    checkinMargin: 60,
+    maxRuntime: 5,
+    timezone: "UTC",
+  });
+}
+
+async function runWeekly() {
+  // Vaek Neon foerst (gratisplanen sover), saa ugen ikke gaar tabt paa en kold start.
+  await withDbRetry(() => prisma.$queryRaw`SELECT 1`);
 
   const d30 = new Date();
   d30.setDate(d30.getDate() - 30);
@@ -92,6 +107,7 @@ export async function GET(req: NextRequest) {
       return count;
     } catch (e) {
       console.error("Ugebrev fejlede for", b.id, e);
+      captureServerError(e, { route: "cron/weekly-stats", businessId: b.id });
       return 0;
     }
   }

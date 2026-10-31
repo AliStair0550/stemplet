@@ -58,3 +58,14 @@ export async function apiWriteRateLimit(
   }
   return durableRateLimit(prefix, id, tokens, dbWindowSeconds);
 }
+
+/**
+ * Ryd lofter, hvis vindue er udloebet for laenge siden (daglig cron). Hver
+ * afsender og hver e-mail faar en raekke, saa uden oprydning vokser tabellen
+ * med hvert kald fra internettet. Alle vinduer er hoejst et doegn.
+ */
+export async function pruneRateLimits(now: Date = new Date()): Promise<{ throttlesPruned: number }> {
+  const cutoff = new Date(now.getTime() - 2 * 86_400_000);
+  const res = await prisma.sendThrottle.deleteMany({ where: { windowStart: { lt: cutoff } } });
+  return { throttlesPruned: res.count };
+}

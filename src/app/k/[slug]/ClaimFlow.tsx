@@ -102,7 +102,7 @@ function ContactForm({
         return;
       }
       if (data?.message) setError(data.message);
-      else onFejl(data?.code && ERRORS[data.code] ? data.code : "serverfejl");
+      else onFejl(data?.code && Object.hasOwn(ERRORS, data.code) ? data.code : "serverfejl");
     } catch {
       onFejl("serverfejl");
     } finally {
@@ -503,7 +503,8 @@ export function ClaimFlow({
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const code = q.get("fejl");
-    if (code && ERRORS[code]) setFejl(code);
+    // Kun kendte fejlkoder (ikke fx "constructor" fra prototypen).
+    if (code && Object.hasOwn(ERRORS, code)) setFejl(code);
     if (q.get("gendannet")) setRecovered(true);
     setLinkParams({ k: q.get("k"), via: q.get("via"), del: q.get("del") === "1" });
   }, []);

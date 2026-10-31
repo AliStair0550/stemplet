@@ -12,6 +12,7 @@ import { offerIsLive } from "@/lib/member-offers";
 import { StampIcon } from "@/components/StampIcon";
 import { Confetti } from "@/components/Celebrate";
 import { ShareReferral } from "./ShareReferral";
+import { safeDecode } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: { absolute: "Tilbud og fordele" }, robots: { index: false } };
@@ -28,7 +29,7 @@ const rise = (i: number): CSSProperties => ({ animation: `fadeUp 0.7s cubic-bezi
 
 export default async function BenefitsPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const serial = verifyMemberToken(decodeURIComponent(token));
+  const serial = verifyMemberToken(safeDecode(token));
   if (!serial) notFound();
   const now = new Date();
   const cc = await prisma.customerCard.findUnique({

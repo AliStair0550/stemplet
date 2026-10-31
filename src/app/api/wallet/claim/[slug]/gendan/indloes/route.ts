@@ -5,6 +5,7 @@ import { redeemCardRecovery } from "@/lib/card-recovery";
 import { cardCookieName, cardCookieOptions, DEVICE_ID_COOKIE, deviceCookieOptions } from "@/lib/cookies";
 import { newDeviceId } from "@/lib/ids";
 import { captureServerError } from "@/lib/sentry";
+import { isCrossSite } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 // ville ellers bruge linket op, foer kunden naar at trykke.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (isCrossSite(req)) return NextResponse.redirect(new URL(`/k/${slug}`, APP_URL), 303);
   const form = await req.formData().catch(() => null);
   const token = String(form?.get("t") ?? "");
   const go = (path: string) => NextResponse.redirect(new URL(path, APP_URL), 303);

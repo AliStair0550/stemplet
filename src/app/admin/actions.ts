@@ -196,10 +196,14 @@ export async function resetStamps(businessId: string): Promise<void> {
       where: { card: { businessId } },
       // Livstidstaelleren skal foelge stempel-loggen (den daglige kontrol og
       // senere milepaele tjekker lifetimeStamps = sum af stempler).
-      data: { stamps: 0, lifetimeStamps: 0 },
+      // lastStampAt nulstilles ogsaa, saa cooldown ikke gaelder for et tomt kort.
+      data: { stamps: 0, lifetimeStamps: 0, lastStampAt: null },
     }),
   ]);
   revalidatePath("/admin");
+  // Kortene i Wallet skal vise 0 med det samme, ikke foerst ved naeste stempel.
+  const b = await prisma.business.findUnique({ where: { id: businessId }, select: { id: true, slug: true } });
+  if (b) refreshShop(b);
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -297,6 +301,16 @@ export async function setBusinessFlag(
 ): Promise<void> {
   await requireAdmin();
   if (!BUSINESS_FLAGS.includes(flag)) throw new Error("Ugyldigt felt");
+  // Som under Regler: mindst een funktion skal vaere slaaet til, ellers er
+  // kundesiden vaek og kortene i Wallet tomme.
+  if (!value && (flag === "stampsEnabled" || flag === "referralsEnabled")) {
+    const cur = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { stampsEnabled: true, referralsEnabled: true },
+    });
+    const other = flag === "stampsEnabled" ? cur?.referralsEnabled : cur?.stampsEnabled;
+    if (!other) throw new Error("Mindst én funktion skal være slået til.");
+  }
   const data =
     flag === "selfScanEnabled"
       ? { selfScanEnabled: value }

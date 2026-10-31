@@ -65,6 +65,8 @@ export type RecoveredCard = {
  * saa samme link aldrig virker to gange. Enheden knyttes til kortet, saa det
  * ogsaa genfindes, hvis kort-cookien senere tabes. null = ugyldigt link.
  */
+const RECENT_USE_MS = 2 * 60 * 1000;
+
 export async function redeemCardRecovery(
   token: string,
   slug: string,
@@ -76,6 +78,7 @@ export async function redeemCardRecovery(
     where: { tokenHash: hash(token) },
     select: {
       id: true,
+      usedAt: true,
       customerCard: {
         select: {
           id: true,
@@ -96,7 +99,19 @@ export async function redeemCardRecovery(
     where: { id: row.id, usedAt: null, expiresAt: { gt: new Date() } },
     data: { usedAt: new Date() },
   });
-  if (used.count !== 1) return null;
+  if (used.count !== 1) {
+    // Dobbelttryk eller genforsoeg efter et tabt svar: linket er netop brugt.
+    // Giv kortet igen i stedet for "linket er udloebet", men kun i to minutter.
+    // Kun den samme telefon, der fik kortet: et videresendt link kan ikke bruges
+    // fra en anden telefon.
+    const again = await db.cardRecoveryToken.findUnique({
+      where: { id: row.id },
+      select: { usedAt: true, customerCard: { select: { deviceId: true } } },
+    });
+    const usedAt = again?.usedAt ?? row.usedAt;
+    const samePhone = !!deviceId && again?.customerCard.deviceId === deviceId;
+    if (!usedAt || !samePhone || Date.now() - usedAt.getTime() > RECENT_USE_MS) return null;
+  }
 
   if (deviceId) {
     // Een enhed = eet kort pr. butik: havde telefonen allerede et andet kort

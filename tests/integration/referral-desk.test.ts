@@ -392,3 +392,18 @@ test("sletning: kortholderens kort og beloenninger slettes, henvisningen bliver 
     await cleanup(s.bizId);
   }
 });
+
+test("wallet: Henvisninger slaaet til uden en regel viser intet og uddeler ingen kode", async () => {
+  const s = await makeShop();
+  try {
+    await prisma.referralRule.deleteMany({ where: { businessId: s.bizId } });
+    const plain = await prisma.customerCard.create({
+      data: { cardId: s.cardId, serial: randomUUID().slice(0, 12), authToken: randomUUID() },
+    });
+    assert.equal(await loadReferralPassInfo(await loadForWallet(plain.id)), null);
+    const saved = await prisma.customerCard.findUniqueOrThrow({ where: { id: plain.id } });
+    assert.equal(saved.referralCode, null);
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

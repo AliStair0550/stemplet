@@ -10,6 +10,9 @@ import { bearerAuthorized } from "@/lib/secret";
 import { expireReferralsAndRewards } from "@/lib/referral";
 import { pushReferralWallet } from "@/lib/referral-kasse";
 import { captureServerError } from "@/lib/sentry";
+import { prisma } from "@/lib/prisma";
+import { withDbRetry } from "@/lib/db-retry";
+import { pruneRateLimits } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,12 +60,18 @@ export async function GET(req: NextRequest) {
 }
 
 async function runDaily() {
-  const [emails, invariant, keepalive, certs, expiry] = await Promise.all([
+  // Vaek Neon foerst (gratisplanen sover), saa opgaverne ikke hver isaer fejler
+  // paa en kold database og foerst proeves igen i morgen.
+  await withDbRetry(() => prisma.$queryRaw`SELECT 1`).catch((e) =>
+    captureServerError(e, { route: "cron/warmup" }),
+  );
+  const [emails, invariant, keepalive, certs, expiry, throttles] = await Promise.all([
     task("threshold-emails", sweepPendingThresholdEmails),
     task("stamp-invariant", checkStampInvariant),
     task("redis-keepalive", redisKeepAlive),
     task("cert-expiry", checkWalletCertExpiry),
     task("referral-expiry", expireReferralsAndRewards),
+    task("rate-limit-cleanup", pruneRateLimits),
   ]);
   // Kort med en netop udloebet beloenning opdateres i Wallet.
   const { cardIds = [], ...referrals } = expiry as { cardIds?: string[] } & Record<string, unknown>;
@@ -73,5 +82,6 @@ async function runDaily() {
     ...keepalive,
     ...certs,
     ...referrals,
+    ...throttles,
   });
 }

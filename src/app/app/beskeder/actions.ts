@@ -18,6 +18,8 @@ export async function sendNewsAction(text: string): Promise<NewsResult> {
   const { business } = await requireBusiness();
   const parsed = parseNews(text);
   if (!parsed.ok) return parsed;
+  // Stoppet butik: ingen notifikationer paa kundernes laaseskaerm.
+  if (business.stopped) return { ok: false, error: "Butikken er sat på pause, så der kan ikke sendes pushbeskeder." };
   if (nextNewsAllowedAt(business.newsSentAt)) {
     // Genforsoeg efter et tabt svar: den samme besked er netop sendt. Svar som
     // ved succes i stedet for "én i døgnet", saa ejeren ikke tror, den fejlede.
