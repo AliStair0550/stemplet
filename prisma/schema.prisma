@@ -353,6 +353,9 @@ model CustomerCard {
   // Sidst kortets Wallet-pass blev aendret. Saettes ved hvert push (pushWalletUpdate),
   // saa enheden kun henter de kort, der faktisk er aendret (passesUpdatedSince).
   passUpdatedAt  DateTime             @default(now())
+  // Sidst et push naaede alle kortets enheder (B4). Er kortet aendret senere
+  // (passUpdatedAt > passPushedAt), gik pushet tabt, og den daglige cron sender igen.
+  passPushedAt   DateTime?
 
   @@unique([cardId, deviceId]) // een enhed = eet kort pr. butik (race-sikker dedup)
   @@index([cardId])

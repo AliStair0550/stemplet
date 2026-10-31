@@ -9,6 +9,7 @@ import type { AddressInfo } from "node:net";
 
 import { prisma } from "../../src/lib/prisma";
 import { pushWalletUpdates } from "../../src/lib/wallet/apns";
+import { resyncWalletPasses } from "../../src/lib/wallet/build";
 
 delete process.env.UPSTASH_REDIS_REST_URL;
 delete process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -26,6 +27,7 @@ server.on("session", () => {
   sessions += 1;
 });
 server.on("stream", (stream, headers) => {
+  stream.on("error", () => {}); // "reset"-tokens lukker stroemmen med vilje
   const token = String(headers[":path"]).split("/").pop()!;
   const n = (hits.get(token) ?? 0) + 1;
   hits.set(token, n);
@@ -35,6 +37,11 @@ server.on("stream", (stream, headers) => {
       stream.respond({ ":status": status, "content-type": "application/json" });
       stream.end(reason ? JSON.stringify({ reason }) : "");
     };
+    if (token.startsWith("reset")) {
+      // Intet svar (forbindelsen afbrydes): ukendt, om pushet kom frem.
+      stream.close(http2.constants.NGHTTP2_INTERNAL_ERROR);
+      return;
+    }
     if (token.startsWith("dead")) reply(410, "Unregistered");
     else if (token.startsWith("bad")) reply(400, "BadDeviceToken");
     else if (token.startsWith("topic")) reply(400, "TopicDisallowed");
@@ -88,6 +95,43 @@ test("mange kort paa een forbindelse; kun doede tokens slettes; 503 proeves igen
     }
     const touched = await prisma.customerCard.count({ where: { id: { in: ids }, passUpdatedAt: { gte: startedAt } } });
     assert.equal(touched, 120);
+  } finally {
+    await prisma.business.delete({ where: { id: biz.id } });
+  }
+});
+
+test("kort uden svar regnes ikke som afleveret; den daglige opsamling sender igen", async () => {
+  const biz = await prisma.business.create({
+    data: { name: "IT-apns-2", slug: `it-apns-${randomUUID()}`, cards: { create: { rewardText: "x" } } },
+    include: { cards: true },
+  });
+  try {
+    const kinds = ["ok", "reset"];
+    const ids: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      const cc = await prisma.customerCard.create({
+        data: { cardId: biz.cards[0]!.id, businessId: biz.id, serial: `B${randomUUID().slice(0, 12)}`, authToken: randomUUID() },
+      });
+      ids.push(cc.id);
+      await prisma.walletRegistration.create({
+        data: { customerCardId: cc.id, deviceLibraryId: `e${i}`, pushToken: `${kinds[i % 2]}2-${i}` },
+      });
+    }
+    await pushWalletUpdates(ids);
+    const cards = await prisma.customerCard.findMany({ where: { id: { in: ids } }, include: { walletRegs: true } });
+    for (const c of cards) {
+      const okCard = c.walletRegs[0]!.pushToken.startsWith("ok");
+      assert.equal(c.passPushedAt?.getTime() === c.passUpdatedAt.getTime(), okCard, c.walletRegs[0]!.pushToken);
+    }
+    // Daglig opsamling: kortene uden svar (aendret for mere end 5 min. siden) sendes igen.
+    const old = new Date(Date.now() - 10 * 60 * 1000);
+    await prisma.customerCard.updateMany({ where: { id: { in: ids } }, data: { passUpdatedAt: old } });
+    await prisma.customerCard.updateMany({ where: { id: { in: ids }, walletRegs: { some: { pushToken: { startsWith: "ok" } } } }, data: { passPushedAt: old } });
+    const before = hits.get("reset2-1") ?? 0;
+    const r = await resyncWalletPasses();
+    assert.ok(r.resynced >= 3);
+    assert.ok((hits.get("reset2-1") ?? 0) > before, "kortet uden svar fik et nyt push");
+    assert.equal(hits.get("ok2-0"), 1, "det afleverede kort fik ikke et nyt push");
   } finally {
     await prisma.business.delete({ where: { id: biz.id } });
   }

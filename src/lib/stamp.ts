@@ -383,6 +383,9 @@ export async function applyStamp(opts: {
         // den aldrig kan komme ud af trit med de faktiske stempler.
         lifetimeStamps: { increment: scanIncrement },
         lastStampAt: now,
+        // Kortet er aendret i samme transaktion (B4): doer pushet efter svaret,
+        // sender den daglige cron det igen.
+        passUpdatedAt: now,
       },
     });
     if (applied.count === 0) {
@@ -610,6 +613,7 @@ export async function undoLastStamp(
         lifetimeStamps: { decrement: lifeRemoved },
         lastStampAt: prev?.createdAt ?? null,
         lastUndoKey: key,
+        passUpdatedAt: new Date(),
       },
       select: { stamps: true, lifetimeStamps: true },
     });
@@ -688,7 +692,7 @@ export async function redeemReward(opts: {
     // (fx dobbeltstempel paa sidste felt) baeres over til naeste runde.
     const reset = await tx.customerCard.updateMany({
       where: { id: cc.id, stamps: { gte: required } },
-      data: { stamps: { decrement: required }, completedCount: { increment: 1 } },
+      data: { stamps: { decrement: required }, completedCount: { increment: 1 }, passUpdatedAt: new Date() },
     });
     if (reset.count === 0) {
       throw new StampError("FULL", "Kortet er ikke fuldt endnu.");
