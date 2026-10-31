@@ -541,23 +541,6 @@ async function visitTx(
 
 // ── voided ───────────────────────────────────────────────────────────
 
-/** Butikken annullerer en aaben henvisning. En gennemfoert kan ikke annulleres. */
-export async function voidReferral(
-  opts: { referralId: string; businessId: string },
-  db: Db = prisma,
-): Promise<void> {
-  const from = (Object.keys(REFERRAL_TRANSITIONS) as ReferralStatus[]).filter((s) =>
-    canTransition(s, "VOIDED"),
-  );
-  const res = await db.referral.updateMany({
-    where: { id: opts.referralId, businessId: opts.businessId, status: { in: from } },
-    data: { status: "VOIDED" },
-  });
-  if (res.count === 0) {
-    throw new ReferralError("INVALID_TRANSITION", "Henvisningen kan ikke annulleres.");
-  }
-}
-
 // ── Beloenning indloest (kassen) ─────────────────────────────────────
 
 export type RedeemResult = {

@@ -43,14 +43,6 @@ export async function getCardToken(
   return c.get(cardCookieName(businessId))?.value;
 }
 
-export async function setCardToken(
-  businessId: string,
-  token: string,
-): Promise<void> {
-  const c = await cookies();
-  c.set(cardCookieName(businessId), token, cardCookieOptions());
-}
-
 /** Stabil enheds-id til PIN-låsning i kassemodus. Oprettes ved behov. */
 export async function ensureDeviceId(): Promise<string> {
   const c = await cookies();
@@ -59,11 +51,6 @@ export async function ensureDeviceId(): Promise<string> {
   const id = newDeviceId();
   c.set(DEVICE_ID_COOKIE, id, deviceCookieOptions());
   return id;
-}
-
-export async function getDeviceId(): Promise<string> {
-  const c = await cookies();
-  return c.get(DEVICE_ID_COOKIE)?.value ?? "ukendt";
 }
 
 /** Butikker, hvor ejeren har lukket "Din første kunde i dag" paa Hjem (id'er med punktum). */

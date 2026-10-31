@@ -72,15 +72,6 @@ const findBusinessById = cache((id: string) =>
   prisma.business.findUnique({ where: { id }, omit: IMAGE_FIELDS }),
 );
 
-/** Returnerer den aktive virksomhed for sessionen, ellers null. */
-export async function getSessionBusiness(): Promise<SessionBusiness | null> {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return null;
-  const id = await activeBusinessId(userId);
-  return id ? findBusinessById(id) : null;
-}
-
 /** Den aktive butiks id (til API-ruter der scoper paa butik). */
 export async function getSessionBusinessId(): Promise<string | null> {
   const session = await auth();

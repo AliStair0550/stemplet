@@ -72,33 +72,6 @@ export function IconQr() {
     </svg>
   );
 }
-export function IconShare() {
-  return (
-    <svg {...svgProps} className={ICON_LG}>
-      <circle cx="18" cy="5" r="2.5" />
-      <circle cx="6" cy="12" r="2.5" />
-      <circle cx="18" cy="19" r="2.5" />
-      <path d="M8.2 10.8 15.8 6.4M8.2 13.2l7.6 4.4" />
-    </svg>
-  );
-}
-export function IconDesign() {
-  return (
-    <svg {...svgProps} className={ICON_LG}>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <circle cx="8" cy="12" r="2" />
-      <path d="M13.5 10.5h4M13.5 14h4" />
-    </svg>
-  );
-}
-export function IconDevice() {
-  return (
-    <svg {...svgProps} className={ICON_LG}>
-      <rect x="7" y="3" width="10" height="18" rx="2" />
-      <path d="M10.5 18h3" />
-    </svg>
-  );
-}
 
 export function IconChart() {
   return (
@@ -113,14 +86,6 @@ export function IconKey() {
     <svg {...svgProps} className={ICON_LG}>
       <circle cx="8" cy="12" r="3.5" />
       <path d="M11.5 12H20M17 12v3M14 12v2.5" />
-    </svg>
-  );
-}
-export function IconCard() {
-  return (
-    <svg {...svgProps} className={ICON_LG}>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <path d="M3 10h18M6.5 14.5h4" />
     </svg>
   );
 }

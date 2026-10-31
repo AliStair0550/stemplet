@@ -10,8 +10,6 @@ export const APP_URL = (
   process.env.NEXT_PUBLIC_APP_URL || "https://kort.folka.dk"
 ).trim();
 
-export const IS_PROD = process.env.NODE_ENV === "production";
-
 /**
  * GA4-maale-id. Kun sat paa PRODUKTION, saa preview-deploys og lokal udvikling
  * aldrig sender data til Google. Vi bruger VERCEL_ENV ("production" | "preview"
