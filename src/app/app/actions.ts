@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
-import { ONBOARDING_HIDDEN_COOKIE } from "@/lib/cookies";
+import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
@@ -546,17 +546,30 @@ export async function signOutAction() {
 
 export async function dismissOnboardingAction(): Promise<void> {
   const { business } = await requireBusiness();
+  await rememberBusinessInCookie(ONBOARDING_HIDDEN_COOKIE, business.id);
+  revalidatePath("/app");
+}
+
+// Kom i gang: ejeren har aabnet "Se kortet". Gemmes i en cookie (ingen kolonne),
+// saa trinnet krydses af paa denne enhed.
+export async function markCardSeen(): Promise<void> {
+  const { business } = await requireBusiness();
+  await rememberBusinessInCookie(ONBOARDING_SEEN_COOKIE, business.id);
+  revalidatePath("/app");
+}
+
+async function rememberBusinessInCookie(name: string, businessId: string): Promise<void> {
   const jar = await cookies();
-  const ids = new Set((jar.get(ONBOARDING_HIDDEN_COOKIE)?.value ?? "").split(".").filter(Boolean));
-  ids.add(business.id);
-  jar.set(ONBOARDING_HIDDEN_COOKIE, [...ids].slice(-20).join("."), {
+  const ids = new Set((jar.get(name)?.value ?? "").split(".").filter(Boolean));
+  if (ids.has(businessId)) return;
+  ids.add(businessId);
+  jar.set(name, [...ids].slice(-20).join("."), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/app",
     maxAge: 60 * 60 * 24 * 365,
   });
-  revalidatePath("/app");
 }
 
 // Kom i gang: kortet er delt (link delt/kopieret eller QR-koden vist). Kun

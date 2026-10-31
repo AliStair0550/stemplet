@@ -25,7 +25,9 @@ function iconTileDataUri(markup: string, stroke: string): string {
     `<g transform='translate(${x},${y}) scale(1.5) rotate(-8)'>${markup}</g>`;
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' width='${t}' height='${t}' viewBox='0 0 ${t} ${t}'>` +
-    `<g fill='none' stroke='${stroke}' stroke-opacity='0.06' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
+    // color + opacity paa hele gruppen: ikonernes udfyldning (currentColor) skal
+    // daempes sammen med stregen, ellers bliver den til graa klatter.
+    `<g fill='none' stroke='${stroke}' color='${stroke}' opacity='0.06' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'>` +
     `${g(14, 16)}${g(72, 74)}</g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
@@ -36,6 +38,8 @@ function iconTileDataUri(markup: string, stroke: string): string {
 // oprettelsen (og om kunden allerede har et kort) haandteres i claim-ruten
 // /api/wallet/claim/[slug], som "Hent mit stempelkort"-linket peger paa.
 export const revalidate = 3600;
+
+const PATTERN_MASK = "linear-gradient(90deg, #000 0, transparent calc(50% - 150px), transparent calc(50% + 150px), #000 100%)";
 
 // Ingen sider bygges paa forhaand: hver butiksside laves foerste gang, den
 // aabnes, og caches derefter (ISR, se revalidate). Saa roerer bygget ikke
@@ -158,13 +162,12 @@ export default async function ClaimPage({
       backgroundColor: bgBottom,
       color: text,
       backgroundImage: [
-        iconTileDataUri(iconMarkup, text),
         `radial-gradient(ellipse 130% 60% at 50% 40%, ${rgba(warm, 0.6)} 0%, transparent 62%)`,
         `radial-gradient(ellipse 110% 50% at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 66%)`,
         `linear-gradient(180deg, ${bgTop} 0%, ${bgMid} 48%, ${bgBottom} 100%)`,
       ].join(", "),
-      backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
-      backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "100% 100%",
     };
     cardShadow = `drop-shadow(0 24px 44px ${rgba(shade(primary, -0.5), 0.32)})`;
   } else {
@@ -175,22 +178,32 @@ export default async function ClaimPage({
       backgroundColor: bgBottom,
       color: text,
       backgroundImage: [
-        iconTileDataUri(iconMarkup, text),
         `radial-gradient(ellipse 130% 55% at 50% 42%, ${rgba(spotlight, 0.5)} 0%, transparent 60%)`,
         `radial-gradient(ellipse 100% 45% at 50% 0%, ${rgba(text, 0.1)} 0%, transparent 70%)`,
         `linear-gradient(180deg, ${bgTop} 0%, ${bgBottom} 100%)`,
       ].join(", "),
-      backgroundRepeat: "repeat, no-repeat, no-repeat, no-repeat",
-      backgroundSize: "116px 116px, 100% 100%, 100% 100%, 100% 100%",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "100% 100%",
     };
     cardShadow = `drop-shadow(0 26px 48px ${rgba(shade(primary, -0.72), 0.6)})`;
   }
 
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center px-6 py-16"
+      className="isolate flex min-h-screen flex-col items-center justify-center px-6 py-16"
       style={bgStyle}
     >
+      {/* Ikon-moensteret holder sig i siderne, vaek fra tekst og formular. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          backgroundImage: iconTileDataUri(iconMarkup, text),
+          backgroundSize: "116px 116px",
+          maskImage: PATTERN_MASK,
+          WebkitMaskImage: PATTERN_MASK,
+        }}
+      />
       <BackToDashboard />
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-4 text-center">

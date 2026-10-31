@@ -693,8 +693,11 @@ textarea:focus-visible {
     transform: none;
   }
 }
+/* backwards, ikke both: en animation, der bliver haengende paa transform, goer
+   siden til "containing block" for position: fixed, saa QR-skaermen, scanneren
+   og kassen kun fylder siden og havner under bundmenuen. */
 .page-in {
-  animation: pageIn 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: pageIn 0.28s cubic-bezier(0.32, 0.72, 0, 1) backwards;
 }
 
 /* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden

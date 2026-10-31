@@ -118,7 +118,7 @@ export function MemberCard({
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   return (
     <div
-      className={cn("relative aspect-[1/1.42] w-full overflow-hidden rounded-[22px] kk-shadow-3", className)}
+      className={cn("@container relative aspect-[1/1.42] w-full overflow-hidden rounded-[22px] kk-shadow-3", className)}
       style={{
         background: bg,
         color: fg,
@@ -141,8 +141,9 @@ export function MemberCard({
           </span>
           {hideShop ? null : <span className="truncate text-[15px] font-semibold tracking-[-0.02em]">{card.shop}</span>}
         </div>
+        {/* Smalle kort (viften paa mobil): kun butiksnavnet, saa det ikke skaeres af. */}
         {card.corner ? (
-          <div className="shrink-0 text-right">
+          <div className="hidden shrink-0 text-right @[230px]:block">
             <p className="text-[9px] font-semibold uppercase tracking-[.08em] opacity-70">{card.corner.label}</p>
             <p className="text-[14px] font-semibold leading-tight tabular-nums">{card.corner.value}</p>
           </div>

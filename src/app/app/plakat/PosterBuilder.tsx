@@ -192,7 +192,10 @@ export function PosterBuilder({
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-10">
+      {/* Paa mobil: plakaten og "Hent PDF" foerst, valgene nedenunder. Standarden
+          er god nok til de fleste, saa man skal ikke rulle forbi fem bokse. */}
       <div className="flex min-w-0 flex-col gap-4">
+        <h2 className="text-[1.05rem] font-semibold tracking-[-0.01em] text-ink lg:hidden">Tilpas plakaten</h2>
         {referralsEnabled ? (
           <Box title="Hvad skal plakaten?">
             <Choice<PosterFocus>
@@ -290,7 +293,7 @@ export function PosterBuilder({
         </Box>
       </div>
 
-      <aside className="flex flex-col gap-3 lg:sticky lg:top-6 lg:self-start">
+      <aside className="order-first mx-auto flex w-full max-w-[300px] flex-col gap-3 lg:sticky lg:top-6 lg:order-none lg:mx-0 lg:max-w-none lg:self-start">
         <div className="relative aspect-[210/297] w-full overflow-hidden rounded-[14px] border border-fog bg-[#F2F5F9] shadow-card">
           <iframe
             key={previewUrl}

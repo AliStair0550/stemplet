@@ -84,6 +84,9 @@ export async function createLoyaltyBusiness(
           slug,
           primaryColor: DEFAULT_PRIMARY,
           textColor: DEFAULT_TEXT,
+          // Med stempler: stempelfelterne paa kortet fra start, som i
+          // forhaandsvisningen paa /start (ikke en tom flade med navnet).
+          cardStyle: input.stamps ? "stamps" : "color",
           termsAcceptedAt: new Date(),
           welcomeStampEnabled: false,
           stampsEnabled: !!input.stamps,

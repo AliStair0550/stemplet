@@ -55,3 +55,6 @@ export async function ensureDeviceId(): Promise<string> {
 
 /** Butikker, hvor ejeren har lukket "Din første kunde i dag" paa Hjem (id'er med punktum). */
 export const ONBOARDING_HIDDEN_COOKIE = "folka_skjul_start";
+
+/** Butikker, hvor ejeren har set kortet paa sin telefon fra Kom i gang (id'er med punktum). */
+export const ONBOARDING_SEEN_COOKIE = "folka_set_kort";

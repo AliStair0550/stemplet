@@ -20,7 +20,7 @@ export async function GET() {
   ]);
   const lines = [
     ...(business.stampsEnabled && card ? [`${card.rewardText} efter ${card.stampsRequired} stempler`] : []),
-    ...(rule ? [`Henvis en ven: ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
+    ...(rule ? [`Henvis en ven, og få ${rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue)}`] : []),
   ];
   try {
     const buf = await buildShopQrPass({
