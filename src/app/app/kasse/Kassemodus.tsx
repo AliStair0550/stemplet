@@ -1024,10 +1024,10 @@ function StaffCard({
                 Færdig
               </button>
               <div className="flex w-full flex-wrap justify-center gap-2">
-                <button type="button" onClick={() => setGiven(null)} className={`${btnClass("outline")} flex-1`}>
+                <button type="button" onClick={() => setGiven(null)} className={`${btnClass("outline")} flex-1 whitespace-nowrap`}>
                   +1 stempel
                 </button>
-                <button type="button" onClick={undo} disabled={busy} aria-busy={busy} className={`${btnClass("outline")} flex-1 !text-rust`}>
+                <button type="button" onClick={undo} disabled={busy} aria-busy={busy} className={`${btnClass("outline")} flex-1 whitespace-nowrap !text-rust`}>
                   {busy ? "Fortryder..." : given.inc === 1 ? "Fortryd" : `Fortryd (fjern ${given.inc})`}
                 </button>
               </div>

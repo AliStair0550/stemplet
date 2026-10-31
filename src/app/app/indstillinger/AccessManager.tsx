@@ -55,12 +55,15 @@ function lastSeenText(iso: string | null): string {
 export function AccessManager({
   emails,
   devices,
+  businessName,
 }: {
   emails: LoginEmail[];
   devices: Device[];
+  businessName: string;
 }) {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("full");
+  // Det almindelige for en medarbejder er en kasse paa egen telefon.
+  const [mode, setMode] = useState<Mode>("kasse");
   const [pending, start] = useTransition();
 
   // Fuld adgang (login-mail)
@@ -74,7 +77,9 @@ export function AccessManager({
   const [pairing, setPairing] = useState<{
     code: string;
     qrDataUrl: string;
+    url: string;
   } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [confirmDeviceId, setConfirmDeviceId] = useState<string | null>(null);
 
   function addEmail(e: React.FormEvent) {
@@ -119,8 +124,29 @@ export function AccessManager({
   function newCode() {
     start(async () => {
       const res = await createPairingCodeAction();
-      setPairing({ code: res.code, qrDataUrl: res.qrDataUrl });
+      setPairing({ code: res.code, qrDataUrl: res.qrDataUrl, url: res.url });
+      setLinkCopied(false);
     });
+  }
+
+  // Send kasse-linket til medarbejderen (SMS, Messenger ...). Ellers kopieres det.
+  async function sharePairing() {
+    if (!pairing) return;
+    const text = `Her er din kasse til ${businessName}. Åbn linket på din telefon:`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Din kasse", text, url: pairing.url });
+        return;
+      }
+    } catch (e) {
+      if ((e as { name?: string }).name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(pairing.url);
+      setLinkCopied(true);
+    } catch {
+      // Kunne ikke kopiere: QR-koden og koden virker stadig.
+    }
   }
 
   function closePairing() {
@@ -149,15 +175,11 @@ export function AccessManager({
   return (
     <section className="scroll-mt-24 rounded-lg border border-fog bg-white p-6 shadow-card md:p-8">
       <div className="flex flex-col gap-1">
-        <span className="text-[0.62rem] font-[500] uppercase tracking-[0.16em] text-terracotta">
-          Adgang
-        </span>
         <h2 className="font-[300] text-[1.3rem] text-ink">
-          Hvem har adgang til butikken
+          Giv dine medarbejdere adgang
         </h2>
         <p className="mt-1 max-w-xl font-[300] text-[0.88rem] leading-relaxed text-stone">
-          Vælg hvad hver adgang skal kunne: fuld adgang til dashboardet, eller en
-          kasse der kun kan stemple.
+          En kasse på deres egen telefon, eller adgang til det hele.
         </p>
       </div>
 
@@ -165,25 +187,25 @@ export function AccessManager({
       <div className="mt-6 flex gap-1 rounded-lg border border-fog bg-parchment p-1">
         <button
           type="button"
-          onClick={() => setMode("full")}
-          className={tabClass(mode === "full")}
-        >
-          Fuld adgang (login-mail)
-        </button>
-        <button
-          type="button"
           onClick={() => setMode("kasse")}
           className={tabClass(mode === "kasse")}
         >
-          Kun kasse (stempel)
+          Kun kasse
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("full")}
+          className={tabClass(mode === "full")}
+        >
+          Adgang til alt
         </button>
       </div>
 
       {mode === "full" ? (
         <div className="mt-5">
           <p className="max-w-xl font-[300] text-[0.85rem] leading-relaxed text-stone">
-            Personen logger ind med et link i mailen, ingen adgangskode, og kan se
-            og ændre alt i butikken.
+            Medarbejderen får et login-link på mail, uden adgangskode, og kan se og
+            ændre alt.
           </p>
           <form onSubmit={addEmail} className="mt-4 flex flex-col gap-2">
             <div className="flex flex-col gap-2 sm:flex-row">
@@ -191,7 +213,7 @@ export function AccessManager({
                 type="email"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder="navn@butik.dk"
+                placeholder="medarbejder@mail.dk"
                 autoComplete="email"
                 aria-label="Ny login-mail"
                 className="w-full border border-clay bg-parchment px-4 py-2.5 font-[200] text-[0.92rem] text-ink outline-none focus:border-terracotta sm:max-w-xs"
@@ -201,7 +223,7 @@ export function AccessManager({
                 disabled={pending}
                 className={`${btnClass("primary")} shrink-0 disabled:opacity-60`}
               >
-                {pending ? "Tilføjer..." : "Tilføj login-mail"}
+                {pending ? "Sender..." : "Send login-link"}
               </button>
             </div>
             {emailMsg ? <Msg text={emailMsg.text} ok={emailMsg.ok} /> : null}
@@ -210,16 +232,16 @@ export function AccessManager({
       ) : (
         <div className="mt-5">
           <p className="max-w-xl font-[300] text-[0.85rem] leading-relaxed text-stone">
-            Par en iPad eller telefon som fast kasse. Den kan vise QR, scanne kort
-            og stemple, men aldrig se dine indstillinger, priser eller kunder. Du
-            kan spærre en enhed når som helst.
+            Medarbejderen kan scanne kort og give stempler på sin egen telefon,
+            men ser ikke dine indstillinger eller kunder. Du kan fjerne
+            adgangen når som helst.
           </p>
           <button
             onClick={newCode}
             disabled={pending}
             className={`${btnClass("primary")} mt-4`}
           >
-            {pending ? "Et øjeblik..." : "Par en ny enhed"}
+            {pending ? "Et øjeblik..." : "Lav et kasse-link"}
           </button>
         </div>
       )}
@@ -228,7 +250,7 @@ export function AccessManager({
       {emails.length > 0 ? (
         <div className="mt-8">
           <h3 className="mb-3 text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-slate">
-            Fuld adgang
+            Adgang til alt
           </h3>
           <div className="flex flex-col gap-2.5">
             {emails.map((u) => (
@@ -301,11 +323,11 @@ export function AccessManager({
       {/* Kasse-enheder: liste */}
       <div className="mt-8">
         <h3 className="mb-3 text-[0.62rem] font-[500] uppercase tracking-[0.14em] text-slate">
-          Kasse-enheder
+          Kasser
         </h3>
         {devices.length === 0 ? (
           <p className="rounded-lg border border-dashed border-clay px-4 py-6 text-center font-[300] text-[0.86rem] text-slate">
-            Ingen enheder parret endnu.
+            Ingen kasser endnu.
           </p>
         ) : (
           <div className="flex flex-col gap-2.5">
@@ -341,7 +363,7 @@ export function AccessManager({
                 {confirmDeviceId === d.id ? (
                   <div className="flex shrink-0 items-center gap-3">
                     <span className="text-[0.74rem] font-[300] text-stone">
-                      Spær enheden?
+                      Fjern kassen?
                     </span>
                     <button
                       onClick={() => revoke(d.id)}
@@ -363,7 +385,7 @@ export function AccessManager({
                     onClick={() => setConfirmDeviceId(d.id)}
                     className="shrink-0 text-[0.72rem] font-[400] uppercase tracking-[0.08em] text-slate transition-colors hover:text-rust"
                   >
-                    Spær
+                    Fjern
                   </button>
                 )}
               </div>
@@ -381,32 +403,26 @@ export function AccessManager({
             onClick={(e) => e.stopPropagation()}
             className="flex w-full max-w-sm flex-col items-center gap-5 rounded-lg bg-parchment p-8 text-center"
           >
-            <h3 className="font-[300] text-[1.3rem] text-ink">Par en ny enhed</h3>
+            <h3 className="font-[300] text-[1.3rem] text-ink">Kasse til din medarbejder</h3>
             <p className="max-w-xs font-[300] text-[0.86rem] leading-relaxed text-stone">
-              På enheden: åbn{" "}
-              <span className="font-[400] text-ink">{APP_HOST}/kasse</span>{" "}
-              og indtast koden, eller scan QR-koden.
+              Send linket til medarbejderen, eller lad dem scanne QR-koden med deres telefon.
             </p>
+            <button type="button" onClick={sharePairing} className={`${btnClass("primary")} w-full`}>
+              {linkCopied ? "Link kopieret" : "Send linket"}
+            </button>
             <div className="rounded-lg border border-fog bg-white shadow-card p-3">
               <Image
                 src={pairing.qrDataUrl}
-                alt="Parrings-QR"
+                alt="QR-kode til kassen"
                 width={200}
                 height={200}
                 className="h-44 w-44"
                 unoptimized
               />
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[0.62rem] font-[400] uppercase tracking-[0.14em] text-slate">
-                Kode
-              </span>
-              <span className="font-[400] text-[1.9rem] tracking-[0.3em] text-ink">
-                {pairing.code}
-              </span>
-            </div>
-            <p className="text-[0.74rem] font-[300] text-slate">
-              Koden udløber om 10 minutter.
+            <p className="text-[0.8rem] font-[300] leading-relaxed text-slate">
+              Eller skriv koden <span className="font-[500] tracking-[0.15em] text-ink">{pairing.code}</span> på{" "}
+              <span className="font-[400] text-ink">{APP_HOST}/kasse</span>. Linket og koden virker i 30 minutter.
             </p>
             <button onClick={closePairing} className={btnClass("outline")}>
               Færdig

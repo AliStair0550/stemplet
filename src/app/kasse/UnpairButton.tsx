@@ -12,7 +12,7 @@ export function UnpairButton() {
     return (
       <div className="flex items-center gap-3">
         <span className="text-[0.68rem] font-[300] text-slate">
-          Frakobl enheden?
+          Log kassen ud?
         </span>
         <form action={unpairAction}>
           <button className="text-[0.68rem] font-[500] uppercase tracking-[0.1em] text-rust transition-opacity hover:opacity-70">
@@ -36,7 +36,7 @@ export function UnpairButton() {
       onClick={() => setConfirm(true)}
       className="text-[0.68rem] font-[300] uppercase tracking-[0.1em] text-slate transition-colors hover:text-rust"
     >
-      Frakobl enhed
+      Log ud
     </button>
   );
 }

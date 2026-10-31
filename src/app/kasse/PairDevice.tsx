@@ -52,51 +52,18 @@ export function PairDevice({
             </svg>
           </span>
           <h1 className="font-[300] text-[1.5rem] leading-tight text-ink">
-            Par denne enhed
+            Din kasse
           </h1>
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
-            {standalone === true
-              ? "Du er inde i kasse-appen. Indtast koden herunder, så er kassen klar og husker sig selv."
-              : "Gør denne enhed til en fast kasse med koden fra dashboardet (under Indstillinger). Ingen login bagefter."}
+            {presetCode
+              ? "Tryk på knappen, så er kassen klar på denne telefon. Ingen login."
+              : "Skriv koden fra butikken, så er kassen klar. Ingen login."}
           </p>
         </div>
 
-        {/* TYDELIG anbefalet raekkefoelge FOER kode-indtastningen (kun i
-            browseren): en hjemmeskaerm-app har sit eget cookie-lager, saa
-            parringen skal laves INDE i appen for at holde. */}
-        {standalone === false ? (
-          <div className="flex flex-col gap-3 rounded-xl border-2 border-terracotta/35 bg-terracotta/[0.06] p-5 text-left">
-            <p className="text-[0.92rem] font-[600] text-ink">
-              Skal enheden være en fast kasse? Start her
-            </p>
-            <ol className="flex flex-col gap-2.5">
-              {[
-                "Føj kassen til hjemmeskærmen",
-                "Åbn kassen fra det nye ikon",
-                "Indtast koden inde i appen",
-              ].map((step, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-terracotta text-[0.72rem] font-[600] text-parchment">
-                    {i + 1}
-                  </span>
-                  <span className="text-[0.84rem] font-[300] leading-snug text-stone">
-                    {step}
-                  </span>
-                </li>
-              ))}
-            </ol>
-            <div className="flex items-center gap-3 border-t border-terracotta/20 pt-3">
-              <InstallHomeScreen />
-              <span className="text-[0.72rem] font-[300] leading-snug text-slate">
-                Koden virker i ca. 30 min, så der er tid til at åbne appen.
-              </span>
-            </div>
-          </div>
-        ) : null}
-
         <label className="flex flex-col gap-1.5">
           <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            {standalone === false ? "Eller indtast koden her nu" : "Parringskode"}
+            Kode
           </span>
           <input
             name="code"
@@ -110,26 +77,20 @@ export function PairDevice({
             autoCapitalize="characters"
             autoComplete="off"
             inputMode="text"
-            className="border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-terracotta"
+            className="rounded-xl border border-clay bg-white px-4 py-3 text-center font-[400] text-[1.4rem] tracking-[0.4em] text-ink outline-none focus:border-terracotta"
           />
-          {standalone === false ? (
-            <span className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-              Parrer kassen i denne browser. Vil du have et app-ikon, så følg de
-              tre trin ovenfor i stedet.
-            </span>
-          ) : null}
         </label>
 
         <label className="flex flex-col gap-1.5">
           <span className="text-[0.68rem] font-[400] uppercase tracking-[0.12em] text-slate">
-            Navn på enheden (valgfrit)
+            Dit navn (valgfrit)
           </span>
           <input
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value.slice(0, 40))}
-            placeholder="iPad ved disken"
-            className="border border-clay bg-white px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
+            placeholder="Fx Mia"
+            className="rounded-xl border border-clay bg-white px-4 py-3 font-[300] text-[0.95rem] text-ink outline-none focus:border-terracotta"
           />
         </label>
 
@@ -144,8 +105,34 @@ export function PairDevice({
           disabled={submitting || code.length < 6}
           className={`${btnClass("primary", "lg")} disabled:cursor-not-allowed disabled:opacity-50`}
         >
-          {submitting ? "Parrer..." : "Par enhed"}
+          {submitting ? "Åbner kassen..." : "Åbn kassen"}
         </button>
+
+        {/* Valgfrit: kassen som app paa hjemmeskaermen. En hjemmeskaerm-app har sit
+            eget cookie-lager, saa koden skal skrives INDE i appen for at holde. */}
+        {standalone === false ? (
+          <details className="rounded-xl border border-fog bg-white p-4 text-left">
+            <summary className="cursor-pointer text-[0.86rem] font-[500] text-ink">
+              Vil du have kassen som app på hjemmeskærmen?
+            </summary>
+            <ol className="mt-3 flex flex-col gap-2.5">
+              {["Føj kassen til hjemmeskærmen", "Åbn kassen fra det nye ikon", "Skriv koden inde i appen"].map((step, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ink text-[0.72rem] font-[600] text-parchment">
+                    {i + 1}
+                  </span>
+                  <span className="text-[0.84rem] font-[300] leading-snug text-stone">{step}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-3 flex items-center gap-3 border-t border-fog pt-3">
+              <InstallHomeScreen />
+              <span className="text-[0.72rem] font-[300] leading-snug text-slate">
+                Koden virker i 30 minutter, så der er tid til at åbne appen.
+              </span>
+            </div>
+          </details>
+        ) : null}
       </form>
     </main>
   );

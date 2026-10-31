@@ -133,8 +133,10 @@ function buildDemoSeries(
   });
   const buckets = new Map<string, number>();
   const days: { key: string; label: string; sublabel: string }[] = [];
-  const noon = new Date();
-  noon.setUTCHours(12, 0, 0, 0);
+  // Middag paa dagens DANSKE dato (ikke UTC-datoen), saa timen efter midnat
+  // ikke taelles med i gaar.
+  const [ny, nm, nd] = keyFmt.format(new Date()).split("-").map(Number);
+  const noon = new Date(Date.UTC(ny!, nm! - 1, nd!, 12));
   for (let i = 6; i >= 0; i--) {
     const d = new Date(noon.getTime() - i * 86_400_000);
     const key = keyFmt.format(d);

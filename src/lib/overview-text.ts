@@ -58,6 +58,20 @@ export function summaryLine(p: {
   } besøgt dig i dag, ${formatDkNumber(p.returningToday)} af dem er kommet igen.`;
 }
 
+/**
+ * "I går: 3 stempler, 1 ny kunde og 1 belønning givet." Saa ejeren dagen efter
+ * kan se, hvad der skete, selvom dagens tal staar paa 0. null = intet i gaar.
+ */
+export function yesterdayLine(p: { stamps: number; newCustomers: number; rewards: number }): string | null {
+  const parts: string[] = [];
+  if (p.stamps > 0) parts.push(`${formatDkNumber(p.stamps)} ${p.stamps === 1 ? "stempel" : "stempler"}`);
+  if (p.newCustomers > 0) parts.push(`${formatDkNumber(p.newCustomers)} ${p.newCustomers === 1 ? "ny kunde" : "nye kunder"}`);
+  if (p.rewards > 0) parts.push(`${formatDkNumber(p.rewards)} ${p.rewards === 1 ? "belønning givet" : "belønninger givet"}`);
+  if (parts.length === 0) return null;
+  const list = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} og ${parts.at(-1)}`;
+  return `I går: ${list}.`;
+}
+
 /** Hjem-linjen for en butik med kun Henvisninger (ingen stempler at taelle). */
 export function referralSummaryLine(p: { totalCustomers: number; newThisMonth: number; waiting: number }): string {
   if (p.totalCustomers === 0) {
