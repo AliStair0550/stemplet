@@ -753,19 +753,6 @@ export function superadminMarketingSignupEmail(
   };
 }
 
-export type SuperadminSignupRequestData = {
-  businessName: string;
-  reward: string;
-  /** Saat, naar butikken ogsaa vil have Henvisninger. */
-  referralReward?: string | null;
-  /** Kun Henvisninger: opret butikken med Stemplet slaaet fra. */
-  referralsOnly?: boolean;
-  contactName: string; // navn eller "(ingen)"
-  email: string;
-  phone: string; // nummer eller "(ingen)"
-  createUrl: string; // /app/ny-butik
-};
-
 // HTML-escape af brugerindtastet tekst, saa fri tekst i mailen ikke kan bryde
 // layoutet eller injicere markup.
 function esc(s: string): string {

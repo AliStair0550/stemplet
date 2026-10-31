@@ -48,7 +48,6 @@ export async function GET() {
     "Vilkaar accepteret",
     "Branche",
     "Placering",
-    "Stripe",
   ];
 
   const lines: string[] = [header.map(cell).join(",")];
@@ -74,7 +73,6 @@ export async function GET() {
           cell(b.termsAcceptedAt ? b.termsAcceptedAt.toISOString().slice(0, 10) : ""),
           cell(b.category ?? ""),
           cell(b.latitude != null && b.longitude != null ? "ja" : "nej"),
-          cell(b.stripeCustomerId ? "ja" : "nej"),
         ].join(","),
       );
     }

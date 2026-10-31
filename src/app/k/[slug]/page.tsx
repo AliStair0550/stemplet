@@ -7,7 +7,6 @@ import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
 import { rewardPhrase } from "@/lib/referral-text";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
-import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, shade, rgba, hexToRgb, type StampIconKey } from "@/lib/brand";
 import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 import { ClaimFlow } from "./ClaimFlow";
@@ -118,7 +117,6 @@ export default async function ClaimPage({
     );
   }
   const card = business.cards[0];
-  const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rule = business.referralsEnabled ? business.referralRule : null;
   const referral = rule
     ? {
@@ -311,14 +309,6 @@ export default async function ClaimPage({
         </div>
         )}
 
-        {showPoweredBy ? (
-          <p
-            className="text-[0.65rem] font-[300] tracking-[0.08em]"
-            style={{ color: rgba(text, 0.45) }}
-          >
-            Drevet af Folka
-          </p>
-        ) : null}
       </div>
     </main>
   );

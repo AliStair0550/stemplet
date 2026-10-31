@@ -1,15 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
 import { ONBOARDING_HIDDEN_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
-import { getStripe, proPriceId } from "@/lib/stripe";
-import { APP_URL, WALLET_ENABLED } from "@/lib/env";
+import { WALLET_ENABLED } from "@/lib/env";
 import { after } from "next/server";
 import { hashPin } from "@/lib/security";
 import { generateApiKey } from "@/lib/integrations";
@@ -537,54 +535,6 @@ export async function deleteCampaign(id: string): Promise<Result> {
   await prisma.campaign.deleteMany({ where: { id } });
   revalidatePath("/app/kampagner");
   return { ok: true };
-}
-
-export async function startCheckout() {
-  const { business } = await requireBusiness();
-  if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRO_PRICE_ID) {
-    redirect("/app/indstillinger?fejl=stripe");
-  }
-  const stripe = getStripe();
-
-  let customerId = business.stripeCustomerId;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      name: business.name,
-      metadata: { businessId: business.id },
-    });
-    customerId = customer.id;
-    await prisma.business.update({
-      where: { id: business.id },
-      data: { stripeCustomerId: customerId },
-    });
-  }
-
-  const sessionUrl = (
-    await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price: proPriceId(), quantity: 1 }],
-      allow_promotion_codes: true,
-      success_url: `${APP_URL}/app/indstillinger?betaling=ok`,
-      cancel_url: `${APP_URL}/app/indstillinger`,
-      metadata: { businessId: business.id },
-      subscription_data: { metadata: { businessId: business.id } },
-    })
-  ).url;
-
-  if (sessionUrl) redirect(sessionUrl);
-}
-
-export async function openPortal() {
-  const { business } = await requireBusiness();
-  if (!process.env.STRIPE_SECRET_KEY) redirect("/app/indstillinger?fejl=stripe");
-  if (!business.stripeCustomerId) redirect("/app/indstillinger");
-  const stripe = getStripe();
-  const portal = await stripe.billingPortal.sessions.create({
-    customer: business.stripeCustomerId,
-    return_url: `${APP_URL}/app/indstillinger`,
-  });
-  redirect(portal.url);
 }
 
 export async function signOutAction() {

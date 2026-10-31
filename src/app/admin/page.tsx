@@ -48,7 +48,6 @@ function buildRow(
     category: string | null;
     createdAt: Date;
     termsAcceptedAt: Date | null;
-    stripeCustomerId: string | null;
     latitude: number | null;
     longitude: number | null;
     selfScanEnabled: boolean;

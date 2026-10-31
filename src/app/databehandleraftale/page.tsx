@@ -98,8 +98,7 @@ export default function DpaPage() {
         <ul className="flex flex-col gap-2.5">
           <Li>Neon og Vercel, database og drift i EU,</Li>
           <Li>Upstash, midlertidig cache og sikkerhed,</Li>
-          <Li>Resend, udsendelse af login-mails,</Li>
-          <Li>Stripe, betaling ved opgradering.</Li>
+          <Li>Resend, udsendelse af login-mails.</Li>
         </ul>
         <p>
           Vi sikrer, at underdatabehandlere er underlagt de samme forpligtelser.

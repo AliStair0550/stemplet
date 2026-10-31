@@ -165,14 +165,7 @@ export async function signupForReferrals(
   if (block) return { ok: false, error: block };
 
   // Stemplets egen oprettelse, uaendret: loft (advisory-laas) og dedup pr. enhed.
-  const created = await createCardholderAtomically(
-    shop.plan,
-    shop.id,
-    activeCardId,
-    db,
-    input.deviceId ?? null,
-  );
-  if (!created) return { ok: false, error: "fuld" };
+  const created = await createCardholderAtomically(shop.id, activeCardId, db, input.deviceId ?? null);
   if (created.isNew) await maybeFireTrialMilestones(shop.id);
 
   // Samtidig tilmelding med samme e-mail: unik-indekset vinder, og den anden

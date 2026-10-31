@@ -6,7 +6,6 @@ import { StampCard } from "@/components/StampCard";
 import { LiveRefresh } from "@/components/LiveRefresh";
 import { WebCardActions } from "./WebCardActions";
 import { WALLET_ENABLED, APP_URL } from "@/lib/env";
-import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { optimizedLogoDataUri } from "@/lib/logo";
 import { prisma } from "@/lib/prisma";
@@ -48,7 +47,6 @@ export default async function WebCardPage({
   if (!cc) notFound();
 
   const business = cc.card.business;
-  const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
   // Lille, cachet webp-logo bages ind i siden (ingen ekstra hentning).
   // Kortopslaget henter ikke billederne (se BUSINESS_NO_IMAGES), saa logoet
@@ -76,7 +74,6 @@ export default async function WebCardPage({
           stamps={cc.stamps}
           required={cc.card.stampsRequired}
           rewardText={cc.card.rewardText}
-          showPoweredBy={showPoweredBy}
           serial={cc.serial}
         />
 

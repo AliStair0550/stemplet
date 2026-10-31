@@ -12,9 +12,8 @@ import {
   undoLastStamp,
   computeScanIncrement,
 } from "../src/lib/stamp";
-import { PLAN_LIMITS } from "../src/lib/plans";
 
-type CapDb = Parameters<typeof createCardholderAtomically>[3];
+type CapDb = Parameters<typeof createCardholderAtomically>[2];
 type UndoDb = Parameters<typeof undoLastStamp>[1];
 
 // ── DAT-3: kunde-loft haandhaeves atomisk, og optaellingen springes over naar ──
@@ -44,43 +43,16 @@ function makeCapDb(opts: { count: number; onCount?: () => void }) {
   return { db: db as unknown as CapDb, getCreated: () => created };
 }
 
-test("kunde-loft FRA: opretter uden at taelle (SKA-6, ingen spildt count)", async () => {
-  // Default: PLAN_LIMITS.FREE.maxCustomers === null -> loft slaaet fra.
+test("intet kunde-loft: opretter uden at taelle (ingen spildt count)", async () => {
   let counted = false;
   const { db, getCreated } = makeCapDb({
     count: 999,
     onCount: () => (counted = true),
   });
-  const res = await createCardholderAtomically("FREE", "b1", "card1", db);
+  const res = await createCardholderAtomically("b1", "card1", db);
   assert.ok(res, "kortet blev oprettet");
-  assert.equal(counted, false, "ingen optaelling naar loftet er slaaet fra");
+  assert.equal(counted, false, "ingen optaelling");
   assert.ok(getCreated());
-});
-
-test("kunde-loft AKTIVT ved graensen: afviser (null, intet kort oprettet)", async () => {
-  const orig = PLAN_LIMITS.FREE.maxCustomers;
-  PLAN_LIMITS.FREE.maxCustomers = 2;
-  try {
-    const { db, getCreated } = makeCapDb({ count: 2 }); // allerede ved loftet
-    const res = await createCardholderAtomically("FREE", "b1", "card1", db);
-    assert.equal(res, null, "ved loftet oprettes intet nyt kort");
-    assert.equal(getCreated(), null, "create blev aldrig kaldt");
-  } finally {
-    PLAN_LIMITS.FREE.maxCustomers = orig;
-  }
-});
-
-test("kunde-loft AKTIVT under graensen: opretter", async () => {
-  const orig = PLAN_LIMITS.FREE.maxCustomers;
-  PLAN_LIMITS.FREE.maxCustomers = 3;
-  try {
-    const { db, getCreated } = makeCapDb({ count: 2 }); // 2 < 3
-    const res = await createCardholderAtomically("FREE", "b1", "card1", db);
-    assert.ok(res, "under loftet oprettes kortet");
-    assert.ok(getCreated());
-  } finally {
-    PLAN_LIMITS.FREE.maxCustomers = orig;
-  }
 });
 
 // ── DAT-2: undoLastStamp traekker RELATIVT fra den levende taeller, ikke ──

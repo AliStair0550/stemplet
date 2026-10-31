@@ -14,10 +14,8 @@ import {
   applyStamp,
   undoLastStamp,
   redeemReward,
-  createCardholderAtomically,
 } from "../../src/lib/stamp";
 import { checkStampInvariant } from "../../src/lib/billing";
-import { PLAN_LIMITS } from "../../src/lib/plans";
 
 type Camp = { type: "DOUBLE_STAMP" | "WELCOME_BONUS"; startsAt: Date; endsAt: Date };
 
@@ -103,33 +101,6 @@ test("undo + samtidigt stempel: lifetimeStamps == sum(Stamp.multiplier)", async 
       "invarianten holder: ingen lost update fra undo",
     );
   } finally {
-    await cleanup(bizId);
-  }
-});
-
-// ── DAT-3: kunde-loftet kan ikke races over graensen ──────────────────
-
-test("kunde-loft: to samtidige tilmeldinger ved graensen giver praecis eet kort", async () => {
-  const orig = PLAN_LIMITS.FREE.maxCustomers;
-  PLAN_LIMITS.FREE.maxCustomers = 3;
-  const { bizId, cardId } = await makeBiz();
-  try {
-    await makeCard(cardId); // 1
-    await makeCard(cardId); // 2 (under loftet paa 3)
-
-    const results = await Promise.all([
-      createCardholderAtomically("FREE", bizId, cardId),
-      createCardholderAtomically("FREE", bizId, cardId),
-    ]);
-
-    const created = results.filter(Boolean).length;
-    const total = await prisma.customerCard.count({
-      where: { card: { businessId: bizId } },
-    });
-    assert.equal(created, 1, "kun eet af to samtidige forsoeg lykkes ved loftet");
-    assert.equal(total, 3, "loftet paa 3 blev IKKE overskredet");
-  } finally {
-    PLAN_LIMITS.FREE.maxCustomers = orig;
     await cleanup(bizId);
   }
 });

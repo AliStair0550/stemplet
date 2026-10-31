@@ -1,7 +1,6 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "../prisma";
-import { PLAN_LIMITS } from "../plans";
 import { cardTitle } from "../brand";
 import { APP_URL } from "../env";
 import { buildPass } from "./pass";
@@ -39,7 +38,6 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     required: cc.card.stampsRequired,
     lifetimeStamps: cc.lifetimeStamps,
     completedCount: cc.completedCount,
-    showPoweredBy: PLAN_LIMITS[b.plan].showPoweredBy,
     latitude: b.latitude,
     longitude: b.longitude,
     referral,

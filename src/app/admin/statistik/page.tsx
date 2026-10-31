@@ -140,7 +140,6 @@ export default async function StatistikPage() {
     redemptionsTotal,
     newCardholders30,
     chMonthRows,
-    onbRows,
     deviceRows,
   ] = await Promise.all([
     prisma.customerCard.groupBy({
@@ -170,12 +169,6 @@ export default async function StatistikPage() {
             GROUP BY 1
           `)
       : Promise.resolve([] as { ym: string; n: number }[]),
-    // Onboarding-funnel: distinkte anonyme besoegende pr. trin, seneste 30 dage.
-    prisma.onboardingEvent.groupBy({
-      by: ["step"],
-      where: { createdAt: { gte: since30 } },
-      _count: { _all: true },
-    }),
     // Aktivering: butikker med mindst een aktiv kasse-enhed.
     businessIds.length
       ? prisma.device.groupBy({
@@ -202,16 +195,6 @@ export default async function StatistikPage() {
   const totalCardholders = [...customersByBiz.values()].reduce((a, b) => a + b, 0);
   const totalStamps = [...stampsByBiz.values()].reduce((a, b) => a + b, 0);
   const newBiz30 = businesses.filter((b) => b.createdAt >= since30).length;
-
-  // Oprettelses-funnel (seneste 30 dage): hvor mange naaede hvert trin paa /start.
-  const onbByStep = new Map<number, number>();
-  for (const r of onbRows) onbByStep.set(r.step, r._count._all);
-  const onboardingFunnel = [
-    { label: "1. Din butik", count: onbByStep.get(0) ?? 0 },
-    { label: "2. Design", count: onbByStep.get(1) ?? 0 },
-    { label: "3. Opsætning", count: onbByStep.get(2) ?? 0 },
-    { label: "4. Oprettet", count: onbByStep.get(3) ?? 0 },
-  ];
 
   // Aktivering: af alle oprettede butikker, hvor mange kom videre.
   const bizWithDevice = new Set(deviceRows.map((d) => d.businessId));
@@ -302,25 +285,14 @@ export default async function StatistikPage() {
           </div>
         </section>
 
-        {/* Onboarding & aktivering */}
+        {/* Aktivering */}
         <section>
           <SectionHead
-            title="Onboarding & aktivering"
-            desc="Hvor mange når hvert trin i oprettelsen (seneste 30 dage), og hvor mange butikker kommer videre bagefter. Vis, hvor folk falder fra."
+            title="Aktivering"
+            desc="Hvor mange butikker kommer videre efter oprettelsen. Vis, hvor de falder fra."
           />
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div>
-              <p className="mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
-                Oprettelses-funnel (30 dage)
-              </p>
-              <Funnel steps={onboardingFunnel} />
-            </div>
-            <div>
-              <p className="mb-2 text-[0.64rem] font-[500] uppercase tracking-[0.12em] text-slate">
-                Aktivering efter oprettelse
-              </p>
-              <Funnel steps={activationFunnel} />
-            </div>
+          <div className="mt-4 max-w-xl">
+            <Funnel steps={activationFunnel} />
           </div>
         </section>
 
