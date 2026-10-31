@@ -70,9 +70,7 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
   // Stempel-queries filtrerer paa den denormaliserede Stamp.businessId, saa de
   // rammer @@index([businessId, createdAt]) direkte i stedet for at semi-joine
   // gennem CustomerCard (som omgik indekset og scannede historikken). Redemption
-  // har ingen businessId-kolonne, saa den bruger stadig relationen (rel).
-  const rel = { customerCard: { cardId: { in: cardIds } } };
-  const inCards = { cardId: { in: cardIds } };
+  // har ingen businessId-kolonne, saa den joiner gennem CustomerCard.
 
   // Alt udregnes med aggregerede queries (count/groupBy/raw), saa vi ikke
   // laenger henter ALLE kundekort og ALLE indloesninger som fulde raekker for at
@@ -82,52 +80,57 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
   // totalEver >= required >= 4 >= 2, saa vi behoever ikke stampsRequired:
   //   atLeast1 = stamps >= 1 ELLER completedCount >= 1
   //   atLeast2 = stamps >= 2 ELLER completedCount >= 1
-  const [
-    totalCustomers,
-    activeCustomers,
-    newCustomers30,
-    atLeast1,
-    atLeast2,
-    distinctRedeemers,
-    stampsTotalAgg,
-    redemptionsTotal,
-    redemptions30,
-    methodGroups,
-    avgRows,
-    topStampsAgg,
-    over50,
-    over100,
-    over250,
-  ] = await Promise.all([
-    prisma.customerCard.count({ where: inCards }),
-    prisma.customerCard.count({
-      where: { ...inCards, lastStampAt: { gte: d60 } },
-    }),
-    prisma.customerCard.count({
-      where: { ...inCards, createdAt: { gte: d30 } },
-    }),
-    prisma.customerCard.count({
-      where: {
-        ...inCards,
-        OR: [{ stamps: { gte: 1 } }, { completedCount: { gte: 1 } }],
-      },
-    }),
-    prisma.customerCard.count({
-      where: {
-        ...inCards,
-        OR: [{ stamps: { gte: 2 } }, { completedCount: { gte: 1 } }],
-      },
-    }),
-    prisma.customerCard.count({
-      where: { ...inCards, redemptions: { some: {} } },
-    }),
+  // Tidligere 15 forespoergsler paa een gang mod en pulje paa 5 forbindelser
+  // (P2024 i produktion). Nu 4: alle kundekort-tal i een SQL med FILTER, begge
+  // indloesnings-tal i een, stempler i een groupBy (summen = stempler i alt) og
+  // gennemsnittet for sig.
+  // Kolonnerne er "timestamp" uden zone og gemt i UTC. En Date i raa SQL sendes
+  // med zone og ville blive tolket i databasens tidszone, saa graensen sendes
+  // som UTC-tekst (samme som Prismas egne forespoergsler).
+  const utc = (d: Date) => Prisma.sql`${d.toISOString().replace("Z", "")}::timestamp`;
+  const [cardRows, redemptionRows, methodGroups, avgRows] = await Promise.all([
+    prisma.$queryRaw<
+      {
+        total: number;
+        active: number;
+        new30: number;
+        at_least_1: number;
+        at_least_2: number;
+        redeemers: number;
+        top: number | null;
+        over50: number;
+        over100: number;
+        over250: number;
+      }[]
+    >(Prisma.sql`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE cc."lastStampAt" >= ${utc(d60)})::int AS active,
+        COUNT(*) FILTER (WHERE cc."createdAt" >= ${utc(d30)})::int AS new30,
+        COUNT(*) FILTER (WHERE cc."stamps" >= 1 OR cc."completedCount" >= 1)::int AS at_least_1,
+        COUNT(*) FILTER (WHERE cc."stamps" >= 2 OR cc."completedCount" >= 1)::int AS at_least_2,
+        COUNT(*) FILTER (
+          WHERE EXISTS (SELECT 1 FROM "Redemption" r WHERE r."customerCardId" = cc."id")
+        )::int AS redeemers,
+        MAX(cc."lifetimeStamps")::int AS top,
+        COUNT(*) FILTER (WHERE cc."lifetimeStamps" >= 50)::int AS over50,
+        COUNT(*) FILTER (WHERE cc."lifetimeStamps" >= 100)::int AS over100,
+        COUNT(*) FILTER (WHERE cc."lifetimeStamps" >= 250)::int AS over250
+      FROM "CustomerCard" cc
+      WHERE cc."cardId" IN (${Prisma.join(cardIds)})
+    `),
+    prisma.$queryRaw<{ total: number; last30: number }[]>(Prisma.sql`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE r."createdAt" >= ${utc(d30)})::int AS last30
+      FROM "Redemption" r
+      JOIN "CustomerCard" cc ON cc."id" = r."customerCardId"
+      WHERE cc."cardId" IN (${Prisma.join(cardIds)})
+    `),
     // Stempler i alt: SUM af multiplier (faktiske stempler), ikke antal raekker.
     // Et stempel kan taelle for flere (personalet giver flere paa en gang, eller
     // dobbelt-stempel-kampagne), saa raekker !== stempler. Summen matcher kundens
     // lifetimeStamps, saa "i alt" aldrig er mindre end "flest hos een kunde".
-    prisma.stamp.aggregate({ where: { businessId }, _sum: { multiplier: true } }),
-    prisma.redemption.count({ where: rel }),
-    prisma.redemption.count({ where: { ...rel, createdAt: { gte: d30 } } }),
     prisma.stamp.groupBy({
       by: ["method"],
       where: { businessId },
@@ -149,22 +152,18 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
         WHERE cc."cardId" IN (${Prisma.join(cardIds)})
       ) s
     `),
-    // Loyalitet: din mest trofaste kunde og antal stamkunder pr. niveau.
-    // lifetimeStamps taeller alle stempler kunden nogensinde har optjent.
-    prisma.customerCard.aggregate({
-      where: inCards,
-      _max: { lifetimeStamps: true },
-    }),
-    prisma.customerCard.count({
-      where: { ...inCards, lifetimeStamps: { gte: 50 } },
-    }),
-    prisma.customerCard.count({
-      where: { ...inCards, lifetimeStamps: { gte: 100 } },
-    }),
-    prisma.customerCard.count({
-      where: { ...inCards, lifetimeStamps: { gte: 250 } },
-    }),
   ]);
+
+  const c = cardRows[0]!;
+  const totalCustomers = c.total;
+  const activeCustomers = c.active;
+  const newCustomers30 = c.new30;
+  const atLeast1 = c.at_least_1;
+  const atLeast2 = c.at_least_2;
+  const distinctRedeemers = c.redeemers;
+  const redemptionsTotal = redemptionRows[0]?.total ?? 0;
+  const redemptions30 = redemptionRows[0]?.last30 ?? 0;
+  const stampsTotal = methodGroups.reduce((sum, g) => sum + (g._sum.multiplier ?? 0), 0);
 
   const methodCount = new Map(
     methodGroups.map((g) => [g.method, g._sum.multiplier ?? 0]),
@@ -188,7 +187,7 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
     totalCustomers,
     activeCustomers,
     newCustomers30,
-    stampsTotal: stampsTotalAgg._sum.multiplier ?? 0,
+    stampsTotal,
     redemptionsTotal,
     redemptions30,
     revisitRate,
@@ -196,10 +195,10 @@ async function computeHeavyStats(businessId: string): Promise<HeavyStats> {
     avgDaysToFull,
     byMethod,
     loyalty: {
-      topStamps: topStampsAgg._max.lifetimeStamps ?? 0,
-      over50,
-      over100,
-      over250,
+      topStamps: c.top ?? 0,
+      over50: c.over50,
+      over100: c.over100,
+      over250: c.over250,
     },
   };
 }
@@ -262,10 +261,10 @@ function cachedHeavyStats(businessId: string): Promise<HeavyStats> {
 export async function getBusinessStats(
   businessId: string,
 ): Promise<BusinessStats> {
-  const [heavy, live] = await Promise.all([
-    cachedHeavyStats(businessId),
-    computeLiveStats(businessId),
-  ]);
+  // Efter hinanden, ikke samtidig: puljen har kun 5 forbindelser, og siden
+  // koerer sine egne forespoergsler ved siden af.
+  const heavy = await cachedHeavyStats(businessId);
+  const live = await computeLiveStats(businessId);
   return { ...heavy, ...live };
 }
 

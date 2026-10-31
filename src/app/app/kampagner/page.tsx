@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import QRCode from "qrcode";
-import { requireStampsBusiness } from "@/lib/session";
+import { businessImages, requireStampsBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { APP_URL } from "@/lib/env";
 import { PageHeading } from "@/components/dash";
@@ -41,7 +41,7 @@ export default async function KampagnerPage() {
     stampIcon: (card?.stampIcon ?? "coffee") as StampIconKey,
     primaryColor: business.primaryColor,
     textColor: business.textColor,
-    logoUrl: business.logoUrl,
+    logoUrl: (await businessImages(business.id)).logoUrl,
   };
 
   return (

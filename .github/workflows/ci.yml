@@ -83,3 +83,12 @@ jobs:
 
       - name: Integrationstests (rigtige laase, parallelle connections)
         run: npm run test:integration
+
+      # Skemaet skal svare praecis til migrationerne. Ellers virker koden lokalt,
+      # men produktions-databasen mangler en kolonne efter deploy.
+      - name: Skema matcher migrationerne
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+
+      # Byg appen som paa Vercel, saa en build-fejl ses her og ikke foerst ved deploy.
+      - name: Byg appen
+        run: npx next build

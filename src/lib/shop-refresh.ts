@@ -14,8 +14,8 @@ export function refreshShop(business: { id: string; slug: string }, opts: { wall
   revalidatePath(`/k/${business.slug}`);
   if (opts.wallet === false || !WALLET_ENABLED) return;
   after(async () => {
-    const { pushAllWalletPasses } = await import("./wallet/build");
-    await pushAllWalletPasses({ businessId: business.id }).catch((e) =>
+    const { pushBusinessWalletPasses } = await import("./wallet/build");
+    await pushBusinessWalletPasses(business.id).catch((e) =>
       captureWalletError(e, { operation: "apns:shop-refresh", businessId: business.id }),
     );
   });

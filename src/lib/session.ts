@@ -62,12 +62,18 @@ const activeBusinessId = cache(
   },
 );
 
+// Billederne (logo, kortbillede, plakatfoto) ligger som tekst i raekken, op til
+// ca. 2 MB pr. butik. De fleste sider og handlinger bruger dem ikke, saa de
+// hentes kun dér, hvor de vises (se businessImages).
+const IMAGE_FIELDS = { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true } as const;
+export type SessionBusiness = Omit<Business, keyof typeof IMAGE_FIELDS>;
+
 const findBusinessById = cache((id: string) =>
-  prisma.business.findUnique({ where: { id } }),
+  prisma.business.findUnique({ where: { id }, omit: IMAGE_FIELDS }),
 );
 
 /** Returnerer den aktive virksomhed for sessionen, ellers null. */
-export async function getSessionBusiness(): Promise<Business | null> {
+export async function getSessionBusiness(): Promise<SessionBusiness | null> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return null;
@@ -83,9 +89,24 @@ export async function getSessionBusinessId(): Promise<string | null> {
   return activeBusinessId(userId);
 }
 
+/** Butikkens billeder, hentet for sig (kun paa sider, der viser dem). */
+export const businessImages = cache((id: string) =>
+  prisma.business.findUniqueOrThrow({ where: { id }, select: IMAGE_FIELDS }),
+);
+
+/** Som requireBusiness, men med billederne (Design, plakat, kasse m.fl.). */
+export async function requireBusinessWithImages(): Promise<{
+  business: Business;
+  userId: string;
+  email: string;
+}> {
+  const r = await requireBusiness();
+  return { ...r, business: { ...r.business, ...(await businessImages(r.business.id)) } };
+}
+
 /** Krav om login. Redirecter til /login uden gyldig session + et medlemskab. */
 export async function requireBusiness(): Promise<{
-  business: Business;
+  business: SessionBusiness;
   userId: string;
   email: string;
 }> {

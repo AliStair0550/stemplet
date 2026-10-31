@@ -1,5 +1,5 @@
 import { WALLET_ENABLED, APP_URL } from "@/lib/env";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { cardTitle } from "@/lib/brand";
 import { rewardPhrase } from "@/lib/referral-text";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 // hurtigste maade at vise kunderne koden paa fra telefonen.
 export async function GET() {
   if (!WALLET_ENABLED) return new Response(null, { status: 404 });
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   const [card, rule] = await Promise.all([
     prisma.card.findFirst({ where: { businessId: business.id }, orderBy: { createdAt: "asc" }, select: { rewardText: true, stampsRequired: true, stampIcon: true } }),
     business.referralsEnabled ? prisma.referralRule.findUnique({ where: { businessId: business.id } }) : null,

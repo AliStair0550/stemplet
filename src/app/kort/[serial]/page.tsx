@@ -9,6 +9,7 @@ import { WALLET_ENABLED, APP_URL } from "@/lib/env";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { optimizedLogoDataUri } from "@/lib/logo";
+import { prisma } from "@/lib/prisma";
 
 // Dedup pr. request: metadata, viewport OG selve siden bruger kortet. Uden dette
 // koerte samme DB-opslag 3 gange pr. sideindlaesning.
@@ -50,7 +51,13 @@ export default async function WebCardPage({
   const showPoweredBy = PLAN_LIMITS[business.plan].showPoweredBy;
   const rewardReady = cc.stamps >= cc.card.stampsRequired;
   // Lille, cachet webp-logo bages ind i siden (ingen ekstra hentning).
-  const logoSrc = await optimizedLogoDataUri(business.logoUrl);
+  // Kortopslaget henter ikke billederne (se BUSINESS_NO_IMAGES), saa logoet
+  // hentes for sig, kun her.
+  const logo = await prisma.business.findUnique({
+    where: { id: business.id },
+    select: { logoUrl: true },
+  });
+  const logoSrc = await optimizedLogoDataUri(logo?.logoUrl ?? null);
   // Klamp logo-stoerrelsen paa kunde-siden, saa et stort logoScale ikke dominerer.
   const capScale = Math.min(business.logoScale, 1.35);
 

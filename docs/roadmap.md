@@ -31,7 +31,7 @@ Fra gennemgangen 31. oktober. Ingen P0, men Wallet-udsendelse og databaseforbind
    - R14: cron fortsætter ved fejl, og vi får besked, hvis den stopper.
    - R15: deploy prøver igen, når Neon sover.
    - R18 og R20, samt længdegrænser.
-2. **Bølge 2, vækst:**
+2. **Bølge 2, vækst (lavet 31. okt, undtagen R22 og genoptagelse af afbrudte udsendelser):**
    - R3: hent ikke billeder ved hvert stempel.
    - R2: én delt forbindelse til Apple, samling af hurtige Gem og genoptagelse af afbrudte udsendelser.
    - R13: nyt forsøg ved midlertidige Apple-fejl.

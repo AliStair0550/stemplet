@@ -46,8 +46,8 @@ export function pushReferralWallet(cardIds: string[]): void {
   const unique = [...new Set(cardIds)];
   const run = async () => {
     try {
-      const { pushWalletUpdate } = await import("./wallet/apns");
-      await Promise.all(unique.map((id) => pushWalletUpdate(id)));
+      const { pushWalletUpdates } = await import("./wallet/apns");
+      await pushWalletUpdates(unique);
     } catch (e) {
       console.error("Wallet-push efter henvisning fejlede", e);
       captureWalletError(e, { operation: "apns:referral" });

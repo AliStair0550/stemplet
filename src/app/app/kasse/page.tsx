@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import { Kassemodus, type KioskCard } from "./Kassemodus";
@@ -14,7 +14,7 @@ export default async function KassePage({
 }: {
   searchParams: Promise<{ kort?: string }>;
 }) {
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   // Een kasse: med Stemplet viser kunden ved scan baade stempler og (hvis slaaet
   // til) henvisningens foerste besoeg og beloenninger. Kun Henvisninger: soeg/scan.
   const kort = (await searchParams).kort?.trim().slice(0, 40) || null;

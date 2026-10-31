@@ -16,6 +16,7 @@ import { generateApiKey } from "@/lib/integrations";
 import { isBusinessCategory } from "@/lib/categories";
 import { slugify } from "@/lib/utils";
 import { geocodeAddress, roundCoord } from "@/lib/geocode";
+import { logoForSave } from "@/lib/logo";
 import { refreshShop } from "@/lib/shop-refresh";
 import {
   cardDesignSchema,
@@ -93,6 +94,8 @@ export async function createBusinessForCurrentUser(input: {
       error: design.error.issues[0]?.message ?? "Tjek kortdesignet.",
     };
   }
+  const logo = await logoForSave(design.data.logoUrl);
+  if (!logo.ok) return { ok: false, error: logo.error };
 
   // Unik slug ud fra navnet.
   const root = slugify(name) || "butik";
@@ -141,7 +144,7 @@ export async function createBusinessForCurrentUser(input: {
           slug,
           primaryColor: design.data.primaryColor,
           textColor: design.data.textColor,
-          logoUrl: design.data.logoUrl ?? null,
+          logoUrl: logo.value,
           logoScale: design.data.logoScale,
           termsAcceptedAt: new Date(),
           welcomeStampEnabled: false,
@@ -205,6 +208,8 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
   }
   const card = await primaryCard(business.id);
   if (!card) return { ok: false, error: "Kort mangler." };
+  const logo = await logoForSave(parsed.data.logoUrl, business.id);
+  if (!logo.ok) return { ok: false, error: logo.error };
 
   await prisma.$transaction([
     prisma.business.update({
@@ -212,7 +217,7 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
       data: {
         primaryColor: parsed.data.primaryColor,
         textColor: parsed.data.textColor,
-        logoUrl: parsed.data.logoUrl ?? null,
+        logoUrl: logo.value,
         logoScale: parsed.data.logoScale,
         displayName: parsed.data.displayName?.trim() || null,
       },
@@ -237,8 +242,8 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
   // Regler (fx beloenningsteksten) staar paa kortet: opdatér kort i Wallet stille.
   if (WALLET_ENABLED) {
     after(async () => {
-      const { pushAllWalletPasses } = await import("@/lib/wallet/build");
-      await pushAllWalletPasses({ businessId: business.id }).catch(() => {});
+      const { pushBusinessWalletPasses } = await import("@/lib/wallet/build");
+      await pushBusinessWalletPasses(business.id).catch(() => {});
     });
   }
   return { ok: true };

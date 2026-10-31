@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading } from "@/components/dash";
 import type { CardDesign } from "@/components/CardDesigner";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 // Design: det faelles kortdesign for alle funktioner paa kortet. Hvad kortet
 // kan (stempler, henvisninger og deres regler), ligger under Regler.
 export default async function KortetPage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   const [card, rule] = await Promise.all([
     prisma.card.findFirst({ where: { businessId: business.id }, orderBy: { createdAt: "asc" } }),
     business.referralsEnabled ? prisma.referralRule.findUnique({ where: { businessId: business.id } }) : null,

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { requireBusiness } from "@/lib/session";
+import { requireBusinessWithImages } from "@/lib/session";
 import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
 import { getReadyCustomers } from "@/lib/ready-customers";
 import { getReferralOverview } from "@/lib/referral-desk";
@@ -92,7 +92,7 @@ function AddFeature({ href, logo, title, text }: { href: string; logo: ReactNode
 }
 
 export default async function HomePage() {
-  const { business } = await requireBusiness();
+  const { business } = await requireBusinessWithImages();
   const [stats, pulse, ready, referrals, preview, history] = await Promise.all([
     getBusinessStats(business.id),
     getOverviewPulse(business.id),

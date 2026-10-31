@@ -7,6 +7,7 @@ import { APP_URL } from "../env";
 import { buildPass } from "./pass";
 import { loadReferralPassInfo } from "../referral-wallet";
 import { newsOptOutUrl } from "../news-optout";
+import { getRedis, redisConfigured } from "../redis";
 
 /** Loader kundekort med alt, Wallet-passet skal bruge. */
 export function loadCCForWallet(serial: string) {
@@ -73,25 +74,54 @@ export async function pushAllWalletPasses(opts: { businessId?: string } = {}): P
     select: { customerCardId: true },
     distinct: ["customerCardId"],
   });
-  const { pushWalletUpdate } = await import("./apns");
-  // Bundet parallelitet i stedet for een-ad-gangen: rollout'en har et 60s-loft,
-  // og sekventielt naaede den kun et praefiks, saa snart der var mange hundrede
-  // kort. Med en arbejder-pool paa 8 flytter vi langt flere pushes inden for
-  // vinduet uden at aabne ubegraenset mange forbindelser paa een gang.
-  const CONCURRENCY = 8;
-  let next = 0;
-  let pushed = 0;
-  async function worker() {
-    while (next < regs.length) {
-      const r = regs[next++];
-      await pushWalletUpdate(r.customerCardId);
-      pushed += 1;
-    }
+  const { pushWalletUpdates } = await import("./apns");
+  // Bidder af 500 kort, hver paa EEN forbindelse til Apple med mange samtidige
+  // pushes. Foer aabnede hvert kort sin egen forbindelse.
+  const ids = regs.map((r) => r.customerCardId);
+  for (let i = 0; i < ids.length; i += FANOUT_CHUNK) {
+    await pushWalletUpdates(ids.slice(i, i + FANOUT_CHUNK));
   }
-  await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, regs.length) }, worker),
-  );
-  return { pushed };
+  return { pushed: ids.length };
+}
+
+const FANOUT_CHUNK = 500;
+
+/**
+ * Opdatér alle en butiks kort i Wallet efter en aendring (Design, Regler,
+ * pushbesked), men saml hurtige Gem: koerer en udsendelse allerede for butikken,
+ * markeres blot, at der skal en til, og den igangvaerende tager en runde mere,
+ * naar den er faerdig. Fem Gem i traek giver saa to udsendelser, ikke fem.
+ * Uden Redis sendes der bare (som foer).
+ */
+export async function pushBusinessWalletPasses(businessId: string): Promise<void> {
+  if (!redisConfigured()) {
+    await pushAllWalletPasses({ businessId });
+    return;
+  }
+  const redis = getRedis();
+  const pending = `wallet-fanout:pending:${businessId}`;
+  const lock = `wallet-fanout:lock:${businessId}`;
+  try {
+    await redis.set(pending, "1", { ex: 600 });
+    // Laasen udloeber af sig selv, hvis funktionen doer midt i.
+    if ((await redis.set(lock, "1", { nx: true, ex: 300 })) !== "OK") return;
+  } catch {
+    await pushAllWalletPasses({ businessId });
+    return;
+  }
+  try {
+    for (let round = 0; round < 5; round++) {
+      await redis.del(pending).catch(() => {});
+      await pushAllWalletPasses({ businessId });
+      if (!(await redis.get(pending).catch(() => null))) break;
+    }
+  } finally {
+    await redis.del(lock).catch(() => {});
+  }
+  // Et Gem, der kom lige mens laasen blev sluppet, fik ikke laasen: tag det nu.
+  if (await redis.get(pending).catch(() => null)) {
+    await pushBusinessWalletPasses(businessId);
+  }
 }
 
 /** Tjekker Apples "Authorization: ApplePass <token>"-header i konstant tid. */

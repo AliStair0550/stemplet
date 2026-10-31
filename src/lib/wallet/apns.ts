@@ -97,14 +97,31 @@ const CONFIG_CAPTURE_INTERVAL_MS = 5 * 60 * 1000;
 /** Sender push til alle registrerede enheder for et kundekort og rydder doede
  *  push-tokens (afregistrerede/ugyldige enheder). Fejler aldrig hoejlydt. */
 export async function pushWalletUpdate(customerCardId: string): Promise<void> {
+  await pushWalletUpdates([customerCardId]);
+}
+
+// Samtidige pushes paa EEN forbindelse. HTTP/2 multiplexer dem, saa en
+// udsendelse til mange kort ikke aabner en forbindelse pr. kort (Apple kan
+// opfatte mange korte forbindelser som misbrug, og de deler alle samme kort-id).
+const STREAMS_PER_CONNECTION = 50;
+const TRANSIENT_RETRY_MS = 1000;
+
+/** Sender push til alle registrerede enheder for flere kundekort paa een
+ *  forbindelse til Apple. Forbigaaende fejl (429/5xx) proeves een gang til. */
+export async function pushWalletUpdates(customerCardIds: string[]): Promise<{ sent: number }> {
+  const ids = [...new Set(customerCardIds)];
+  if (ids.length === 0) return { sent: 0 };
   const regs = await prisma.walletRegistration.findMany({
-    where: { customerCardId },
+    where: { customerCardId: { in: ids } },
+    select: { id: true, pushToken: true, customerCardId: true },
   });
-  if (regs.length === 0) return;
-  // Marker kortet som aendret FOER pushet, saa enheden finder det, naar den
+  if (regs.length === 0) return { sent: 0 };
+  const cardIds = [...new Set(regs.map((r) => r.customerCardId))];
+  const ctxCard = cardIds.length === 1 ? cardIds[0] : null;
+  // Marker kortene som aendret FOER pushet, saa enheden finder dem, naar den
   // spoerger "hvad er aendret siden sidst" (passesUpdatedSince).
   await prisma.customerCard
-    .update({ where: { id: customerCardId }, data: { passUpdatedAt: new Date() } })
+    .updateMany({ where: { id: { in: cardIds } }, data: { passUpdatedAt: new Date() } })
     .catch(() => {});
   const { topic } = apnsConfig();
 
@@ -114,57 +131,66 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
   } catch (err) {
     // Kritisk: uden provider-token kan INTET pass opdateres. Fejl i signering
     // (fx forkert/udloebet APNS_KEY) skal ses med det samme.
-    captureWalletError(err, { operation: "apns:provider-token", customerCardId });
-    return;
+    captureWalletError(err, { operation: "apns:provider-token", customerCardId: ctxCard });
+    return { sent: 0 };
   }
 
-  const client = http2.connect("https://api.push.apple.com");
+  // APNS_ORIGIN kun til integrationstests (en lokal falsk Apple-server).
+  const client = http2.connect(process.env.APNS_ORIGIN || "https://api.push.apple.com");
+  // Forbindelsesfejl (ECONNRESET, DNS, socket hangup): forbigaaende, og passet
+  // selv-healer ved naeste polling. Warn, spam IKKE Sentry. Hver push har sin
+  // egen tidsgraense (sendOne), saa intet haenger, selv om forbindelsen doer.
+  let connectionError: unknown = null;
+  client.on("error", (err) => {
+    connectionError = err;
+  });
+
   const dead: string[] = [];
-  // Saml udfaldene og rapportér EEN gang pr. push i stedet for pr. registrering,
-  // saa et kort med mange enheder ikke giver mange ens events.
-  let transientCount = 0;
+  // Saml udfaldene og rapportér EEN gang pr. udsendelse i stedet for pr.
+  // registrering, saa mange enheder ikke giver mange ens events.
   let configCount = 0;
   let configStatus: string | null = null;
-  let connectionError: unknown = null;
 
-  try {
-    await new Promise<void>((resolve) => {
-      let settled = false;
-      const done = () => {
-        if (!settled) {
-          settled = true;
-          resolve();
+  async function sendAll(list: typeof regs): Promise<typeof regs> {
+    const transient: typeof regs = [];
+    let next = 0;
+    async function worker() {
+      while (next < list.length) {
+        const r = list[next++]!;
+        const { status, reason } = await sendOne(client, r.pushToken, jwt, topic);
+        switch (classifyApnsStatus(status, reason)) {
+          case "dead":
+            // Doedt token (afregistreret enhed): forventet, ryd op.
+            dead.push(r.id);
+            break;
+          case "transient":
+            transient.push(r);
+            break;
+          case "config":
+            configCount += 1;
+            if (configStatus === null) {
+              configStatus = reason ? `${status} ${reason}` : String(status);
+            }
+            break;
+          case "ok":
+            break;
         }
-      };
-      client.on("error", (err) => {
-        // Forbindelsesfejl (ECONNRESET, DNS, socket hangup): forbigaaende, og
-        // passet selv-healer ved naeste polling. Warn, spam IKKE Sentry.
-        connectionError = err;
-        done();
-      });
-      Promise.all(
-        regs.map(async (r) => {
-          const { status, reason } = await sendOne(client, r.pushToken, jwt, topic);
-          switch (classifyApnsStatus(status, reason)) {
-            case "dead":
-              // Doedt token (afregistreret enhed): forventet, ryd op.
-              dead.push(r.id);
-              break;
-            case "transient":
-              transientCount += 1;
-              break;
-            case "config":
-              configCount += 1;
-              if (configStatus === null) {
-                configStatus = reason ? `${status} ${reason}` : String(status);
-              }
-              break;
-            case "ok":
-              break;
-          }
-        }),
-      ).then(done, done);
-    });
+      }
+    }
+    await Promise.all(
+      Array.from({ length: Math.min(STREAMS_PER_CONNECTION, list.length) }, worker),
+    );
+    return transient;
+  }
+
+  let transient: typeof regs = [];
+  try {
+    transient = await sendAll(regs);
+    // Apple overbelastet eller nede et oejeblik: proev de ramte een gang til.
+    if (transient.length > 0 && !connectionError) {
+      await new Promise((r) => setTimeout(r, TRANSIENT_RETRY_MS));
+      transient = await sendAll(transient);
+    }
   } finally {
     client.close();
   }
@@ -174,18 +200,18 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
       connectionError instanceof Error
         ? connectionError.message
         : String(connectionError);
-    console.warn(`[apns] forbindelsesfejl for kort ${customerCardId}: ${msg}`);
+    console.warn(`[apns] forbindelsesfejl (${cardIds.length} kort): ${msg}`);
   }
-  if (transientCount > 0) {
+  if (transient.length > 0) {
     // APNs overbelastet/nede: log lokalt (Vercel-logs) uden at fylde Sentry-kvoten.
     console.warn(
-      `[apns] ${transientCount} forbigaaende svar (429/5xx) for kort ${customerCardId}`,
+      `[apns] ${transient.length} forbigaaende svar (429/5xx) efter nyt forsoeg (${cardIds.length} kort)`,
     );
   }
   if (configCount > 0) {
-    // Konfig-fejl: IKKE forbigaaende. EEN tydelig event pr. push, og hoejst een
-    // pr. interval paa tvaers af pushes, saa det egentlige signal ikke drukner i
-    // halvtreds ens events.
+    // Konfig-fejl: IKKE forbigaaende. EEN tydelig event pr. udsendelse, og hoejst
+    // een pr. interval paa tvaers af udsendelser, saa det egentlige signal ikke
+    // drukner i halvtreds ens events.
     const nowMs = Date.now();
     if (nowMs - lastConfigCaptureAt > CONFIG_CAPTURE_INTERVAL_MS) {
       lastConfigCaptureAt = nowMs;
@@ -195,7 +221,7 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
         ),
         {
           operation: "apns:config",
-          customerCardId,
+          customerCardId: ctxCard,
           extra: { status: configStatus, affected: configCount },
         },
       );
@@ -207,4 +233,5 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
       .deleteMany({ where: { id: { in: dead } } })
       .catch(() => {});
   }
+  return { sent: regs.length };
 }
