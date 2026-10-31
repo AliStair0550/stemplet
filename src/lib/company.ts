@@ -14,8 +14,3 @@ export const COMPANY = {
   address: "", // fx "Gadenavn 1, 1234 By"
   contactEmail: "hej@folka.dk",
 } as const;
-
-/** True naar der er mindst een offentlig firmaoplysning (CVR eller adresse) at vise. */
-export function hasCompanyDetails(): boolean {
-  return COMPANY.cvr.trim() !== "" || COMPANY.address.trim() !== "";
-}

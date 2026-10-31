@@ -33,7 +33,6 @@ export function ipRateKey(ip: string | null): string {
  *  mange skiftende IP-adresser ikke kan sende ubegraenset mange mails fra Folka. */
 export const FORM_GLOBAL_PER_HOUR = {
   "marketing-signup": 100,
-  "start-request": 30,
   "start-loyalitet": 30,
 } as const;
 

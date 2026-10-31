@@ -44,7 +44,3 @@ export const BUSINESS_CATEGORIES = CATEGORY_KEYS.map((key) => ({
 export function isBusinessCategory(v: string): v is BusinessCategory {
   return (CATEGORY_KEYS as readonly string[]).includes(v);
 }
-
-export function categoryLabel(key: string | null | undefined): string | null {
-  return key && isBusinessCategory(key) ? CATEGORY_LABELS[key] : null;
-}

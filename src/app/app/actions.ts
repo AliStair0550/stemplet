@@ -234,7 +234,6 @@ export async function saveCardDesign(design: CardDesign): Promise<Result> {
     }),
   ]);
 
-  revalidatePath("/app/kort");
   revalidatePath("/app/regler");
   revalidatePath("/app");
   // Kundens hente-side er ISR-cachet pr. butik: revalidér den, saa aendret

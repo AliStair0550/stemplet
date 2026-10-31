@@ -16,9 +16,6 @@ export const STAMP_TOKEN_TTL_SECONDS = 60;
 /** Hvor laenge en brugt kode huskes (replay-vindue) i sekunder. */
 export const STAMP_JTI_TTL_SECONDS = 10 * 60;
 
-/** Standard-cooldown for en NY butik i minutter. Matcher schema-default. */
-export const DEFAULT_COOLDOWN_MIN = 120;
-
 /** Personale-PIN: antal forkerte forsoeg foer laasning. */
 export const PIN_MAX_ATTEMPTS = 5;
 

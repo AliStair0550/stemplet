@@ -185,14 +185,3 @@ export async function revokeDevice(businessId: string, deviceId: string) {
     data: { revokedAt: new Date() },
   });
 }
-
-export async function renameDevice(
-  businessId: string,
-  deviceId: string,
-  name: string,
-) {
-  await prisma.device.updateMany({
-    where: { id: deviceId, businessId },
-    data: { name: name.trim().slice(0, 40) || "Kasse" },
-  });
-}

@@ -27,7 +27,6 @@ export async function setBusinessLogo(dataUrl: string | null): Promise<Result> {
     return { ok: false, error: "Kunne ikke gemme logoet. Prøv igen." };
   }
   revalidatePath("/app/visitkort");
-  revalidatePath("/app/kort");
   return { ok: true };
 }
 

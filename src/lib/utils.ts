@@ -52,12 +52,6 @@ export function formatCooldown(min: number): string {
   return `${h} og ${rem} ${rem === 1 ? "minut" : "minutter"}`;
 }
 
-/** Sekunder til hele minutter i tekst: 300 -> "5 minutter". */
-export function formatMinutes(seconds: number): string {
-  const min = Math.round(seconds / 60);
-  return `${min} ${min === 1 ? "minut" : "minutter"}`;
-}
-
 /** "for 2 timer siden" o.l. på dansk. */
 export function relativeDk(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;

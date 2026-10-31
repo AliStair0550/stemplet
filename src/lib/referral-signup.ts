@@ -22,35 +22,6 @@ type Db = typeof prisma;
 
 export type ReferralSource = "LINK" | "CODE_ENTERED";
 
-/** Butik + regel til siden. null = siden findes ikke (modul slaaet fra/ikke sat op). */
-export async function loadReferralShop(slug: string, db: Db = prisma) {
-  const business = await db.business.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      displayName: true,
-      slug: true,
-      logoUrl: true,
-      primaryColor: true,
-      textColor: true,
-      bookingUrl: true,
-      referralsEnabled: true,
-      referralRule: true,
-      cards: {
-        where: { active: true },
-        orderBy: { createdAt: "asc" },
-        take: 1,
-        select: { id: true },
-      },
-    },
-  });
-  if (!business?.referralsEnabled || !business.referralRule || business.cards.length === 0) {
-    return null;
-  }
-  return { ...business, rule: business.referralRule, activeCardId: business.cards[0]!.id };
-}
-
 /** Henviseren bag en kode i butikken (kun fornavnet bruges paa siden). */
 export async function findReferrerByCode(businessId: string, code: string, db: Db = prisma) {
   const candidates = referralCodeCandidates(code);
