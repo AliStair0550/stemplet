@@ -103,11 +103,14 @@ function patternUrl(icon: StampIconKey, color: string): string {
 export function MemberCard({
   card,
   className,
+  hideShop = false,
 }: {
   card: MemberCardData;
   className?: string;
   sizes?: string;
   priority?: boolean;
+  /** Kun logoet oeverst, uden butiksnavnet (fx et lille kort, hvor navnet afkortes). */
+  hideShop?: boolean;
 }) {
   const { bg, fg } = card;
   // Unikt pr. kort: samme butik vises flere gange paa siden (ogsaa skjult paa
@@ -136,7 +139,7 @@ export function MemberCard({
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: fg, color: bg }}>
             <StampIcon icon={card.icon} className="h-[18px] w-[18px]" />
           </span>
-          <span className="truncate text-[15px] font-semibold tracking-[-0.02em]">{card.shop}</span>
+          {hideShop ? null : <span className="truncate text-[15px] font-semibold tracking-[-0.02em]">{card.shop}</span>}
         </div>
         {card.corner ? (
           <div className="shrink-0 text-right">

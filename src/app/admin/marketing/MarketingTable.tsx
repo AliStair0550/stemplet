@@ -13,6 +13,7 @@ export type SignupRow = {
   id: string;
   name: string | null;
   storeName: string | null;
+  phone: string | null;
   email: string;
   source: string; // laesbar etiket
   signedUpAt: Date;
@@ -28,7 +29,7 @@ export function MarketingTable({ rows }: { rows: SignupRow[] }) {
   const shown = rows.filter((r) => {
     if (needle) {
       const hay =
-        `${r.name ?? ""} ${r.storeName ?? ""} ${r.email} ${r.source}`.toLowerCase();
+        `${r.name ?? ""} ${r.storeName ?? ""} ${r.phone ?? ""} ${r.email} ${r.source}`.toLowerCase();
       if (!hay.includes(needle)) return false;
     }
     return true;
@@ -93,6 +94,11 @@ function Row({ r }: { r: SignupRow }) {
             <span className="block font-[300] text-[0.78rem] text-slate">
               {r.storeName}
             </span>
+          ) : null}
+          {r.phone ? (
+            <a href={`tel:${r.phone}`} className="block font-[400] text-[0.78rem] text-ink underline-offset-2 hover:underline">
+              {r.phone}
+            </a>
           ) : null}
         </td>
         <td className="px-4 py-3">

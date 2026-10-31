@@ -723,6 +723,8 @@ export type SuperadminMarketingSignupData = {
   name: string; // navn eller "(ingen)"
   storeName: string; // butiksnavn eller "(ingen)"
   email: string;
+  /** Mobil fra "Hør mere": ring og saet dem i gang. */
+  phone?: string | null;
   source: string; // "forside", branche-slug eller "footer"
   adminUrl: string;
 };
@@ -746,7 +748,7 @@ export function superadminMarketingSignupEmail(
       Ny bekræftet tilmelding.
     </h1>
     <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
-      En ny person har bekræftet, at de gerne vil holde kontakten.
+      ${d.phone ? "En ny person vil gerne høre mere. Ring og sæt dem i gang." : "En ny person har bekræftet, at de gerne vil holde kontakten."}
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:14px 18px;">
@@ -754,6 +756,7 @@ export function superadminMarketingSignupEmail(
           ${detailRow("Navn", d.name)}
           ${detailRow("Butik", d.storeName)}
           ${detailRow("Mail", d.email)}
+          ${d.phone ? detailRow("Mobil", d.phone) : ""}
           ${detailRow("Kilde", d.source)}
         </table>
       </td></tr>
@@ -766,6 +769,7 @@ export function superadminMarketingSignupEmail(
     `Navn: ${d.name}`,
     `Butik: ${d.storeName}`,
     `Mail: ${d.email}`,
+    ...(d.phone ? [`Mobil: ${d.phone}`] : []),
     `Kilde: ${d.source}`,
     "",
     `Åbn Marketing: ${d.adminUrl}`,

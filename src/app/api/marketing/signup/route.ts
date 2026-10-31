@@ -11,6 +11,7 @@ import {
 } from "@/lib/emails";
 import { superadminRecipients } from "@/lib/superadmin-emails";
 import { APP_URL } from "@/lib/env";
+import { normalizePhone } from "@/lib/phone";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +37,9 @@ export async function POST(req: NextRequest) {
   // Tomme valgfrie felter gemmes som null, ikke "".
   const name = parsed.data.name?.trim() || null;
   const storeName = parsed.data.storeName?.trim() || null;
+  const rawPhone = parsed.data.phone?.trim() || "";
+  const phone = rawPhone ? normalizePhone(rawPhone) : null;
+  if (rawPhone && !phone) return apiError("INVALID", "Skriv et gyldigt mobilnummer.", 400);
 
   // Misbrugsvaern: hver tilmelding koster en Resend-afsendelse, saa loft pr. IP
   // (IPv6 pr. /64) og et samlet loft for formularen (DB-backet, ogsaa uden Redis).
@@ -52,9 +56,17 @@ export async function POST(req: NextRequest) {
     select: { id: true, confirmedAt: true },
   });
 
-  // Allerede skrevet op: sig pænt tak igen, uden ny mail eller notifikation, og
-  // uden at roere den oprindelige samtykke-dokumentation.
+  // Allerede skrevet op: sig pænt tak igen, uden ny mail, og uden at roere den
+  // oprindelige samtykke-dokumentation. Kommer de nu med et mobilnummer ("Hør
+  // mere"), gemmes det, og du faar besked, saa du kan ringe.
   if (existing?.confirmedAt) {
+    if (phone) {
+      await prisma.marketingSignup.update({
+        where: { id: existing.id },
+        data: { phone, ...(name ? { name } : {}), ...(storeName ? { storeName } : {}) },
+      });
+      await notifySuperadmin({ name, storeName, email, phone, source });
+    }
     return Response.json({ ok: true, already: true });
   }
 
@@ -63,11 +75,11 @@ export async function POST(req: NextRequest) {
     // Ubekraeftet legacy-raekke: aktiver den nu.
     await prisma.marketingSignup.update({
       where: { id: existing.id },
-      data: { name, storeName, source, signedUpAt: now, confirmedAt: now, confirmIp: ip },
+      data: { name, storeName, phone, source, signedUpAt: now, confirmedAt: now, confirmIp: ip },
     });
   } else {
     await prisma.marketingSignup.create({
-      data: { email, name, storeName, source, confirmedAt: now, confirmIp: ip },
+      data: { email, name, storeName, phone, source, confirmedAt: now, confirmIp: ip },
     });
   }
 
@@ -79,15 +91,22 @@ export async function POST(req: NextRequest) {
     console.error("Velkomstmail fejlede:", e);
   }
 
-  // Notifikation til superadmin (Ali).
+  await notifySuperadmin({ name, storeName, email, phone, source });
+
+  return Response.json({ ok: true });
+}
+
+// Notifikation til superadmin (Ali). Best-effort: en mailfejl vaelter ikke svaret.
+async function notifySuperadmin(d: { name: string | null; storeName: string | null; email: string; phone: string | null; source: string }) {
   try {
     const recipients = superadminRecipients();
     if (recipients.length > 0) {
       const mail = superadminMarketingSignupEmail({
-        name: name || "(ingen)",
-        storeName: storeName || "(ingen)",
-        email,
-        source: marketingSourceLabel(source),
+        name: d.name || "(ingen)",
+        storeName: d.storeName || "(ingen)",
+        email: d.email,
+        phone: d.phone,
+        source: marketingSourceLabel(d.source),
         adminUrl: `${APP_URL}/admin/marketing`,
       });
       await sendEmail({
@@ -100,6 +119,4 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error("Marketing-notifikation fejlede:", e);
   }
-
-  return Response.json({ ok: true });
 }

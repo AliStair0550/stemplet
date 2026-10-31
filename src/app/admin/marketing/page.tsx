@@ -59,6 +59,7 @@ export default async function MarketingPage() {
     id: s.id,
     name: s.name,
     storeName: s.storeName,
+    phone: s.phone,
     email: s.email,
     source: marketingSourceLabel(s.source),
     signedUpAt: s.signedUpAt,
