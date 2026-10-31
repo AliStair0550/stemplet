@@ -6,12 +6,14 @@ import { redeemSchema } from "@/lib/validation";
 import {
   verifyPin,
   recordPinFail,
+  reservePinAttempt,
   clearPinFails,
   pinLockRemaining,
 } from "@/lib/security";
 import { ensureDeviceId } from "@/lib/cookies";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
+import { PIN_LOCK_SECONDS } from "@/lib/system-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,6 +55,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (!parsed.data.pin) return apiError("PIN", "Indtast personale-PIN.");
+    // Forsoeget taelles foer PIN'en tjekkes, saa samtidige gaet ikke slipper forbi.
+    const allowed = await reservePinAttempt(businessId, lockId).catch((e) => {
+      console.error("PIN-forsoeg kunne ikke taelles:", e);
+      return true;
+    });
+    if (!allowed) return apiError("LOCKED", `For mange forkerte forsøg. Prøv igen om ${Math.ceil(PIN_LOCK_SECONDS / 60)} min.`);
     const ok = await verifyPin(parsed.data.pin, business.staffPin);
     if (!ok) {
       let failLocked = false;

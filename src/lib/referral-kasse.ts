@@ -7,7 +7,8 @@ import { ensureDeviceId } from "./cookies";
 import { apiError } from "./http";
 import { ReferralError } from "./referral";
 import { captureWalletError } from "./sentry";
-import { verifyPin, recordPinFail, clearPinFails, pinLockRemaining } from "./security";
+import { verifyPin, recordPinFail, reservePinAttempt, clearPinFails, pinLockRemaining } from "./security";
+import { PIN_LOCK_SECONDS } from "./system-config";
 
 // Faelles for henvisningernes kasse-ruter (fase 3). Adgang er Stemplets egen
 // kasseAccess (ejer-login eller parret enhed), uaendret, plus at butikken har
@@ -95,6 +96,12 @@ export async function checkStaffPin(
     );
   }
   if (!pin) return apiError("PIN", "Indtast personale-PIN.");
+  // Forsoeget taelles foer PIN'en tjekkes, saa samtidige gaet ikke slipper forbi.
+  const allowed = await reservePinAttempt(kasse.businessId, lockId).catch((e) => {
+    console.error("PIN-forsoeg kunne ikke taelles:", e);
+    return true;
+  });
+  if (!allowed) return apiError("LOCKED", `For mange forkerte forsøg. Prøv igen om ${Math.ceil(PIN_LOCK_SECONDS / 60)} min.`);
   if (!(await verifyPin(pin, kasse.staffPin))) {
     let failLocked = false;
     try {

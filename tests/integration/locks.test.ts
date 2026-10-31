@@ -284,3 +284,42 @@ test("fortryd med samme noegle to gange: kun eet stempel fjernes", async () => {
     await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
   }
 });
+
+// ── Runde 2: fortryd efter indloesning og PIN-laas ───────────────────
+
+test("fortryd efter indloesning afvises, og taellerne roeres ikke", async () => {
+  const { bizId, cardId } = await makeBiz({ stampsRequired: 4 });
+  try {
+    const cc = await makeCard(cardId);
+    // 3 stempler, saa +3: 6 af 4. Indloesning efterlader 2 i overskud.
+    await applyStamp({ customerCardId: cc.id, method: "STAFF_SCAN", skipCooldown: true, count: 3 });
+    await applyStamp({ customerCardId: cc.id, method: "STAFF_SCAN", skipCooldown: true, count: 3 });
+    await redeemReward({ customerCardId: cc.id });
+    const before = await prisma.customerCard.findUniqueOrThrow({ where: { id: cc.id } });
+    assert.equal(before.stamps, 2);
+    await assert.rejects(undoLastStamp({ customerCardId: cc.id }), /kan ikke fortrydes/);
+    const after = await prisma.customerCard.findUniqueOrThrow({ where: { id: cc.id } });
+    assert.equal(after.stamps, before.stamps);
+    assert.equal(after.lifetimeStamps, before.lifetimeStamps);
+    // Et nyt stempel efter indloesningen kan stadig fortrydes.
+    await applyStamp({ customerCardId: cc.id, method: "STAFF_SCAN", skipCooldown: true });
+    const undone = await undoLastStamp({ customerCardId: cc.id });
+    assert.equal(undone.stamps, 2);
+  } finally {
+    await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});
+
+test("PIN: mange samtidige gaet giver hoejst loftet, derefter laas", async () => {
+  const { reservePinAttempt } = await import("../../src/lib/security");
+  const { PIN_MAX_ATTEMPTS } = await import("../../src/lib/system-config");
+  const { bizId } = await makeBiz();
+  try {
+    const results = await Promise.all(Array.from({ length: 20 }, () => reservePinAttempt(bizId, "ip-test")));
+    assert.equal(results.filter(Boolean).length, PIN_MAX_ATTEMPTS);
+    // Laast: ogsaa det naeste forsoeg afvises.
+    assert.equal(await reservePinAttempt(bizId, "ip-test"), false);
+  } finally {
+    await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});

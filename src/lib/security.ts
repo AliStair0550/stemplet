@@ -33,21 +33,44 @@ export async function pinLockRemaining(
   return ms > 0 ? Math.ceil(ms / 1000) : 0;
 }
 
-export async function recordPinFail(
-  businessId: string,
-  lockId: string,
-): Promise<{ locked: boolean }> {
+async function lockPin(businessId: string, lockId: string): Promise<void> {
+  await prisma.pinAttempt.update({
+    where: { businessId_lockId: { businessId, lockId } },
+    data: { fails: 0, lockedUntil: new Date(Date.now() + PIN_LOCK_SECONDS * 1000) },
+  });
+}
+
+/**
+ * Tael forsoeget FOER PIN'en tjekkes. Foer blev et forkert forsoeg foerst talt
+ * bagefter, saa mange gaet sendt paa een gang alle naaede at blive tjekket.
+ * false = loftet er naaet (eller kassen er laast), og PIN'en maa ikke tjekkes.
+ */
+export async function reservePinAttempt(businessId: string, lockId: string): Promise<boolean> {
   const row = await prisma.pinAttempt.upsert({
     where: { businessId_lockId: { businessId, lockId } },
     create: { businessId, lockId, fails: 1 },
     update: { fails: { increment: 1 } },
+    select: { fails: true, lockedUntil: true },
+  });
+  if (row.lockedUntil && row.lockedUntil.getTime() > Date.now()) return false;
+  if (row.fails > PIN_MAX_ATTEMPTS) {
+    await lockPin(businessId, lockId);
+    return false;
+  }
+  return true;
+}
+
+/** Forkert PIN: forsoeget er allerede talt (reservePinAttempt). Laas ved loftet. */
+export async function recordPinFail(
+  businessId: string,
+  lockId: string,
+): Promise<{ locked: boolean }> {
+  const row = await prisma.pinAttempt.findUnique({
+    where: { businessId_lockId: { businessId, lockId } },
     select: { fails: true },
   });
-  if (row.fails >= PIN_MAX_ATTEMPTS) {
-    await prisma.pinAttempt.update({
-      where: { businessId_lockId: { businessId, lockId } },
-      data: { fails: 0, lockedUntil: new Date(Date.now() + PIN_LOCK_SECONDS * 1000) },
-    });
+  if ((row?.fails ?? 0) >= PIN_MAX_ATTEMPTS) {
+    await lockPin(businessId, lockId);
     return { locked: true };
   }
   return { locked: false };
