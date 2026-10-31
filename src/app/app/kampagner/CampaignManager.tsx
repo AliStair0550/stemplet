@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createCampaign, deleteCampaign } from "../actions";
 import { btnClass } from "@/components/ui";
@@ -31,7 +31,7 @@ const TYPES: Record<
   },
   PICKUP_STAMP: {
     label: "Stempel ved afhentning",
-    desc: "Kunder der henter kortet i perioden får 1 stempel med det samme. Slutdatoen er fristen: hent inden da og få stemplet.",
+    desc: "Kunder der henter kortet i perioden får 1 stempel med det samme. Sidste dag er fristen: hent inden da og få stemplet.",
     icon: <IconPickup />,
   },
 };
@@ -60,12 +60,33 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [type, setType] = useState<CampaignType>("DOUBLE_STAMP");
+  // I dag som standard for foerste dag (browserens lokale dato). Saettes efter
+  // indlaesning, saa serverens og browserens "i dag" ikke kan vaere uenige.
+  const startRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const el = startRef.current;
+    if (!el || el.value) return;
+    const d = new Date();
+    el.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }, []);
 
   function onCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    const fd = new FormData(e.currentTarget);
+    const raw = new FormData(e.currentTarget);
     const form = e.currentTarget;
+    // Kun datoer (ingen klokkeslaet): fra dagens start til dagens slut i dansk tid
+    // (browserens egen tid), saa "5. til 7." betyder hele dagene.
+    const from = String(raw.get("startDate") ?? "");
+    const to = String(raw.get("endDate") ?? "");
+    if (!from || !to) {
+      setError("Vælg første og sidste dag.");
+      return;
+    }
+    const fd = new FormData();
+    fd.set("type", String(raw.get("type") ?? ""));
+    fd.set("startsAt", new Date(`${from}T00:00:00`).toISOString());
+    fd.set("endsAt", new Date(`${to}T23:59:59`).toISOString());
     start(async () => {
       const res = await createCampaign(fd);
       if (res.ok) {
@@ -136,24 +157,25 @@ export function CampaignManager({ campaigns }: { campaigns: Campaign[] }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
-              Starter
+              Første dag
             </span>
             <input
-              type="datetime-local"
-              name="startsAt"
+              type="date"
+              name="startDate"
               required
-              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-terracotta"
+              ref={startRef}
+              className="rounded-xl border border-clay bg-parchment px-3 py-2.5 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
           <label className="flex flex-col gap-1.5">
             <span className="text-[0.66rem] font-[400] uppercase tracking-[0.1em] text-slate">
-              Slutter
+              Sidste dag
             </span>
             <input
-              type="datetime-local"
-              name="endsAt"
+              type="date"
+              name="endDate"
               required
-              className="border border-clay bg-parchment px-3 py-2.5 font-[200] text-[0.9rem] text-ink outline-none focus:border-terracotta"
+              className="rounded-xl border border-clay bg-parchment px-3 py-2.5 font-[300] text-[0.9rem] text-ink outline-none focus:border-terracotta"
             />
           </label>
         </div>

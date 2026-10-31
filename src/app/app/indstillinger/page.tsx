@@ -23,6 +23,7 @@ const ACTION_LABEL: Record<string, string> = {
   REDEEM: "Indløsning",
   PIN_FAIL: "Forkert PIN",
   FLAGGED: "Markeret",
+  DELETE_CUSTOMER: "Kunde slettet",
 };
 
 export default async function IndstillingerPage() {
