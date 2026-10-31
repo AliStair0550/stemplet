@@ -55,7 +55,11 @@ const HENVISNINGER_LINKS: NavLink[] = [
 
 // Kommunikation: pushbeskeder, kampagner (kraever stempler) og senere nyhedsmail.
 const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
-const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, COMMS, { href: "/app/kunder", label: "Kunder" }];
+const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, { href: "/app/kunder", label: "Kunder" }, COMMS];
+
+// Fanerne i bunden paa mobil, i den raekkefoelge de staar. Scan i midten.
+const TABS = ["/app", "/app/kunder", "/app/kasse", "/app/beskeder", "menu"] as const;
+type Tab = (typeof TABS)[number];
 
 // "Integrationer" (API/webhooks) er skjult fra
 // menuen; siderne findes stadig paa adressen for den, der kender den.
@@ -94,17 +98,28 @@ export function DashboardNav({
   showStamps?: boolean;
 }) {
   const pathname = usePathname();
-  const [moreOpen, setMoreOpen] = useState(false);
+  // Menu-arket: "closing" spiller animationen ned, foer arket fjernes.
+  const [sheet, setSheet] = useState<"closed" | "open" | "closing">("closed");
+  const moreOpen = sheet === "open";
+  const setMoreOpen = (open: boolean) =>
+    setSheet((s) => (open ? "open" : s === "open" ? "closing" : s));
   // Fanen lyser op med det samme ved tryk, foer den nye side er hentet, saa
   // telefonen foeles hurtig. Nulstilles, naar siden faktisk skifter.
   const [tapped, setTapped] = useState<string | null>(null);
   const shopLinks = showAgreement ? [...SHOP_LINKS, AGREEMENT_LINK] : SHOP_LINKS;
 
-  // Menuen lukkes, naar man navigerer.
+  // Menuen lukkes, naar man navigerer (ogsaa via tilbage-knappen).
   useEffect(() => {
-    setMoreOpen(false);
+    setSheet((s) => (s === "open" ? "closing" : s));
     setTapped(null);
   }, [pathname]);
+  // Arket fjernes efter animationen ned. Sikkerhedsnet, hvis animationen ikke
+  // melder sig faerdig (fx en fane i baggrunden).
+  useEffect(() => {
+    if (sheet !== "closing") return;
+    const t = window.setTimeout(() => setSheet((s) => (s === "closing" ? "closed" : s)), 400);
+    return () => window.clearTimeout(t);
+  }, [sheet]);
   // Siden bagved staar stille, mens menuen er aaben (ingen scroll igennem).
   useEffect(() => {
     if (!moreOpen) return;
@@ -123,7 +138,7 @@ export function DashboardNav({
     if (!moreOpen) return;
     sheetRef.current?.querySelector<HTMLElement>("a, button")?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMoreOpen(false);
+      if (e.key === "Escape") setSheet("closing");
     };
     document.addEventListener("keydown", onKey);
     const btn = moreBtnRef.current;
@@ -140,6 +155,25 @@ export function DashboardNav({
   const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
   const inHenvisninger = pathname.startsWith("/app/henvisninger");
   const inComms = isActive(COMMS.href) || isActive("/app/kampagner") || isActive("/app/tilbud") || isActive("/app/nyhedsmail");
+  // Den fane, der lyser: det man lige har trykket paa (foer siden er hentet),
+  // ellers siden man staar paa. Alt uden egen fane hoerer under Menu.
+  const tabOf = (href: string): Tab =>
+    (TABS as readonly string[]).includes(href) ? (href as Tab) : "menu";
+  const pageTab: Tab = isActive("/app")
+    ? "/app"
+    : isActive("/app/kunder")
+      ? "/app/kunder"
+      : isActive(SCAN.href)
+        ? "/app/kasse"
+        : inComms
+          ? "/app/beskeder"
+          : "menu";
+  const activeTab: Tab = moreOpen ? "menu" : tapped ? tabOf(tapped) : pageTab;
+  // Tryk i arket: luk det med det samme og lad Menu lyse, mens siden hentes.
+  const onSheetTap = (href: string) => {
+    setTapped(href);
+    setSheet("closing");
+  };
 
   const stemplet = showStamps ? (
     <ProductGroup
@@ -291,69 +325,130 @@ export function DashboardNav({
         <BusinessSwitcher businesses={businesses} activeId={activeBusinessId} canCreate={canCreateBusiness} />
       </div>
 
-      {moreOpen ? (
-        <div className="sheet-backdrop fixed inset-0 z-40 flex flex-col justify-end bg-ink/25 md:hidden" onClick={() => setMoreOpen(false)}>
+      {sheet !== "closed" ? (
+        <div
+          className={cn(
+            "fixed inset-0 z-40 flex flex-col justify-end bg-ink/25 md:hidden",
+            sheet === "closing" ? "sheet-backdrop-out" : "sheet-backdrop",
+          )}
+          onClick={() => setSheet("closing")}
+        >
           <div
             ref={sheetRef}
             id="menu-ark"
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
-            className="sheet-panel max-h-full overflow-y-auto overscroll-contain rounded-t-[28px] border-t border-fog bg-white px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-4 shadow-lift"
+            className={cn(
+              "max-h-full overflow-y-auto overscroll-contain rounded-t-[28px] border-t border-fog bg-white px-3 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-2.5 shadow-lift",
+              sheet === "closing" ? "sheet-panel-out" : "sheet-panel",
+            )}
             onClick={(e) => e.stopPropagation()}
+            onAnimationEnd={(e) => {
+              if (e.target === e.currentTarget && sheet === "closing") setSheet("closed");
+            }}
           >
-            {[
-              { ...COMMS, label: "Kommunikation" },
-            ].map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  "mb-1 flex rounded-lg px-3 py-2 text-[0.88rem] transition-colors",
-                  (l.href === COMMS.href ? inComms : isActive(l.href)) ? "bg-sand font-[500] text-ink" : "text-ink hover:bg-sand/60",
-                )}
-              >
-                {l.label}
-              </Link>
-            ))}
-            <p className="mx-3 mb-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-slate">Dit kort</p>
-            {designLink}
-            {products}
-            <div className="mt-4 flex flex-col gap-0.5 border-t border-fog pt-3">
-              {shop}
-              <form action={signOutAction}>
-                <button className="px-3 py-1.5 text-[0.8rem] text-stone hover:text-ink">Log ud</button>
-              </form>
-            </div>
+            <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-fog" aria-hidden />
+            <SheetSection title="Dit kort">
+              <SheetLink href="/app/kortet" label="Design" active={isActive("/app/kortet")} onTap={onSheetTap} icon={ICONS.design} />
+              <SheetLink href="/app/regler" label="Regler" active={isActive("/app/regler")} onTap={onSheetTap} icon={ICONS.rules} />
+            </SheetSection>
+            <SheetSection title="Funktioner">
+              {(showStamps ? [true, false] : [false, true]).map((stamps) =>
+                stamps ? (
+                  <SheetLink
+                    key="stempler"
+                    href={showStamps ? "/app/stemplet" : "/app/stemplet/tilfoej"}
+                    label={showStamps ? "Stempler" : "Tilføj stempler"}
+                    active={pathname.startsWith("/app/stemplet")}
+                    onTap={onSheetTap}
+                    icon={FEATURE_ICONS.Stempler}
+                    muted={!showStamps}
+                    extra={showStamps ? { href: "/app/statistik", label: "Statistik", active: isActive("/app/statistik") } : undefined}
+                  />
+                ) : (
+                  <SheetLink
+                    key="henvisninger"
+                    href={showReferrals ? "/app/henvisninger" : "/app/henvisninger/tilfoej"}
+                    label={showReferrals ? "Henvisninger" : "Tilføj henvisninger"}
+                    active={inHenvisninger && !isActive("/app/henvisninger/statistik")}
+                    onTap={onSheetTap}
+                    icon={FEATURE_ICONS.Henvisninger}
+                    muted={!showReferrals}
+                    extra={
+                      showReferrals
+                        ? { href: "/app/henvisninger/statistik", label: "Statistik", active: isActive("/app/henvisninger/statistik") }
+                        : undefined
+                    }
+                  />
+                ),
+              )}
+            </SheetSection>
+            <SheetSection title="Butik">
+              {shopLinks.map((l) => (
+                <SheetLink key={l.href} href={l.href} label={l.label} active={isActive(l.href)} onTap={onSheetTap} icon={ICONS[l.href]} />
+              ))}
+            </SheetSection>
+            <form action={signOutAction} className="mt-2">
+              <button className="flex min-h-11 w-full items-center rounded-2xl px-3 text-[0.9rem] text-stone transition-colors active:bg-sand">
+                Log ud
+              </button>
+            </form>
           </div>
         </div>
       ) : null}
 
       <nav
         aria-label="Hovedmenu"
-        // Svaevende glasbjaelke som paa iPhone: indholdet skinner sloeret igennem.
-        className="fixed inset-x-3 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-4 gap-1 rounded-[30px] border border-white/70 bg-white/60 p-1.5 shadow-[0_12px_40px_-14px_rgba(6,28,61,0.45),inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-2xl backdrop-saturate-[1.8] md:hidden print:hidden"
+        // Svaevende glasbjaelke som paa iPhone. Fast, let graa tone, saa glasset
+        // ser ens ud, uanset om der ligger et moerkt kort eller en hvid side bag.
+        className="fixed inset-x-2.5 bottom-[calc(0.6rem+env(safe-area-inset-bottom))] z-50 grid grid-cols-5 gap-1 rounded-[30px] border border-white/60 bg-[rgba(226,230,236,0.82)] p-1.5 shadow-[0_12px_40px_-14px_rgba(6,28,61,0.45),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl backdrop-saturate-[1.6] md:hidden print:hidden"
       >
-        <TabLink href="/app" label="Hjem" active={!moreOpen && (tapped ? tapped === "/app" : isActive("/app"))} onTap={setTapped}>
+        {/* Den lyse kapsel glider hen under den aktive fane. Scan har sin egen. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-1.5 left-1.5 top-1.5 rounded-[24px] bg-white/95 shadow-[0_2px_10px_-3px_rgba(6,28,61,0.25)] transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+          style={{
+            width: "calc((100% - 0.75rem - 1rem) / 5)",
+            transform: `translateX(calc(${TABS.indexOf(activeTab)} * (100% + 0.25rem)))`,
+            opacity: activeTab === "/app/kasse" ? 0 : 1,
+          }}
+        />
+        <TabLink href="/app" label="Hjem" active={activeTab === "/app"} onTap={setTapped}>
           <path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z" />
         </TabLink>
-        <TabLink href={SCAN.href} label="Scan" active={!moreOpen && (tapped ? tapped === SCAN.href : isActive(SCAN.href))} onTap={setTapped}>
-          <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
-        </TabLink>
-        <TabLink href="/app/kunder" label="Kunder" active={!moreOpen && (tapped ? tapped === "/app/kunder" : isActive("/app/kunder"))} onTap={setTapped}>
+        <TabLink href="/app/kunder" label="Kunder" active={activeTab === "/app/kunder"} onTap={setTapped}>
           <circle cx="9" cy="8" r="3.5" />
           <path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c1.6.6 2.7 2.3 3 5" />
+        </TabLink>
+        {/* Scan i midten med fokus: moerk kapsel, det man bruger ved kassen. */}
+        <Link
+          href={SCAN.href}
+          onClick={() => setTapped(SCAN.href)}
+          aria-current={activeTab === "/app/kasse" ? "page" : undefined}
+          className={cn(
+            TAB,
+            "bg-ink font-[600] text-parchment shadow-[0_6px_16px_-6px_rgba(6,28,61,0.6)]",
+            activeTab === "/app/kasse" && "ring-2 ring-white/90",
+          )}
+        >
+          <TabIcon>
+            <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" />
+          </TabIcon>
+          Scan
+        </Link>
+        {/* "Kommunikation" er for langt til en af fem faner (75 px mod ca. 60). */}
+        <TabLink href={COMMS.href} label="Beskeder" active={activeTab === "/app/beskeder"} onTap={setTapped}>
+          <path d="M5 5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16h-7l-4.5 3.5V16H5a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 5 5z" />
+          <path d="M8 9.5h8M8 12.5h5" />
         </TabLink>
         <button
           ref={moreBtnRef}
           type="button"
-          onClick={() => setMoreOpen((o) => !o)}
+          onClick={() => setMoreOpen(!moreOpen)}
           aria-expanded={moreOpen}
           aria-controls="menu-ark"
-          className={cn(
-            TAB,
-            moreOpen || (!tapped && !isActive("/app") && !isActive(SCAN.href) && !isActive("/app/kunder")) ? TAB_ON : TAB_OFF,
-          )}
+          className={cn(TAB, activeTab === "menu" ? TAB_ON : TAB_OFF)}
         >
           <TabIcon>
             <path d="M4 7h16M4 12h16M4 17h16" />
@@ -436,11 +531,12 @@ function ProductGroup({
   );
 }
 
-// Fanerne i glasbjaelken: den aktive faar en lys glaskapsel (som iOS), og alle
-// trykkes en anelse ind ved beroering.
+// Fanerne i glasbjaelken: en lys glaskapsel glider hen under den aktive (som
+// iOS), og alle trykkes en anelse ind ved beroering.
 const TAB =
-  "flex min-h-[3.4rem] flex-col items-center justify-center gap-0.5 rounded-[24px] text-[0.7rem] transition-[background-color,box-shadow,transform] duration-200 active:scale-95";
-const TAB_ON = "bg-white/90 font-[600] text-ink shadow-[0_2px_10px_-3px_rgba(6,28,61,0.25)]";
+  "relative z-10 flex min-h-[3.4rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-[24px] px-0.5 text-[0.66rem] tracking-[-0.01em] transition-[color,transform] duration-200 active:scale-95";
+// Den aktive fane faar den glidende kapsel (se nav'en); her kun skriften.
+const TAB_ON = "font-[600] text-ink";
 const TAB_OFF = "text-[#4A5568]";
 
 function TabIcon({ children }: { children: React.ReactNode }) {
@@ -472,7 +568,123 @@ function TabLink({
       className={cn(TAB, active ? TAB_ON : TAB_OFF)}
     >
       <TabIcon>{children}</TabIcon>
-      {label}
+      <span className="max-w-full truncate">{label}</span>
     </Link>
+  );
+}
+
+// Ikoner til menu-arket (samme streg som resten).
+const ICONS: Record<string, React.ReactNode> = {
+  design: (
+    <>
+      <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+      <path d="M3.5 9.5h17" />
+    </>
+  ),
+  rules: (
+    <>
+      <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="10" cy="17" r="2" />
+    </>
+  ),
+  "/app/plakat": (
+    <>
+      <rect x="5" y="3.5" width="14" height="17" rx="2" />
+      <path d="M8.5 15.5h7M8.5 18h4" />
+      <rect x="8.5" y="7" width="7" height="5.5" rx="1" />
+    </>
+  ),
+  "/app/visitkort": (
+    <>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <circle cx="8.5" cy="11" r="1.8" />
+      <path d="M6 15c.5-1.3 1.4-2 2.5-2s2 .7 2.5 2M14 10h4M14 13h3" />
+    </>
+  ),
+  "/app/indstillinger": (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6" />
+    </>
+  ),
+  "/app/guide": (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.6 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2-2.4 3.5M12 17h.01" />
+    </>
+  ),
+  "/app/aftale": (
+    <>
+      <rect x="3.5" y="6" width="17" height="12" rx="2" />
+      <path d="M3.5 10h17M7 14.5h4" />
+    </>
+  ),
+};
+
+function SheetSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-2">
+      <p className="mx-3 mb-1 mt-2 text-[0.66rem] uppercase tracking-[0.14em] text-slate">{title}</p>
+      <div className="flex flex-col gap-0.5">{children}</div>
+    </div>
+  );
+}
+
+// En raekke i menu-arket: stort trykfelt, ikon og evt. et ekstra link til hoejre
+// (fx Statistik). Lukker arket med det samme ved tryk.
+function SheetLink({
+  href,
+  label,
+  active,
+  onTap,
+  icon,
+  muted = false,
+  extra,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  onTap: (href: string) => void;
+  icon?: React.ReactNode;
+  muted?: boolean;
+  extra?: { href: string; label: string; active: boolean };
+}) {
+  return (
+    <div className={cn("flex items-center rounded-2xl transition-colors", active ? "bg-sand" : "active:bg-sand/70")}>
+      <Link
+        href={href}
+        onClick={() => onTap(href)}
+        aria-current={active ? "page" : undefined}
+        className="flex min-h-12 flex-1 items-center gap-3 px-3 text-[0.94rem] text-ink"
+      >
+        <span
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+            active ? "bg-white text-ink" : "bg-parchment text-stone",
+            muted && "opacity-50",
+          )}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="h-[1.1rem] w-[1.1rem]" aria-hidden>
+            {icon}
+          </svg>
+        </span>
+        <span className={cn(active && "font-[600]", muted && "text-stone")}>{label}</span>
+        {muted ? <span className="ml-auto text-[1rem] leading-none text-stone">+</span> : null}
+      </Link>
+      {extra ? (
+        <Link
+          href={extra.href}
+          onClick={() => onTap(extra.href)}
+          aria-current={extra.active ? "page" : undefined}
+          className={cn(
+            "mr-2 rounded-full px-3 py-1.5 text-[0.8rem] transition-colors",
+            extra.active ? "bg-ink text-parchment" : "bg-parchment text-stone active:bg-fog",
+          )}
+        >
+          {extra.label}
+        </Link>
+      ) : null}
+    </div>
   );
 }

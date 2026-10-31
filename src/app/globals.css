@@ -659,6 +659,43 @@ textarea:focus-visible {
 .sheet-panel {
   animation: sheetUp 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
+/* Arket glider ned igen, naar det lukkes (ogsaa ved tryk paa et menupunkt). */
+@keyframes sheetDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes sheetFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.sheet-backdrop-out {
+  animation: sheetFadeOut 0.22s ease-in both;
+}
+.sheet-panel-out {
+  animation: sheetDown 0.24s cubic-bezier(0.4, 0, 1, 1) both;
+}
+/* Dashboardets sider toner blidt ind ved navigation (se app/app/template.tsx). */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-in {
+  animation: pageIn 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
 
 /* Fejring (Henvisninger): konfetti, pop og flueben der tegnes. Kort og uden
    gentagelse; ingen konfetti for den, der har slaaet animationer fra. */
