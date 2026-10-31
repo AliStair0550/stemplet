@@ -30,8 +30,13 @@ export async function createCardholderAtomically(
   // Enheds-id (stemplet_device-cookie). Sat -> dedup pr. (kort, enhed), saa et
   // dobbelt-tryk/retry ikke opretter to kort. Null -> som foer (ingen dedup).
   deviceId: string | null = null,
-): Promise<{ id: string; serial: string; authToken: string } | null> {
+): Promise<{ id: string; serial: string; authToken: string; isNew: boolean } | null> {
   const select = { id: true, serial: true, authToken: true } as const;
+  // isNew: kortet blev oprettet af DETTE kald. Et dobbelttryk fra samme enhed
+  // faar det samme kort tilbage med isNew=false, saa velkomststempel og
+  // henvisning kun gives een gang.
+  const reused = <T extends object>(c: T) => ({ ...c, isNew: false });
+  const fresh = <T extends object>(c: T) => ({ ...c, isNew: true });
   // businessId saettes altid (ogsaa ved selv-scan), saa kortet kan findes i
   // kassens soegning, til gendannelse og i henvisninger.
   const newData = () => ({
@@ -52,17 +57,17 @@ export async function createCardholderAtomically(
         where: { cardId, deviceId },
         select,
       });
-      if (found) return found;
+      if (found) return reused(found);
     }
     try {
-      return await db.customerCard.create({ data: newData(), select });
+      return fresh(await db.customerCard.create({ data: newData(), select }));
     } catch (e) {
       if (deviceId && (e as { code?: string }).code === "P2002") {
         const found = await db.customerCard.findFirst({
           where: { cardId, deviceId },
           select,
         });
-        if (found) return found;
+        if (found) return reused(found);
       }
       throw e;
     }
@@ -87,11 +92,11 @@ export async function createCardholderAtomically(
         where: { cardId, deviceId },
         select,
       });
-      if (found) return found;
+      if (found) return reused(found);
     }
     const total = await tx.customerCard.count({ where: { card: { businessId } } });
     if (!canCreateCustomer(plan, total)) return null;
-    return tx.customerCard.create({ data: newData(), select });
+    return fresh(await tx.customerCard.create({ data: newData(), select }));
   });
 }
 

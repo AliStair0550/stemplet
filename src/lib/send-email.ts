@@ -41,6 +41,8 @@ export async function sendEmail(input: {
       text: input.text,
       ...(attachments?.length ? { attachments } : {}),
     }),
+    // Haenger Resend, maa login-hjulet ikke dreje, til funktionen doer.
+    signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");

@@ -112,3 +112,54 @@ test("gammelt kort uden kontakt (returkunde) genfindes stadig med eet tryk", asy
     await cleanup(s.bizId);
   }
 });
+
+// R5: dobbelttryk paa "Hent kort".
+async function withPickupStamp(cardId: string) {
+  const now = Date.now();
+  await prisma.campaign.create({
+    data: {
+      cardId,
+      type: "PICKUP_STAMP",
+      startsAt: new Date(now - 60_000),
+      endsAt: new Date(now + 3_600_000),
+    },
+  });
+}
+
+test("dobbelttryk fra samme telefon: eet kort og kun eet velkomststempel", async () => {
+  const s = await makeShop();
+  try {
+    await withPickupStamp(s.cardId);
+    const dev = device();
+    const contact = { name: "Sara", email: "sara@test.dk", consent: false };
+    const [a, b] = await Promise.all([
+      resolveOrCreateCard(s.slug, dev, contact, noCookie),
+      resolveOrCreateCard(s.slug, dev, contact, noCookie),
+    ]);
+    assert.ok(a.ok && b.ok);
+    assert.equal(a.serial, b.serial);
+    assert.equal([a.created, b.created].filter(Boolean).length, 1);
+    const cards = await prisma.customerCard.findMany({ where: { cardId: s.cardId } });
+    assert.equal(cards.length, 1);
+    assert.equal(cards[0]!.stamps, 1);
+  } finally {
+    await cleanup(s.bizId);
+  }
+});
+
+test("dobbelttryk fra en ny telefon (to enheds-id'er): intet tomt kort tilbage", async () => {
+  const s = await makeShop();
+  try {
+    const contact = { name: "Sara", email: "sara@test.dk", consent: false };
+    const results = await Promise.all([
+      resolveOrCreateCard(s.slug, device(), contact, noCookie),
+      resolveOrCreateCard(s.slug, device(), contact, noCookie),
+    ]);
+    assert.ok(results.some((r) => r.ok));
+    const cards = await prisma.customerCard.findMany({ where: { cardId: s.cardId } });
+    assert.equal(cards.length, 1);
+    assert.equal(cards[0]!.contactEmail, "sara@test.dk");
+  } finally {
+    await cleanup(s.bizId);
+  }
+});

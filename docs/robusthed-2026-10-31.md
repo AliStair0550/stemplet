@@ -72,4 +72,4 @@ Butikker er adskilt overalt (hver handling tjekker butikken). Stempel, fuldt kor
 
 **Besluttet 31. okt:** R4 bygges ikke nu (personalet giver stemplerne i hånden). R8 venter, til der er betalende butikker (gratisplan hos Neon indtil da). R16: kunden beholder stemplerne og samler de ekstra.
 
-**Status bølge 1:** R1, R2 (tidsgrænse pr. besked til Apple), R7, R14 og R15 er lavet (PR "Robusthed bølge 1, del 1").
+**Status bølge 1:** færdig. Del 1 (#79): R1, R2 (tidsgrænse pr. besked til Apple), R7, R14 og R15. Del 2: R5, R6, R11, R12, R18, R20, `?tekst=` og længdegrænser på adresse og webhook.

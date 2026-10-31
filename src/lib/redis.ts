@@ -21,7 +21,15 @@ export function getRedis(): Redis {
       "Upstash Redis er ikke konfigureret. Sæt UPSTASH_REDIS_REST_URL og UPSTASH_REDIS_REST_TOKEN.",
     );
   }
-  _redis = new Redis({ url, token });
+  // Kort tidsgraense og eet genforsoeg: Redis er kun en hjaelp (lofter, laase),
+  // saa et hikke maa ikke goere hvert stempel sekunder langsommere eller faa
+  // kassen til at haenge. Standarden er fem genforsoeg uden tidsgraense.
+  _redis = new Redis({
+    url,
+    token,
+    signal: () => AbortSignal.timeout(2000),
+    retry: { retries: 1, backoff: () => 100 },
+  });
   return _redis;
 }
 

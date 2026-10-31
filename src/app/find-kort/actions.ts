@@ -42,6 +42,13 @@ export async function findMyCard(_prev: FindState, formData: FormData): Promise<
     return { error: "Kortet har ingen e-mail, så vi kan ikke sende det til dig. Spørg personalet, så hjælper de." };
   }
 
-  await requestCardRecovery({ slug: cc.card.business.slug, email: cc.contactEmail, baseUrl: APP_URL });
+  // Loft pr. modtager (samme pulje som "Gendan dit kort" paa butikssiden), saa
+  // nogen med kundens serienummer ikke kan oversvoemme indbakken fra mange IP'er.
+  const slug = cc.card.business.slug;
+  if (!(await durableRateLimit("recover-mail", `${slug}:${cc.contactEmail}`, 5, 3600).catch(() => false))) {
+    return { error: "Der er sendt mange links til kortet. Tjek din indbakke, eller prøv igen om en time." };
+  }
+
+  await requestCardRecovery({ slug, email: cc.contactEmail, baseUrl: APP_URL });
   return { sentTo: maskEmail(cc.contactEmail) };
 }

@@ -178,6 +178,9 @@ async function padLogo(buf: Buffer, scale = 1): Promise<Buffer> {
   }
 }
 
+const LOGO_FETCH_TIMEOUT_MS = 5000;
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+
 async function fetchLogo(logoUrl: string): Promise<Buffer | null> {
   try {
     // Data-URI (den normale vej fra kortdesigneren): ingen netvaerkshentning.
@@ -196,8 +199,16 @@ async function fetchLogo(logoUrl: string): Promise<Buffer | null> {
         if (resolved.some((a) => isPrivateAddress(a.address))) {
           console.error("Logo blokeret (privat adresse):", url.hostname);
         } else {
-          const res = await fetch(logoUrl, { redirect: "manual" });
-          if (res.ok) return Buffer.from(await res.arrayBuffer());
+          // Tidsgraense og stoerrelsesloft: hvert kort-download venter paa logoet.
+          const res = await fetch(logoUrl, {
+            redirect: "manual",
+            signal: AbortSignal.timeout(LOGO_FETCH_TIMEOUT_MS),
+          });
+          const declared = Number(res.headers.get("content-length") ?? 0);
+          if (res.ok && declared <= LOGO_MAX_BYTES) {
+            const buf = Buffer.from(await res.arrayBuffer());
+            if (buf.length <= LOGO_MAX_BYTES) return buf;
+          }
         }
       }
     }
