@@ -108,11 +108,12 @@ function Hero() {
           >
             Opret dit kort gratis
           </Link>
+          {/* Til den, der vil vide mere foerst: skriv dig op eller proev kortet. */}
           <Link
-            href="/prøv"
+            href="/hør-mere"
             className="kk-glass-pill px-7 py-3.5 text-[15px] font-semibold text-white transition-colors hover:bg-white/15"
           >
-            Prøv kortet på din telefon
+            Hør mere og prøv kortet
           </Link>
         </div>
         <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden. Ingen binding.</p>

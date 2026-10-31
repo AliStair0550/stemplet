@@ -6,6 +6,8 @@ import { marketingSourceLabel } from "../src/lib/marketing";
 import {
   marketingWelcomeEmail,
   superadminMarketingSignupEmail,
+  weeklyStatsEmail,
+  signupWelcomeEmail,
 } from "../src/lib/emails";
 
 // Lange bindestreger (em/en-dash) via unicode-escape, saa selve testfilen ikke
@@ -89,4 +91,40 @@ test("notifikations-mail: indeholder mail + kilde, ingen lange bindestreger", ()
   assert.ok(mail.html.includes("ny@kunde.dk"));
   assert.ok(mail.text.includes("Forside"));
   assert.ok(!DASH_RE.test(mail.subject + mail.html + mail.text));
+});
+
+// Ugemailen: belønninger givet (stempelkort + henvisninger) og et afsnit om
+// henvisninger, kun naar butikken har modulet.
+const week = {
+  businessName: "Kaffebaren",
+  stampsWeek: 42,
+  stampsDelta: 6,
+  newCustomers: 9,
+  redemptions: 3,
+  churn: 0,
+  topStamps: 0,
+  regulars: 0,
+  referralsNew: 4,
+  referralVisits: 3,
+  referralRewards: 2,
+  stampsEnabled: true,
+  referralsEnabled: true,
+  dashboardUrl: "https://kort.folka.dk/app",
+  unsubscribeUrl: "https://kort.folka.dk/api/email/unsubscribe?token=x",
+};
+
+test("ugemail: belønninger givet og henvisninger", () => {
+  const m = weeklyStatsEmail(week);
+  assert.match(m.html, /Belønninger givet/);
+  assert.match(m.html, /3 stempelkort, 2 fra henvisninger/);
+  assert.match(m.html, /Venner henvist/);
+  assert.match(m.text, /Belønninger givet: 5/);
+  const uden = weeklyStatsEmail({ ...week, referralsEnabled: false });
+  assert.doesNotMatch(uden.html, /Venner henvist/);
+});
+
+test("mails: kort link i stedet for hele adressen, og velkomstkortet", () => {
+  const w = signupWelcomeEmail("https://kort.folka.dk/app");
+  assert.match(w.html, /Din belønning til stamkunder/);
+  assert.doesNotMatch(w.html, /Kopiér linket/);
 });

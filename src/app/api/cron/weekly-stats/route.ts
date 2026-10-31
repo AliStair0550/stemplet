@@ -49,17 +49,26 @@ async function runWeekly() {
   const businesses = await prisma.business.findMany({
     where: {
       weeklyEmailEnabled: true,
-      cards: {
-        some: {
-          customerCards: {
-            some: { stampsLog: { some: { createdAt: { gte: d30 } } } },
+      // Aktiv: et stempel eller en henvisning de seneste 30 dage (ogsaa butikker
+      // med kun Henvisninger faar ugemailen).
+      OR: [
+        {
+          cards: {
+            some: {
+              customerCards: {
+                some: { stampsLog: { some: { createdAt: { gte: d30 } } } },
+              },
+            },
           },
         },
-      },
+        { referrals: { some: { createdAt: { gte: d30 } } } },
+      ],
     },
     select: {
       id: true,
       name: true,
+      stampsEnabled: true,
+      referralsEnabled: true,
       weeklyEmailTo: true,
       memberships: { select: { user: { select: { email: true } } } },
     },
@@ -76,6 +85,8 @@ async function runWeekly() {
       const token = await signUnsubscribeToken(b.id);
       const mail = weeklyStatsEmail({
         businessName: b.name,
+        stampsEnabled: b.stampsEnabled,
+        referralsEnabled: b.referralsEnabled,
         ...stats,
         dashboardUrl: `${APP_URL}/app`,
         unsubscribeUrl: `${APP_URL}/api/email/unsubscribe?token=${encodeURIComponent(token)}`,

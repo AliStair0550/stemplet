@@ -318,6 +318,9 @@ export type WeeklyStats = {
   churn: number; // kunder der er ved at glide fra dig
   topStamps: number; // din mest trofaste kundes samlede stempler
   regulars: number; // antal stamkunder (100+ stempler nogensinde)
+  referralsNew: number; // venner, der har hentet kortet via en henvisning
+  referralVisits: number; // henviste venner, der har vaeret der foerste gang
+  referralRewards: number; // belønninger fra henvisninger givet ved kassen
 };
 
 /** Tal til den ugentlige statistik-mail. Rullende 7-dages vinduer. */
@@ -336,6 +339,9 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
       churn: 0,
       topStamps: 0,
       regulars: 0,
+      referralsNew: 0,
+      referralVisits: 0,
+      referralRewards: 0,
     };
   }
 
@@ -346,7 +352,7 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
   const d21 = daysAgo(21);
   const d60 = daysAgo(60);
 
-  const [stampsWeekAgg, stampsPrevWeekAgg, newCustomers, redemptions, churn, topAgg, regulars] =
+  const [stampsWeekAgg, stampsPrevWeekAgg, newCustomers, redemptions, churn, topAgg, regulars, referralsNew, referralVisits, referralRewards] =
     await Promise.all([
       // Faktiske stempler (sum af multiplier), saa ugebrevet er enigt med resten.
       // Bruger den denormaliserede Stamp.businessId (indekseret), ikke relationen.
@@ -371,6 +377,10 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
       prisma.customerCard.count({
         where: { ...inCards, lifetimeStamps: { gte: 100 } },
       }),
+      // Henvisninger: nye venner, foerste besoeg og belønninger givet ved kassen.
+      prisma.referral.count({ where: { businessId, createdAt: { gte: d7 } } }),
+      prisma.referral.count({ where: { businessId, visitedAt: { gte: d7 } } }),
+      prisma.reward.count({ where: { businessId, status: "REDEEMED", redeemedAt: { gte: d7 } } }),
     ]);
 
   const stampsWeek = stampsWeekAgg._sum.multiplier ?? 0;
@@ -384,6 +394,9 @@ export async function getWeeklyStats(businessId: string): Promise<WeeklyStats> {
     churn,
     topStamps: topAgg._max.lifetimeStamps ?? 0,
     regulars,
+    referralsNew,
+    referralVisits,
+    referralRewards,
   };
 }
 
