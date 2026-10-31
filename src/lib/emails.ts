@@ -782,6 +782,44 @@ export function superadminMarketingSignupEmail(
   };
 }
 
+export type SuperadminCancellationData = {
+  shop: string;
+  email: string;
+  /** true: opsagt. false: opsigelsen er fortrudt. */
+  cancelled: boolean;
+  /** Sidste dag kortet koerer, fx "1. mar. 2027". */
+  lastDay: string;
+  adminUrl: string;
+};
+
+/** Til Ali: en butik har opsagt (eller fortrudt sin opsigelse). */
+export function superadminCancellationEmail(d: SuperadminCancellationData): Email {
+  const title = d.cancelled ? "En butik har opsagt." : "En butik har fortrudt sin opsigelse.";
+  const lead = d.cancelled
+    ? `Kortet kører til og med ${esc(d.lastDay)}. Ring gerne og hør hvorfor.`
+    : "Abonnementet kører videre som før.";
+  const inner = `
+    <h1 style="margin:0 0 14px;font-family:${FONT};font-size:24px;line-height:1.2;font-weight:700;letter-spacing:-.02em;color:${A.ink};">
+      ${title}
+    </h1>
+    <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">${lead}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
+      <tr><td style="padding:14px 18px;font-family:${FONT};font-size:14px;line-height:1.7;color:${C.ink};">
+        <strong>${esc(d.shop)}</strong><br />${esc(d.email)}
+      </td></tr>
+    </table>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
+      <td style="border-radius:8px;background:${C.ink};">
+        <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      </td></tr></table>`;
+  const text = [title, "", d.cancelled ? `Kortet kører til og med ${d.lastDay}.` : "Abonnementet kører videre.", "", d.shop, d.email, "", `Åbn admin: ${d.adminUrl}`].join("\n");
+  return {
+    subject: `[Folka Kort] ${d.cancelled ? "Opsagt" : "Opsigelse fortrudt"}: ${d.shop}`,
+    html: shell(title, inner),
+    text,
+  };
+}
+
 // HTML-escape af brugerindtastet tekst, saa fri tekst i mailen ikke kan bryde
 // layoutet eller injicere markup.
 function esc(s: string): string {

@@ -40,8 +40,9 @@ export async function sendNewsAction(text: string): Promise<NewsResult> {
   if (sameAsCurrent(parsed.value, business.newsText)) {
     return { ok: false, error: "Det er den samme besked, som står på kortene nu. Skriv en ny, så kunderne får besked." };
   }
+  // Ogsaa uden kort i Wallet: beskeden gemmes paa kortet (bagsiden), saa nye
+  // kunder ser den, naar de henter kortet.
   const recipients = await walletCardCount(business.id);
-  if (recipients === 0) return { ok: false, error: "Ingen kunder har kortet i Wallet endnu." };
 
   // Atomisk: kun hvis ingen anden besked er sendt i mellemtiden (dobbelttryk).
   const sent = await prisma.$transaction(async (tx) => {

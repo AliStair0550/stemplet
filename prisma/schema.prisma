@@ -74,6 +74,7 @@ model Business {
   reached100EmailSentAt DateTime? // faktura-trigger-mail til superadmin bekraeftet leveret
   proApprovedAt      DateTime? // ejeren har bekraeftet abonnementet
   proApprovedById    String? // hvilken bruger (User.id) godkendte
+  cancelledAt        DateTime? // ejeren har opsagt abonnementet (Ali faar en mail)
   proPriceKr         Int       @default(49) // individuel maanedspris i kr ekskl. moms (founding members mv.)
   proPriceUntil      DateTime? // udloeb for en specialpris; derefter gaelder standard 49
   lastInvoicedAt     DateTime? // sidste faktureringsdato, superadmin vedligeholder manuelt

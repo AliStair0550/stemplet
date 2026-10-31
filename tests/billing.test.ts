@@ -430,3 +430,11 @@ test("stoppet butik faar hverken varsel eller faktura-mail", async () => {
   assert.deepEqual(r, { warns: 0, invoices: 0 });
   assert.equal(sent.length, 0);
 });
+
+test("opsigelse: i de gratis maaneder til deres sidste dag, ellers maanedens sidste dag", async () => {
+  const { cancellationLastDay } = await import("../src/lib/billing");
+  const trialEnds = new Date("2027-03-01T23:00:00Z");
+  assert.equal(cancellationLastDay(trialEnds, new Date("2026-12-10T10:00:00Z")).getTime(), trialEnds.getTime());
+  const after = cancellationLastDay(trialEnds, new Date("2027-04-10T10:00:00Z"));
+  assert.equal(after.toISOString().slice(0, 10), "2027-04-30");
+});

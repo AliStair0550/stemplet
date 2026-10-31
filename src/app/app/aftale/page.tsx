@@ -4,6 +4,7 @@ import { getAgreementView } from "@/lib/billing";
 import { PageHeading } from "@/components/dash";
 import { formatDkDate, formatDkNumber } from "@/lib/utils";
 import { ApproveButton } from "./ApproveButton";
+import { CancelBox } from "./CancelBox";
 
 export const metadata: Metadata = { title: "Abonnement" };
 export const dynamic = "force-dynamic";
@@ -34,7 +35,10 @@ export default async function AftalePage() {
   const v = await getAgreementView(business.id);
   const endsOn = formatDkDate(v.trialEndsAt);
 
-  const subtitle = v.approved
+  const lastDay = formatDkDate(v.lastDay);
+  const subtitle = v.cancelledAt
+    ? `Abonnementet er opsagt. Dit kort kører til og med ${lastDay}.`
+    : v.approved
     ? "Abonnementet er bekræftet. Alt kører videre som i dag."
     : v.inTrial
       ? `Du har gratis adgang til og med ${endsOn}. Derefter ${v.priceKr} kr. om måneden ekskl. moms.`
@@ -86,23 +90,41 @@ export default async function AftalePage() {
             <Term>Intet lukker undervejs</Term>
           </ul>
 
-          <div className="mt-7 border-t border-fog pt-6">
-            {v.approved ? (
-              <div className="rounded-lg border border-terracotta bg-terracotta/5 px-5 py-4">
-                <p className="font-[400] text-[0.95rem] text-ink">Abonnement bekræftet</p>
-                <p className="mt-1 font-[300] text-[0.85rem] text-stone">
-                  Bekræftet {v.approvedAt ? formatDkDate(v.approvedAt) : ""}. Du skal ikke gøre mere. Første faktura kommer efter de gratis måneder.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                <p className="font-[300] text-[0.88rem] leading-relaxed text-stone">
-                  Ved at bekræfte siger du ja til abonnementet ovenfor. Du sagde allerede ja til prisen i handelsbetingelserne ved
-                  oprettelsen, så det er blot en bekræftelse. Den noteres med tidspunkt.
-                </p>
-                <ApproveButton />
-              </div>
-            )}
+          {v.cancelledAt ? null : (
+            <div className="mt-7 border-t border-fog pt-6">
+              {v.approved ? (
+                <div className="rounded-lg border border-terracotta bg-terracotta/5 px-5 py-4">
+                  <p className="font-[400] text-[0.95rem] text-ink">Abonnement bekræftet</p>
+                  <p className="mt-1 font-[300] text-[0.85rem] text-stone">
+                    Bekræftet {v.approvedAt ? formatDkDate(v.approvedAt) : ""}. Du skal ikke gøre mere. Første faktura kommer efter de gratis måneder.
+                  </p>
+                </div>
+              ) : v.inTrial ? (
+                // I de gratis maaneder skal ejeren ikke goere noget: bekraeftelsen
+                // er frivillig og staar diskret (ikke som en stor knap, man tror, man skal trykke paa).
+                <div className="flex flex-col gap-3">
+                  <p className="font-[300] text-[0.88rem] leading-relaxed text-stone">
+                    Du skal ikke gøre noget. Alt kører videre efter de gratis måneder, og første faktura kommer efter {endsOn}.
+                  </p>
+                  <ApproveButton quiet />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  <p className="font-[300] text-[0.88rem] leading-relaxed text-stone">
+                    Bekræft, så fortsætter alt som i dag. Du sagde ja til prisen, da du oprettede kortet.
+                  </p>
+                  <ApproveButton />
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Opsig: synligt her, hvor man leder efter det. Ali faar en mail. */}
+        <section className="rounded-lg border border-fog bg-white shadow-card p-6 md:p-8">
+          <h2 className="font-[300] text-[1.3rem] text-ink">Opsig abonnementet</h2>
+          <div className="mt-4">
+            <CancelBox cancelled={!!v.cancelledAt} lastDay={lastDay} />
           </div>
         </section>
       </div>
