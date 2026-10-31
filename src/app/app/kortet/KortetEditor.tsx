@@ -329,7 +329,7 @@ export function KortetEditor({
         </section>
 
         {/* Farver, navn og logo (faelles kortdesigner, kun udseende) */}
-        <CardDesigner value={design} onChange={setDesign} businessName={businessName} allowLogo boxed hidePreview parts="look" />
+        <CardDesigner value={design} onChange={setDesign} businessName={businessName} allowLogo boxed hidePreview parts="look" photoMode={style === "photo" && !!artwork} />
 
         {/* Knapper */}
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card">
