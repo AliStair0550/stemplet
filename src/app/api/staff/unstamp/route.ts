@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { requireKasseBusinessId } from "@/lib/kasse";
-import { loadCardBySerial, undoLastStamp, StampError } from "@/lib/stamp";
+import { cardIdInBusiness, undoLastStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
   const parsed = staffStampSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return apiError("BAD_REQUEST", "Ugyldigt kort.");
 
-  const cc = await loadCardBySerial(parsed.data.serial);
-  if (!cc || cc.card.businessId !== businessId) {
+  const ccId = await cardIdInBusiness(parsed.data.serial, businessId);
+  if (!ccId) {
     return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Idempotens: et tabt svar + retry med samme noegle fjerner IKKE et ekstra
     // stempel (noeglen gemmes paa kortet i databasen).
     const res = await undoLastStamp({
-      customerCardId: cc.id,
+      customerCardId: ccId,
       ip: clientIp(req),
       idempotencyKey: parsed.data.idempotencyKey,
     });

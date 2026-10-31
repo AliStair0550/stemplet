@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { requireKasseBusinessId } from "@/lib/kasse";
-import { loadCardBySerial } from "@/lib/stamp";
+import { prisma } from "@/lib/prisma";
 import { cardTitle } from "@/lib/brand";
 import { apiError } from "@/lib/http";
 
@@ -16,8 +16,25 @@ export async function GET(req: NextRequest) {
   const serial = req.nextUrl.searchParams.get("serial")?.trim();
   if (!serial) return apiError("BAD_REQUEST", "Mangler kort.");
 
-  const cc = await loadCardBySerial(serial);
-  if (!cc || cc.card.businessId !== businessId) {
+  // Eet opslag med kun det, kassen viser (og butikken i filteret).
+  const cc = await prisma.customerCard.findFirst({
+    where: { serial, card: { businessId } },
+    select: {
+      serial: true,
+      stamps: true,
+      completedCount: true,
+      lifetimeStamps: true,
+      card: {
+        select: {
+          stampsRequired: true,
+          rewardText: true,
+          stampIcon: true,
+          business: { select: { name: true, displayName: true, primaryColor: true, textColor: true } },
+        },
+      },
+    },
+  });
+  if (!cc) {
     return apiError("NOT_FOUND", "Kortet hører ikke til din butik.", 404);
   }
 

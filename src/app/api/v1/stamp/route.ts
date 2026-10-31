@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { businessByApiKey } from "@/lib/integrations";
-import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
+import { cardIdInBusiness, applyStamp, StampError } from "@/lib/stamp";
 import { clientIp, apiError } from "@/lib/http";
 import { apiWriteRateLimit } from "@/lib/rate-limit";
 import { runOnce, IdempotencyInFlight } from "@/lib/idempotency";
@@ -29,8 +29,8 @@ export async function POST(req: NextRequest) {
   const serial = String(body?.serial ?? "").trim();
   if (!serial) return apiError("BAD_REQUEST", "Mangler 'serial'.");
 
-  const cc = await loadCardBySerial(serial);
-  if (!cc || cc.card.businessId !== business.id) {
+  const ccId = await cardIdInBusiness(serial, business.id);
+  if (!ccId) {
     return apiError("NOT_FOUND", "Kortet findes ikke i din butik.", 404);
   }
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   try {
     const res = await runOnce(idemKey, () =>
       applyStamp({
-        customerCardId: cc.id,
+        customerCardId: ccId,
         method: "MANUAL",
         ip: clientIp(req),
         skipCooldown: true,

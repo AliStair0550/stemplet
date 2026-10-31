@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { requireKasseBusinessId } from "@/lib/kasse";
 import { prisma } from "@/lib/prisma";
-import { loadCardBySerial, redeemReward, StampError } from "@/lib/stamp";
+import { cardIdInBusiness, redeemReward, StampError } from "@/lib/stamp";
 import { redeemSchema } from "@/lib/validation";
 import {
   verifyPin,
@@ -92,8 +92,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const cc = await loadCardBySerial(parsed.data.serial);
-  if (!cc || cc.card.businessId !== businessId) {
+  const ccId = await cardIdInBusiness(parsed.data.serial, businessId);
+  if (!ccId) {
     return apiError("NOT_FOUND", "Kortet hører ikke til din butik.");
   }
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     // endnu" (som ville faa personalet til at tro, det slog fejl). Noeglen
     // gemmes paa indloesningen i databasen (unik pr. kort).
     const res = await redeemReward({
-      customerCardId: cc.id,
+      customerCardId: ccId,
       ip,
       idempotencyKey: parsed.data.idempotencyKey,
     });
