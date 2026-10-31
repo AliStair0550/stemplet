@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { NEWS_MAX, sameAsCurrent } from "@/lib/news";
 import { formatDkDate } from "@/lib/utils";
+import { Confetti, CheckBurst } from "@/components/Celebrate";
+import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { clearNewsAction, sendNewsAction } from "./actions";
 
 const IDEAS = [
@@ -16,18 +18,35 @@ type Sent = { id: string; text: string; recipients: number; sentAt: string };
 
 const time = (iso: string) =>
   new Intl.DateTimeFormat("da-DK", { timeZone: "Europe/Copenhagen", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
-const when = (iso: string) => `${formatDkDate(new Date(iso))} kl. ${time(iso)}`;
+const dayKey = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Copenhagen" }).format(d);
+/** "i dag kl. 14.05", "i morgen kl. 02.02", ellers datoen. */
+const when = (iso: string) => {
+  const d = new Date(iso);
+  const now = new Date();
+  const day =
+    dayKey(d) === dayKey(now)
+      ? "i dag"
+      : dayKey(d) === dayKey(new Date(now.getTime() + 864e5))
+        ? "i morgen"
+        : dayKey(d) === dayKey(new Date(now.getTime() - 864e5))
+          ? "i går"
+          : formatDkDate(d);
+  return `${day} kl. ${time(iso)}`;
+};
 const kort = (n: number) => `${n} kort`;
 
 /** Saadan ser beskeden ud paa kundens laaseskaerm. */
-function LockScreen({ shopName, text }: { shopName: string; text: string }) {
+function LockScreen({ shopName, text, landed = false }: { shopName: string; text: string; landed?: boolean }) {
   const day = new Intl.DateTimeFormat("da-DK", { timeZone: "Europe/Copenhagen", weekday: "long", day: "numeric", month: "long" }).format(new Date());
   return (
     <div>
       <div className="rounded-[28px] bg-gradient-to-b from-[#0A2D5A] to-[#020B1C] p-5 pb-8 text-white">
         <p className="text-center text-[2.4rem] font-semibold leading-none tracking-[-0.03em]">9.41</p>
         <p className="mt-1 text-center text-[0.8rem] text-white/70">{day.charAt(0).toUpperCase() + day.slice(1)}</p>
-        <div className="mt-6 rounded-[18px] bg-white/85 p-3 text-[#0B1628] backdrop-blur-xl">
+        <div
+          className="mt-6 rounded-[18px] bg-white/85 p-3 text-[#0B1628] backdrop-blur-xl"
+          style={landed ? { animation: "news-drop 650ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both" } : undefined}
+        >
           <div className="flex items-center gap-2">
             <span className="grid h-6 w-6 place-items-center rounded-[7px] bg-[#061C3D] text-[0.6rem] font-bold text-white">
               {shopName.slice(0, 1).toUpperCase()}
@@ -63,6 +82,13 @@ export function NewsComposer({
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<number | null>(null);
+  const [sentText, setSentText] = useState("");
+  const celebrateRef = useRef<HTMLElement>(null);
+
+  // Paa telefonen kan fejringen ligge uden for skaermen efter et tryk laengere nede.
+  useEffect(() => {
+    if (sentTo !== null) celebrateRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [sentTo]);
   const [confirming, setConfirming] = useState(false);
   const [pending, start] = useTransition();
   const locked = Boolean(nextAllowedAt);
@@ -84,6 +110,7 @@ export function NewsComposer({
       setConfirming(false);
       if (res.ok) {
         setSentTo(res.recipients);
+        setSentText(trimmed);
         setText("");
       } else setError(res.error);
     });
@@ -97,24 +124,50 @@ export function NewsComposer({
     });
   }
 
-  const hint = locked && nextAllowedAt ? `Du har sendt dagens pushbesked. Du kan sende igen ${when(nextAllowedAt)}.` : null;
+  const reach =
+    inWallet > 0 ? `Når ${inWallet} ${inWallet === 1 ? "kunde" : "kunder"} med kortet i Wallet.` : "Når kunder med kortet i Wallet.";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
       <div className="flex min-w-0 flex-col gap-5">
+        {sentTo !== null ? (
+          // Fejringen: beskeden er ude. Konfetti, flueben, tallet der taeller op,
+          // og beskeden, der lander paa laaseskaermen.
+          <section ref={celebrateRef} role="status" className="relative scroll-mt-24 overflow-hidden rounded-[22px] bg-[#061C3D] p-6 text-white md:p-7">
+            <Confetti colors={["#FFFFFF", "#7CC4FF", "#1B5EAE", "#C8D8E8"]} originY="30%" />
+            <CheckBurst size={52} bg="#7CC4FF" fg="#061C3D" />
+            <p className="mt-4 text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">
+              Sendt til <AnimatedNumber value={sentTo} /> {sentTo === 1 ? "kunde" : "kunder"}
+            </p>
+            <p className="mt-1 text-[0.92rem] text-white/75">Den lander på deres låseskærm i løbet af få minutter.</p>
+            <div className="mx-auto mt-6 max-w-[320px] lg:hidden">
+              <LockScreen shopName={shopName} text={sentText} landed />
+            </div>
+            {nextAllowedAt ? <p className="mt-5 text-[0.82rem] text-white/60">Næste pushbesked kan sendes {when(nextAllowedAt)}.</p> : null}
+          </section>
+        ) : locked ? (
+          <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
+            <h2 className="flex items-center gap-2.5 text-[1.05rem] font-semibold text-ink">
+              <CheckBurst size={26} bg="#1B5EAE" fg="#FFFFFF" />
+              Dagens pushbesked er sendt
+            </h2>
+            <p className="mt-2 text-[0.92rem] leading-relaxed text-stone">
+              Du kan sende den næste {nextAllowedAt ? when(nextAllowedAt) : "i morgen"}. Én om dagen, så kunderne bliver glade, når den kommer.
+            </p>
+          </section>
+        ) : (
         <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
           <label htmlFor="news" className="text-[1.05rem] font-semibold text-ink">
             Ny pushbesked
           </label>
+          <p className="mt-0.5 text-[0.85rem] text-stone">{reach}</p>
           <textarea
             id="news"
             value={text}
             onChange={(e) => edit(e.target.value)}
             maxLength={NEWS_MAX}
             rows={3}
-            disabled={locked || pending}
-            placeholder={locked ? "Du kan skrive en ny besked i morgen." : undefined}
-            aria-describedby={hint ? "news-hint" : undefined}
+            disabled={pending}
             className="mt-3 w-full resize-none rounded-xl border border-fog px-4 py-3 text-[0.98rem] leading-relaxed text-ink outline-none disabled:opacity-60"
           />
           <div className="mt-1.5 flex items-center justify-between gap-3 text-[0.78rem] text-slate">
@@ -159,13 +212,7 @@ export function NewsComposer({
               {error}
             </p>
           ) : null}
-          {sentTo !== null ? (
-            <p role="status" className="mt-4 rounded-xl bg-sand px-4 py-3 text-[0.88rem] text-ink">
-              Sendt til {kort(sentTo)}. Kunderne får den på låseskærmen i løbet af få minutter.
-            </p>
-          ) : null}
-
-          {inWallet === 0 && !locked ? (
+          {inWallet === 0 ? (
             <div className="mt-5 rounded-xl bg-sand px-4 py-3 text-[0.88rem] leading-relaxed text-ink">
               Ingen kunder har kortet i Apple Wallet endnu. Pushbeskeder når kun kort i Wallet.{" "}
               <Link href="/app/plakat" className="font-semibold underline underline-offset-4">
@@ -199,25 +246,19 @@ export function NewsComposer({
               </div>
             </div>
           ) : (
-            <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-              {!locked ? (
-                <button
-                  type="button"
-                  onClick={() => setConfirming(true)}
-                  disabled={!canSend}
-                  className="inline-flex min-h-11 items-center rounded-full bg-ink px-6 text-[0.92rem] font-semibold text-white hover:bg-[#0A2D5A] disabled:opacity-50"
-                >
-                  Send pushbesked
-                </button>
-              ) : null}
-              {hint ? (
-                <span id="news-hint" className="text-[0.82rem] text-stone">
-                  {hint}
-                </span>
-              ) : null}
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                disabled={!canSend}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-6 text-[0.95rem] font-semibold text-white hover:bg-[#0A2D5A] disabled:opacity-50 sm:w-auto"
+              >
+                Send pushbesked
+              </button>
             </div>
           )}
         </section>
+        )}
 
         {current ? (
           <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
@@ -256,7 +297,7 @@ export function NewsComposer({
       </div>
 
       <aside aria-label="Forhåndsvisning" className="hidden lg:sticky lg:top-6 lg:block lg:self-start">
-        <LockScreen shopName={shopName} text={trimmed || current || ""} />
+        <LockScreen shopName={shopName} text={sentTo !== null ? sentText : trimmed || current || ""} landed={sentTo !== null} />
       </aside>
     </div>
   );

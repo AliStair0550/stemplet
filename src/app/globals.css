@@ -718,6 +718,20 @@ textarea:focus-visible {
     transform: scale(1);
   }
 }
+/* Pushbeskeden lander paa laaseskaermen (Kommunikation, efter Send). */
+@keyframes news-drop {
+  0% {
+    transform: translateY(-28px) scale(0.94);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(3px) scale(1.01);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
 @keyframes celebrate-check {
   from {
     stroke-dashoffset: 24;
