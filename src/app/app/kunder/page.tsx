@@ -7,6 +7,7 @@ import { PageHeading, Panel } from "@/components/dash";
 import { btnClass } from "@/components/ui";
 import { formatDkDate, formatDkNumber, relativeDk } from "@/lib/utils";
 import { normalizeReferralCode } from "@/lib/referral-code";
+import { readyConditions } from "@/lib/ready-customers";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,11 @@ export const dynamic = "force-dynamic";
 // henvisningssiden). En kunde kan have begge. Har butikken begge produkter, kan
 // oversigten filtreres. "Tjek ind" aabner kunden i kassen (samme kundekort som
 // ved scan), saa man kan give stempler, rabat eller indloese uden at scanne.
+// Oeverst fire tal (i alt, nye, aktive, klar til beloenning), der ogsaa er
+// genveje til filtrene.
+
+type Vis = "alle" | "klar" | "nye" | "stemplet" | "henvisninger";
+const DAY = 24 * 60 * 60 * 1000;
 
 const PAGE_SIZE = 50;
 
@@ -37,18 +43,36 @@ export default async function CustomersPage({
   const sp = await searchParams;
   const q = (sp.q ?? "").trim().slice(0, 60);
   const both = business.stampsEnabled && business.referralsEnabled;
-  const vis = both && (sp.vis === "stemplet" || sp.vis === "henvisninger") ? sp.vis : "alle";
+  const vis: Vis =
+    sp.vis === "klar" || sp.vis === "nye" || (both && (sp.vis === "stemplet" || sp.vis === "henvisninger")) ? sp.vis : "alle";
+
+  const now = new Date();
+  const monthAgo = new Date(now.getTime() - 30 * DAY);
+  const stampCard = await prisma.card.findFirst({
+    where: { businessId: business.id, active: true },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, stampsRequired: true },
+  });
+  const required = stampCard?.stampsRequired ?? 10;
+  const ready = readyConditions(business, stampCard, now);
 
   // Butikken afgoeres af kortets skabelon, saa ogsaa stempelkunder uden
   // denormaliseret businessId kommer med.
   const scope: Prisma.CustomerCardWhereInput = { card: { businessId: business.id } };
+  const readyWhere: Prisma.CustomerCardWhereInput = ready.length ? { OR: ready } : { id: "__ingen__" };
+  const newWhere: Prisma.CustomerCardWhereInput = { createdAt: { gte: monthAgo } };
+  const activeWhere: Prisma.CustomerCardWhereInput = { lastStampAt: { gte: monthAgo } };
   const digits = q.replace(/\D/g, "");
   const product: Prisma.CustomerCardWhereInput =
     vis === "henvisninger"
       ? { referralCode: { not: null } }
       : vis === "stemplet"
         ? { OR: [{ lifetimeStamps: { gt: 0 } }, { referralCode: null }] }
-        : {};
+        : vis === "klar"
+          ? readyWhere
+          : vis === "nye"
+            ? newWhere
+            : {};
   const where: Prisma.CustomerCardWhereInput = q
     ? {
         AND: [
@@ -67,8 +91,11 @@ export default async function CustomersPage({
       }
     : { AND: [scope, product] };
 
-  const [total, cards, required] = await Promise.all([
+  const [total, newCount, activeCount, readyCount, cards] = await Promise.all([
     prisma.customerCard.count({ where: scope }),
+    prisma.customerCard.count({ where: { AND: [scope, newWhere] } }),
+    prisma.customerCard.count({ where: { AND: [scope, activeWhere] } }),
+    prisma.customerCard.count({ where: { AND: [scope, readyWhere] } }),
     prisma.customerCard.findMany({
       where,
       orderBy: [{ lastStampAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
@@ -87,16 +114,14 @@ export default async function CustomersPage({
         lastStampAt: true,
         referredBy: { select: { name: true } },
         referralReceived: { select: { status: true } },
-        _count: { select: { rewards: { where: { status: "AVAILABLE", expiresAt: { gt: new Date() } } } } },
+        _count: {
+          select: {
+            rewards: { where: { status: "AVAILABLE", expiresAt: { gt: now } } },
+            referralsMade: { where: { status: { in: ["CREATED", "VISITED", "REWARDED"] } } },
+          },
+        },
       },
     }),
-    prisma.card
-      .findFirst({
-        where: { businessId: business.id, active: true },
-        orderBy: { createdAt: "asc" },
-        select: { stampsRequired: true },
-      })
-      .then((c) => c?.stampsRequired ?? 10),
   ]);
 
   // Ingen kunder endnu: ingen soegning, kun naeste skridt.
@@ -124,34 +149,72 @@ export default async function CustomersPage({
 
   return (
     <>
-      <PageHeading
-        title="Kunder"
-        subtitle={`${formatDkNumber(total)} ${total === 1 ? "kortholder" : "kortholdere"} i alt.`}
-      />
+      <PageHeading title="Kunder" />
 
-      {both ? (
-        <nav aria-label="Vis kunder" className="mb-4 inline-flex rounded-full bg-[#F2F5F9] p-1">
-          {(
-            [
-              ["alle", "Alle"],
-              ["stemplet", "Stempler"],
-              ["henvisninger", "Henvisninger"],
-            ] as const
-          ).map(([v, label]) => (
+      {/* Fire tal, der ogsaa er genveje til filtrene. */}
+      <div className="mb-5 grid grid-cols-2 gap-2.5 md:grid-cols-4">
+        {(
+          [
+            ["alle", formatDkNumber(total), total === 1 ? "kortholder" : "kortholdere"],
+            ["nye", formatDkNumber(newCount), "nye de sidste 30 dage"],
+            ...(business.stampsEnabled ? ([[null, formatDkNumber(activeCount), "har fået stempel på 30 dage"]] as const) : []),
+            ["klar", formatDkNumber(readyCount), "klar til belønning"],
+          ] as const
+        ).map(([v, value, label], i) => {
+          const body = (
+            <>
+              <span className={cn("block text-[1.6rem] font-bold leading-none tracking-[-0.03em] tabular-nums", v === "klar" && readyCount > 0 ? "text-[#1B5EAE]" : "text-ink")}>
+                {value}
+              </span>
+              <span className="mt-1.5 block text-[0.76rem] leading-snug text-slate">{label}</span>
+            </>
+          );
+          return v ? (
             <Link
-              key={v}
+              key={i}
               href={v === "alle" ? "/app/kunder" : `/app/kunder?vis=${v}`}
-              aria-current={vis === v ? "page" : undefined}
               className={cn(
-                "rounded-full px-4 py-1.5 text-[0.88rem] transition-colors",
-                vis === v ? "bg-white font-[600] text-ink shadow-sm" : "text-stone hover:text-ink",
+                "rounded-[16px] border bg-white p-4 shadow-card transition-colors active:scale-[0.98]",
+                vis === v && v !== "alle" ? "border-ink" : "border-fog hover:border-clay",
               )}
             >
-              {label}
+              {body}
             </Link>
-          ))}
-        </nav>
-      ) : null}
+          ) : (
+            <div key={i} className="rounded-[16px] border border-fog bg-white p-4 shadow-card">
+              {body}
+            </div>
+          );
+        })}
+      </div>
+
+      <nav aria-label="Vis kunder" className="-mx-4 mb-4 flex gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:px-0">
+        {(
+          [
+            ["alle", "Alle"],
+            ["klar", "Klar til belønning"],
+            ["nye", "Nye"],
+            ...(both
+              ? ([
+                  ["stemplet", "Stempler"],
+                  ["henvisninger", "Henvisninger"],
+                ] as const)
+              : []),
+          ] as const
+        ).map(([v, label]) => (
+          <Link
+            key={v}
+            href={v === "alle" ? "/app/kunder" : `/app/kunder?vis=${v}`}
+            aria-current={vis === v ? "page" : undefined}
+            className={cn(
+              "shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-[0.85rem] transition-colors",
+              vis === v ? "border-ink bg-ink font-[600] text-white" : "border-clay bg-white text-ink hover:border-ink",
+            )}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
 
       <form className="mb-5 flex gap-2" role="search">
         {vis !== "alle" ? <input type="hidden" name="vis" value={vis} /> : null}
@@ -172,7 +235,11 @@ export default async function CustomersPage({
           <p className="px-6 py-5 text-[0.9rem] text-stone">
             {q
               ? "Ingen kunder matcher din søgning."
-              : vis === "stemplet"
+              : vis === "klar"
+                ? "Ingen venter på en belønning lige nu."
+                : vis === "nye"
+                  ? "Ingen nye kunder de sidste 30 dage."
+                  : vis === "stemplet"
                 ? "Ingen stempelkunder endnu."
                 : vis === "henvisninger"
                   ? "Ingen kunder via henvisninger endnu."
@@ -181,16 +248,26 @@ export default async function CustomersPage({
         ) : (
           <ul className="divide-y divide-fog">
             {cards.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-3.5">
+              <li key={c.id} className="px-5 py-4 sm:px-6">
+                {/* Navn og Tjek ind paa samme linje, saa knappen altid er inden for tommelfingeren. */}
+                <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-[0.92rem] text-ink">
+                  <p className="truncate text-[0.95rem] font-[600] text-ink">
                     {c.name ?? "Kortholder"}
                     {!c.name ? <span className="ml-2 text-[0.75rem] text-slate">#{c.serial.slice(0, 6)}</span> : null}
                   </p>
                   <p className="truncate text-[0.76rem] text-slate">
                     {[c.contactEmail ?? formatPhone(c.phone), `oprettet ${formatDkDate(c.createdAt)}`].filter(Boolean).join(" · ")}
                   </p>
-                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                </div>
+                  <span className="shrink-0">
+                  <Link href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`} className="inline-flex min-h-10 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white hover:bg-[#0A2D5A]">
+                    Tjek ind
+                  </Link>
+                  </span>
+                </div>
+                <div className="mt-2.5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {(business.stampsEnabled && c.stamps >= required) || c._count.rewards > 0 ? (
                       <span className="inline-flex items-center rounded-full bg-[#1B5EAE] px-2.5 py-0.5 text-[0.74rem] font-[600] text-white">
                         Belønning klar
@@ -209,29 +286,33 @@ export default async function CustomersPage({
                     {c.referralCode ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#061C3D] px-2.5 py-0.5 text-[0.74rem] text-white">
                         <span className="font-[600]">Henvisning</span>
-                        <span className="tracking-[0.03em] text-white/75">{c.referralCode}</span>
-                        {c.referredBy?.name ? <span className="text-white/75">· henvist af {c.referredBy.name}</span> : null}
+                        {c.referredBy?.name ? <span className="text-white/75">henvist af {c.referredBy.name}</span> : null}
+                      </span>
+                    ) : null}
+                    {c._count.referralsMade > 0 ? (
+                      <span className="inline-flex items-center rounded-full border border-fog bg-white px-2.5 py-0.5 text-[0.74rem] text-ink">
+                        Har henvist {c._count.referralsMade}
                       </span>
                     ) : null}
                   </div>
-                </div>
                 {/* Stempler kun, naar butikken har Stemplet (ikke kun Henvisninger). */}
                 {business.stampsEnabled && (c.lifetimeStamps > 0 || !c.referralCode) ? (
-                  <div className="text-right text-[0.8rem] text-stone">
+                  <div className="w-full text-[0.8rem] text-stone sm:w-40 sm:text-right">
                     <span className="tabular-nums text-ink">
-                      {c.stamps}/{required}
+                      {Math.min(c.stamps, required)}/{required}
                     </span>{" "}
                     stempler
                     {c.completedCount > 0 ? `, ${c.completedCount} fulde kort` : ""}
-                    <span className="block text-[0.72rem] text-slate">
+                    <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#E8EDF3]" aria-hidden>
+                      <span className="block h-full rounded-full bg-[#1B5EAE]" style={{ width: `${Math.min(100, (c.stamps / required) * 100)}%` }} />
+                    </span>
+                    <span className="mt-1 block text-[0.72rem] text-slate">
                       {c.lastStampAt ? `sidst ${relativeDk(c.lastStampAt)}` : "ingen besøg endnu"}
                     </span>
                   </div>
                 ) : null}
-                <div className="flex items-center gap-2">
-                  <Link href={`/app/kasse?kort=${encodeURIComponent(c.serial)}`} className="inline-flex min-h-10 items-center rounded-full bg-ink px-4 text-[0.85rem] font-semibold text-white hover:bg-[#0A2D5A]">
-                    Tjek ind
-                  </Link>
+                </div>
+                <div className="mt-1 flex justify-end">
                   <DeleteCustomerButton id={c.id} name={c.name ?? "kortholderen"} />
                 </div>
               </li>

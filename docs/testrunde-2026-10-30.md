@@ -63,8 +63,8 @@ Alis noter fra test med en ven, samlet og prioriteret. Vi tager 2 til 3 punkter 
 
 | # | Punkt | Status |
 |---|---|---|
-| F1 | Kundeoverblikket skal forbedres | Venter |
-| F2 | Belønningshistorik (ud over Klar til belønning) | Venter |
+| F1 | Kundeoverblikket skal forbedres | Lavet (batch 10) |
+| F2 | Belønningshistorik (ud over Klar til belønning) | Lavet (batch 10) |
 | F3 | Kommunikation er ikke tydelig nok på telefon | Venter |
 | F4 | Fejring, når en pushbesked er sendt | Venter |
 | F5 | Tilbud: kan ikke redigeres; https skal tilføjes automatisk | Venter |

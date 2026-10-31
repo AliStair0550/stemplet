@@ -4,6 +4,7 @@ import { requireBusiness } from "@/lib/session";
 import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
 import { getReadyCustomers } from "@/lib/ready-customers";
 import { getReferralOverview } from "@/lib/referral-desk";
+import { getRewardHistory } from "@/lib/reward-history";
 import { cardShareText, greetingFor, midSentence, referralSummaryLine, summaryLine } from "@/lib/overview-text";
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
@@ -11,7 +12,7 @@ import { loadCardPreview } from "@/lib/card-preview";
 import { APP_URL, WALLET_ENABLED } from "@/lib/env";
 import { WalletIcon } from "@/components/ui";
 import { AddToHomeButton } from "./AddToHomeButton";
-import { formatDkNumber } from "@/lib/utils";
+import { formatDkNumber, relativeDk } from "@/lib/utils";
 import { DEFAULT_PRIMARY } from "@/lib/brand";
 import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
 import { cookies } from "next/headers";
@@ -92,12 +93,13 @@ function AddFeature({ href, logo, title, text }: { href: string; logo: ReactNode
 
 export default async function HomePage() {
   const { business } = await requireBusiness();
-  const [stats, pulse, ready, referrals, preview] = await Promise.all([
+  const [stats, pulse, ready, referrals, preview, history] = await Promise.all([
     getBusinessStats(business.id),
     getOverviewPulse(business.id),
     getReadyCustomers(business),
     business.referralsEnabled ? getReferralOverview(business.id) : Promise.resolve(null),
     loadCardPreview(business),
+    getRewardHistory(business),
   ]);
   // Kortets offentlige side: stempelkortet, eller henvisningssiden uden Stemplet.
   const shareHref = `/k/${business.slug}`;
@@ -398,10 +400,34 @@ export default async function HomePage() {
 
       {/* Ingen venter: en kort note nederst (listen staar oeverst, naar der er nogen). */}
       {ready.customers.length === 0 && stats.totalCustomers > 0 ? (
-        <section>
+        <section className="mb-12">
           <SectionHeader title="Klar til belønning" />
           <Panel>
             <p className="py-1 text-[0.88rem] text-stone">Ingen venter lige nu.</p>
+          </Panel>
+        </section>
+      ) : null}
+
+      {/* Belønningshistorik: hvad er givet ved kassen for nylig. */}
+      {history.length > 0 ? (
+        <section>
+          <SectionHeader title="Givet for nylig" />
+          <Panel>
+            <ul className="flex flex-col divide-y divide-fog">
+              {history.map((h) => (
+                <li key={h.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <span className="min-w-0">
+                    <span className="block truncate text-[0.95rem] font-[600] text-ink">{h.name ?? "Kortholder"}</span>
+                    <span className="block truncate text-[0.8rem] text-stone">
+                      {h.kind === "stamps" ? "Fuldt stempelkort" : h.kind === "visit" ? "Første besøg via en ven" : "Belønning fra henvisning"}
+                      {" · "}
+                      {h.what}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-[0.78rem] text-slate">{relativeDk(h.at)}</span>
+                </li>
+              ))}
+            </ul>
           </Panel>
         </section>
       ) : null}
