@@ -73,7 +73,10 @@ export async function POST(
   const out = r.ok
     ? NextResponse.json({ ok: true })
     : NextResponse.json({ ok: false, code: r.error, message: MESSAGES[r.error] });
-  if (!existingDid) out.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
+  // Enheds-cookien saettes kun, naar kortet er hentet. Ved et dobbelttryk fra en
+  // ny telefon faar hvert tryk sit eget id; taberens id (og tomme kort) maa ikke
+  // overskrive vinderens.
+  if (r.ok && !existingDid) out.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
   if (r.ok) {
     out.cookies.set(cardCookieName(r.businessId), r.authToken, cardCookieOptions());
     // Kun ved et NYT kort kan en taerskel (80/100) vaere krydset.

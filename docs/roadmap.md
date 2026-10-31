@@ -21,7 +21,7 @@ Opdateret 31. oktober 2026. Ét sted for, hvad der er bygget, hvad der kommer, o
 
 Fra gennemgangen 31. oktober. Ingen P0, men Wallet-udsendelse og databaseforbindelser er det første, der knækker ved vækst.
 
-1. **Bølge 1, små og sikre:**
+1. **Bølge 1, små og sikre (færdig 31. okt, #79 og del 2):**
    - R1: Apple-fejl må ikke slette registreringer.
    - R2: tidsgrænser på Wallet.
    - R5: dobbelttryk på Hent kort.

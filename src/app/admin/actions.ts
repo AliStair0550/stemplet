@@ -194,7 +194,9 @@ export async function resetStamps(businessId: string): Promise<void> {
     }),
     prisma.customerCard.updateMany({
       where: { card: { businessId } },
-      data: { stamps: 0 },
+      // Livstidstaelleren skal foelge stempel-loggen (den daglige kontrol og
+      // senere milepaele tjekker lifetimeStamps = sum af stempler).
+      data: { stamps: 0, lifetimeStamps: 0 },
     }),
   ]);
   revalidatePath("/admin");

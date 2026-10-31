@@ -10,7 +10,7 @@ import {
 import { signupBlockReason } from "./billing";
 import { withDbRetry } from "./db-retry";
 import type { Contact } from "./contact";
-import { findEmailOwner, saveContact } from "./contact-save";
+import { deleteOrphanCard, findEmailOwner, saveContact } from "./contact-save";
 
 // "kontakt" = ny kunde uden navn og e-mail (kun GET-linket): send til formularen.
 // "mail_findes" = e-mailen hoerer allerede til et andet kort i butikken.
@@ -121,9 +121,12 @@ export async function resolveOrCreateCard(
   );
   if (!created) return { ok: false, error: "fuld" };
 
-  // Samtidig oprettelse med samme e-mail: unik-indekset vinder. Kortet er stadig
-  // enhedens eget (genbruges naeste gang), men uden e-mail.
+  // Samtidig oprettelse med samme e-mail (fx dobbelttryk fra en ny telefon, hvor
+  // hvert tryk fik sit eget enheds-id): unik-indekset vinder. Det tomme kort, som
+  // dette kald lige oprettede, slettes igen, saa der ikke ligger et kort uden
+  // kontakt tilbage.
   if (!(await saveContact(created.id, business.id, contact))) {
+    if (created.isNew) await deleteOrphanCard(created.id);
     return { ok: false, error: "mail_findes" };
   }
 
@@ -131,7 +134,7 @@ export async function resolveOrCreateCard(
   // nye kort 1 stempel med det samme (kortet lander i Wallet med 1/x). MANUAL
   // springer cooldown over og er system-givet. En fejl her maa ikke vaelte
   // afhentningen, saa vi sluger den (kortet er stadig oprettet).
-  if (await hasActivePickupStamp(card.id)) {
+  if (created.isNew && (await hasActivePickupStamp(card.id))) {
     try {
       await applyStamp({
         customerCardId: created.id,
@@ -149,6 +152,6 @@ export async function resolveOrCreateCard(
     serial: created.serial,
     authToken: created.authToken,
     businessId: business.id,
-    created: true,
+    created: created.isNew,
   };
 }

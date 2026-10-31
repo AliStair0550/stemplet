@@ -5,7 +5,7 @@ import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
 import { referralCodeCandidates } from "./referral-code";
 import { parseContact } from "./contact";
-import { findEmailOwner, saveContact } from "./contact-save";
+import { deleteOrphanCard, findEmailOwner, saveContact } from "./contact-save";
 
 // Henvisningssiden /henvisninger/[slug] (fase 2). Een kunde = eet kort pr. butik
 // (docs/henvisninger.md): tilmeldingen genbruger kundens eksisterende kort, ellers
@@ -202,14 +202,33 @@ export async function signupForReferrals(
     input.deviceId ?? null,
   );
   if (!created) return { ok: false, error: "fuld" };
-  await maybeFireTrialMilestones(shop.id);
+  if (created.isNew) await maybeFireTrialMilestones(shop.id);
 
   // Samtidig tilmelding med samme e-mail: unik-indekset vinder, og den anden
-  // faar "mail_findes" (kortet er stadig enhedens eget og genbruges naeste gang).
+  // faar "mail_findes". Det tomme kort, som dette kald lige oprettede, slettes.
   if (!(await saveContact(created.id, shop.id, contact, db))) {
+    if (created.isNew) await deleteOrphanCard(created.id, db);
     return { ok: false, error: "mail_findes" };
   }
   const code = await assignReferralCode({ customerCardId: created.id, name }, db);
+
+  // Dobbelttryk fra samme enhed: det andet kald faar det samme kort tilbage.
+  // Henvisning og velkomststempel er allerede givet af det foerste.
+  if (!created.isNew) {
+    const card = await db.customerCard.findUnique({
+      where: { id: created.id },
+      select: { referredByCardId: true },
+    });
+    return {
+      ok: true,
+      businessId: shop.id,
+      authToken: created.authToken,
+      code,
+      referred: card?.referredByCardId != null,
+      alreadyCustomer: false,
+      created: false,
+    };
+  }
 
   let referred = false;
   if (referrer) {

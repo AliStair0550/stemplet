@@ -85,7 +85,10 @@ export async function POST(
         { ok: false, code: res.error, message: MESSAGES[res.error] },
         { status: 200 },
       );
-  if (!existingDid) out.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
+  // Enheds-cookien saettes kun, naar kortet er hentet. Ved et dobbelttryk fra en
+  // ny telefon faar hvert tryk sit eget id; taberens id (og tomme kort) maa ikke
+  // overskrive vinderens.
+  if (res.ok && !existingDid) out.cookies.set(DEVICE_ID_COOKIE, deviceId, deviceCookieOptions());
   if (res.ok) out.cookies.set(cardCookieName(res.businessId), res.authToken, cardCookieOptions());
   return out;
 }

@@ -25,6 +25,10 @@ import {
 } from "@/lib/validation";
 import type { CardDesign } from "@/components/CardDesigner";
 
+// Loft paa fritekst, der gemmes paa butikken og sendes videre (geokodning, webhooks).
+const ADDRESS_MAX = 200;
+const WEBHOOK_URL_MAX = 500;
+
 type Result = { ok: boolean; error?: string };
 
 // Skift aktiv butik (agentur/flere ejere): saetter en cookie med den valgte
@@ -108,6 +112,9 @@ export async function createBusinessForCurrentUser(input: {
     longitude: number;
   } | null = null;
   const addr = input.address?.trim();
+  if (addr && addr.length > ADDRESS_MAX) {
+    return { ok: false, field: "address", error: `Skriv en adresse på højst ${ADDRESS_MAX} tegn.` };
+  }
   if (addr && addr.length >= 4) {
     const geo = await geocodeAddress(addr);
     if (!geo) {
@@ -337,6 +344,9 @@ export async function saveWebhookUrl(formData: FormData): Promise<Result> {
   const raw = String(formData.get("webhookUrl") ?? "").trim();
 
   let webhookUrl: string | null = null;
+  if (raw.length > WEBHOOK_URL_MAX) {
+    return { ok: false, error: `URL'en må højst være ${WEBHOOK_URL_MAX} tegn.` };
+  }
   if (raw) {
     let url: URL;
     try {
@@ -460,6 +470,9 @@ export async function setLocationFromAddress(address: string): Promise<GeoResult
   const q = address.trim();
   if (q.length < 4) {
     return { ok: false, error: "Skriv butikkens adresse, fx gade, nummer og by." };
+  }
+  if (q.length > ADDRESS_MAX) {
+    return { ok: false, error: `Skriv en adresse på højst ${ADDRESS_MAX} tegn.` };
   }
   const geo = await geocodeAddress(q);
   if (!geo) {

@@ -45,3 +45,11 @@ export async function saveContact(
   }
   return true;
 }
+
+/** Sletter et netop oprettet kort, der aldrig fik kontakt eller stempler (taberen
+ *  af et dobbelttryk). Best-effort: fejler det, ligger kortet bare tomt. */
+export async function deleteOrphanCard(id: string, db: Db = prisma): Promise<void> {
+  await db.customerCard
+    .deleteMany({ where: { id, stamps: 0, lifetimeStamps: 0, contactEmail: null } })
+    .catch(() => {});
+}

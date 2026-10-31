@@ -67,10 +67,14 @@ function ContactForm({
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Laas, der virker med det samme (state naar foerst ud ved naeste render), saa
+  // et hurtigt dobbelttryk ikke sender formularen to gange.
+  const sending = useRef(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (busy) return;
+    if (sending.current) return;
+    sending.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -101,6 +105,7 @@ function ContactForm({
     } catch {
       onFejl("serverfejl");
     } finally {
+      sending.current = false;
       setBusy(false);
     }
   }

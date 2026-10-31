@@ -11,10 +11,12 @@ import { NewsComposer } from "./NewsComposer";
 export const metadata: Metadata = { title: "Pushbeskeder" };
 export const dynamic = "force-dynamic";
 
-export default async function BeskederPage({ searchParams }: { searchParams: Promise<{ tekst?: string }> }) {
+export default async function BeskederPage({ searchParams }: { searchParams: Promise<{ tekst?: string | string[] }> }) {
   const { business } = await requireBusiness();
   // Udfyldt besked fra Tilbud ("Send som pushbesked"); ejeren retter og sender selv.
-  const preset = ((await searchParams).tekst ?? "").slice(0, NEWS_MAX);
+  // ?tekst= kan staa flere gange i adressen; saa bruges den foerste.
+  const raw = (await searchParams).tekst;
+  const preset = ((Array.isArray(raw) ? raw[0] : raw) ?? "").slice(0, NEWS_MAX);
   const [inWallet, optedOut, history] = await Promise.all([
     walletCardCount(business.id),
     newsOptOutCount(business.id),

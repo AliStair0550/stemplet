@@ -199,6 +199,9 @@ export default async function AdminPage() {
 
   const businesses = await prisma.business.findMany({
     orderBy: { createdAt: "desc" },
+    // Billederne ligger som tekst i raekken (op til ca. 2 MB pr. butik) og bruges
+    // ikke her, saa de hentes ikke.
+    omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true },
     include: {
       memberships: {
         select: {
