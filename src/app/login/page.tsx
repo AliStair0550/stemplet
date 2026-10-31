@@ -21,12 +21,15 @@ export default async function LoginPage({
 }) {
   const { fejl, error } = await searchParams;
   // error=Verification: Auth.js' fejl for et brugt eller udloebet login-link.
+  // Andre Auth.js-fejl (fx Configuration ved et databaseblip) gav foer ingen besked.
   const notice =
     fejl === "onboarding"
       ? "Din butik er oprettet. Log ind her, så kommer du ind i dashboardet."
       : error === "Verification"
         ? "Linket er brugt eller udløbet. Skriv din e-mail, så sender vi et nyt."
-        : null;
+        : error
+          ? "Noget drillede et øjeblik, så du blev ikke logget ind. Skriv din e-mail, så sender vi et nyt link."
+          : null;
 
   return (
     <main className="dash-theme flex min-h-screen flex-col bg-white text-[#0B1628] antialiased" style={{ fontFamily: FONT }}>

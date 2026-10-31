@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { handlers } from "@/lib/auth";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { normalizeLoginCode } from "@/lib/login-code";
+import { withDbRetry } from "@/lib/db-retry";
+import { captureServerError } from "@/lib/sentry";
 
 export const { POST } = handlers;
 
@@ -26,9 +28,13 @@ export async function GET(req: NextRequest) {
   if (!email) return back("kode");
   let ok = false;
   try {
-    ok = await durableRateLimit("login-code", email, CODE_ATTEMPTS, CODE_WINDOW_SECONDS);
-  } catch {
-    ok = false; // fail-closed: hellere et nyt forsoeg om lidt end et aabent loft
+    // Neon kan sove, naar ejeren aabner mailen et kvarter senere: korte genforsoeg.
+    ok = await withDbRetry(() => durableRateLimit("login-code", email, CODE_ATTEMPTS, CODE_WINDOW_SECONDS));
+  } catch (e) {
+    // Fail-closed (intet aabent loft), men med den rigtige besked: det er en
+    // forbigaaende fejl, ikke for mange forsoeg.
+    captureServerError(e, { route: "auth:login-code" });
+    return back("server");
   }
   if (!ok) return back("mange");
 

@@ -8,6 +8,7 @@ import { emailSchema } from "@/lib/validation";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
 import { LOGIN_CODE_TTL_SECONDS, LOGIN_EMAIL_COOKIE } from "@/lib/login-code";
+import { captureServerError } from "@/lib/sentry";
 
 export type LoginState = { error?: string; notFound?: boolean };
 
@@ -81,6 +82,9 @@ export async function requestMagicLink(
   } catch (e) {
     unstable_rethrow(e); // lad redirect (succes) passere
     console.error("Login fejlede:", e);
+    // Fejler login-mailen (Resend nede, noeglen udloebet), kan ingen ejer logge
+    // ind. Det skal vi se med det samme.
+    captureServerError(e, { route: "login" });
     return {
       error:
         "Vi kunne ikke logge dig ind lige nu. Det er som regel forbigående, prøv igen om et øjeblik.",

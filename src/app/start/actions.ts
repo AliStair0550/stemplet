@@ -13,6 +13,7 @@ import { superadminRecipients } from "@/lib/superadmin-emails";
 import { signupWelcomeEmail, superadminNewBusinessEmail } from "@/lib/emails";
 import { captureServerError } from "@/lib/sentry";
 import { createLoyaltyBusiness, LoyaltyOnboardingError, type LoyaltyInput } from "@/lib/loyalty-onboarding";
+import { ipRateKey, FORM_GLOBAL_PER_HOUR } from "@/lib/http";
 
 // IP fra Vercel-headeren til rate-limit paa den selvbetjente oprettelse.
 async function requestIp(): Promise<string> {
@@ -81,7 +82,12 @@ export async function createLoyaltyBusinessAction(input: {
   if (!base.success) {
     return { ok: false, error: base.error.issues[0]?.message ?? "Tjek felterne." };
   }
-  if (!(await durableRateLimit("start-loyalitet", await requestIp(), 5, 3600))) {
+  // Loft pr. afsender (IPv6 pr. /64) og samlet for formularen: hver oprettelse
+  // sender en velkomstmail fra Folka.
+  if (
+    !(await durableRateLimit("start-loyalitet", ipRateKey(await requestIp()), 5, 3600)) ||
+    !(await durableRateLimit("start-loyalitet-alle", "alle", FORM_GLOBAL_PER_HOUR["start-loyalitet"], 3600))
+  ) {
     return { ok: false, error: "For mange forsøg. Prøv igen om lidt." };
   }
   let created: { businessId: string; userId: string; slug: string };
