@@ -27,7 +27,7 @@ test("konfig-fejl (401/403) rapporteres", () => {
   assert.equal(classifyApnsStatus(403), "config");
 });
 
-test("200 og ukendt/ingen status goer intet", () => {
+test("200 er ok; intet svar er ukendt og proeves igen", () => {
   assert.equal(classifyApnsStatus(200), "ok");
-  assert.equal(classifyApnsStatus(null), "ok");
+  assert.equal(classifyApnsStatus(null), "unknown");
 });

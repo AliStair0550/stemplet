@@ -94,6 +94,14 @@ const FANOUT_CHUNK = 500;
  * Uden Redis sendes der bare (som foer).
  */
 export async function pushBusinessWalletPasses(businessId: string): Promise<void> {
+  // Marker kortene som aendret FOER udsendelsen (B4/B5). Doer udsendelsen
+  // undervejs, eller haenger laasen, sender den daglige cron til resten.
+  await prisma.customerCard
+    .updateMany({
+      where: { card: { businessId }, walletRegs: { some: {} } },
+      data: { passUpdatedAt: new Date() },
+    })
+    .catch(() => {});
   if (!redisConfigured()) {
     await pushAllWalletPasses({ businessId });
     return;
@@ -122,6 +130,31 @@ export async function pushBusinessWalletPasses(businessId: string): Promise<void
   if (await redis.get(pending).catch(() => null)) {
     await pushBusinessWalletPasses(businessId);
   }
+}
+
+/**
+ * Daglig opsamling (B4/B5): kort i Wallet, der er aendret, uden at et push naaede
+ * alle deres enheder (passPushedAt foer passUpdatedAt), faar et push igen. Det
+ * fanger tabte push efter et stempel og pushbeskeder, hvor udsendelsen doede.
+ * Kun de seneste tre doegn og hoejst 2.000 kort pr. koersel.
+ */
+export async function resyncWalletPasses(now: Date = new Date()): Promise<{ resynced: number }> {
+  const since = new Date(now.getTime() - 3 * 86_400_000);
+  const cards = await prisma.customerCard.findMany({
+    where: {
+      walletRegs: { some: {} },
+      passUpdatedAt: { gte: since, lt: new Date(now.getTime() - 5 * 60 * 1000) },
+      OR: [{ passPushedAt: null }, { passPushedAt: { lt: prisma.customerCard.fields.passUpdatedAt } }],
+    },
+    select: { id: true },
+    take: 2000,
+  });
+  const { pushWalletUpdates } = await import("./apns");
+  const ids = cards.map((c) => c.id);
+  for (let i = 0; i < ids.length; i += FANOUT_CHUNK) {
+    await pushWalletUpdates(ids.slice(i, i + FANOUT_CHUNK));
+  }
+  return { resynced: ids.length };
 }
 
 /** Tjekker Apples "Authorization: ApplePass <token>"-header i konstant tid. */

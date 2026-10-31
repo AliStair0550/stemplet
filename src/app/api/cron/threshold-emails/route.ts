@@ -13,6 +13,8 @@ import { captureServerError } from "@/lib/sentry";
 import { prisma } from "@/lib/prisma";
 import { withDbRetry } from "@/lib/db-retry";
 import { pruneRateLimits } from "@/lib/rate-limit";
+import { resyncWalletPasses } from "@/lib/wallet/build";
+import { WALLET_ENABLED } from "@/lib/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -65,13 +67,15 @@ async function runDaily() {
   await withDbRetry(() => prisma.$queryRaw`SELECT 1`).catch((e) =>
     captureServerError(e, { route: "cron/warmup" }),
   );
-  const [emails, invariant, keepalive, certs, expiry, throttles] = await Promise.all([
+  const [emails, invariant, keepalive, certs, expiry, throttles, resync] = await Promise.all([
     task("threshold-emails", sweepPendingThresholdEmails),
     task("stamp-invariant", checkStampInvariant),
     task("redis-keepalive", redisKeepAlive),
     task("cert-expiry", checkWalletCertExpiry),
     task("referral-expiry", expireReferralsAndRewards),
     task("rate-limit-cleanup", pruneRateLimits),
+    // Tabte push (B4/B5): kort, der er aendret uden at et push kom frem.
+    task("wallet-resync", () => (WALLET_ENABLED ? resyncWalletPasses() : Promise.resolve({ resynced: 0 }))),
   ]);
   // Kort med en netop udloebet beloenning opdateres i Wallet.
   const { cardIds = [], ...referrals } = expiry as { cardIds?: string[] } & Record<string, unknown>;
@@ -83,5 +87,6 @@ async function runDaily() {
     ...certs,
     ...referrals,
     ...throttles,
+    ...resync,
   });
 }

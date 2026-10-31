@@ -166,6 +166,10 @@ export async function POST(req: NextRequest) {
     console.error("Redis (jti) fejlede, stoler paa DB-unik:", e);
   }
   if (!fresh) {
+    // Genforsoeg efter et tabt svar: stemplet blev givet. Svar som ved succes,
+    // saa kunden ser sit stempel (og telefonen faar kortets cookie).
+    const replay = await replayKioskStamp(cc.id, payload.jti, createdCard);
+    if (replay) return withCardCookie(NextResponse.json(replay), payload.businessId, cc.authToken);
     // Kunden har allerede brugt netop denne kode (typisk scannet skaerm-QR'en
     // to gange). Send serienr. med, saa vi kan sende dem hen til deres kort.
     return apiError("REPLAY", "Koden er allerede brugt.", 400, {
@@ -215,6 +219,8 @@ export async function POST(req: NextRequest) {
       "code" in e &&
       (e as { code?: string }).code === "P2002"
     ) {
+      const replay = await replayKioskStamp(cc.id, payload.jti, createdCard);
+      if (replay) return withCardCookie(NextResponse.json(replay), payload.businessId, cc.authToken);
       return apiError("REPLAY", "Koden er allerede brugt.", 400, {
         serial: cc.serial,
       });
@@ -222,4 +228,40 @@ export async function POST(req: NextRequest) {
     console.error("Stempel-fejl", e);
     return apiError("SERVER", "Noget gik galt. Prøv igen.", 500);
   }
+}
+
+// Et stempel med netop denne kode paa netop dette kort inden for to minutter er
+// det samme tryk igen (svaret gik tabt). Svar med kortets tilstand nu.
+async function replayKioskStamp(customerCardId: string, jti: string, created: boolean) {
+  const stamp = await prisma.stamp.findUnique({
+    where: { tokenJti_customerCardId: { tokenJti: jti, customerCardId } },
+    select: {
+      createdAt: true,
+      multiplier: true,
+      customerCard: {
+        select: { authToken: true, serial: true, stamps: true, lifetimeStamps: true, card: { select: { stampsRequired: true } } },
+      },
+    },
+  });
+  if (!stamp || Date.now() - stamp.createdAt.getTime() > 2 * 60 * 1000) return null;
+  const cc = stamp.customerCard;
+  const required = cc.card.stampsRequired;
+  const stamps = Math.min(cc.stamps, required);
+  return {
+    ok: true,
+    created,
+    cardToken: cc.authToken,
+    serial: cc.serial,
+    stamps,
+    required,
+    rewardReady: stamps >= required,
+    justCompleted: false,
+    increment: stamp.multiplier,
+    lifetimeStamps: cc.lifetimeStamps,
+  };
+}
+
+function withCardCookie(res: NextResponse, businessId: string, token: string): NextResponse {
+  res.cookies.set(cardCookieName(businessId), token, cardCookieOptions());
+  return res;
 }

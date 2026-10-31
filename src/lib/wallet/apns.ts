@@ -120,8 +120,9 @@ export async function pushWalletUpdates(customerCardIds: string[]): Promise<{ se
   const ctxCard = cardIds.length === 1 ? cardIds[0] : null;
   // Marker kortene som aendret FOER pushet, saa enheden finder dem, naar den
   // spoerger "hvad er aendret siden sidst" (passesUpdatedSince).
+  const startedAt = new Date();
   await prisma.customerCard
-    .updateMany({ where: { id: { in: cardIds } }, data: { passUpdatedAt: new Date() } })
+    .updateMany({ where: { id: { in: cardIds } }, data: { passUpdatedAt: startedAt } })
     .catch(() => {});
   const { topic } = apnsConfig();
 
@@ -164,6 +165,7 @@ export async function pushWalletUpdates(customerCardIds: string[]): Promise<{ se
             dead.push(r.id);
             break;
           case "transient":
+          case "unknown":
             transient.push(r);
             break;
           case "config":
@@ -193,6 +195,17 @@ export async function pushWalletUpdates(customerCardIds: string[]): Promise<{ se
     }
   } finally {
     client.close();
+  }
+
+  // Kort, hvor ingen enhed endte uden svar eller med en fejl hos os, er
+  // afleveret (B4). Resten sender den daglige cron igen.
+  const failed = new Set([...transient.map((r) => r.customerCardId)]);
+  if (configCount > 0) for (const r of regs) failed.add(r.customerCardId);
+  const delivered = cardIds.filter((id) => !failed.has(id));
+  if (delivered.length > 0) {
+    await prisma.customerCard
+      .updateMany({ where: { id: { in: delivered } }, data: { passPushedAt: startedAt } })
+      .catch(() => {});
   }
 
   if (connectionError) {
