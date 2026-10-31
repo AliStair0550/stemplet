@@ -8,6 +8,7 @@ import { WALLET_ENABLED } from "./env";
 import { generateSerial, generateAuthToken } from "./ids";
 import { canCreateCustomer, PLAN_LIMITS } from "./plans";
 import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
+import { captureServerError } from "./sentry";
 
 // Advisory-laas-navnerum for kortholder-loftet (fast tal, saa det ikke kolliderer
 // med andre advisory-laase).
@@ -666,6 +667,9 @@ function runAfterResponse(task: () => Promise<unknown>) {
       await task();
     } catch (err) {
       console.error("Baggrundsopgave fejlede", err);
+      // Vercel gemmer kun loggen en time: send til Sentry, saa et kort, der ikke
+      // opdaterer, ses foer kunden klager.
+      captureServerError(err, { route: "background:stamp" });
     }
   };
   try {

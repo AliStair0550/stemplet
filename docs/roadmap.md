@@ -71,6 +71,7 @@ I anbefalet rækkefølge:
 - **Design og Regler:**
   - Flyt "Kortets navn" fra Regler til Design.
   - Advar, når en ændring under Design eller Regler opdaterer alle kort (hænger sammen med R2).
+  - Når antal stempler hæves: vis ejeren, at kunder med fuldt kort nu skal samle de ekstra stempler (R16).
 - **Kundesiden:**
   - Delingsbillede (OG) til forsiden.
   - Personlig deleside fra Wallet-knappen uden cookie.
@@ -92,13 +93,16 @@ I anbefalet rækkefølge:
   - Kunder-filtre (i Wallet, fravalgt).
 - **Demo-butikken:** ret logoet (data, under Design).
 
+## Besluttet
+
+- **Flere stempler på kortet (R16), 31. okt:** kunden beholder sine stempler og skal samle de ekstra for at få belønningen (fx 10 af 12). Sådan virker koden allerede, så der skal intet ændres.
+
 ## Beslutninger hos Ali
 
 | Emne | Spørgsmål |
 |---|---|
-| Stempler som henvisningsbelønning (R4) | Skal stemplerne gives automatisk ved indløsning, eller skal valget fjernes? |
-| Flere stempler på kortet (R16) | Hvad sker der med kunder, der har fuldt kort, når antal stempler hæves? Beholde belønningen, eller advare ejeren? |
-| Backup (R8) | Hvilken Neon-plan kører vi på, og skal vi tage en ugentlig kopi selv? |
+| Stempler som henvisningsbelønning (R4) | Anbefaling: giv stemplerne automatisk, så snart belønningen er optjent, med opdatering i Wallet. Valget vises kun, når stempelkortet er slået til. Afventer Alis ja. |
+| Backup (R8) | Gratisplanen hos Neon (besluttet 31. okt). Anbefaling: ugentlig krypteret kopi via GitHub Actions, gemt i 8 uger, og én prøve-gendannelse. Kræver to hemmeligheder i GitHub, som Ali selv lægger ind. Skift til betalt plan ved de første betalende butikker. |
 | Roller | Ejer og ansat med forskellige rettigheder (i dag kan alle medlemmer alt, også fjerne ejeren). |
 | Betaling | Stripe: fjern, eller behold til senere? Indtil videre manuel faktura. |
 | Juridisk | CVR, juridisk navn og advokatgennemgang (privatlivspolitikken nævner ikke push). |

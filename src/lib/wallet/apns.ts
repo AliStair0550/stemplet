@@ -26,14 +26,20 @@ async function providerToken(): Promise<string> {
   return jwt;
 }
 
-// Sender een push paa en DELT forbindelse og returnerer APNs-statuskoden, saa
-// doede tokens kan ryddes (410 Unregistered / 400 BadDeviceToken).
+// Sender een push paa en DELT forbindelse og returnerer APNs-status og -aarsag,
+// saa doede tokens kan ryddes (410 Unregistered / 400 BadDeviceToken). Svarer
+// Apple ikke inden for tidsgraensen, opgiver vi (null), saa en haengende
+// forbindelse ikke holder hele udsendelsen fast.
+const SEND_TIMEOUT_MS = 10_000;
+
+type ApnsReply = { status: number | null; reason: string | null };
+
 function sendOne(
   client: http2.ClientHttp2Session,
   pushToken: string,
   jwt: string,
   topic: string,
-): Promise<number | null> {
+): Promise<ApnsReply> {
   return new Promise((resolve) => {
     let req: http2.ClientHttp2Stream;
     try {
@@ -47,21 +53,39 @@ function sendOne(
         "content-type": "application/json",
       });
     } catch {
-      resolve(null);
+      resolve({ status: null, reason: null });
       return;
     }
     let status: number | null = null;
+    let body = "";
     req.on("response", (headers) => {
       const s = headers[":status"];
       status = typeof s === "number" ? s : Number(s) || null;
     });
     req.setEncoding("utf8");
-    req.on("data", () => {});
-    req.on("end", () => resolve(status));
-    req.on("error", () => resolve(null));
+    req.on("data", (chunk: string) => {
+      if (body.length < 1000) body += chunk;
+    });
+    req.on("end", () => resolve({ status, reason: parseReason(body) }));
+    req.on("error", () => resolve({ status: null, reason: null }));
+    req.setTimeout(SEND_TIMEOUT_MS, () => {
+      req.close(http2.constants.NGHTTP2_CANCEL);
+      resolve({ status: null, reason: null });
+    });
     req.write(JSON.stringify({}));
     req.end();
   });
+}
+
+// APNs svarer med {"reason":"BadDeviceToken"} o.l. ved fejl.
+function parseReason(body: string): string | null {
+  if (!body) return null;
+  try {
+    const r = (JSON.parse(body) as { reason?: unknown }).reason;
+    return typeof r === "string" ? r : null;
+  } catch {
+    return null;
+  }
 }
 
 // En konfig-fejl (fx 403 forkert cert/token) rammer ALLE pushes, indtil noeglen
@@ -100,7 +124,7 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
   // saa et kort med mange enheder ikke giver mange ens events.
   let transientCount = 0;
   let configCount = 0;
-  let configStatus: number | null = null;
+  let configStatus: string | null = null;
   let connectionError: unknown = null;
 
   try {
@@ -120,8 +144,8 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
       });
       Promise.all(
         regs.map(async (r) => {
-          const status = await sendOne(client, r.pushToken, jwt, topic);
-          switch (classifyApnsStatus(status)) {
+          const { status, reason } = await sendOne(client, r.pushToken, jwt, topic);
+          switch (classifyApnsStatus(status, reason)) {
             case "dead":
               // Doedt token (afregistreret enhed): forventet, ryd op.
               dead.push(r.id);
@@ -131,7 +155,9 @@ export async function pushWalletUpdate(customerCardId: string): Promise<void> {
               break;
             case "config":
               configCount += 1;
-              if (configStatus === null) configStatus = status;
+              if (configStatus === null) {
+                configStatus = reason ? `${status} ${reason}` : String(status);
+              }
               break;
             case "ok":
               break;

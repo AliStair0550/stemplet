@@ -6,6 +6,7 @@ import { kasseAccess } from "./kasse";
 import { ensureDeviceId } from "./cookies";
 import { apiError } from "./http";
 import { ReferralError } from "./referral";
+import { captureWalletError } from "./sentry";
 import { verifyPin, recordPinFail, clearPinFails, pinLockRemaining } from "./security";
 
 // Faelles for henvisningernes kasse-ruter (fase 3). Adgang er Stemplets egen
@@ -49,6 +50,7 @@ export function pushReferralWallet(cardIds: string[]): void {
       await Promise.all(unique.map((id) => pushWalletUpdate(id)));
     } catch (e) {
       console.error("Wallet-push efter henvisning fejlede", e);
+      captureWalletError(e, { operation: "apns:referral" });
     }
   };
   try {

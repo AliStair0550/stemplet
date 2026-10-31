@@ -5,9 +5,15 @@ import { classifyApnsStatus } from "../src/lib/wallet/apns-status";
 // APNs-svar skal handles forskelligt: doede tokens ryddes, forbigaaende udfald
 // (429/5xx) maa ikke braende Sentry-kvoten, og konfig-fejl skal rapporteres.
 
-test("doede tokens (410/400) ryddes op", () => {
+test("doede tokens (410 / 400 BadDeviceToken) ryddes op", () => {
   assert.equal(classifyApnsStatus(410), "dead");
-  assert.equal(classifyApnsStatus(400), "dead");
+  assert.equal(classifyApnsStatus(400, "BadDeviceToken"), "dead");
+});
+
+test("andre 400-svar er vores fejl og sletter ikke registreringer", () => {
+  assert.equal(classifyApnsStatus(400, "TopicDisallowed"), "config");
+  assert.equal(classifyApnsStatus(400, "DeviceTokenNotForTopic"), "config");
+  assert.equal(classifyApnsStatus(400), "config");
 });
 
 test("forbigaaende APNs-udfald (429/5xx) er transient (ingen Sentry-spam)", () => {
