@@ -475,14 +475,20 @@ async function visitTx(
 
   // Loftet tælles pr. henviser paa rewarded i kalendermaaneden. Serialisér pr.
   // henviser, saa to samtidige henvisninger ikke begge ser "under loftet".
-  await tx.$queryRaw`SELECT 1 AS locked FROM (SELECT pg_advisory_xact_lock(${REFERRAL_CAP_LOCK}::int, hashtext(${referral.referrerCardId}))) _lock`;
-  const rewardedThisMonth = await tx.referral.count({
-    where: {
-      referrerCardId: referral.referrerCardId,
-      status: "REWARDED",
-      rewardedAt: { gte: monthStartCopenhagen(now) },
-    },
-  });
+  // Er henviserens kort slettet, faar vennen stadig sin rabat, men der er ingen
+  // henviser at belønne.
+  const referrerCardId = referral.referrerCardId;
+  let rewardedThisMonth = 0;
+  if (referrerCardId) {
+    await tx.$queryRaw`SELECT 1 AS locked FROM (SELECT pg_advisory_xact_lock(${REFERRAL_CAP_LOCK}::int, hashtext(${referrerCardId}))) _lock`;
+    rewardedThisMonth = await tx.referral.count({
+      where: {
+        referrerCardId,
+        status: "REWARDED",
+        rewardedAt: { gte: monthStartCopenhagen(now) },
+      },
+    });
+  }
   const plan = planRewards(rule, rewardedThisMonth);
   const expiresAt = rewardExpiresAt(now, rule.rewardExpiryDays);
 
@@ -506,11 +512,11 @@ async function visitTx(
         : {}),
     },
   });
-  if (plan.referrer) {
+  if (plan.referrer && referrerCardId) {
     await tx.reward.create({
       data: {
         businessId: referral.businessId,
-        cardId: referral.referrerCardId,
+        cardId: referrerCardId,
         referralId: referral.id,
         type: plan.referrer.type,
         value: plan.referrer.value,

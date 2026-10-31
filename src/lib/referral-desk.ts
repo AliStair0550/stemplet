@@ -146,8 +146,8 @@ export async function getDeskCustomer(
       received && received.status === "CREATED"
         ? {
             id: received.id,
-            referrerName: received.referrerCard.name,
-            referrerCode: received.referrerCard.referralCode,
+            referrerName: received.referrerCard?.name ?? null,
+            referrerCode: received.referrerCard?.referralCode ?? null,
             createdAt: received.createdAt.toISOString(),
             stale: rule ? isReferralStale(received.createdAt, rule.rewardExpiryDays, now) : false,
             friendReward: rule ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : null,
@@ -212,7 +212,7 @@ export async function getReferralOverview(
   ]);
 
   const topCards = await db.customerCard.findMany({
-    where: { id: { in: top.map((t) => t.referrerCardId) } },
+    where: { id: { in: top.flatMap((t) => (t.referrerCardId ? [t.referrerCardId] : [])) } },
     select: { id: true, name: true, referralCode: true },
   });
   const byId = new Map(topCards.map((c) => [c.id, c]));
@@ -230,21 +230,23 @@ export async function getReferralOverview(
         id: r.id,
         status: r.status,
         createdAt: r.createdAt.toISOString(),
-        referrer: {
-          id: r.referrerCard.id,
-          name: r.referrerCard.name,
-          code: r.referrerCard.referralCode,
-        },
+        referrer: referrerOf(r.referrerCard),
         referred: { id: r.referredCard.id, name: r.referredCard.name },
         openRewards: r.rewards,
       }),
     ),
-    topAmbassadors: top.map((t) => ({
-      id: t.referrerCardId,
-      name: byId.get(t.referrerCardId)?.name ?? null,
-      code: byId.get(t.referrerCardId)?.referralCode ?? null,
-      referrals: t._count.referrerCardId,
-    })),
+    topAmbassadors: top.flatMap((t) =>
+      t.referrerCardId
+        ? [
+            {
+              id: t.referrerCardId,
+              name: byId.get(t.referrerCardId)?.name ?? null,
+              code: byId.get(t.referrerCardId)?.referralCode ?? null,
+              referrals: t._count.referrerCardId,
+            },
+          ]
+        : [],
+    ),
   };
 }
 
@@ -381,7 +383,7 @@ export async function getReferralWorklist(
         phone: r.referredCard.phone,
         code: r.referredCard.referralCode,
       },
-      referrer: { id: r.referrerCard.id, name: r.referrerCard.name, code: r.referrerCard.referralCode },
+      referrer: referrerOf(r.referrerCard),
     })),
     owed: owed.map((w) => ({
       rewardId: w.id,
@@ -402,4 +404,13 @@ export async function getReferralWorklist(
           : null,
     })),
   };
+}
+
+/** Henviseren i en raekke. Er kortet slettet, staar henvisningen uden henviser. */
+function referrerOf(
+  card: { id: string; name: string | null; referralCode: string | null } | null,
+): { id: string; name: string | null; code: string | null } {
+  return card
+    ? { id: card.id, name: card.name, code: card.referralCode }
+    : { id: "", name: "Slettet kunde", code: null };
 }

@@ -70,6 +70,8 @@ Butikker er adskilt overalt (hver handling tjekker butikken). Stempel, fuldt kor
 
 **Bølge 2 (vækst):** R3 (hent kun det nødvendige), R2 (delt forbindelse, samling af Gem, genoptagelse), R13, R22, R9, R21, statistikken bag forbindelses-fejlen.
 
+**Status bølge 3 (31. okt):** godkendt og lavet: R10 (kassens nøgle gemmes på stempel, indløsning og fortryd i databasen; Redis-låsen fjernet fra kassen), R17 (EmailLog: varsel, faktura og ugemail højst én gang pr. modtager) og R19 (henvisningen bliver uden henviser, når kortet slettes). Udskudt efter aftale: API-nøgle som hash (først når en butik bruger API'et) og billeder til Vercel Blob (ved ca. 50 butikker).
+
 **Bølge 3 (datamodel, godkendes først):** R10, R17, R19, API-nøgle som hash, billeder til Vercel Blob.
 
 **Besluttet 31. okt:** R4 bygges ikke nu (personalet giver stemplerne i hånden). R8 venter, til der er betalende butikker (gratisplan hos Neon indtil da). R16: kunden beholder stemplerne og samler de ekstra.

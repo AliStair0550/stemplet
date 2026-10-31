@@ -226,3 +226,61 @@ test("stempling afvises, naar butikken har Stemplet slaaet fra", async () => {
     await cleanup(bizId);
   }
 });
+
+// ── R10: kassens noegle i databasen (ingen Redis her) ─────────────────
+
+test("samme noegle to gange samtidig: eet stempel, samme svar", async () => {
+  const { bizId, cardId } = await makeBiz();
+  try {
+    const cc = await makeCard(cardId);
+    const opts = { customerCardId: cc.id, method: "STAFF_SCAN" as const, skipCooldown: true, idempotencyKey: "tryk-123456" };
+    const [a, b] = await Promise.all([applyStamp(opts), applyStamp(opts)]);
+    assert.equal(a.stamps, 1);
+    assert.equal(b.stamps, 1);
+    // Et senere retry med samme noegle stempler heller ikke.
+    const c = await applyStamp(opts);
+    assert.equal(c.stamps, 1);
+    assert.equal(await prisma.stamp.count({ where: { customerCardId: cc.id } }), 1);
+    const row = await prisma.customerCard.findUniqueOrThrow({ where: { id: cc.id } });
+    assert.equal(row.stamps, 1);
+    assert.equal(row.lifetimeStamps, 1);
+    // En ny noegle er et nyt stempel.
+    await applyStamp({ ...opts, idempotencyKey: "tryk-654321" });
+    assert.equal((await prisma.customerCard.findUniqueOrThrow({ where: { id: cc.id } })).stamps, 2);
+  } finally {
+    await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});
+
+test("indloesning med samme noegle to gange: een indloesning, ingen fejl", async () => {
+  const { bizId, cardId } = await makeBiz({ stampsRequired: 4 });
+  try {
+    const cc = await makeCard(cardId);
+    await applyStamp({ customerCardId: cc.id, method: "STAFF_SCAN", skipCooldown: true, count: 4 });
+    const opts = { customerCardId: cc.id, idempotencyKey: "indloes-123456" };
+    const [a, b] = await Promise.all([redeemReward(opts), redeemReward(opts)]);
+    assert.equal(a.completedCount, 1);
+    assert.equal(b.completedCount, 1);
+    const again = await redeemReward(opts);
+    assert.equal(again.completedCount, 1);
+    assert.equal(await prisma.redemption.count({ where: { customerCardId: cc.id } }), 1);
+  } finally {
+    await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});
+
+test("fortryd med samme noegle to gange: kun eet stempel fjernes", async () => {
+  const { bizId, cardId } = await makeBiz();
+  try {
+    const cc = await makeCard(cardId);
+    for (let i = 0; i < 3; i++) await applyStamp({ customerCardId: cc.id, method: "STAFF_SCAN", skipCooldown: true });
+    const opts = { customerCardId: cc.id, idempotencyKey: "fortryd-123456" };
+    const [a, b] = await Promise.all([undoLastStamp(opts), undoLastStamp(opts)]);
+    assert.equal(a.stamps, 2);
+    assert.equal(b.stamps, 2);
+    assert.equal((await prisma.customerCard.findUniqueOrThrow({ where: { id: cc.id } })).stamps, 2);
+    assert.equal(await prisma.stamp.count({ where: { customerCardId: cc.id } }), 2);
+  } finally {
+    await prisma.business.delete({ where: { id: bizId } }).catch(() => {});
+  }
+});

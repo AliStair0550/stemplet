@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const res = await runOnce(idemKey, () =>
-      redeemReward({ customerCardId: cc.id, ip: clientIp(req) }),
+      // Ogsaa i databasen, saa et retry ikke indloeser to gange uden Redis.
+      redeemReward({ customerCardId: cc.id, ip: clientIp(req), idempotencyKey: idemKey }),
     );
     return Response.json({ ok: true, ...res });
   } catch (e) {

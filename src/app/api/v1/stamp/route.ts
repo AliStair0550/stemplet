@@ -48,6 +48,8 @@ export async function POST(req: NextRequest) {
         method: "MANUAL",
         ip: clientIp(req),
         skipCooldown: true,
+        // Ogsaa i databasen, saa et retry ikke giver to stempler uden Redis.
+        idempotencyKey: idemKey,
       }),
     );
     return Response.json({ ok: true, ...res });

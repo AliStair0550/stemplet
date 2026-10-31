@@ -39,7 +39,7 @@ Fra gennemgangen 31. oktober. Ingen P0, men Wallet-udsendelse og databaseforbind
    - R9: logoer genkodes.
    - R21: build og skema-tjek i CI.
    - Den tunge statistik, der løber tør for forbindelser.
-3. **Bølge 3, datamodel (godkendes først):**
+3. **Bølge 3, datamodel (R10, R17 og R19 lavet 31. okt; API-hash og Blob udskudt):**
    - R10: dobbelttryk-lås i databasen for stempler.
    - R17: mails sendes kun én gang.
    - R19: slettet henviser.

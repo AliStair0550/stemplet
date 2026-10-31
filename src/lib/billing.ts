@@ -12,6 +12,7 @@ import {
   superadminInvoiceEmail,
 } from "./emails";
 import { captureServerError } from "./sentry";
+import { sendOnce } from "./email-log";
 
 // Prismodel + manuel fakturering (Billy). Tre maaneder gratis fra oprettelsen,
 // derefter 49 kr./md. ekskl. moms (plans.ts). Ingen automatik lukker noget, kun
@@ -183,8 +184,12 @@ export async function sendTrialWarnEmails(
     priceKr: effectiveProPriceKr(biz),
     agreementUrl: `${APP_URL}/app/aftale`,
   });
+  // Hoejst een gang pr. modtager (EmailLog): fejler een modtager, sendes der
+  // kun igen til den, ikke til dem, der allerede har faaet mailen.
+  const once = (to: string, mail: { subject: string; html: string; text: string }) =>
+    sendOnce({ businessId, kind: "trial-warn", recipient: to }, () => trySend(to, mail, sendMail), db);
   for (const to of ownerEmails) {
-    if (!(await trySend(to, ownerMail, sendMail))) allOk = false;
+    if ((await once(to, ownerMail)) === "failed") allOk = false;
   }
 
   const recipients = superadminRecipients();
@@ -198,7 +203,7 @@ export async function sendTrialWarnEmails(
       adminUrl: `${APP_URL}/admin`,
     });
     for (const to of recipients) {
-      if (!(await trySend(to, adminMail, sendMail))) allOk = false;
+      if ((await once(to, adminMail)) === "failed") allOk = false;
     }
   }
 
@@ -259,7 +264,12 @@ export async function sendInvoiceTriggerEmail(
       adminUrl: `${APP_URL}/admin`,
     });
     for (const to of recipients) {
-      if (!(await trySend(to, mail, sendMail))) allOk = false;
+      const r = await sendOnce(
+        { businessId, kind: "invoice", recipient: to },
+        () => trySend(to, mail, sendMail),
+        db,
+      );
+      if (r === "failed") allOk = false;
     }
   }
 

@@ -112,6 +112,7 @@ model Business {
   newsText           String?
   newsSentAt         DateTime?
   users            User[] // legacy: User.businessId (primaer/oprindelig butik). Adgang styres nu af Membership.
+  emailLogs        EmailLog[]
   memberships      Membership[]
   cards            Card[]
   auditLogs        AuditLog[]
@@ -346,6 +347,9 @@ model CustomerCard {
   walletRegs     WalletRegistration[]
   createdAt      DateTime             @default(now())
   lastStampAt    DateTime?
+  // Kassens idempotency key for seneste fortryd (R10): et gentaget tryk fjerner
+  // ikke et stempel mere.
+  lastUndoKey    String?
   // Sidst kortets Wallet-pass blev aendret. Saettes ved hvert push (pushWalletUpdate),
   // saa enheden kun henter de kort, der faktisk er aendret (passesUpdatedSince).
   passUpdatedAt  DateTime             @default(now())
@@ -401,11 +405,15 @@ model Stamp {
   // Ingen Location-tabel eller logik endnu - kun feltet, saa historik ikke gaar
   // tabt, naar featuren bygges.
   locationId     String?
+  idempotencyKey String?
   createdAt      DateTime     @default(now())
 
   // Et token maa bruges een gang PR. KORT. NULL-jti'er (personale/API) kolliderer
   // aldrig, da NULL regnes som distinkt i Postgres.
   @@unique([tokenJti, customerCardId])
+  // Kassens idempotency key (R10): samme tryk giver aldrig to stempler, heller
+  // ikke naar Redis er nede. NULL (kunde-QR, API) kolliderer aldrig.
+  @@unique([customerCardId, idempotencyKey])
   @@index([customerCardId])
   // Tids-vinduer i statistik (i dag/uge/14 dage) + ugebrev-cron: dette indeks
   // daekker baade relations-semi-joinet og createdAt-range i eet scan.
@@ -418,8 +426,11 @@ model Redemption {
   id             String       @id @default(cuid())
   customerCardId String
   customerCard   CustomerCard @relation(fields: [customerCardId], references: [id], onDelete: Cascade)
+  // Kassens idempotency key (R10): samme tryk indloeser aldrig to gange.
+  idempotencyKey String?
   createdAt      DateTime     @default(now())
 
+  @@unique([customerCardId, idempotencyKey])
   @@index([customerCardId])
   // Tids-vinduer (indloesninger seneste 30 dage) + avgDaysToFull-window-query.
   @@index([customerCardId, createdAt])
@@ -480,8 +491,11 @@ model Referral {
   id                     String         @id @default(cuid())
   businessId             String
   business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  referrerCardId         String
-  referrerCard           CustomerCard   @relation("ReferralReferrer", fields: [referrerCardId], references: [id], onDelete: Cascade)
+  // SetNull (ikke Cascade): slettes henviserens kort, bliver henvisningen
+  // liggende uden henviser, saa vennen stadig staar som henvist og ikke kan faa
+  // velkomstrabatten igen. Ingen data om den slettede kunde gemmes.
+  referrerCardId         String?
+  referrerCard           CustomerCard?  @relation("ReferralReferrer", fields: [referrerCardId], references: [id], onDelete: SetNull)
   referredCardId         String         @unique
   referredCard           CustomerCard   @relation("ReferralReferred", fields: [referredCardId], references: [id], onDelete: Cascade)
   status                 ReferralStatus @default(CREATED)
@@ -691,4 +705,20 @@ model CardRecoveryToken {
   createdAt      DateTime     @default(now())
 
   @@index([customerCardId])
+}
+
+// Mails til ejere og superadmin, der kun maa sendes een gang pr. modtager (R17):
+// varsel om proeveperiode, faktura-start og ugemail. Raekken skrives FOER mailen
+// sendes, saa to samtidige koersler ikke begge sender. sentAt = bekraeftet sendt;
+// null = i gang (eller en koersel, der doede midt i og maa tages igen).
+model EmailLog {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  kind       String // fx "trial-warn", "invoice", "weekly:2026-11-02"
+  recipient  String
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([businessId, kind, recipient])
 }

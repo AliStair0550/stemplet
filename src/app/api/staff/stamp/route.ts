@@ -4,7 +4,6 @@ import { loadCardBySerial, applyStamp, StampError } from "@/lib/stamp";
 import { staffStampSchema } from "@/lib/validation";
 import { clientIp, apiError } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
-import { runOnce, IdempotencyInFlight } from "@/lib/idempotency";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,34 +24,24 @@ export async function POST(req: NextRequest) {
   try {
     // Idempotens: sender klienten samme noegle igen (fx et retry efter et tabt
     // svar paa daarligt wifi), returneres det foerste resultat i stedet for at
-    // give kunden endnu et stempel. Noeglen scopes pr. butik, saa to butikker
-    // ikke kan kollidere paa samme vaerdi.
-    const res = await runOnce(
-      parsed.data.idempotencyKey
-        ? `${access.businessId}:${parsed.data.idempotencyKey}`
-        : undefined,
-      () =>
-        applyStamp({
-        customerCardId: cc.id,
-        method: "STAFF_SCAN",
-        ip: clientIp(req),
-        // Personalet staar ved disken - ingen cooldown paa manuel stempling.
-        skipCooldown: true,
-        // Antal stempler personalet valgte (fx tre kaffe = 3).
-        count: parsed.data.count,
-        // Medarbejder-attribution: parret enhed ELLER ejer-login.
-        staffUserId: access.source === "owner" ? access.userId ?? null : null,
-        staffDeviceId: access.source === "device" ? access.deviceId ?? null : null,
-      }),
-    );
+    // give kunden endnu et stempel. Noeglen gemmes paa stemplet i databasen
+    // (unik pr. kort), saa det holder ogsaa uden Redis.
+    const res = await applyStamp({
+      customerCardId: cc.id,
+      method: "STAFF_SCAN",
+      ip: clientIp(req),
+      // Personalet staar ved disken - ingen cooldown paa manuel stempling.
+      skipCooldown: true,
+      // Antal stempler personalet valgte (fx tre kaffe = 3).
+      count: parsed.data.count,
+      // Medarbejder-attribution: parret enhed ELLER ejer-login.
+      staffUserId: access.source === "owner" ? access.userId ?? null : null,
+      staffDeviceId: access.source === "device" ? access.deviceId ?? null : null,
+      idempotencyKey: parsed.data.idempotencyKey,
+    });
     return Response.json({ ok: true, ...res });
   } catch (e) {
     if (e instanceof StampError) return apiError(e.code, e.message);
-    // Samtidigt identisk forsoeg er stadig i gang: bed om et roligt retry (ingen
-    // fejl-rapportering, det er forventet paa daarligt net).
-    if (e instanceof IdempotencyInFlight) {
-      return apiError("RETRY", "Stemplet behandles. Prøv igen om lidt.", 409);
-    }
     captureServerError(e, {
       route: "staff/stamp",
       businessId: access.businessId,
