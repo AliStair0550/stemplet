@@ -4,15 +4,18 @@ import { StampCard } from "@/components/StampCard";
 import type { CardDesign } from "@/components/CardDesigner";
 
 // Delbart, socialt-klar billede: kortet + en QR, kunderne kan scanne. Bruges
-// til at eksportere en PNG fra kortdesigneren.
+// til at eksportere en PNG fra kortdesigneren. card erstatter det klassiske kort
+// (fx Wallet-kortet paa Kampagner).
 export function ShareCard({
   design,
   businessName,
   qrDataUrl,
+  card,
 }: {
   design: CardDesign;
   businessName: string;
   qrDataUrl: string;
+  card?: React.ReactNode;
 }) {
   return (
     <div className="flex w-[560px] flex-col items-center gap-9 bg-parchment px-12 py-14">
@@ -25,17 +28,19 @@ export function ShareCard({
         </h3>
       </div>
 
-      <StampCard
-        businessName={businessName}
-        logoUrl={design.logoUrl}
-        logoScale={design.logoScale ?? 1}
-        primaryColor={design.primaryColor}
-        textColor={design.textColor}
-        stampIcon={design.stampIcon}
-        stamps={Math.min(4, design.stampsRequired)}
-        required={design.stampsRequired}
-        rewardText={design.rewardText}
-      />
+      {card ?? (
+        <StampCard
+          businessName={businessName}
+          logoUrl={design.logoUrl}
+          logoScale={design.logoScale ?? 1}
+          primaryColor={design.primaryColor}
+          textColor={design.textColor}
+          stampIcon={design.stampIcon}
+          stamps={Math.min(4, design.stampsRequired)}
+          required={design.stampsRequired}
+          rewardText={design.rewardText}
+        />
+      )}
 
       <div className="flex items-center gap-5">
         {/* Plain <img> (ikke next/image), saa html-to-image kan indlejre QR'en. */}
