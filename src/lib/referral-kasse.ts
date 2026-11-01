@@ -31,7 +31,7 @@ export async function referralKasse(): Promise<ReferralKasse | null> {
   if (!business?.referralsEnabled) return null;
   return {
     businessId: access.businessId,
-    staffUserId: access.source === "owner" ? (access.userId ?? null) : null,
+    staffUserId: access.userId ?? null,
     staffDeviceId: access.source === "device" ? (access.deviceId ?? null) : null,
     staffPin: business.staffPin,
   };

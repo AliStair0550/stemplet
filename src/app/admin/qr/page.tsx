@@ -36,6 +36,7 @@ export default async function AdminQrPage() {
       name: true,
       slug: true,
       memberships: {
+        where: { role: "OWNER" },
         select: { user: { select: { email: true } } },
         take: 1,
       },

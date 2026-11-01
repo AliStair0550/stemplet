@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import { auth } from "./auth";
-import { getSessionBusinessId } from "./session";
+import { kasseBusinessForUser } from "./session";
 import QRCode from "qrcode";
 import { APP_URL } from "./env";
 import { after } from "next/server";
@@ -62,7 +62,8 @@ export function generatePairingCode(): string {
 
 export type KasseAccess = {
   businessId: string;
-  source: "device" | "owner";
+  // owner: ejer-login. staff: medarbejder med eget login (kun kassen).
+  source: "device" | "owner" | "staff";
   deviceId?: string;
   userId?: string;
 };
@@ -96,9 +97,9 @@ export async function kasseAccess(touch = false): Promise<KasseAccess | null> {
   const session = await auth();
   const userId = session?.user?.id;
   if (userId) {
-    const businessId = await getSessionBusinessId();
-    if (businessId) {
-      return { businessId, source: "owner", userId };
+    const m = await kasseBusinessForUser(userId);
+    if (m) {
+      return { businessId: m.businessId, source: m.role === "STAFF" ? "staff" : "owner", userId };
     }
   }
   return null;

@@ -76,7 +76,7 @@ export default async function KasseRegisterPage({
         </span>
         <div className="flex shrink-0 items-center gap-4 whitespace-nowrap">
           <InstallHomeScreen />
-          {access.source === "device" ? <UnpairButton /> : null}
+          {access.source !== "owner" ? <UnpairButton /> : null}
         </div>
       </header>
       <div className="mx-auto w-full max-w-3xl px-6 py-8">

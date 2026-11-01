@@ -70,7 +70,7 @@ async function runWeekly() {
       stampsEnabled: true,
       referralsEnabled: true,
       weeklyEmailTo: true,
-      memberships: { select: { user: { select: { email: true } } } },
+      memberships: { where: { role: "OWNER" }, select: { user: { select: { email: true } } } },
     },
   });
 

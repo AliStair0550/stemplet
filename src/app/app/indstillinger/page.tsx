@@ -2,12 +2,10 @@ import type { Metadata } from "next";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { PageHeading, Panel } from "@/components/dash";
-import { listDevices } from "@/lib/kasse";
 import { SettingsForms } from "./SettingsForms";
 import { WeeklyEmailToggle } from "./WeeklyEmailToggle";
 import { WeeklyEmailRecipient } from "./WeeklyEmailRecipient";
 import { SelfScanToggle } from "./SelfScanToggle";
-import { AccessManager } from "./AccessManager";
 import { LocationCard } from "./LocationCard";
 import { DeleteProfile } from "./DeleteProfile";
 import { soleBusinessesOf } from "@/lib/profile-delete";
@@ -30,41 +28,26 @@ export default async function IndstillingerPage() {
   const { business, userId, email } = await requireBusiness();
   const trialLeft = trialDaysLeft(business.createdAt);
 
-  const [logs, devices, memberships, sole] = await Promise.all([
+  const [logs, memberships, sole] = await Promise.all([
     prisma.auditLog.findMany({
       where: { businessId: business.id },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
-    listDevices(business.id),
     prisma.membership.findMany({
-      where: { businessId: business.id },
-      select: {
-        user: { select: { id: true, email: true, emailVerified: true } },
-      },
+      where: { businessId: business.id, role: "OWNER" },
+      select: { user: { select: { email: true } } },
       orderBy: { createdAt: "asc" },
     }),
     soleBusinessesOf(userId),
   ]);
   const members = memberships.map((m) => m.user);
-  const loginEmails = members.map((u) => ({
-    id: u.id,
-    email: u.email,
-    isYou: u.id === userId,
-    verified: u.emailVerified != null,
-  }));
-  const deviceList = devices.map((d) => ({
-    id: d.id,
-    name: d.name,
-    lastSeenAt: d.lastSeenAt ? d.lastSeenAt.toISOString() : null,
-    createdAt: d.createdAt.toISOString(),
-  }));
 
   return (
     <>
       <PageHeading
         title="Indstillinger"
-        subtitle="Butik, PIN, kasse-enheder, kort-oplevelse og abonnement."
+        subtitle="Butik, PIN, kort-oplevelse og abonnement."
       />
 
       <h2 className="mb-4 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
@@ -84,11 +67,16 @@ export default async function IndstillingerPage() {
       >
         Medarbejdere
       </h2>
-      {/* Login-mails (fuld adgang) og kasse-enheder (kun stempel) samlet: vaelg
-          type naar du tilfoejer adgang. */}
-      <div>
-        <AccessManager emails={loginEmails} devices={deviceList} businessName={business.name} />
-      </div>
+      {/* Medarbejdere har deres egen side; her blot vejen dertil. */}
+      <Link href="/app/medarbejdere" className="block">
+        <Panel className="flex items-center justify-between gap-4 transition-colors hover:border-ink/30">
+          <span>
+            <span className="block text-[0.95rem] font-[600] text-ink">Logins og kasser</span>
+            <span className="mt-0.5 block text-[0.85rem] text-stone">Tilføj medarbejdere, så de kan logge ind.</span>
+          </span>
+          <span aria-hidden className="text-[1.2rem] text-slate">›</span>
+        </Panel>
+      </Link>
 
       <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
         Ved kassen

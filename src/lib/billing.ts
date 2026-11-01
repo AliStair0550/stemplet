@@ -170,7 +170,7 @@ export async function sendTrialWarnEmails(
       createdAt: true,
       proPriceKr: true,
       proPriceUntil: true,
-      memberships: { select: { user: { select: { email: true } } } },
+      memberships: { where: { role: "OWNER" }, select: { user: { select: { email: true } } } },
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;
@@ -239,7 +239,7 @@ export async function sendInvoiceTriggerEmail(
       proPriceKr: true,
       proPriceUntil: true,
       proApprovedAt: true,
-      memberships: { select: { user: { select: { email: true } } } },
+      memberships: { where: { role: "OWNER" }, select: { user: { select: { email: true } } } },
     },
   });
   if (!biz || biz.slug === DEMO_SLUG) return false;

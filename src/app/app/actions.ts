@@ -42,9 +42,9 @@ export async function switchBusiness(businessId: string): Promise<Result> {
   if ((await getSupportBusiness())?.id === businessId) return { ok: true };
   const m = await prisma.membership.findUnique({
     where: { userId_businessId: { userId, businessId } },
-    select: { id: true },
+    select: { role: true },
   });
-  if (!m) return { ok: false, error: "Du har ikke adgang til den butik." };
+  if (m?.role !== "OWNER") return { ok: false, error: "Du har ikke adgang til den butik." };
   // Skift til en af egne butikker afslutter en eventuel support-session.
   (await cookies()).delete(SUPPORT_BUSINESS_COOKIE);
   (await cookies()).set(ACTIVE_BUSINESS_COOKIE, businessId, {
@@ -397,7 +397,7 @@ export async function setWeeklyEmailTo(email: string | null): Promise<Result> {
     const norm = email.trim().toLowerCase();
     // Skal vaere en af butikkens egne login-mails (medlemmer).
     const member = await prisma.membership.findFirst({
-      where: { businessId: business.id, user: { email: norm } },
+      where: { businessId: business.id, role: "OWNER", user: { email: norm } },
       select: { id: true },
     });
     if (!member) return { ok: false, error: "Vælg en af butikkens login-mails." };

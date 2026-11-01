@@ -41,3 +41,20 @@ test("slet profil: egen butik slettes, delt butik beholdes", async () => {
   assert.ok(await prisma.user.findUnique({ where: { id: other.id } }));
   assert.equal(await prisma.membership.count({ where: { businessId: shared.id } }), 1);
 });
+
+test("slet profil: medarbejdere taeller ikke som ejere", async () => {
+  const shop = await biz("Med personale");
+  const owner = await prisma.user.create({ data: { email: `${randomUUID()}@test.local`, businessId: shop.id } });
+  const staff = await prisma.user.create({ data: { email: `${randomUUID()}@test.local`, businessId: shop.id } });
+  await prisma.membership.createMany({
+    data: [
+      { userId: owner.id, businessId: shop.id },
+      { userId: staff.id, businessId: shop.id, role: "STAFF" },
+    ],
+  });
+
+  // Ejeren er eneste ejer, selvom der er en medarbejder: butikken slettes med.
+  assert.deepEqual((await soleBusinessesOf(owner.id)).map((b) => b.id), [shop.id]);
+  // En medarbejder ejer ingen butikker og sletter aldrig butikken.
+  assert.deepEqual(await soleBusinessesOf(staff.id), []);
+});

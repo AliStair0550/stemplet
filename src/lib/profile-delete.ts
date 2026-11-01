@@ -6,12 +6,17 @@ type Db = typeof prisma;
 
 /**
  * Butikker, der slettes sammen med profilen: dem, hvor brugeren er den eneste
- * med adgang. Butikker med andre medlemmer beholdes (kun brugerens adgang fjernes).
+ * ejer. Butikker med andre ejere beholdes (kun brugerens adgang fjernes).
+ * Medarbejdere (kun kasse) taeller ikke: en butik uden ejer kan ingen styre.
  */
 export async function soleBusinessesOf(userId: string, db: Db = prisma) {
   const memberships = await db.membership.findMany({
-    where: { userId },
-    select: { business: { select: { id: true, name: true, slug: true, _count: { select: { memberships: true } } } } },
+    where: { userId, role: "OWNER" },
+    select: {
+      business: {
+        select: { id: true, name: true, slug: true, _count: { select: { memberships: { where: { role: "OWNER" } } } } },
+      },
+    },
   });
   return memberships.map((m) => m.business).filter((b) => b._count.memberships === 1);
 }

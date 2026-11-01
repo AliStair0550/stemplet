@@ -101,9 +101,9 @@ type Action = {
 
 const ACTIONS: Action[] = [
   {
-    href: "/app/indstillinger#adgang",
-    label: "Adgang",
-    sub: "Medarbejdere og kasse-enheder",
+    href: "/app/medarbejdere",
+    label: "Medarbejdere",
+    sub: "Logins og kasser",
     icon: <IconKey />,
   },
   {
