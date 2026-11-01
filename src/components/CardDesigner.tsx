@@ -16,6 +16,7 @@ import {
 } from "@/lib/brand";
 import { REWARD_TEXT_MAX, TERMS_MAX } from "@/lib/system-config";
 import { cn } from "@/lib/utils";
+import { btnClass } from "@/components/ui";
 
 export type CardDesign = {
   stampsRequired: number;
@@ -510,8 +511,13 @@ export function CardDesigner({
                 Logo
               </span>
               <div className="flex items-center gap-3">
-                <label className="cursor-pointer border border-clay px-4 py-2 text-[0.78rem] font-[300] uppercase tracking-[0.08em] text-ink hover:border-terracotta hover:text-terracotta">
-                  {uploading ? "Behandler..." : "Vælg fil"}
+                {/* Det uploadede logo ses ved feltet, ikke kun i forhaandsvisningen. */}
+                {value.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={value.logoUrl} alt="Dit logo" className="h-12 w-12 shrink-0 rounded-xl border border-fog bg-white object-contain p-1" />
+                ) : null}
+                <label className={cn(btnClass("outline"), "cursor-pointer")}>
+                  {uploading ? "Behandler..." : value.logoUrl ? "Skift logo" : "Vælg logo"}
                   <input
                     type="file"
                     accept="image/*"
@@ -534,7 +540,7 @@ export function CardDesigner({
                 ) : null}
               </div>
               <p className="text-[0.72rem] font-[300] leading-relaxed text-slate">
-                Med et logo vælger du herunder, om kortet viser logo, navn eller begge.
+                Brug gerne en PNG med gennemsigtig baggrund, så står logoet rent på kortet.
               </p>
               {logoError ? (
                 <p className="text-[0.75rem] font-[300] text-rust">{logoError}</p>

@@ -118,6 +118,8 @@ function ModuleTile({
 // "Du får en på huset" midt i en saetning; tal og "kr." roeres ikke.
 const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
+type Field = "name" | "friend" | "referrer" | "reward" | "email" | "terms";
+
 export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvisninger" | "stempler" }) {
   const [businessName, setBusinessName] = useState("");
   const [useReferrals, setUseReferrals] = useState(initial !== "stempler");
@@ -132,6 +134,12 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Fejlen vises ved det felt, den handler om, og siden ruller dertil.
+  const [errorField, setErrorField] = useState<Field | null>(null);
+  const fieldRefs = useRef<Partial<Record<Field, HTMLInputElement | null>>>({});
+  const fieldRef = (f: Field) => (el: HTMLInputElement | null) => {
+    fieldRefs.current[f] = el;
+  };
   const [loginToken, setLoginToken] = useState<string | null>(null);
   const loginForm = useRef<HTMLFormElement>(null);
 
@@ -140,29 +148,39 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
     if (loginToken) loginForm.current?.requestSubmit();
   }, [loginToken]);
 
+  function fail(field: Field | null, msg: string) {
+    setError(msg);
+    setErrorField(field);
+    const el = field ? fieldRefs.current[field] : null;
+    if (el) {
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+      el.focus({ preventScroll: true });
+    }
+  }
+  const fieldError = (f: Field) =>
+    errorField === f && error ? (
+      <p role="alert" className="mt-2 text-[14px] text-rust">
+        {error}
+      </p>
+    ) : null;
+  const clearError = (f: Field) => {
+    if (errorField === f) {
+      setError(null);
+      setErrorField(null);
+    }
+  };
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!businessName.trim() || !email.trim()) {
-      setError("Udfyld virksomhed og e-mail.");
-      return;
-    }
-    if (!useReferrals && !useStamps) {
-      setError("Vælg mindst én ting, kortet skal kunne.");
-      return;
-    }
-    if (useReferrals && (!friend.trim() || !referrer.trim())) {
-      setError("Skriv hvad vennen og kunden får.");
-      return;
-    }
-    if (useStamps && reward.trim().length < 2) {
-      setError("Skriv belønningen for et fuldt stempelkort.");
-      return;
-    }
-    if (!acceptedTerms) {
-      setError("Accepter betingelserne for at oprette din butik.");
-      return;
-    }
+    setErrorField(null);
+    if (!businessName.trim()) return fail("name", "Skriv navnet på din butik.");
+    if (!useReferrals && !useStamps) return fail(null, "Vælg mindst én ting, kortet skal kunne.");
+    if (useReferrals && !friend.trim()) return fail("friend", "Skriv hvad vennen får, eller vælg et forslag.");
+    if (useReferrals && !referrer.trim()) return fail("referrer", "Skriv hvad kunden får, eller vælg et forslag.");
+    if (useStamps && reward.trim().length < 2) return fail("reward", "Skriv belønningen, eller vælg et forslag.");
+    if (!email.trim()) return fail("email", "Skriv din e-mail.");
+    if (!acceptedTerms) return fail("terms", "Accepter betingelserne for at oprette din butik.");
     setBusy(true);
     try {
       const res = await createLoyaltyBusinessAction({
@@ -197,8 +215,8 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
       stampsRequired={stamps}
       rewardText={reward.trim() || "Din belønning"}
       product={useStamps && useReferrals ? "begge" : useReferrals ? "henvisninger" : "stemplet"}
-      friendReward={friend.trim() || "100 kr."}
-      referrerReward={lower(referrer.trim()) || "100 kr."}
+      friendReward={friend.trim() || "rabat"}
+      referrerReward={lower(referrer.trim()) || "en belønning"}
       actions={[]}
       fresh
     />
@@ -237,12 +255,17 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
               <label className="block">
                 <Label>Virksomhed</Label>
                 <input
+                  ref={fieldRef("name")}
                   className={inputCls}
                   value={businessName}
                   maxLength={60}
-                  onChange={(e) => setBusinessName(e.target.value)}
+                  onChange={(e) => {
+                    setBusinessName(e.target.value);
+                    clearError("name");
+                  }}
                   autoComplete="organization"
                 />
+                {fieldError("name")}
               </label>
 
               <fieldset>
@@ -277,13 +300,15 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                   <div className="flex flex-col gap-5">
                     <label className="block">
                       <Label>Vennen får ved første besøg</Label>
-                      <input className={inputCls} value={friend} maxLength={40} onChange={(e) => setFriend(e.target.value)} />
-                      <Chips items={FRIEND_SUGGESTIONS} onPick={setFriend} />
+                      <input ref={fieldRef("friend")} className={inputCls} value={friend} maxLength={40} onChange={(e) => { setFriend(e.target.value); clearError("friend"); }} />
+                      {fieldError("friend")}
+                      <Chips items={FRIEND_SUGGESTIONS} onPick={(v) => { setFriend(v); clearError("friend"); }} />
                     </label>
                     <label className="block">
                       <Label>Kunden får, når vennen har været der</Label>
-                      <input className={inputCls} value={referrer} maxLength={40} onChange={(e) => setReferrer(e.target.value)} />
-                      <Chips items={REFERRER_SUGGESTIONS} onPick={setReferrer} />
+                      <input ref={fieldRef("referrer")} className={inputCls} value={referrer} maxLength={40} onChange={(e) => { setReferrer(e.target.value); clearError("referrer"); }} />
+                      {fieldError("referrer")}
+                      <Chips items={REFERRER_SUGGESTIONS} onPick={(v) => { setReferrer(v); clearError("referrer"); }} />
                     </label>
                   </div>
                 </fieldset>
@@ -294,8 +319,9 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                   <legend className="mb-3 text-[19px] font-bold tracking-[-0.02em]">Stempler</legend>
                   <label className="block">
                     <Label>Belønning, når kortet er fuldt</Label>
-                    <input className={inputCls} value={reward} maxLength={REWARD_MAX} onChange={(e) => setReward(e.target.value)} />
-                    <Chips items={STAMP_SUGGESTIONS} onPick={setReward} />
+                    <input ref={fieldRef("reward")} className={inputCls} value={reward} maxLength={REWARD_MAX} onChange={(e) => { setReward(e.target.value); clearError("reward"); }} />
+                    {fieldError("reward")}
+                    <Chips items={STAMP_SUGGESTIONS} onPick={(v) => { setReward(v); clearError("reward"); }} />
                   </label>
 
                   <div className="mt-5 flex items-center justify-between gap-4 rounded-[14px] bg-[#F2F5F9] px-4 py-3">
@@ -355,20 +381,29 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
               <label className="block">
                 <Label>Din e-mail</Label>
                 <input
+                  ref={fieldRef("email")}
                   className={inputCls}
                   type="email"
                   value={email}
                   maxLength={120}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    clearError("email");
+                  }}
                   autoComplete="email"
                 />
+                {fieldError("email")}
               </label>
 
               <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-[#0B1628]/70">
                 <input
+                  ref={fieldRef("terms")}
                   type="checkbox"
                   checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  onChange={(e) => {
+                    setAcceptedTerms(e.target.checked);
+                    clearError("terms");
+                  }}
                   className="mt-0.5 h-5 w-5 shrink-0 accent-[#061C3D]"
                 />
                 <span>
@@ -388,7 +423,8 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                 </span>
               </label>
 
-              {error ? (
+              {/* Fejl ved et felt staar ved feltet; her kun de generelle (og fra serveren). */}
+              {error && (errorField === null || errorField === "terms") ? (
                 <p role="alert" className="text-[15px] text-rust">
                   {error}
                 </p>

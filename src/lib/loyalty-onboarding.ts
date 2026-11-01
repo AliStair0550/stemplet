@@ -5,6 +5,7 @@ import { DEFAULT_PRIMARY, DEFAULT_TEXT, isStampIcon } from "./brand";
 import { saveReferralRule } from "./referral";
 import { parseRewardInput } from "./referral-text";
 import { STAMPS_MAX, STAMPS_MIN, REWARD_TEXT_MAX } from "./system-config";
+import { categoryFromStampIcon } from "./categories";
 
 type Db = typeof prisma;
 
@@ -87,6 +88,8 @@ export async function createLoyaltyBusiness(
           // Med stempler: stempelfelterne paa kortet fra start, som i
           // forhaandsvisningen paa /start (ikke en tom flade med navnet).
           cardStyle: input.stamps ? "stamps" : "color",
+          // Branchen ud fra ikonet (saksen = frisør), saa den ikke skal vaelges igen.
+          category: input.stamps ? categoryFromStampIcon(card.stampIcon) : null,
           termsAcceptedAt: new Date(),
           welcomeStampEnabled: false,
           stampsEnabled: !!input.stamps,

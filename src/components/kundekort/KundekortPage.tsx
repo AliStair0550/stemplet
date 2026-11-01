@@ -92,14 +92,21 @@ function Hero() {
     <section className="kk-dark pb-0 pt-32 sm:pt-36">
       <Lights />
       <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6">
+        {/* Hvad det er, foer sloganet: den, der soeger "kundekort", ved straks, hun er rigtigt. */}
+        <span className="kk-glass-pill mb-6 inline-block px-4 py-1.5 text-[13px] font-medium tracking-[0.01em] text-white/85">
+          Loyalitetskort
+        </span>
         <h1 className="mx-auto text-[clamp(2.5rem,6.6vw,5.2rem)] font-semibold leading-[1] tracking-[-0.045em]">
           Dit kort.
           <br />
-          <span className="text-white/45">Dine kunder. Din kanal.</span>
+          {/* Hver saetning holdes samlet, saa linjen aldrig brydes midt i "Din kanal." */}
+          <span className="text-white/45">
+            <span className="whitespace-nowrap">Dine kunder.</span> <span className="whitespace-nowrap">Din kanal.</span>
+          </span>
         </h1>
         <p className="mx-auto mt-6 max-w-[34rem] text-[1.08rem] leading-relaxed text-white/70">
-          Loyalitet, der skaber vækst. Dine kunder samler stempler, får dine tilbud direkte på telefonen og tager vennerne
-          med.
+          Dit eget digitale kundekort på kundernes telefon, iPhone som Android. De samler stempler, får dine tilbud og
+          tager vennerne med.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -116,7 +123,7 @@ function Hero() {
             Hør mere
           </Link>
         </div>
-        <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden. Ingen binding.</p>
+        <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.</p>
       </div>
 
       {/* Viften af kort: forskellige butikker, samme kort. */}
