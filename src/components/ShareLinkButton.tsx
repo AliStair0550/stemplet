@@ -56,7 +56,7 @@ export function ShareLinkButton({
         // stempelkortet (OG-billedet) fortaeller historien, saa beskeden bliver
         // ren og klikbar.
         await navigator.share({
-          title: `Kundekort hos ${businessName}`,
+          title: `Dit kort hos ${businessName}`,
           ...(text ? { text } : {}),
           url,
         });

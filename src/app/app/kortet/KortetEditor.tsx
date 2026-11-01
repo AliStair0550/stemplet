@@ -407,7 +407,7 @@ export function KortetEditor({
           ) : null}
           {!dirty && msg?.ok && !shared ? (
             <Link href="/app" className="text-[0.82rem] font-semibold text-ink underline underline-offset-4">
-              Næste skridt: del kortet
+              Videre til næste trin
             </Link>
           ) : null}
           {dirty && msg && !msg.ok ? <span className="text-[0.82rem] text-rust">{msg.text}</span> : null}

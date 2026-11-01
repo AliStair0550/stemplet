@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { WalletIcon } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { answerWelcomeStampAction, dismissOnboardingAction } from "./actions";
+import { ackPosterAction, answerWelcomeStampAction, dismissOnboardingAction } from "./actions";
+import { GuideDone } from "./GuideDone";
 import { ShareCardButton } from "./ShareCardButton";
 import { SeeCardLink } from "./SeeCardLink";
 
-// Kom i gang paa Hjem for en ny butik: fem korte trin fra oprettet til den
-// foerste kunde. Det, der allerede er klaret ved oprettelsen (fx henvisning),
-// staar krydset af. Det naeste trin er fremhaevet; resten kan tages i vilkaarlig
-// raekkefoelge. Valget om foerste stempel besvares direkte her.
+// Kom i gang paa Hjem for en ny butik: korte trin fra oprettet til den foerste
+// kunde. Det, der allerede er klaret ved oprettelsen (fx henvisning), staar
+// krydset af. Det naeste trin er fremhaevet; resten kan tages i vilkaarlig
+// raekkefoelge. Valget om foerste stempel besvares direkte her, og plakaten
+// klikkes bare af (den ligger i Menu). Naar alt er klaret, fejres det.
 
 export type GuideStep = {
-  kind: "design" | "welcome" | "referral" | "offer" | "share";
+  kind: "design" | "welcome" | "referral" | "offer" | "share" | "poster";
   title: string;
   text: string;
   done: boolean;
@@ -31,16 +33,21 @@ function Check() {
   );
 }
 
+const COUNT_WORD: Record<number, string> = { 3: "Tre", 4: "Fire", 5: "Fem", 6: "Seks" };
+
 export function StartGuide({
+  businessId,
   steps,
   share,
 }: {
+  businessId: string;
   steps: GuideStep[];
   share: { businessName: string; url: string; text: string; shared: boolean; seen: boolean; walletEnabled: boolean };
 }) {
   const total = steps.length;
   const doneCount = steps.filter((s) => s.done).length;
   const current = steps.findIndex((s) => !s.done);
+  if (current === -1) return <GuideDone businessId={businessId} share={share} />;
 
   return (
     <section aria-labelledby="kom-i-gang" className="mb-10 rounded-[22px] bg-[#061C3D] p-5 text-white md:p-7">
@@ -72,7 +79,7 @@ export function StartGuide({
         />
       </div>
       <p className="mt-3 text-[0.9rem] text-white/70">
-        {current === -1 ? "Du er klar. Nu mangler bare den første kunde." : "Fem korte trin, så er dit kort klar til kunderne."}
+        {COUNT_WORD[total] ?? "Et par"} korte trin, så er dit kort klar til kunderne.
       </p>
 
       <ol className="mt-5 flex flex-col gap-2">
@@ -121,6 +128,14 @@ export function StartGuide({
                           </button>
                         </form>
                       </div>
+                    )
+                  ) : s.kind === "poster" ? (
+                    s.done ? null : (
+                      <form action={ackPosterAction} className="mt-3">
+                        <button type="submit" className={isCurrent ? light : ghost}>
+                          OK, set
+                        </button>
+                      </form>
                     )
                   ) : s.kind === "share" ? (
                     s.done && !isCurrent ? null : (
