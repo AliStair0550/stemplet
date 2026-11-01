@@ -72,6 +72,7 @@ export function MaterialsPdf({
   footline,
   // Butikkens eget billede (data-URI) som baggrund, toned i butikkens farve.
   photo = null,
+  logoOnTile = false,
 }: {
   businessName: string;
   qrDataUrl: string;
@@ -88,10 +89,20 @@ export function MaterialsPdf({
   stampAspect: number;
   footline: string;
   photo?: string | null;
+  /** Moerk side: logoet paa en hvid flade. */
+  logoOnTile?: boolean;
 }) {
+  const t0 = tier === "xs" ? TIERS.sm : TIERS[tier];
+  // Logoet faar fast hoejde (ingen tom luft under det). Paa moerk baggrund staar
+  // det paa en hvid, afrundet flade, saa et logo med hvid baggrund ser bevidst ud.
+  const logo = logoUrl ? <Image src={logoUrl} style={{ height: t0.logo, maxWidth: t0.logo * 2.6, objectFit: "contain" }} /> : null;
   const brand =
-    showBrand && logoUrl ? (
-      <Image src={logoUrl} style={{ maxWidth: 160, objectFit: "contain" }} />
+    showBrand && logo ? (
+      logoOnTile ? (
+        <View style={{ backgroundColor: "#FFFFFF", borderRadius: t0.tileR, padding: Math.round(t0.logo * 0.16) }}>{logo}</View>
+      ) : (
+        logo
+      )
     ) : showBrand && businessName ? (
       <Text style={{ fontFamily: FONT, fontWeight: 700, color: pageFg }}>
         {businessName}
@@ -154,7 +165,8 @@ export function MaterialsPdf({
           {brand ? <View style={styles.brand}>{brand}</View> : null}
           <Text style={styles.head}>{headline}</Text>
           {showGrid ? <Image src={stampGrid as string} style={styles.grid} /> : null}
-          {rewardText ? <Text style={styles.reward}>{rewardText}</Text> : null}
+          {/* Hver saetning paa sin egen linje, saa et enkelt ord ikke staar alene. */}
+          {rewardText ? <Text style={styles.reward}>{rewardText.replace(/\. (?=\p{Lu})/gu, ".\n")}</Text> : null}
           <View style={styles.tile}>
             <Image src={qrDataUrl} style={styles.qr} />
           </View>

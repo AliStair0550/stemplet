@@ -127,7 +127,8 @@ export async function GET(
   const headline = sp.get("titel")?.trim() ? headlineFromParam(sp.get("titel")) : fallbackHeadline;
   const referralOn = business.referralsEnabled && rule;
   const rewardLine = posterRewardLine(focus, {
-    stampReward: business.stampsEnabled ? (card?.rewardText ?? null) : null,
+    // "Gratis klip efter 10 stempler": uden antallet ved kunden ikke, hvad det betyder.
+    stampReward: business.stampsEnabled && card ? `${card.rewardText} efter ${required} stempler` : null,
     friendReward: referralOn ? rewardPhrase(rule.newCustomerRewardType, rule.newCustomerRewardValue) : null,
     referrerReward: referralOn ? rewardPhrase(rule.referrerRewardType, rule.referrerRewardValue) : null,
   });
@@ -166,6 +167,7 @@ export async function GET(
           stampIcon,
           primaryColor: gridPrimary,
           textColor: gridText,
+          print: true,
         })
       : null,
   ]);
@@ -212,6 +214,7 @@ export async function GET(
     showBrand,
     stampGrid,
     stampAspect,
+    logoOnTile: !light,
   });
   const buffer = await renderToBuffer(element);
 
