@@ -7,7 +7,8 @@ import { COMPANY } from "@/lib/company";
 export const metadata: Metadata = {
   title: "Databehandleraftale",
   description:
-    "Databehandleraftale mellem butikken (dataansvarlig) og Kundekort (databehandler).",
+    "Databehandleraftale mellem butikken (dataansvarlig) og Folka Kort (databehandler).",
+  alternates: { canonical: "/databehandleraftale" },
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.

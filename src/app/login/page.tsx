@@ -5,6 +5,7 @@ import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
   title: { absolute: "Log ind - Folka Kort" },
+  robots: { index: false },
   // Samme dashboard-manifest: foejer man login til hjemmeskaermen, aabner ikonet
   // i dashboardet (start_url /app), ikke forsiden.
   manifest: "/app-manifest",

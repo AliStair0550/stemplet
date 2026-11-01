@@ -57,7 +57,8 @@ const nextConfig: NextConfig = {
   // Appen bor paa kort.folka.dk. Den gamle adresse sender sider videre (fx
   // trykte QR-koder til /k/...), men /api bliver, hvor den er: Wallet-kort, der
   // allerede er hentet, kender stemplet.alius.dk som webServiceURL og skal
-  // stadig kunne opdateres. Midlertidig (307), saa den kan rulles tilbage.
+  // stadig kunne opdateres. Permanent (308), saa Google flytter placeringerne
+  // til kort.folka.dk (domaeneskiftet er endeligt, 1. nov 2026).
   // Mappenavne i src/app skal vaere ASCII: Next' dev-server finder ikke ruter med
   // æ/ø/å/é i mappenavnet (404 lokalt, selvom produktion virker). De danske
   // adresser bevares udadtil via rewrites. Se tests/routes-ascii.test.ts.
@@ -71,7 +72,7 @@ const nextConfig: NextConfig = {
         source: "/:path((?!api/).*)",
         has: [{ type: "host", value: "stemplet.alius.dk" }],
         destination: "https://kort.folka.dk/:path",
-        permanent: false,
+        permanent: true,
       },
       // De gamle produktsider (Stemplet-look, gammel pris) er afloest af forsiden.
       // Kun de praecise stier: /henvisninger/[slug] er butikkernes egne sider.

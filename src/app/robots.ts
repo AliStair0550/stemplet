@@ -7,8 +7,23 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Dashboard, kunde-kort, genfinding og API skal ikke indekseres.
-      disallow: ["/app/", "/api/", "/k/", "/kort/", "/s/", "/guide/", "/find-kort"],
+      // Kun salgssider og juridiske sider. Dashboard, admin, kasse, kundernes
+      // egne sider (kort, tilbud, henvisning, pushbesked-links), genfinding og
+      // API skal ikke crawles.
+      disallow: [
+        "/app/",
+        "/admin/",
+        "/api/",
+        "/kasse",
+        "/k/",
+        "/kort/",
+        "/s/",
+        "/fordele/",
+        "/henvisninger/",
+        "/pushbeskeder/",
+        "/guide/",
+        "/find-kort",
+      ],
     },
     sitemap: `${base}/sitemap.xml`,
   };

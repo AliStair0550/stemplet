@@ -7,6 +7,7 @@ import { COMPANY } from "@/lib/company";
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
   description: "Hvad Folka Kort gemmer om dig, hvorfor, og hvad du selv bestemmer.",
+  alternates: { canonical: "/privatliv" },
 };
 
 // Skrevet til kunden foerst: kort og i almindeligt dansk. Lovhenvisningerne
