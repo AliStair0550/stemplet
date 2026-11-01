@@ -16,7 +16,7 @@ import { formatDkNumber, relativeDk } from "@/lib/utils";
 import { DEFAULT_PRIMARY } from "@/lib/brand";
 import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
 import { cookies } from "next/headers";
-import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
+import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_POSTER_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { StartGuide, type GuideStep } from "./StartGuide";
 import { ShareCardButton } from "./ShareCardButton";
@@ -148,7 +148,7 @@ export default async function HomePage() {
   ]);
   const welcomeAnswered = inCookie(ONBOARDING_WELCOME_COOKIE) || business.welcomeStampEnabled;
   const steps: GuideStep[] = [
-    { kind: "design", title: "Gør kortet til dit", text: "Logo, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
+    { kind: "design", title: "Gør kortet til dit", text: "Logo, farver og billede.", href: "/app/kortet?fra=guide", cta: "Design kortet", done: designed },
     ...(business.stampsEnabled
       ? [
           {
@@ -167,7 +167,7 @@ export default async function HomePage() {
       kind: "referral",
       title: "Henvis en ven",
       text: ruleCount > 0 ? "Kunderne kan give din rabat videre til deres venner." : "Lad kunderne give en rabat videre, så de tager vennerne med.",
-      href: "/app/regler?f=henvisninger",
+      href: "/app/regler?f=henvisninger&fra=guide",
       cta: business.referralsEnabled ? "Sæt rabatten" : "Slå henvisninger til",
       done: ruleCount > 0,
     },
@@ -175,7 +175,7 @@ export default async function HomePage() {
       kind: "offer",
       title: "Et tilbud kun til kortholdere",
       text: offerCount > 0 ? "Dine kunder kan se det under kortet." : "Fx 20 % på en vare, eller en rabat hos en nabobutik.",
-      href: "/app/tilbud",
+      href: "/app/tilbud?fra=guide",
       cta: "Lav et tilbud",
       done: offerCount > 0,
     },
@@ -186,6 +186,15 @@ export default async function HomePage() {
       href: shareUrl,
       cta: "Del kortet",
       done: shared,
+    },
+    {
+      kind: "poster",
+      title: "Plakater og visitkort",
+      // Kun til "Næste skridt", hvis guiden er lukket; i guiden klikkes trinnet bare af.
+      href: "/app/plakat",
+      cta: "Se plakaten",
+      text: "Design en plakat i A4, A5 eller A6, eller visitkort, og print dem, når du vil. Du finder dem i Menu.",
+      done: inCookie(ONBOARDING_POSTER_COOKIE) || !!business.posterMadeAt,
     },
   ];
   const nextStep = steps.find((s) => !s.done);
@@ -219,6 +228,7 @@ export default async function HomePage() {
       {/* Ny butik (ingen kortholdere endnu): Kom i gang med de fem trin. */}
       {guideOpen ? (
         <StartGuide
+          businessId={business.id}
           steps={steps}
           share={{ businessName: business.name, url: shareUrl, text: shareText, shared: !!business.sharedAt, seen, walletEnabled: WALLET_ENABLED }}
         />

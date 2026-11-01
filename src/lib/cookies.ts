@@ -61,3 +61,6 @@ export const ONBOARDING_SEEN_COOKIE = "folka_set_kort";
 
 /** Butikker, hvor ejeren har svaret paa "Første stempel, når kortet hentes?" i Kom i gang. */
 export const ONBOARDING_WELCOME_COOKIE = "folka_velkomst";
+
+/** Butikker, hvor ejeren har set, at plakater og visitkort ligger i Menu (Kom i gang). */
+export const ONBOARDING_POSTER_COOKIE = "folka_plakat_set";

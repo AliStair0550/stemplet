@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
-import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
+import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_POSTER_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
@@ -568,6 +568,13 @@ export async function answerWelcomeStampAction(formData: FormData): Promise<void
     refreshShop(business, { wallet: false });
   }
   await rememberBusinessInCookie(ONBOARDING_WELCOME_COOKIE, business.id);
+  revalidatePath("/app");
+}
+
+// Kom i gang: ejeren har set, at plakater og visitkort ligger i Menu.
+export async function ackPosterAction(): Promise<void> {
+  const { business } = await requireBusiness();
+  await rememberBusinessInCookie(ONBOARDING_POSTER_COOKIE, business.id);
   revalidatePath("/app");
 }
 

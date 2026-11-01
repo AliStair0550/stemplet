@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { requireBusiness, getMyBusinesses, getSupportBusiness } from "@/lib/session";
 import { endSupport } from "../admin/actions";
 import { DashboardNav } from "./DashboardNav";
+import { BackToGuide } from "./BackToGuide";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
 
 export const metadata: Metadata = {
@@ -56,6 +58,9 @@ export default async function AppLayout({
           </div>
         ) : null}
         <div className="mx-auto max-w-[960px] px-5 py-8 md:px-10 md:py-12">
+          <Suspense fallback={null}>
+            <BackToGuide />
+          </Suspense>
           {children}
         </div>
       </main>
