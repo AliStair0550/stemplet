@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Nav from "@/components/site/Nav";
-import Footer from "@/components/site/Footer";
+import { Footer, LightHeader } from "@/components/kundekort/SiteChrome";
 import { Section, Container, Divider } from "@/components/ui";
 import { BRANCHER } from "@/lib/brancher";
 
@@ -21,10 +20,11 @@ export const metadata: Metadata = {
 
 export default function BrancherPage() {
   return (
-    <>
-      <Nav />
+    // Folka-udtrykket (Inter, natteblaa) via .dash-theme, se DESIGN.md.
+    <div className="dash-theme min-h-screen bg-parchment">
+      <LightHeader />
       <main>
-        <section className="relative overflow-hidden pt-32 pb-14 md:pt-40 md:pb-20">
+        <section className="relative overflow-hidden pt-16 pb-14 md:pt-24 md:pb-20">
           <div
             aria-hidden
             className="pointer-events-none absolute left-1/2 top-8 h-[440px] w-[760px] max-w-[110vw] -translate-x-1/2 rounded-full bg-terracotta/[0.06] blur-[130px]"
@@ -81,6 +81,6 @@ export default function BrancherPage() {
         </Section>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function FindCardPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
+    <main className="dash-theme flex min-h-screen flex-col items-center justify-center bg-parchment px-6 py-16">
       <div className="flex w-full max-w-sm flex-col gap-8">
         <div className="flex flex-col items-center gap-4 text-center">
           <div>

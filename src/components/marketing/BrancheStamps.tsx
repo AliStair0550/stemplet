@@ -37,7 +37,7 @@ export function BrancheStamps({
             className="branche-stamp flex h-11 w-11 items-center justify-center rounded-full shadow-card sm:h-12 sm:w-12"
             style={{
               animationDelay: `${0.15 + i * 0.16}s`,
-              background: isGift ? "#C9A24B" : "var(--color-terracotta)",
+              background: isGift ? "#1B5EAE" : "#061C3D",
             }}
           >
             {/* color styrer baade streg og de faa fill=currentColor detaljer, saa
@@ -50,7 +50,7 @@ export function BrancheStamps({
               strokeLinecap="round"
               strokeLinejoin="round"
               className="h-[1.5rem] w-[1.5rem]"
-              style={{ color: "#FAF8F4" }}
+              style={{ color: "#FFFFFF" }}
               dangerouslySetInnerHTML={{ __html: markup }}
             />
           </span>
