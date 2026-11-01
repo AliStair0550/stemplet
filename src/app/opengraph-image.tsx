@@ -7,7 +7,7 @@ import { STAMP_ICON_PATHS } from "@/lib/stamp-icon-paths";
 // et kundekort med stempler. Vises naar et link deles paa fx iMessage, Slack,
 // Facebook, LinkedIn og X.
 export const runtime = "nodejs";
-export const alt = "Folka Kort: dit eget kundekort";
+export const alt = "Folka Kort: dit eget loyalitetskort";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -54,7 +54,7 @@ export default async function OpengraphImage() {
             Dit kort. Dine kunder. Din kanal.
           </div>
           <div style={{ display: "flex", fontSize: 27, color: "rgba(234,241,251,0.72)", marginTop: 26 }}>
-            Folka Kort er dit eget kundekort.
+            Folka Kort er dit eget loyalitetskort.
           </div>
         </div>
 

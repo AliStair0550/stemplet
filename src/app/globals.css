@@ -833,6 +833,22 @@ textarea:focus-visible {
 .dash-theme .border-clay {
   border-color: #cad2dd;
 }
+/* De gamle flade- og tekstfarver i Folkas kølige toner (spor, ikoner, tekst). */
+.dash-theme .bg-fog {
+  background-color: #e2e7ed;
+}
+.dash-theme .bg-clay {
+  background-color: #cad2dd;
+}
+.dash-theme .bg-slate {
+  background-color: #6b7687;
+}
+.dash-theme .text-taupe {
+  color: #5f6b7e;
+}
+.dash-theme .text-taupe-light {
+  color: #6b7687;
+}
 .dash-theme .shadow-card {
   box-shadow: 0 1px 1px rgb(6 28 61 / 0.04), 0 2px 8px -4px rgb(6 28 61 / 0.1), 0 0 0 1px rgb(6 28 61 / 0.045);
 }

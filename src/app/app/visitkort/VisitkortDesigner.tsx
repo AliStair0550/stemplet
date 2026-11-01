@@ -280,7 +280,7 @@ export function VisitkortDesigner({
     // rammer hele brandet. Bekraeft, saa det ikke sker ved et uheld fra
     // visitkort-siden.
     const ok = window.confirm(
-      "Fjern logoet? Det bruges også på kundekortet og i Apple Wallet, så det fjernes alle steder.",
+      "Fjern logoet? Det bruges også på loyalitetskortet og i Apple Wallet, så det fjernes alle steder.",
     );
     if (!ok) return;
     setLogoError(null);
@@ -326,7 +326,7 @@ export function VisitkortDesigner({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "kundekort-visitkort.pdf";
+      a.download = "loyalitetskort-visitkort.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -598,7 +598,7 @@ export function VisitkortDesigner({
               <Segmented
                 options={[
                   { key: "qr" as const, label: "QR med tekst", note: "Overskrift + QR + to linjer" },
-                  { key: "stempelkort" as const, label: "Kundekort", note: "Belønning + felter + QR" },
+                  { key: "stempelkort" as const, label: "Loyalitetskort", note: "Belønning + felter + QR" },
                 ]}
                 value={design.backContent}
                 onChange={(backContent) => set({ backContent })}
@@ -613,7 +613,7 @@ export function VisitkortDesigner({
               </div>
             ) : (
               <p className="text-[0.78rem] font-[300] leading-relaxed text-slate">
-                Kundekort-siden bruger butikkens belønningstekst fra Design-siden
+                Loyalitetskort-siden bruger butikkens belønningstekst fra Design-siden
                 og viser tomme stempel-felter samt QR-koden.
               </p>
             )}

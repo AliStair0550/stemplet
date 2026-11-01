@@ -22,7 +22,7 @@ export async function generateMetadata({
   const { serial } = await params;
   const cc = await getCard(serial);
   return {
-    title: cc ? `Dit kort hos ${cc.card.business.name}` : "Kundekort",
+    title: cc ? `Dit kort hos ${cc.card.business.name}` : "Loyalitetskort",
     robots: { index: false },
   };
 }
@@ -34,7 +34,7 @@ export async function generateViewport({
 }): Promise<Viewport> {
   const { serial } = await params;
   const cc = await getCard(serial);
-  return { themeColor: cc?.card.business.primaryColor ?? "#FAF8F4" };
+  return { themeColor: cc?.card.business.primaryColor ?? "#F7F9FC" };
 }
 
 export default async function WebCardPage({

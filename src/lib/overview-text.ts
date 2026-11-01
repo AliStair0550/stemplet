@@ -101,7 +101,7 @@ export function cardShareText(o: {
   friendReward: string | null;
   referrerReward: string | null;
 }): string {
-  const intro = "Hent vores kundekort på telefonen.";
+  const intro = "Hent vores loyalitetskort på telefonen.";
   if (o.stampsEnabled && o.rewardText.trim()) {
     return `${intro} ${o.stampsRequired} stempler giver ${midSentence(o.rewardText)}:`;
   }

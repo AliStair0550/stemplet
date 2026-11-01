@@ -171,7 +171,7 @@ function ActionGrid({ customerUrl }: { customerUrl: string }) {
     },
     {
       href: customerUrl,
-      label: "Se kundekort",
+      label: "Se loyalitetskort",
       sub: "Kortet, som kunderne ser det",
       icon: <IconQr />,
       external: true,

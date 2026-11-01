@@ -91,7 +91,7 @@ function Hero() {
           </span>
         </h1>
         <p className="mx-auto mt-6 max-w-[34rem] text-[1.08rem] leading-relaxed text-white/70">
-          Dit eget digitale kundekort direkte i Apple Wallet. De samler stempler, får dine tilbud og tager vennerne med.
+          Dit eget digitale loyalitetskort direkte i Apple Wallet. De samler stempler, får dine tilbud og tager vennerne med.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -229,7 +229,7 @@ function Features() {
           <>
             Alt, der bringer kunderne tilbage.
             <br />
-            <span className="text-[#8D98A8]">Intet, du skal bruge tid på.</span>
+            <span className="text-[#8D98A8]">Intet, du skal bruge tid på.</span>
           </>
         }
       />

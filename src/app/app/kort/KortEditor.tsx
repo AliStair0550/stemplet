@@ -80,7 +80,7 @@ export function KortEditor({
       const opts = {
         pixelRatio: 2,
         cacheBust: true,
-        backgroundColor: "#FAF8F4",
+        backgroundColor: "#F7F9FC",
         width: node.offsetWidth,
         height: node.offsetHeight,
       };
@@ -89,7 +89,7 @@ export function KortEditor({
       const dataUrl = await toPng(node, opts);
 
       const a = document.createElement("a");
-      a.download = `kundekort-${slug}.png`;
+      a.download = `loyalitetskort-${slug}.png`;
       a.href = dataUrl;
       a.click();
     } catch (e) {

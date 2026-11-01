@@ -114,7 +114,7 @@ export async function GET(
     return new Response(new Uint8Array(buffer), {
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `${disposition}; filename="kundekort-${business.slug}-${fileTag}.pdf"`,
+        "content-disposition": `${disposition}; filename="loyalitetskort-${business.slug}-${fileTag}.pdf"`,
         "cache-control": "no-store",
       },
     });

@@ -61,7 +61,7 @@ export function StampShareCard({ url, qrDataUrl }: { url: string; qrDataUrl: str
         </p>
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={qrDataUrl} alt="QR-kode til dit kundekort" className="mx-auto h-40 w-40 rounded-[18px] bg-white p-3 sm:h-44 sm:w-44" />
+      <img src={qrDataUrl} alt="QR-kode til dit loyalitetskort" className="mx-auto h-40 w-40 rounded-[18px] bg-white p-3 sm:h-44 sm:w-44" />
     </section>
   );
 }

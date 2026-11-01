@@ -30,8 +30,8 @@ export default function GlobalError({
           alignItems: "center",
           justifyContent: "center",
           gap: "1.5rem",
-          background: "#FAF8F4",
-          color: "#1C1917",
+          background: "#F7F9FC",
+          color: "#0B1628",
           fontFamily: "Arial, Helvetica, sans-serif",
           textAlign: "center",
           padding: "0 1.5rem",
@@ -55,8 +55,8 @@ export default function GlobalError({
         <button
           onClick={() => unstable_retry()}
           style={{
-            background: "#1C1917",
-            color: "#FAF8F4",
+            background: "#061C3D",
+            color: "#FFFFFF",
             border: "none",
             padding: "0.8rem 1.8rem",
             fontSize: "0.82rem",

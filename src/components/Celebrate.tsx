@@ -137,8 +137,8 @@ function Piece({ shape, size, color }: { shape: Shape; size: number; color: stri
 /** Rund flueben-badge, der tegner sig selv. */
 export function CheckBurst({
   size = 64,
-  bg = "#1C1917",
-  fg = "#FAF8F4",
+  bg = "#061C3D",
+  fg = "#FFFFFF",
 }: {
   size?: number;
   bg?: string;
