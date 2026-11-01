@@ -106,11 +106,13 @@ I anbefalet rækkefølge:
 - **Stempler som henvisningsbelønning (R4), 31. okt:** bygges ikke nu. Valget bliver, og personalet giver stemplerne i hånden ved kassen. Kassen siger nu "Giv 3 stempler" i stedet for "indløst", så ingen tror, at de er givet automatisk.
 - **Backup (R8), 31. okt:** vi bliver på gratisplanen hos Neon og venter med egen backup. Tages op igen, når systemet kører med betalende butikker (se backloggen).
 
+- **Slettet kunde i Wallet, 1. nov:** bygges ikke. Når butikken sletter en kunde (fx fordi kunden beder om at få sine data slettet, eller et testkort), slettes alt hos os, men kortet bliver liggende i kundens Wallet og opdateres ikke mere. Kassen afviser det, og kunden får en mail med, hvordan de fjerner det. Vi kunne gøre kortet "ugyldigt" (gråt) ved at gemme kortnummer og telefonens registrering efter sletningen, men det rører ved Wallet-opdateringerne for alle kort og sker sjældent. Tages op, hvis butikker spørger efter det.
+- **Roller, 1. nov:** bygget (#109). Medarbejdere har eget login med "Kun kassen" eller "Adgang til alt", og en butik har altid mindst én med adgang til alt.
+
 - **Betaling, 31. okt:** Stripe er fjernet fra koden (og grænsen for antal kunder og "Drevet af"-mærket, som var slået fra). Manuel faktura indtil videre. Betaling tages op forfra, når det bliver aktuelt (ca. januar 2027).
 
 ## Beslutninger hos Ali
 
 | Emne | Spørgsmål |
 |---|---|
-| Roller | Ejer og ansat med forskellige rettigheder (i dag kan alle medlemmer alt, også fjerne ejeren). |
 | Juridisk | CVR, juridisk navn og advokatgennemgang (privatlivspolitikken nævner ikke push). |
