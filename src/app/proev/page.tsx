@@ -22,7 +22,7 @@ export default async function ProevPage() {
   const qrDataUrl = await QRCode.toDataURL(`${APP_URL}/pr%C3%B8v`, { margin: 1, width: 360, color: { dark: "#061C3D", light: "#FFFFFF" } });
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#F2F5F9] px-6 py-8 text-center text-[#061C3D]">
+    <main className="dash-theme flex min-h-screen flex-col items-center justify-center gap-6 bg-[#F2F5F9] px-6 py-8 text-center text-[#061C3D]">
       <h1 className="max-w-md text-[2rem] font-semibold leading-[1.05] tracking-[-0.035em]">Prøv kortet på din egen telefon.</h1>
 
       {biz && card ? (

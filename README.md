@@ -1,20 +1,23 @@
-# Stemplet
+# Folka Kort
 
-Det digitale stempelkort. Bygget af Alius.
+Det digitale loyalitetskort i Apple Wallet: stempler, henvisninger, tilbud og beskeder. Live på [kort.folka.dk](https://kort.folka.dk).
 
-Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple Wallet (eller et webkort på Android). Virksomheden styrer det hele fra et enkelt dashboard. Kunder logger aldrig ind. De scanner en QR-kode og har deres kort på fem sekunder.
+Butikken styrer alt fra et dashboard på telefonen. Kunden scanner en QR-kode, skriver navn og e-mail og har kortet i Wallet. Kunder logger aldrig ind.
+
+- **Design:** [DESIGN.md](DESIGN.md) (låst).
+- **Roadmap og beslutninger:** [docs/roadmap.md](docs/roadmap.md).
+- **Regler for kode og tekst:** [AGENTS.md](AGENTS.md).
 
 ## Stak
 
 - Next.js 16 (App Router), React 19, TypeScript
-- Tailwind v4 (design-tokens genbrugt 1:1 fra alius.dk)
+- Tailwind v4
 - Prisma + PostgreSQL (Neon)
-- Auth.js (magic link via Resend, kun til virksomheder)
+- Auth.js (magic link og kode via Resend, kun til butikker)
 - Upstash Redis (rate limiting og engangs-tokens)
-- Stripe Billing (Pro, 99 kr./md., valgfrit)
-- Logo gemmes direkte som data-URL (ingen ekstern billed-tjeneste)
-- passkit-generator + APNs (Apple Wallet, bag feature flag)
-- Vercel
+- passkit-generator + APNs (Apple Wallet)
+- Sentry og Vercel
+- Betaling: manuel faktura (ingen Stripe)
 
 ## Kom i gang lokalt
 
@@ -46,7 +49,7 @@ Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple 
    npm run db:seed        # opretter "Demo Kaffebar" med liv i data
    ```
 
-   Seed logger en demo-konto: login-mail `demo@stemplet.dk`, personale-PIN `1234`.
+   Seed laver en demo-butik med data og en personale-PIN `1234`.
 
 4. Start udviklingsserveren:
 
@@ -70,7 +73,7 @@ Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple 
 ## Deploy til Vercel
 
 1. Push repoet til GitHub og importer det i Vercel.
-2. Sæt alle miljøvariabler fra `.env.example` i Vercel (Production + Preview). Husk at `NEXT_PUBLIC_APP_URL` skal være det rigtige domæne (fx `https://stemplet.alius.dk`).
+2. Sæt alle miljøvariabler fra `.env.example` i Vercel (Production + Preview). Husk at `NEXT_PUBLIC_APP_URL` skal være det rigtige domæne (`https://kort.folka.dk`).
 3. Neon: brug den poolede connection string som `DATABASE_URL` og den direkte som `DIRECT_URL`.
 4. Build-kommandoen er `prisma generate && next build` (allerede sat i `package.json`). Kør migrationer mod produktion:
 
@@ -78,8 +81,7 @@ Stemplet erstatter det fysiske stempelkort med et digitalt kort i kundens Apple 
    npx prisma migrate deploy
    ```
 
-5. Stripe: opret et recurring price på 99 kr./md. og sæt `STRIPE_PRO_PRICE_ID`. Tilføj et webhook-endpoint til `https://<domæne>/api/stripe/webhook` med hemmeligheden i `STRIPE_WEBHOOK_SECRET`. Lyt på `checkout.session.completed` og `customer.subscription.*`.
-6. Resend: verificer afsenderdomænet, så magic links kan sendes.
+5. Resend: verificer afsenderdomænet, så magic links kan sendes.
 
 ## Aktiver Apple Wallet
 

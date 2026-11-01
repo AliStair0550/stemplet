@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 
 // Konfetti-burst i Folka-farver. Fejrer et fuldt kort. Respekterer
 // reduceret bevægelse (renderer intet). Ingen afhængigheder.
-const COLORS = ["#A6502E", "#C77A52", "#B8923A", "#D4D0C8", "#1A1A1A"];
+// Folkas farver (dashboard og kasse), se DESIGN.md.
+const COLORS = ["#1B5EAE", "#7CC4FF", "#F2C14E", "#E8F0FB", "#061C3D"];
 
 type Piece = {
   id: number;

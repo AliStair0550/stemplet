@@ -8,4 +8,11 @@ This version has breaking changes: APIs, conventions, and file structure may all
 
 - **Ingen lange bindestreger nogen steder.** Brug aldrig em-dash (U+2014) eller en-dash (U+2013) i brugervendt tekst, kommentarer eller dokumentation. Omskriv med komma, punktum eller kolon, eller brug en kort bindestreg (-) hvor det giver mening (fx sammensatte ord som "stempel-QR").
 - Skriv korrekt dansk med æ/ø/å i al brugervendt tekst.
-- Fejl vises i fejlfarven (`text-rust`), ikke i brand-grøn.
+- Fejl vises i fejlfarven (`text-rust`), ikke i brandfarven.
+
+# Design (låst)
+
+- Udseendet er låst og beskrevet i [DESIGN.md](DESIGN.md). Læs den, før du laver eller ændrer en side.
+- Genbrug de komponenter og farver, der står dér. Nye farver, skrifter eller et nyt udtryk kræver Alis godkendelse.
+- Produktet hedder Folka Kort. Det gamle Stemplet-udtryk (terrakotta, pergament, Instrument Sans) bruges ikke på nye sider.
+- Roadmap og beslutninger står i [docs/roadmap.md](docs/roadmap.md).

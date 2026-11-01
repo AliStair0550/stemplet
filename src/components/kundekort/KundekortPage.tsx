@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Inter } from "next/font/google";
 import { StampIcon } from "@/components/StampIcon";
 import type { StampIconKey } from "@/lib/brand";
-import { PLATFORM } from "@/lib/platform";
 import { CARDS, MemberCard, type MemberCardData } from "./MemberCard";
 import { Story } from "./Story";
 import { LiveStamps } from "./LiveStamps";
 import { HeroFan } from "./HeroFan";
+import { Footer, Wordmark } from "./SiteChrome";
 import { ReferralTicker } from "./ReferralTicker";
 import "./kundekort.css";
 
@@ -29,17 +29,6 @@ const ROW_A = [CARDS.cafe, CARDS.museum, CARDS.negle, CARDS.havn, CARDS.barber, 
 const ROW_B = [CARDS.bar, CARDS.bager, CARDS.salon, CARDS.is, CARDS.museum, CARDS.havn, CARDS.pizza] as MemberCardData[];
 
 const TRADES = ["Caféer", "Frisører", "Barberer", "Bagerier", "Pizzeriaer", "Blomsterbutikker", "Neglesaloner", "Massører", "Isbutikker", "Ølbarer", "Kaffebarer", "Klinikker", "Butikker"];
-
-function Wordmark({ dark = false }: { dark?: boolean }) {
-  return (
-    <span className="flex items-center gap-3">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={dark ? "/folka-logo-hvid.svg" : "/folka-logo.svg"} alt="Folka" width={189} height={105} className="h-8 w-auto" />
-      <span className={dark ? "h-5 w-px bg-white/20" : "h-5 w-px bg-[#CAD2DD]"} aria-hidden />
-      <span className={dark ? "text-[15px] font-medium text-white/80" : "text-[15px] font-medium text-[#5F6B7E]"}>Kort</span>
-    </span>
-  );
-}
 
 function Header() {
   return (
@@ -253,7 +242,7 @@ function Features() {
         </Tile>
         <Tile icon="sparkle" title="Direkte beskeder" text="Din besked direkte på kundens låseskærm." className="md:col-span-2" />
         <Tile icon="gift" title="Særlige rabatter" text="Tilbud kun for kortholdere og rabatter hos dine samarbejdspartnere." className="md:col-span-2" />
-        <Tile icon="brush" title="Plakater og visitkort" text="Dit eget design med din QR-kode. Klar til print, op på væggen i dag." className="md:col-span-2" />
+        <Tile icon="brush" title="Dit design" text="Design dit loyalitetskort, som du vil: farver, logo, billede og stempel. Kortet ligner din butik." className="md:col-span-2" />
         <Tile icon="hand" title="Ét scan ved kassen" text="Stempel, rabat og belønning på samme skærm. Klaret på få sekunder." className="md:col-span-2" />
         <Tile icon="leaf" title="Tal, du kan bruge" text="Hvem kommer igen, og hvem tager andre med. Uge for uge." className="md:col-span-2" />
         <Tile icon="book" title="Fyld bogen" text="Et hul kl. 14? Skriv »Ledig tid kl. 14, 20 % rabat«. Beskeden lander hos dine kortholdere med det samme." className="md:col-span-2" />
@@ -361,63 +350,6 @@ function FinalCta() {
         </p>
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  const cols: [string, [string, string][]][] = [
-    [
-      "Folka Kort",
-      [
-        ["/start", "Opret dit kort"],
-        ["/login", "Log ind"],
-        ["/brancher", "Brancher"],
-      ],
-    ],
-    [
-      "Om",
-      [
-        ["https://folka.dk/om", "Om Folka"],
-        ["/handelsbetingelser", "Handelsbetingelser"],
-        ["/privatliv", "Privatliv"],
-        ["/databehandleraftale", "Databehandleraftale"],
-      ],
-    ],
-  ];
-  return (
-    <footer className="bg-[#020B1C] text-white/60">
-      <div className="mx-auto grid max-w-[1200px] gap-10 border-t border-white/10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div>
-          <Wordmark dark />
-          <p className="mt-4 max-w-[22rem] text-[14px] leading-relaxed">
-            Dit kort. Dine kunder. Din kanal.
-          </p>
-          <a href={`mailto:${PLATFORM.contactEmail}`} className="mt-4 inline-block text-[14px] text-white/80 hover:text-white">
-            {PLATFORM.contactEmail}
-          </a>
-        </div>
-        {cols.map(([head, links]) => (
-          <div key={head}>
-            <p className="text-[13px] font-semibold text-white/85">{head}</p>
-            <ul className="mt-4 grid gap-2.5 text-[14px]">
-              {links.map(([href, label]) => (
-                <li key={href}>
-                  {href.startsWith("http") ? (
-                    <a href={href} className="hover:text-white">
-                      {label}
-                    </a>
-                  ) : (
-                    <Link href={href} className="hover:text-white">
-                      {label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </footer>
   );
 }
 
