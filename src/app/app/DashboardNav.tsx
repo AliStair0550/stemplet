@@ -68,6 +68,7 @@ type Tab = (typeof TABS)[number];
 const SHOP_LINKS: NavLink[] = [
   { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
+  { href: "/app/medarbejdere", label: "Medarbejdere" },
   { href: "/app/indstillinger", label: "Indstillinger" },
 ];
 // "Ring til os": et tryk ringer op. (Personaleguiden paa /app/guide er skjult
@@ -593,6 +594,14 @@ const ICONS: Record<string, React.ReactNode> = {
       <rect x="3" y="6" width="18" height="12" rx="2" />
       <circle cx="8.5" cy="11" r="1.8" />
       <path d="M6 15c.5-1.3 1.4-2 2.5-2s2 .7 2.5 2M14 10h4M14 13h3" />
+    </>
+  ),
+  "/app/medarbejdere": (
+    <>
+      <circle cx="9" cy="8.5" r="3" />
+      <path d="M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5" />
+      <circle cx="16.5" cy="9.5" r="2.3" />
+      <path d="M16 14.6c2.2.1 3.9 1.4 4.5 3.9" />
     </>
   ),
   "/app/indstillinger": (

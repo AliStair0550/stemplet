@@ -39,8 +39,9 @@ export async function getSupportBusiness(): Promise<{ id: string; name: string }
 }
 
 // Aktiv butiks id: support-butikken for superadmin, ellers cookie-valget hvis
-// det er et gyldigt medlemskab, ellers det foerste medlemskab. cache()
-// dedupliker inden for samme request.
+// det er et gyldigt medlemskab, ellers det foerste medlemskab. Kun EJER-
+// medlemskaber: en medarbejder (STAFF) maa aldrig naa dashboardet eller dets
+// API'er. cache() dedupliker inden for samme request.
 const activeBusinessId = cache(
   async (userId: string): Promise<string | null> => {
     const support = await supportBusinessId(userId);
@@ -49,16 +50,41 @@ const activeBusinessId = cache(
     if (wanted) {
       const m = await prisma.membership.findUnique({
         where: { userId_businessId: { userId, businessId: wanted } },
-        select: { businessId: true },
+        select: { businessId: true, role: true },
       });
-      if (m) return m.businessId;
+      if (m?.role === "OWNER") return m.businessId;
     }
     const first = await prisma.membership.findFirst({
-      where: { userId },
+      where: { userId, role: "OWNER" },
       select: { businessId: true },
       orderBy: { createdAt: "asc" },
     });
     return first?.businessId ?? null;
+  },
+);
+
+/**
+ * Butikken til kassen for et login: som activeBusinessId, men medarbejder-
+ * medlemskaber taeller ogsaa. Kun til kassen (lib/kasse), aldrig til /app.
+ */
+export const kasseBusinessForUser = cache(
+  async (userId: string): Promise<{ businessId: string; role: "OWNER" | "STAFF" } | null> => {
+    const owner = await activeBusinessId(userId);
+    const wanted = (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value;
+    if (wanted && wanted !== owner) {
+      const m = await prisma.membership.findUnique({
+        where: { userId_businessId: { userId, businessId: wanted } },
+        select: { businessId: true, role: true },
+      });
+      if (m?.role === "STAFF") return { businessId: m.businessId, role: "STAFF" };
+    }
+    if (owner) return { businessId: owner, role: "OWNER" };
+    const staff = await prisma.membership.findFirst({
+      where: { userId, role: "STAFF" },
+      select: { businessId: true },
+      orderBy: { createdAt: "asc" },
+    });
+    return staff ? { businessId: staff.businessId, role: "STAFF" } : null;
   },
 );
 
@@ -110,7 +136,9 @@ export async function requireBusiness(): Promise<{
   const business = id ? await findBusinessById(id) : null;
   if (!business) {
     // Superadmin uden egen butik (fx hej@folka.dk): til admin, ikke i ring via login.
-    redirect(isSuperadminEmail(session.user.email) ? "/admin" : "/login");
+    if (isSuperadminEmail(session.user.email)) redirect("/admin");
+    // Medarbejder med kun kasse-adgang: direkte til kassen.
+    redirect((await kasseBusinessForUser(userId)) ? "/kasse" : "/login");
   }
   return {
     business,
@@ -136,7 +164,7 @@ export const getMyBusinesses = cache(
     const userId = session?.user?.id;
     if (!userId) return [];
     const rows = await prisma.membership.findMany({
-      where: { userId },
+      where: { userId, role: "OWNER" },
       select: { business: { select: { id: true, name: true } } },
       orderBy: { createdAt: "asc" },
     });

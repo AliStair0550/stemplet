@@ -205,6 +205,7 @@ export default async function AdminPage() {
     omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true },
     include: {
       memberships: {
+        where: { role: "OWNER" },
         select: {
           user: {
             select: { id: true, email: true, name: true, emailVerified: true },

@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
       skipCooldown: true,
       // Antal stempler personalet valgte (fx tre kaffe = 3).
       count: parsed.data.count,
-      // Medarbejder-attribution: parret enhed ELLER ejer-login.
-      staffUserId: access.source === "owner" ? access.userId ?? null : null,
+      // Medarbejder-attribution: parret enhed ELLER login (ejer/medarbejder).
+      staffUserId: access.userId ?? null,
       staffDeviceId: access.source === "device" ? access.deviceId ?? null : null,
       idempotencyKey: parsed.data.idempotencyKey,
     });

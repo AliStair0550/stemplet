@@ -3,7 +3,7 @@ import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
-import { folkaSender, loginEmail, welcomeEmail } from "./emails";
+import { folkaSender, loginEmail, staffLoginEmail, welcomeEmail } from "./emails";
 import { isSuperadminEmail } from "./superadmin-emails";
 import { DEMO_SLUG } from "./demo";
 import { verifyOnboardingToken } from "./onboarding-token";
@@ -98,11 +98,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // velkomstmail; alle senere logins faar den korte login-mail. Begge
         // baerer det SAMME magiske link, saa det er stadig eet klik.
         let firstTime = false;
+        // Medarbejder uden ejer-adgang: mailen handler om kassen, ikke dashboardet.
+        let staffShop: string | null = null;
         try {
           const u = await prisma.user.findUnique({
             where: { email: identifier.toLowerCase() },
-            select: { emailVerified: true, business: { select: { createdAt: true } } },
+            select: {
+              emailVerified: true,
+              business: { select: { createdAt: true } },
+              memberships: { select: { role: true, business: { select: { name: true } } } },
+            },
           });
+          if (u && u.memberships.length > 0 && u.memberships.every((m) => m.role === "STAFF")) {
+            staffShop = u.memberships[0].business.name;
+          }
           // Kun lige efter oprettelsen: auto-login fra /start saetter ikke
           // emailVerified, saa uden tidsgraensen fik ejeren velkomsten igen ved
           // naeste login.
@@ -111,7 +120,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch {
           // DB-blip: fald tilbage til den almindelige login-mail.
         }
-        const mail = firstTime ? welcomeEmail(url, token) : loginEmail(url, token);
+        const mail = staffShop
+          ? staffLoginEmail(url, token, staffShop)
+          : firstTime
+            ? welcomeEmail(url, token)
+            : loginEmail(url, token);
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {

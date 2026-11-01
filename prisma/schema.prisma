@@ -163,13 +163,21 @@ model NewsMessage {
 // vaere medlem af FLERE butikker (agentur/flere ejere), og en butik kan have
 // flere medlemmer. Kilde til sandhed for adgang; den aktive butik ligger i
 // sessionen og kan skiftes uden nyt login.
+// OWNER: fuld adgang til dashboardet. STAFF: medarbejder med eget login, der
+// kun kan bruge kassen (aldrig /app, API-eksporter eller indstillinger).
+enum MemberRole {
+  OWNER
+  STAFF
+}
+
 model Membership {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   userId     String
   businessId String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  role       MemberRole @default(OWNER)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
 
   @@unique([userId, businessId])
   @@index([userId])

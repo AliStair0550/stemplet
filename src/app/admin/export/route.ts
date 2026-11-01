@@ -28,6 +28,7 @@ export async function GET() {
     omit: { logoUrl: true, cardArtwork: true, cardArt: true, posterPhoto: true },
     include: {
       memberships: {
+        where: { role: "OWNER" },
         select: {
           user: { select: { email: true, name: true, emailVerified: true } },
         },

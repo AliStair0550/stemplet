@@ -4,7 +4,7 @@
 // inline styles, saa det ser ens ud i alle mail-klienter. Ingen lange
 // bindestreger.
 
-import { PLATFORM } from "./platform";
+import { APP_HOST, PLATFORM } from "./platform";
 import { FOLKA_MAIL_LOGO } from "./folka-mail-logo";
 import { formatLoginCode, LOGIN_CODE_TTL_SECONDS } from "./login-code";
 
@@ -211,6 +211,34 @@ export function loginEmail(url: string, code: string): Email {
   // Koden i emnet: iPhone foreslaar den selv i kodefeltet, og den kan ses uden
   // at aabne mailen.
   return { subject: `Din login-kode: ${code}`, html: folkaShell(`Din kode er ${formatLoginCode(code)}.`, inner), text, attachments: [FOLKA_MAIL_LOGO] };
+}
+
+/** Login til en medarbejder med kun kasse-adgang: kassen, ikke dashboardet. */
+export function staffLoginEmail(url: string, code: string, shopName: string): Email {
+  const shop = esc(shopName);
+  const inner = `
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Din kasse hos ${shop}</h1>
+    <p style="margin:0 0 24px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Log ind på din telefon, så kan du scanne kundernes kort og give stempler.
+    </p>
+    ${folkaCode(code)}
+    ${folkaButton(url, "Åbn kassen")}
+    ${folkaFallback(url, `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Næste gang logger du ind på ${APP_HOST}/login med din mail.`)}`;
+
+  const text = [
+    `Din kasse hos ${shopName}`,
+    "",
+    `Din kode: ${formatLoginCode(code)}`,
+    "",
+    "Skriv koden på login-siden, eller åbn linket på din telefon:",
+    url,
+    "",
+    `Koden og linket virker i ${CODE_MINUTES} minutter og kun én gang. Næste gang logger du ind på ${APP_HOST}/login med din mail.`,
+    "",
+    "Folka Kort.",
+  ].join("\n");
+
+  return { subject: `Din kasse hos ${shopName}: ${code}`, html: folkaShell(`Din kode er ${formatLoginCode(code)}.`, inner, shop), text, attachments: [FOLKA_MAIL_LOGO] };
 }
 
 /** Gendan kortet: link til kunden, der virker een gang og i 30 minutter. */

@@ -56,8 +56,8 @@ export function PairDevice({
           </h1>
           <p className="max-w-xs font-[300] text-[0.9rem] leading-relaxed text-stone">
             {presetCode
-              ? "Tryk på knappen, så er kassen klar på denne telefon. Ingen login."
-              : "Skriv koden fra butikken, så er kassen klar. Ingen login."}
+              ? "Tryk på knappen, så er kassen klar på denne telefon."
+              : "Skriv koden fra butikken, så er kassen klar."}
           </p>
         </div>
 
@@ -133,6 +133,14 @@ export function PairDevice({
             </div>
           </details>
         ) : null}
+
+        {/* Medarbejdere med eget login (Medarbejdere i dashboardet) logger ind her. */}
+        <p className="text-center text-[0.86rem] font-[300] text-stone">
+          Har du fået en mail med login?{" "}
+          <a href="/login" className="font-[500] text-ink underline underline-offset-4">
+            Log ind med din mail
+          </a>
+        </p>
       </form>
     </main>
   );
