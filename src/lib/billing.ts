@@ -405,13 +405,26 @@ export type AgreementView = {
   standardPriceKr: number;
   approved: boolean;
   approvedAt: Date | null;
+  /** Opsagt af ejeren (null = koerer). */
+  cancelledAt: Date | null;
+  /** Sidste dag kortet koerer ved en opsigelse nu (eller da den skete). */
+  lastDay: Date;
 };
+
+/**
+ * Sidste dag ved opsigelse: i de gratis maaneder deres sidste dag; ellers
+ * maanedens sidste dag (fakturaen er betalt forud for maaneden).
+ */
+export function cancellationLastDay(trialEnds: Date, at: Date): Date {
+  if (at < trialEnds) return trialEnds;
+  return new Date(Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + 1, 0, 12));
+}
 
 /** Tilstanden til /app/aftale: i proeveperioden, efter, og om abonnementet er bekraeftet. */
 export async function getAgreementView(businessId: string, now: Date = new Date()): Promise<AgreementView> {
   const biz = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { createdAt: true, proApprovedAt: true, proPriceKr: true, proPriceUntil: true },
+    select: { createdAt: true, proApprovedAt: true, proPriceKr: true, proPriceUntil: true, cancelledAt: true },
   });
   const cardholders = await countCardholders(businessId);
   const ends = trialEndsAt(biz?.createdAt ?? now);
@@ -425,5 +438,7 @@ export async function getAgreementView(businessId: string, now: Date = new Date(
     standardPriceKr: PRO_PRICE_DKK,
     approved: Boolean(biz?.proApprovedAt),
     approvedAt: biz?.proApprovedAt ?? null,
+    cancelledAt: biz?.cancelledAt ?? null,
+    lastDay: cancellationLastDay(ends, biz?.cancelledAt ?? now),
   };
 }

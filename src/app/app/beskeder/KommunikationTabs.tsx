@@ -2,19 +2,18 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 // Kommunikation: maaderne, butikken taler med kunderne paa. Kampagner kraever
-// stempler. Nyhedsmail er kun en fane her (ikke i menuen), indtil den er bygget.
+// stempler. (Nyhedsmail kommer tilbage som fane, naar den er bygget.)
 export function KommunikationTabs({
   active,
   showCampaigns,
 }: {
-  active: "beskeder" | "kampagner" | "tilbud" | "nyhedsmail";
+  active: "beskeder" | "kampagner" | "tilbud";
   showCampaigns: boolean;
 }) {
   const tabs = [
     { key: "beskeder", href: "/app/beskeder", label: "Pushbeskeder", short: "Push" },
     ...(showCampaigns ? [{ key: "kampagner", href: "/app/kampagner", label: "Kampagner", short: "Kampagner" } as const] : []),
     { key: "tilbud", href: "/app/tilbud", label: "Tilbud", short: "Tilbud" },
-    { key: "nyhedsmail", href: "/app/nyhedsmail", label: "Nyhedsmail", short: "Mail" },
   ] as const;
   // Paa telefonen fylder fanerne bredden med korte navne, saa alle kan ses
   // (ingen afskaaret fane, man skal scrolle efter).

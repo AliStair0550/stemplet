@@ -8,6 +8,7 @@ import { BusinessSwitcher } from "./BusinessSwitcher";
 import { MarkDashboardVisit } from "@/components/BackToDashboard";
 import { KundekortMark } from "@/components/ProductLogo";
 import { cn } from "@/lib/utils";
+import { PLATFORM } from "@/lib/platform";
 
 // Funktionerne paa kortet vises som Design og Regler: ikon og almindelig tekst.
 const FEATURE_ICONS: Record<string, React.ReactNode> = {
@@ -53,7 +54,7 @@ const HENVISNINGER_LINKS: NavLink[] = [
   { href: "/app/henvisninger/statistik", label: "Statistik" },
 ];
 
-// Kommunikation: pushbeskeder, kampagner (kraever stempler) og senere nyhedsmail.
+// Kommunikation: pushbeskeder, kampagner (kraever stempler) og tilbud.
 const COMMS: NavLink = { href: "/app/beskeder", label: "Kommunikation" };
 const COMMON: NavLink[] = [{ href: "/app", label: "Hjem" }, { href: "/app/kunder", label: "Kunder" }, COMMS];
 
@@ -68,8 +69,11 @@ const SHOP_LINKS: NavLink[] = [
   { href: "/app/plakat", label: "Plakat" },
   { href: "/app/visitkort", label: "Visitkort" },
   { href: "/app/indstillinger", label: "Indstillinger" },
-  { href: "/app/guide", label: "Service" },
 ];
+// "Ring til os": et tryk ringer op. (Personaleguiden paa /app/guide er skjult
+// fra menuen, til den er enklere.)
+const CALL_HREF = `tel:${PLATFORM.supportPhone.replace(/\s/g, "")}`;
+const CALL_LINK: NavLink = { href: CALL_HREF, label: "Ring til os" };
 // "Abonnement": de gratis maaneder, prisen og bekraeftelsen.
 const AGREEMENT_LINK: NavLink = { href: "/app/aftale", label: "Abonnement" };
 
@@ -107,7 +111,7 @@ export function DashboardNav({
   // Fanen lyser op med det samme ved tryk, foer den nye side er hentet, saa
   // telefonen foeles hurtig. Nulstilles, naar siden faktisk skifter.
   const [tapped, setTapped] = useState<string | null>(null);
-  const shopLinks = showAgreement ? [...SHOP_LINKS, AGREEMENT_LINK] : SHOP_LINKS;
+  const shopLinks = [...SHOP_LINKS, ...(showAgreement ? [AGREEMENT_LINK] : []), CALL_LINK];
 
   // Menuen lukkes, naar man navigerer (ogsaa via tilbage-knappen).
   useEffect(() => {
@@ -155,7 +159,7 @@ export function DashboardNav({
     exact.has(href) ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const inStemplet = STEMPLET_LINKS.some((l) => isActive(l.href));
   const inHenvisninger = pathname.startsWith("/app/henvisninger");
-  const inComms = isActive(COMMS.href) || isActive("/app/kampagner") || isActive("/app/tilbud") || isActive("/app/nyhedsmail");
+  const inComms = isActive(COMMS.href) || isActive("/app/kampagner") || isActive("/app/tilbud");
   // Den fane, der lyser: det man lige har trykket paa (foer siden er hentet),
   // ellers siden man staar paa. Alt uden egen fane hoerer under Menu.
   const tabOf = (href: string): Tab =>
@@ -597,11 +601,8 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6" />
     </>
   ),
-  "/app/guide": (
-    <>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M9.6 9.5a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2-2.4 3.5M12 17h.01" />
-    </>
+  [CALL_HREF]: (
+    <path d="M6.5 4h3l1.5 4-2 1.3a10 10 0 0 0 5.7 5.7l1.3-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A15.5 15.5 0 0 1 5 5.6 1.5 1.5 0 0 1 6.5 4Z" />
   ),
   "/app/aftale": (
     <>

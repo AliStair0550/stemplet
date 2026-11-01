@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { NEWS_MAX, sameAsCurrent } from "@/lib/news";
 import { formatDkDate } from "@/lib/utils";
@@ -96,7 +95,7 @@ export function NewsComposer({
   const locked = Boolean(nextAllowedAt);
   const trimmed = text.trim();
   const duplicate = sameAsCurrent(trimmed, current);
-  const canSend = !locked && !pending && trimmed.length > 0 && !duplicate && inWallet > 0;
+  const canSend = !locked && !pending && trimmed.length > 0 && !duplicate;
 
   function edit(v: string) {
     setText(v.slice(0, NEWS_MAX));
@@ -126,8 +125,14 @@ export function NewsComposer({
     });
   }
 
+  // "Sendt tidligere" uden den besked, der allerede staar under "På kortene nu".
+  const past = current && history[0]?.text === current ? history.slice(1) : history;
+
+  // Samme skaerm med og uden kortholdere: kun teksten skifter.
   const reach =
-    inWallet > 0 ? `Når ${inWallet} ${inWallet === 1 ? "kunde" : "kunder"} med kortet i Wallet.` : "Når kunder med kortet i Wallet.";
+    inWallet > 0
+      ? `Når ${inWallet} ${inWallet === 1 ? "kunde" : "kunder"} med kortet i Wallet.`
+      : "Står på kortet, så kunderne ser den, når de henter det.";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
@@ -139,9 +144,17 @@ export function NewsComposer({
             <Confetti colors={["#FFFFFF", "#7CC4FF", "#1B5EAE", "#C8D8E8"]} originY="30%" />
             <CheckBurst size={52} bg="#7CC4FF" fg="#061C3D" />
             <p className="mt-4 text-[1.6rem] font-bold leading-tight tracking-[-0.03em]">
-              Sendt til <AnimatedNumber value={sentTo} /> {sentTo === 1 ? "kunde" : "kunder"}
+              {sentTo > 0 ? (
+                <>
+                  Sendt til <AnimatedNumber value={sentTo} /> {sentTo === 1 ? "kunde" : "kunder"}
+                </>
+              ) : (
+                "Beskeden er sendt"
+              )}
             </p>
-            <p className="mt-1 text-[0.92rem] text-white/75">Den lander på deres låseskærm i løbet af få minutter.</p>
+            <p className="mt-1 text-[0.92rem] text-white/75">
+              {sentTo > 0 ? "Den lander på deres låseskærm i løbet af få minutter." : "Den står på kortet, så nye kunder ser den, når de henter det."}
+            </p>
             <div className="mx-auto mt-6 max-w-[320px] lg:hidden">
               <LockScreen shopName={shopName} text={sentText} landed />
             </div>
@@ -219,19 +232,13 @@ export function NewsComposer({
               {error}
             </p>
           ) : null}
-          {inWallet === 0 ? (
-            <div className="mt-5 rounded-xl bg-sand px-4 py-3 text-[0.88rem] leading-relaxed text-ink">
-              Ingen kunder har kortet i Apple Wallet endnu. Pushbeskeder når kun kort i Wallet.{" "}
-              <Link href="/app/plakat" className="font-semibold underline underline-offset-4">
-                Hæng plakaten op
-              </Link>
-              , så kunderne henter kortet.
-            </div>
-          ) : confirming ? (
+          {confirming ? (
             <div className="mt-5 rounded-xl border border-fog bg-sand p-4">
-              <p className="text-[0.92rem] font-semibold text-ink">Send til {kort(inWallet)} nu?</p>
+              <p className="text-[0.92rem] font-semibold text-ink">{inWallet > 0 ? `Send til ${kort(inWallet)} nu?` : "Send nu?"}</p>
               <p className="mt-1 text-[0.84rem] leading-relaxed text-stone">
-                Beskeden vises med det samme på kundernes låseskærm og kan ikke kaldes tilbage. Du kan fjerne den fra kortene bagefter.
+                {inWallet > 0
+                  ? "Beskeden vises med det samme på kundernes låseskærm og kan ikke kaldes tilbage. Du kan fjerne den fra kortene bagefter."
+                  : "Ingen har kortet i Wallet endnu. Beskeden står på kortet, når kunderne henter det. Du kan fjerne den bagefter."}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
@@ -281,11 +288,11 @@ export function NewsComposer({
           </section>
         ) : null}
 
-        {history.length > 0 ? (
+        {past.length > 0 ? (
           <section className="rounded-[18px] border border-fog bg-white p-5 shadow-card sm:p-6">
             <h2 className="text-[1.05rem] font-semibold text-ink">Sendt tidligere</h2>
             <ul className="mt-3 divide-y divide-fog">
-              {history.map((h) => (
+              {past.map((h) => (
                 <li key={h.id} className="py-3 first:pt-0 last:pb-0">
                   <p className="text-[0.92rem] leading-relaxed text-ink">{h.text}</p>
                   <p className="mt-0.5 text-[0.78rem] text-slate">
