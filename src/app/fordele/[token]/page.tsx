@@ -12,6 +12,7 @@ import { offerIsLive } from "@/lib/member-offers";
 import { StampIcon } from "@/components/StampIcon";
 import { Confetti } from "@/components/Celebrate";
 import { ShareReferral } from "./ShareReferral";
+import { OfferCountdown } from "./OfferCountdown";
 import { safeDecode } from "@/lib/utils";
 import { withDbRetry } from "@/lib/db-retry";
 import { optimizedLogoDataUri } from "@/lib/logo";
@@ -247,9 +248,11 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
                   </a>
                 ) : null}
                 {o.until ? (
-                  <p className="mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.78rem] font-semibold" style={{ background: rgba(bg, 0.1) }}>
-                    Til og med {formatDkDate(new Date(o.until.getTime() - 1))}
-                  </p>
+                  <OfferCountdown
+                    until={o.until.toISOString()}
+                    className="mt-3 inline-flex items-center rounded-full px-3 py-1.5 text-[0.82rem] font-semibold"
+                    style={{ background: rgba(bg, 0.1) }}
+                  />
                 ) : null}
               </div>
             ))
@@ -276,7 +279,7 @@ export default async function BenefitsPage({ params }: { params: Promise<{ token
                   <span className="rounded-full px-2.5 py-1 font-semibold" style={{ background: rgba(fg, 0.12) }}>
                     Vis kortet i Wallet
                   </span>
-                  {p.endsAt ? <span style={muted}>Til og med {formatDkDate(new Date(p.endsAt.getTime() - 1))}</span> : null}
+                  {p.endsAt ? <OfferCountdown until={p.endsAt.toISOString()} style={muted} /> : null}
                   {p.link ? (
                     <a href={p.link} target="_blank" rel="noreferrer" className="font-semibold underline underline-offset-4">
                       Se mere

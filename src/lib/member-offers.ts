@@ -5,7 +5,8 @@ import { OFFER_KINDS, OFFER_TITLE_MAX, OFFER_TEXT_MAX } from "./member-offers-sh
 // fordele"). Ren logik (validering og hvornaar et tilbud vises), saa den kan
 // enhedstestes og bruges i baade dashboardet og paa kundens side.
 
-export { OFFER_KINDS, MAX_OFFERS_PER_KIND, OFFER_TITLE_MAX, OFFER_TEXT_MAX, offerPushText } from "./member-offers-shared";
+export { OFFER_KINDS, MAX_OFFERS_PER_KIND, OFFER_TITLE_MAX, OFFER_TEXT_MAX, offerPushText, offerEndsAt } from "./member-offers-shared";
+import { offerEndsAt } from "./member-offers-shared";
 export type { OfferKind } from "./member-offers-shared";
 const optionalText = (max: number, msg: string) =>
   z
@@ -51,16 +52,21 @@ export const offerInputSchema = z
       .trim()
       .refine((v) => v === "" || /^\d{4}-\d{2}-\d{2}$/.test(v), "Vælg en dato.")
       .optional(),
+    // "HH:MM" i dansk tid; tomt = hele dagen. Kraever en dato.
+    endsTime: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || /^\d{2}:\d{2}$/.test(v), "Vælg et klokkeslæt.")
+      .optional(),
   })
+  .refine((v) => !v.endsTime || !!v.endsOn, { message: "Vælg en dato til klokkeslættet.", path: ["endsOn"] })
   .refine((v) => v.kind !== "PARTNER" || !!v.partnerName, { message: "Skriv partnerens navn.", path: ["partnerName"] });
 
 export type OfferInput = z.input<typeof offerInputSchema>;
 
-/** Sidste gyldige oejeblik for en dato: hele dagen med (dansk tid er ok med et par timers margin). */
+/** Sidste gyldige oejeblik for en dato: hele dagen med, i dansk tid. */
 export function endOfDay(endsOn: string | undefined): Date | null {
-  if (!endsOn) return null;
-  const d = new Date(`${endsOn}T23:59:59.999Z`);
-  return Number.isNaN(d.getTime()) ? null : d;
+  return offerEndsAt(endsOn);
 }
 
 /** Vises tilbuddet for kunderne lige nu? */
