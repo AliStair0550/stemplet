@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Folka Kort",
     short_name: "Folka Kort",
-    description: "Dit kundekort. Altid ved hånden.",
+    description: "Dit loyalitetskort. Altid ved hånden.",
     start_url: "/",
     display: "standalone",
     background_color: "#F7F9FC",

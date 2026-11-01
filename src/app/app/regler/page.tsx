@@ -80,7 +80,7 @@ export default async function ReglerPage({ searchParams }: { searchParams: Promi
           : null
         : (tabs[0] ?? null);
   const onlyOne = features.length === 1;
-  const tabTitle = (k: Tab) => (k === "kundekort" ? "Kundekort" : FEATURES[k].title);
+  const tabTitle = (k: Tab) => (k === "kundekort" ? "Loyalitetskort" : FEATURES[k].title);
 
   return (
     <>

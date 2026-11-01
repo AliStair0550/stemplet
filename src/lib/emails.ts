@@ -139,7 +139,7 @@ function folkaFallback(url: string, note: string): string {
 // Smaa ideer i login-mailen, saa den giver lidt mere end et link. Een pr. dag
 // (samme idé hele dagen, ny i morgen).
 const TIPS = [
-  "Spørg ved kassen: »Har du vores kundekort?« Det er den hurtigste vej til nye stamkunder.",
+  "Spørg ved kassen: »Har du vores loyalitetskort?« Det er den hurtigste vej til nye stamkunder.",
   "Hæng QR-koden, hvor kunderne venter. Ved kassen eller på bordet virker bedst.",
   "Et velkomststempel gør første besøg til en lille gevinst. Slå det til under Regler.",
   "Kig på Statistik: hvem kommer oftest? De er værd at sige tak til.",
@@ -510,7 +510,7 @@ export type TrialEndingData = {
 export function trialEndingEmail(d: TrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Se abonnementet</a>
+      <a href="${d.agreementUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Se abonnementet</a>
     </td></tr></table>`;
   const head = d.ended ? "Dine tre gratis måneder er gået." : `Dine tre gratis måneder slutter ${d.endsOn}.`;
   const body = d.ended
@@ -552,7 +552,7 @@ export type SuperadminTrialEndingData = {
 export function superadminTrialEndingEmail(d: SuperadminTrialEndingData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const inner = `
@@ -611,7 +611,7 @@ export function superadminInvoiceEmail(d: SuperadminInvoiceData): Email {
 
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
@@ -680,7 +680,7 @@ export type SuperadminNewBusinessData = {
 export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Åbn admin</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
@@ -694,7 +694,7 @@ export function superadminNewBusinessEmail(d: SuperadminNewBusinessData): Email 
       Ny butik oprettet: ${esc(d.businessName)}.
     </h1>
     <p style="margin:0 0 20px;font-family:${FONT};font-size:15px;line-height:1.6;color:${C.stone};">
-      Endnu en butik er kommet med på Kundekort.
+      Endnu en butik er kommet med på Folka Kort.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.tint};border-radius:10px;">
       <tr><td style="padding:14px 18px;">
@@ -783,7 +783,7 @@ export function superadminMarketingSignupEmail(
 ): Email {
   const button = `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
     <td style="border-radius:8px;background:${C.ink};">
-      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn Marketing</a>
+      <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Åbn Marketing</a>
     </td></tr></table>`;
 
   const detailRow = (label: string, value: string) => `
@@ -826,7 +826,7 @@ export function superadminMarketingSignupEmail(
 
   return {
     subject: `[Folka Kort] Ny tilmelding: ${d.email}`,
-    html: shell("Ny bekræftet tilmelding til Kundekort.", inner),
+    html: shell("Ny bekræftet tilmelding til Folka Kort.", inner),
     text,
   };
 }
@@ -859,7 +859,7 @@ export function superadminCancellationEmail(d: SuperadminCancellationData): Emai
     </table>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr>
       <td style="border-radius:8px;background:${C.ink};">
-        <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FAF8F4;text-decoration:none;border-radius:8px;">Åbn admin</a>
+        <a href="${d.adminUrl}" style="display:inline-block;padding:13px 24px;font-family:${FONT};font-size:15px;font-weight:600;color:#FFFFFF;text-decoration:none;border-radius:8px;">Åbn admin</a>
       </td></tr></table>`;
   const text = [title, "", d.cancelled ? `Kortet kører til og med ${d.lastDay}.` : "Abonnementet kører videre.", "", d.shop, d.email, "", `Åbn admin: ${d.adminUrl}`].join("\n");
   return {

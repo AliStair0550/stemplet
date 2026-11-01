@@ -205,7 +205,7 @@ export function PosterBuilder({
                 setHeadline("");
               }}
               options={[
-                { key: "kort", label: "Hent kundekortet", note: "Til nye kunder" },
+                { key: "kort", label: "Hent loyalitetskortet", note: "Til nye kunder" },
                 { key: "henvis", label: "Henvis en ven", note: "Til kunder med kortet" },
               ]}
             />

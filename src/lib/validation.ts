@@ -9,7 +9,7 @@ import { STAMP_ICONS, type StampIconKey } from "./brand";
 
 const hex = z
   .string()
-  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #A6502E");
+  .regex(/^#([0-9a-fA-F]{6})$/, "Farve skal være en hex-værdi, fx #1B5EAE");
 
 // Afledt af STAMP_ICONS (eneste kilde), saa nye ikoner automatisk er gyldige.
 // FOer var listen haardkodet og kom bagud, saa nye ikoner blev afvist ved gem.

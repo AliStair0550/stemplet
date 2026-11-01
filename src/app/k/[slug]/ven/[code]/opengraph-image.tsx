@@ -34,7 +34,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", width: 620 }}>
-          <div style={{ display: "flex", fontSize: 30, fontWeight: 600, color: ogRgba(fg, 0.75) }}>{invite?.shop ?? "Kundekort"}</div>
+          <div style={{ display: "flex", fontSize: 30, fontWeight: 600, color: ogRgba(fg, 0.75) }}>{invite?.shop ?? "Folka Kort"}</div>
           <div style={{ display: "flex", fontSize: 64, lineHeight: 1.06, fontWeight: 700, marginTop: 22, letterSpacing: -2 }}>
             {invite?.gift ? `${who} har givet dig ${invite.gift}` : `${who} inviterer dig`}
           </div>

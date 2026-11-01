@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     return new Response(new Uint8Array(buffer), {
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="kundekort-visitkort-${business.slug}.pdf"`,
+        "content-disposition": `attachment; filename="loyalitetskort-visitkort-${business.slug}.pdf"`,
         "cache-control": "no-store",
       },
     });

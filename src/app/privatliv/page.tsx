@@ -36,7 +36,7 @@ export default function PrivatlivPage() {
     <LegalLayout
       title="Privatlivspolitik"
       updated="1. november 2026"
-      intro="Folka Kort er det digitale kundekort, du får hos din butik. Her står kort og klart, hvad der bliver gemt om dig, og hvad du selv bestemmer."
+      intro="Folka Kort er det digitale loyalitetskort, du får hos din butik. Her står kort og klart, hvad der bliver gemt om dig, og hvad du selv bestemmer."
     >
       <LegalSection title="Kort fortalt">
         <ul className="flex flex-col gap-2.5">

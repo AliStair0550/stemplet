@@ -1,12 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { KundekortPage } from "@/components/kundekort/KundekortPage";
 import { PLATFORM } from "@/lib/platform";
 
 // Forsiden paa kort.folka.dk: Folka Kort.
+// Forsidens hero er natteblaa: browserens top paa telefonen foelger med.
+export const viewport: Viewport = { themeColor: "#020B1C" };
+
 export const metadata: Metadata = {
-  title: { absolute: "Folka Kort: dit eget kundekort" },
+  title: { absolute: "Folka Kort: dit eget loyalitetskort" },
   description:
-    "Folka Kort er dit eget kundekort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder. Tre måneder gratis, derefter 49 kr. om måneden.",
+    "Folka Kort er dit eget loyalitetskort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder. Tre måneder gratis, derefter 49 kr. om måneden.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Folka Kort",

@@ -81,7 +81,7 @@ export function AdminQrGrid({ items }: { items: QrItem[] }) {
               <div className="mt-auto flex flex-col gap-2">
                 <a
                   href={i.qrDataUrl}
-                  download={`kundekort-qr-${i.slug}.png`}
+                  download={`loyalitetskort-qr-${i.slug}.png`}
                   className={`${btnClass("outline")} w-full`}
                 >
                   Hent QR-kode

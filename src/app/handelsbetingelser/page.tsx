@@ -29,11 +29,11 @@ export default function TermsPage() {
     <LegalLayout
       title="Handelsbetingelser"
       updated="30. oktober 2026"
-      intro="Disse betingelser gælder, når din butik bruger Kundekort, et digitalt kundekort fra Folka. De accepteres, når du opretter en butik."
+      intro="Disse betingelser gælder, når din butik bruger Folka Kort, et digitalt loyalitetskort fra Folka. De accepteres, når du opretter en butik."
     >
       <LegalSection title="1. Om aftalen">
         <p>
-          Kundekort leveres af Folka. Aftalen indgås mellem Folka og den butik
+          Folka Kort leveres af Folka. Aftalen indgås mellem Folka og den butik
           (virksomhed), der opretter en konto. Tjenesten er beregnet til
           erhvervsbrug.
         </p>
@@ -69,7 +69,7 @@ export default function TermsPage() {
 
       <LegalSection title="4. Brug af tjenesten">
         <p>
-          Du må bruge Kundekort til at drive din butiks kundekort. Du må ikke
+          Du må bruge Folka Kort til at drive din butiks loyalitetskort. Du må ikke
           misbruge tjenesten, forsøge at omgå sikkerheden eller bruge den til
           ulovlige formål.
         </p>
@@ -78,7 +78,7 @@ export default function TermsPage() {
       <LegalSection title="5. Butikkens ansvar for kundedata">
         <p>
           Din butik er dataansvarlig for de kundeoplysninger, der behandles i
-          Kundekort. Vi er databehandler og behandler dem efter din instruks. Se{" "}
+          Folka Kort. Vi er databehandler og behandler dem efter din instruks. Se{" "}
           <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
             databehandleraftalen
           </Link>{" "}
@@ -100,7 +100,7 @@ export default function TermsPage() {
 
       <LegalSection title="7. Ansvarsbegrænsning">
         <p>
-          Kundekort leveres, som det er og forefindes. Folka er ikke ansvarlig
+          Folka Kort leveres, som det er og forefindes. Folka er ikke ansvarlig
           for indirekte tab, herunder tabt omsætning eller mistede stempler ved
           nedbrud. Et eventuelt ansvar er begrænset til det beløb, du har betalt
           for tjenesten de seneste tre måneder.

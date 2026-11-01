@@ -21,7 +21,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     include: { cards: { where: { active: true }, orderBy: { createdAt: "asc" }, take: 1 } },
   });
 
-  const name = business ? cardTitle(business) : "Kundekort";
+  const name = business ? cardTitle(business) : "Folka Kort";
   const bg = business?.primaryColor ?? "#061C3D";
   const fg = business?.textColor ?? "#EAF1FB";
   const card = business?.cards[0];

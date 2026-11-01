@@ -13,7 +13,7 @@ type Params = Promise<{ slug: string; code: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug, code } = await params;
   const invite = await loadInvite(slug, safeDecode(code));
-  if (!invite) return { title: "Kundekort", robots: { index: false } };
+  if (!invite) return { title: "Folka Kort", robots: { index: false } };
   const who = invite.friend ?? "Din ven";
   const title = invite.gift ? `${who} har givet dig ${invite.gift} hos ${invite.shop}` : `${who} inviterer dig til ${invite.shop}`;
   const description = "Hent kortet i Apple Wallet, så ligger rabatten klar til dit første besøg. Ingen app.";

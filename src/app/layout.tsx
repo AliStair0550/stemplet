@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     template: "%s - Folka Kort",
   },
   description:
-    "Folka Kort er dit eget kundekort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder. Et produkt fra Folka.",
+    "Folka Kort er dit eget loyalitetskort. Dine kunder har det på telefonen. Stempler, henvisninger og beskeder. Et produkt fra Folka.",
   applicationName: "Folka Kort",
   keywords: [
     "stempelkort",
@@ -102,7 +102,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FAF8F4",
+  // Folkas lyse sidefarve (forsiden har sin egen natteblaa, se app/page.tsx).
+  themeColor: "#F7F9FC",
   // Siden er lys-only. Uden dette viser iOS Safari en SORT baggrund, mens den
   // render-blokerende CSS hentes (paa telefoner i moerk tilstand), saa foerste
   // billede er sort i et par sekunder. Med color-scheme: light bruger browseren
