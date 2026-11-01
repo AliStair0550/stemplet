@@ -16,10 +16,10 @@ import { formatDkNumber, relativeDk } from "@/lib/utils";
 import { DEFAULT_PRIMARY } from "@/lib/brand";
 import { FirstCustomerCelebration } from "./FirstCustomerCelebration";
 import { cookies } from "next/headers";
-import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE } from "@/lib/cookies";
-import { dismissOnboardingAction } from "./actions";
+import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
+import { prisma } from "@/lib/prisma";
+import { StartGuide, type GuideStep } from "./StartGuide";
 import { ShareCardButton } from "./ShareCardButton";
-import { SeeCardLink } from "./SeeCardLink";
 
 export const metadata = { title: { absolute: "Hjem - Folka Kort" } };
 
@@ -133,20 +133,61 @@ export default async function HomePage() {
     referrerReward: referrals ? preview.referrerReward : null,
   });
 
-  // Kom i gang: se kortet paa telefonen, goer det til dit og del det. Plakaten
-  // ligger i Menu; de foerste kunder faar kortet vist paa ejerens telefon eller
-  // delt online. Delt = link delt/kopieret, QR-koden vist eller plakaten hentet.
+  // Kom i gang: fem trin fra oprettet til foerste kunde. Design, foerste stempel
+  // ved hentning (et ja/nej her), henvisning, et tilbud og deling. Det, der er
+  // klaret ved oprettelsen, staar krydset af. Plakaten ligger i Menu; de foerste
+  // kunder faar kortet vist paa ejerens telefon eller delt online.
   const jar = await cookies();
   const inCookie = (name: string) => (jar.get(name)?.value ?? "").split(".").includes(business.id);
   const designed = business.primaryColor !== DEFAULT_PRIMARY || !!preview.logoUrl || !!preview.artwork || business.cardStyle === "photo";
   const shared = !!business.sharedAt || !!business.posterMadeAt;
   const seen = inCookie(ONBOARDING_SEEN_COOKIE) || shared;
-  const steps = [
-    { kind: "see", title: "Se kortet på din telefon", text: "Hent det selv, så ser du det som dine kunder.", href: shareUrl, cta: "Se kortet", done: seen },
-    { kind: "design", title: "Gør det til dit", text: "Logo, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
-    { kind: "share", title: "Del med dine første kunder", text: WALLET_ENABLED ? "Vis QR-koden fra din Wallet ved kassen, eller send linket." : "Send linket, eller vis QR-koden ved kassen.", href: shareUrl, cta: "Del kortet", done: shared },
-  ] as const;
-  const doneCount = steps.filter((s) => s.done).length;
+  const [ruleCount, offerCount] = await Promise.all([
+    business.referralsEnabled ? prisma.referralRule.count({ where: { businessId: business.id } }) : Promise.resolve(0),
+    prisma.memberOffer.count({ where: { businessId: business.id } }),
+  ]);
+  const welcomeAnswered = inCookie(ONBOARDING_WELCOME_COOKIE) || business.welcomeStampEnabled;
+  const steps: GuideStep[] = [
+    { kind: "design", title: "Gør kortet til dit", text: "Logo, farver og billede.", href: "/app/kortet", cta: "Design kortet", done: designed },
+    ...(business.stampsEnabled
+      ? [
+          {
+            kind: "welcome" as const,
+            title: "Første stempel, når kortet hentes?",
+            text: welcomeAnswered
+              ? business.welcomeStampEnabled
+                ? "Ja. Nye kunder får 1 stempel med det samme, også når de henter kortet hjemmefra."
+                : "Nej. Kortet starter på 0, og stemplerne gives ved kassen."
+              : "Så er nye kunder i gang med det samme. Du kan altid ændre det under Regler.",
+            done: welcomeAnswered,
+          },
+        ]
+      : []),
+    {
+      kind: "referral",
+      title: "Henvis en ven",
+      text: ruleCount > 0 ? "Kunderne kan give din rabat videre til deres venner." : "Lad kunderne give en rabat videre, så de tager vennerne med.",
+      href: "/app/regler?f=henvisninger",
+      cta: business.referralsEnabled ? "Sæt rabatten" : "Slå henvisninger til",
+      done: ruleCount > 0,
+    },
+    {
+      kind: "offer",
+      title: "Et tilbud kun til kortholdere",
+      text: offerCount > 0 ? "Dine kunder kan se det under kortet." : "Fx 20 % på en vare, eller en rabat hos en nabobutik.",
+      href: "/app/tilbud",
+      cta: "Lav et tilbud",
+      done: offerCount > 0,
+    },
+    {
+      kind: "share",
+      title: "Del kortet med dine første kunder",
+      text: WALLET_ENABLED ? "Vis QR-koden fra din Wallet ved kassen, eller send linket." : "Send linket, eller vis QR-koden ved kassen.",
+      href: shareUrl,
+      cta: "Del kortet",
+      done: shared,
+    },
+  ];
   const nextStep = steps.find((s) => !s.done);
   const onboardingHidden = inCookie(ONBOARDING_HIDDEN_COOKIE);
   const guideOpen = stats.totalCustomers === 0 && !onboardingHidden;
@@ -175,86 +216,12 @@ export default async function HomePage() {
         {yesterday ? <p className="mt-1 max-w-xl text-[0.9rem] text-stone">{yesterday}</p> : null}
       </header>
 
-      {/* Ny butik (ingen kortholdere endnu): de tre skridt til det foerste kort. */}
+      {/* Ny butik (ingen kortholdere endnu): Kom i gang med de fem trin. */}
       {guideOpen ? (
-        <section aria-labelledby="kom-i-gang" className="mb-10 rounded-[22px] bg-[#061C3D] p-6 text-white md:p-7">
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="kom-i-gang" className="text-[1.25rem] font-semibold tracking-[-0.02em]">Din første kunde i dag</h2>
-            <span className="flex items-center gap-2">
-              <span className="text-[0.9rem] font-semibold tabular-nums text-[#7CC4FF]">{doneCount}/3</span>
-              <form action={dismissOnboardingAction}>
-                <button
-                  type="submit"
-                  aria-label="Luk"
-                  className="-mr-2 flex h-10 w-10 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white active:scale-95"
-                >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
-                    <path d="M6 6l12 12M18 6L6 18" />
-                  </svg>
-                </button>
-              </form>
-            </span>
-          </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
-            <div className="h-full rounded-full bg-[#7CC4FF] transition-[width] duration-700" style={{ width: `${Math.max(4, (doneCount / 3) * 100)}%` }} />
-          </div>
-          <p className="mt-3 text-[0.9rem] text-white/70">
-            {nextStep ? "Tre trin, så er du i gang." : "Du er klar. Nu mangler bare den første kunde."}
-          </p>
-          <ol className="mt-5 grid gap-3 md:grid-cols-3">
-            {steps.map((s, i) => (
-              <li key={s.title} className={`flex flex-col rounded-[16px] p-4 ring-1 ring-inset ${s.done ? "bg-white/[.03] ring-white/5" : "bg-white/[.07] ring-white/10"}`}>
-                <span className="flex items-center gap-2 text-[0.8rem] font-semibold text-[#7CC4FF]">
-                  {s.done ? (
-                    <span aria-label="Klaret" className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7CC4FF] text-[#061C3D]">
-                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M5 12.5l4.5 4.5L19 7.5" />
-                      </svg>
-                    </span>
-                  ) : null}
-                  Trin {i + 1}
-                </span>
-                <span className="mt-1 text-[1rem] font-semibold">{s.title}</span>
-                <span className="mt-1 text-[0.85rem] leading-snug text-white/70">{s.text}</span>
-                {s.kind === "share" ? (
-                  <>
-                    {/* Hurtigst ved kassen: QR-koden i din egen Wallet, klar til at vise. */}
-                    {WALLET_ENABLED ? (
-                      <a
-                        href="/api/wallet/butikkort"
-                        className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-black px-4 text-[0.88rem] font-semibold text-white ring-1 ring-inset ring-white/25"
-                      >
-                        <WalletIcon />
-                        Føj til Apple Wallet
-                      </a>
-                    ) : null}
-                    <span className={`${WALLET_ENABLED ? "mt-2" : "mt-4"} flex flex-wrap gap-2`}>
-                      <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} tone="light" />
-                      <Link
-                        href="/app/regler?f=kundekort&vis=1"
-                        className="inline-flex min-h-10 items-center rounded-full px-4 text-[0.85rem] font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10"
-                      >
-                        Vis QR-kode
-                      </Link>
-                    </span>
-                  </>
-                ) : s.kind === "see" ? (
-                  <SeeCardLink
-                    href={s.href}
-                    seen={s.done}
-                    className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]"
-                  >
-                    {s.cta}
-                  </SeeCardLink>
-                ) : (
-                  <Link href={s.href} className="mt-4 inline-flex min-h-10 w-fit items-center rounded-full bg-white px-4 text-[0.85rem] font-semibold text-[#061C3D] hover:bg-[#E8F0FB]">
-                    {s.cta}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
+        <StartGuide
+          steps={steps}
+          share={{ businessName: business.name, url: shareUrl, text: shareText, shared: !!business.sharedAt, seen, walletEnabled: WALLET_ENABLED }}
+        />
       ) : stats.totalCustomers === 0 && nextStep ? (
         <section className="mb-10 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-fog bg-white p-4 shadow-card md:p-5">
           <span className="min-w-0">
@@ -263,17 +230,12 @@ export default async function HomePage() {
           </span>
           {nextStep.kind === "share" ? (
             <ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} />
-          ) : nextStep.kind === "see" ? (
-            <SeeCardLink
-              href={nextStep.href}
-              seen={false}
+          ) : (
+            <Link
+              href={nextStep.href ?? "/app/regler?f=stempler"}
               className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-[0.88rem] font-semibold text-white hover:bg-[#0A2D5A]"
             >
-              {nextStep.cta}
-            </SeeCardLink>
-          ) : (
-            <Link href={nextStep.href} className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-[0.88rem] font-semibold text-white hover:bg-[#0A2D5A]">
-              {nextStep.cta}
+              {nextStep.cta ?? "Vælg"}
             </Link>
           )}
         </section>

@@ -58,3 +58,6 @@ export const ONBOARDING_HIDDEN_COOKIE = "folka_skjul_start";
 
 /** Butikker, hvor ejeren har set kortet paa sin telefon fra Kom i gang (id'er med punktum). */
 export const ONBOARDING_SEEN_COOKIE = "folka_set_kort";
+
+/** Butikker, hvor ejeren har svaret paa "Første stempel, når kortet hentes?" i Kom i gang. */
+export const ONBOARDING_WELCOME_COOKIE = "folka_velkomst";

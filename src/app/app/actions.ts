@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { isSuperadminEmail } from "@/lib/superadmin-emails";
-import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE } from "@/lib/cookies";
+import { ONBOARDING_HIDDEN_COOKIE, ONBOARDING_SEEN_COOKIE, ONBOARDING_WELCOME_COOKIE } from "@/lib/cookies";
 import { prisma } from "@/lib/prisma";
 import { requireBusiness, getSupportBusiness, ACTIVE_BUSINESS_COOKIE, SUPPORT_BUSINESS_COOKIE } from "@/lib/session";
 import { auth, signOut } from "@/lib/auth";
@@ -555,6 +555,19 @@ export async function dismissOnboardingAction(): Promise<void> {
 export async function markCardSeen(): Promise<void> {
   const { business } = await requireBusiness();
   await rememberBusinessInCookie(ONBOARDING_SEEN_COOKIE, business.id);
+  revalidatePath("/app");
+}
+
+// Kom i gang: "Første stempel, når kortet hentes?" Ja eller nej gemmes paa
+// butikken (samme valg som under Regler), og svaret huskes, saa trinnet er klaret.
+export async function answerWelcomeStampAction(formData: FormData): Promise<void> {
+  const { business } = await requireBusiness();
+  const on = formData.get("on") === "1";
+  if (business.welcomeStampEnabled !== on) {
+    await prisma.business.update({ where: { id: business.id }, data: { welcomeStampEnabled: on } });
+    refreshShop(business, { wallet: false });
+  }
+  await rememberBusinessInCookie(ONBOARDING_WELCOME_COOKIE, business.id);
   revalidatePath("/app");
 }
 
