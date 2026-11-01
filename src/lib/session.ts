@@ -7,6 +7,7 @@ import { prisma } from "./prisma";
 import type { Business } from "@prisma/client";
 import { isSuperadminEmail } from "./superadmin-emails";
 import { isAdminUnlocked } from "./admin";
+import { resolveKasseBusiness, resolveOwnerBusinessId } from "./membership";
 
 // Den aktive butik ligger i en cookie (kan skiftes uden nyt login) og
 // VERIFICERES altid mod Membership, saa en bruger aldrig kan ramme en butik, de
@@ -46,20 +47,7 @@ const activeBusinessId = cache(
   async (userId: string): Promise<string | null> => {
     const support = await supportBusinessId(userId);
     if (support) return support;
-    const wanted = (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value;
-    if (wanted) {
-      const m = await prisma.membership.findUnique({
-        where: { userId_businessId: { userId, businessId: wanted } },
-        select: { businessId: true, role: true },
-      });
-      if (m?.role === "OWNER") return m.businessId;
-    }
-    const first = await prisma.membership.findFirst({
-      where: { userId, role: "OWNER" },
-      select: { businessId: true },
-      orderBy: { createdAt: "asc" },
-    });
-    return first?.businessId ?? null;
+    return resolveOwnerBusinessId(userId, (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value);
   },
 );
 
@@ -70,21 +58,7 @@ const activeBusinessId = cache(
 export const kasseBusinessForUser = cache(
   async (userId: string): Promise<{ businessId: string; role: "OWNER" | "STAFF" } | null> => {
     const owner = await activeBusinessId(userId);
-    const wanted = (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value;
-    if (wanted && wanted !== owner) {
-      const m = await prisma.membership.findUnique({
-        where: { userId_businessId: { userId, businessId: wanted } },
-        select: { businessId: true, role: true },
-      });
-      if (m?.role === "STAFF") return { businessId: m.businessId, role: "STAFF" };
-    }
-    if (owner) return { businessId: owner, role: "OWNER" };
-    const staff = await prisma.membership.findFirst({
-      where: { userId, role: "STAFF" },
-      select: { businessId: true },
-      orderBy: { createdAt: "asc" },
-    });
-    return staff ? { businessId: staff.businessId, role: "STAFF" } : null;
+    return resolveKasseBusiness(userId, (await cookies()).get(ACTIVE_BUSINESS_COOKIE)?.value, owner);
   },
 );
 

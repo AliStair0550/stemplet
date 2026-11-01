@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { signIn } from "@/lib/auth";
 import { durableRateLimit } from "@/lib/rate-limit";
 import { captureServerError } from "@/lib/sentry";
+import { changeMemberRole, MemberError, removeMember as removeMemberFrom } from "@/lib/membership";
 
 // Medarbejdere: en butik kan have flere logins (medlemskaber). Alle logger ind
 // med magisk link, ingen adgangskoder. OWNER har fuld adgang til dashboardet;
@@ -16,9 +17,6 @@ const MAX_MEMBERS = 12;
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 type Result = { ok: true } | { ok: false; error: string };
-
-// Baaret ud af transaktionen som en pæn brugerfejl (ruller tilbage).
-class MemberError extends Error {}
 
 function landing(role: MemberRole): string {
   return role === "STAFF" ? "/kasse" : "/app";
@@ -108,35 +106,13 @@ export async function removeMember(userId: string): Promise<Result> {
   if (userId === currentUserId) {
     return { ok: false, error: "Du kan ikke fjerne din egen adgang." };
   }
-
   try {
-    await prisma.$transaction(async (tx) => {
-      // Laas butik-raekken, saa samtidige aendringer serialiseres og butikken
-      // aldrig kan ende uden en ejer (permanent laasning).
-      await tx.$executeRaw`SELECT 1 FROM "Business" WHERE "id" = ${business.id} FOR UPDATE`;
-      const membership = await tx.membership.findUnique({
-        where: { userId_businessId: { userId, businessId: business.id } },
-        select: { id: true, role: true },
-      });
-      if (!membership) {
-        throw new MemberError("Adgangen blev ikke fundet.");
-      }
-      if (membership.role === "OWNER") {
-        const owners = await tx.membership.count({
-          where: { businessId: business.id, role: "OWNER" },
-        });
-        if (owners <= 1) {
-          throw new MemberError("Butikken skal have mindst én med adgang til alt.");
-        }
-      }
-      await tx.membership.delete({ where: { id: membership.id } });
-    });
+    await removeMemberFrom(business.id, userId);
   } catch (e) {
     if (e instanceof MemberError) return { ok: false, error: e.message };
     captureServerError(e, { route: "staff:remove" });
     return { ok: false, error: "Kunne ikke fjerne adgangen. Prøv igen." };
   }
-
   revalidatePath("/app/medarbejdere");
   return { ok: true };
 }
@@ -147,32 +123,13 @@ export async function setMemberRole(userId: string, roleRaw: MemberRole): Promis
   if (userId === currentUserId) {
     return { ok: false, error: "Du kan ikke ændre din egen adgang." };
   }
-
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.$executeRaw`SELECT 1 FROM "Business" WHERE "id" = ${business.id} FOR UPDATE`;
-      const membership = await tx.membership.findUnique({
-        where: { userId_businessId: { userId, businessId: business.id } },
-        select: { id: true, role: true },
-      });
-      if (!membership) throw new MemberError("Adgangen blev ikke fundet.");
-      if (membership.role === role) return;
-      if (membership.role === "OWNER") {
-        const owners = await tx.membership.count({
-          where: { businessId: business.id, role: "OWNER" },
-        });
-        if (owners <= 1) {
-          throw new MemberError("Butikken skal have mindst én med adgang til alt.");
-        }
-      }
-      await tx.membership.update({ where: { id: membership.id }, data: { role } });
-    });
+    await changeMemberRole(business.id, userId, role);
   } catch (e) {
     if (e instanceof MemberError) return { ok: false, error: e.message };
     captureServerError(e, { route: "staff:set-role" });
     return { ok: false, error: "Kunne ikke ændre adgangen. Prøv igen." };
   }
-
   revalidatePath("/app/medarbejdere");
   return { ok: true };
 }

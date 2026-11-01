@@ -3,6 +3,7 @@ import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
+import { mayLogIn } from "./auth-policy";
 import { folkaSender, loginEmail, staffLoginEmail, welcomeEmail } from "./emails";
 import { isSuperadminEmail } from "./superadmin-emails";
 import { DEMO_SLUG } from "./demo";
@@ -180,13 +181,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // (fx hej@folka.dk), der ikke behoever en butik; brugeren oprettes da ved
     // foerste login.
     async signIn({ user }) {
-      if (!user?.email) return false;
-      if (isSuperadminEmail(user.email)) return true;
-      const existing = await prisma.user.findUnique({
-        where: { email: user.email },
-        select: { id: true },
-      });
-      return Boolean(existing);
+      return mayLogIn(user?.email);
     },
     async jwt({ token }) {
       // Token'et baerer kun bruger-id (uid). Den AKTIVE butik ligger i en cookie
