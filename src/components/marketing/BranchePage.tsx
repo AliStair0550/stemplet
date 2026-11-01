@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { Footer, LightHeader } from "@/components/kundekort/SiteChrome";
 import { Section, Container, Eyebrow } from "@/components/ui";
-import { type BrancheContent } from "@/lib/brancher";
-import { StampCard } from "@/components/StampCard";
+import Link from "next/link";
+import { BRANCHER, type BrancheContent } from "@/lib/brancher";
+import { WalletCardPreview } from "@/components/WalletCardPreview";
+import { StampIcon } from "@/components/StampIcon";
 import { BrancheStamps } from "@/components/marketing/BrancheStamps";
 import { BrancheExamples } from "@/components/marketing/BrancheExamples";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
@@ -40,7 +42,7 @@ export function BranchePage({ b }: { b: BrancheContent }) {
         <section className="relative overflow-hidden pt-16 pb-14 md:pt-24 md:pb-20">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-8 h-[460px] w-[780px] max-w-[110vw] -translate-x-1/2 rounded-full bg-terracotta/[0.06] blur-[130px]"
+            className="pointer-events-none absolute left-1/2 top-8 h-[460px] w-[780px] max-w-[110vw] -translate-x-1/2 rounded-full bg-[#1B5EAE]/[0.08] blur-[130px]"
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
@@ -127,11 +129,61 @@ export function BranchePage({ b }: { b: BrancheContent }) {
           </div>
         </Section>
 
+        {/* Mere end stempler: henvisninger og beskeder, med eksempler fra branchen. */}
+        <Section>
+          <div className="mx-auto max-w-[960px]">
+            <div className="mx-auto max-w-2xl text-center">
+              <Eyebrow>Mere end stempler</Eyebrow>
+              <h2 className="mt-4 text-balance text-[1.8rem] font-bold leading-[1.1] tracking-[-0.03em] text-ink md:text-[2.3rem]">
+                Kortet skaffer også nye kunder og fylder dagen.
+              </h2>
+            </div>
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              <div className="flex flex-col rounded-[24px] bg-white p-7 shadow-card">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#E8F0FB] text-[#1B5EAE]">
+                  <StampIcon icon="heart" className="h-5 w-5" />
+                </span>
+                <h3 className="mt-5 text-[1.3rem] font-semibold tracking-[-0.025em] text-ink">Lad kunderne anbefale dig</h3>
+                <p className="mt-2 text-[0.98rem] leading-relaxed text-stone">
+                  Kunden deler sin kode fra kortet. Vennen får {b.referral.friend} første gang, og kunden får {b.referral.reward}, når vennen har været der.
+                </p>
+                <div className="mt-auto flex flex-wrap items-center gap-2 pt-6" aria-hidden>
+                  <span className="rounded-full bg-[#061C3D] px-4 py-2 text-[14px] font-semibold text-white">Din kunde</span>
+                  <span className="text-[14px] text-[#8D98A8]">deler</span>
+                  <span className="rounded-full bg-[#E8F0FB] px-4 py-2 text-[14px] font-semibold text-[#1B5EAE]">Ny kunde i døren</span>
+                </div>
+              </div>
+              <div className="flex flex-col rounded-[24px] bg-white p-7 shadow-card">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-[#E8F0FB] text-[#1B5EAE]">
+                  <StampIcon icon="sparkle" className="h-5 w-5" />
+                </span>
+                <h3 className="mt-5 text-[1.3rem] font-semibold tracking-[-0.025em] text-ink">Din besked lander på låseskærmen</h3>
+                <p className="mt-2 text-[0.98rem] leading-relaxed text-stone">
+                  Skriv en kort besked, og den lander hos alle med kortet. Ingen mailliste og ingen annoncer.
+                </p>
+                {/* Notifikation som paa en iPhone. */}
+                <div className="mt-auto pt-6" aria-hidden>
+                  <div className="rounded-[18px] bg-[#F2F5F9] p-3.5">
+                    <div className="flex items-center gap-2">
+                      <span className="grid h-6 w-6 place-items-center rounded-[7px] text-white" style={{ background: b.cardExample?.primaryColor ?? "#061C3D" }}>
+                        <StampIcon icon={b.cardExample?.stampIcon ?? "coffee"} className="h-3.5 w-3.5" />
+                      </span>
+                      <span className="text-[12.5px] font-semibold text-[#0B1628]">{b.cardExample?.businessName ?? b.shortName}</span>
+                      <span className="ml-auto text-[11px] text-[#5F6B7E]">nu</span>
+                    </div>
+                    <p className="mt-1.5 text-[13.5px] leading-snug text-[#384354]">{b.message}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Section>
+
         {/* Inspiration til belOnninger: levende, maalrettede eksempler + CTA */}
         <Section className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.06] blur-[120px]"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1B5EAE]/[0.08] blur-[120px]"
           />
           <div className="relative mx-auto max-w-2xl text-center">
             <Eyebrow>Inspiration til belønninger</Eyebrow>
@@ -161,17 +213,27 @@ export function BranchePage({ b }: { b: BrancheContent }) {
                   Apple Wallet, altid ved hånden.
                 </p>
                 <div className="mt-10 flex justify-center">
-                  <StampCard
-                    businessName={b.cardExample.businessName}
-                    primaryColor={b.cardExample.primaryColor}
-                    textColor={b.cardExample.textColor}
-                    stampIcon={b.cardExample.stampIcon}
-                    stamps={b.cardExample.stamps}
-                    required={b.cardExample.required}
-                    rewardText={b.cardExample.rewardText}
-                    shine
-                    className="w-full max-w-[21rem]"
-                  />
+                  {/* Kortet, som det ser ud i kundens Wallet (samme som i dashboardet). */}
+                  <div className="w-full max-w-[300px]">
+                    <WalletCardPreview
+                      os="27"
+                      style="stamps"
+                      artwork={null}
+                      primaryColor={b.cardExample.primaryColor}
+                      textColor={b.cardExample.textColor}
+                      logoUrl={null}
+                      name={b.cardExample.businessName}
+                      stampIcon={b.cardExample.stampIcon}
+                      stampsRequired={b.cardExample.required}
+                      rewardText={b.cardExample.rewardText}
+                      product="begge"
+                      friendReward={b.referral.friend}
+                      referrerReward={b.referral.reward}
+                      actions={[]}
+                      sampleStamps={b.cardExample.stamps}
+                      hideQr
+                    />
+                  </div>
                 </div>
               </div>
             </Section>
@@ -185,6 +247,24 @@ export function BranchePage({ b }: { b: BrancheContent }) {
             </h2>
             <div className="mt-8">
               <FaqAccordion items={b.faq} />
+            </div>
+          </div>
+        </Section>
+
+        {/* Andre brancher: siderne linker til hinanden. */}
+        <Section>
+          <div className="mx-auto max-w-[760px] text-center">
+            <h2 className="text-[1.3rem] font-bold tracking-[-0.02em] text-ink">Andre brancher</h2>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {BRANCHER.filter((o) => o.slug !== b.slug).map((o) => (
+                <Link
+                  key={o.slug}
+                  href={o.slug}
+                  className="rounded-full border border-clay bg-white px-4 py-2 text-[0.9rem] font-medium text-ink transition-colors hover:border-ink"
+                >
+                  {o.shortName}
+                </Link>
+              ))}
             </div>
           </div>
         </Section>

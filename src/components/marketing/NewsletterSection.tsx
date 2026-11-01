@@ -7,10 +7,10 @@ import { NewsletterSignup } from "@/components/marketing/NewsletterSignup";
 // lyse sektioner paa forsiden og lige over den moerke footer paa branchesiderne.
 export function NewsletterSection({ source }: { source: string }) {
   return (
-    <Section id="hold-kontakten" className="relative overflow-hidden bg-clay">
+    <Section id="hold-kontakten" className="relative overflow-hidden bg-sand">
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[680px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-terracotta/[0.07] blur-[120px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[380px] w-[680px] max-w-[110vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1B5EAE]/[0.08] blur-[120px]"
       />
       <div className="relative mx-auto max-w-xl">
         <div className="rounded-[1.5rem] border border-ink/[0.06] bg-white p-8 text-center shadow-card md:p-10">

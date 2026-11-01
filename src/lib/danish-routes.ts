@@ -7,6 +7,7 @@ export const DANISH_ROUTES: [pretty: string, folder: string][] = [
   ["/hør-mere", "/hoer-mere"],
   ["/stempelkort-til-frisører", "/stempelkort-til-frisoerer"],
   ["/stempelkort-til-caféer", "/stempelkort-til-cafeer"],
+  ["/stempelkort-til-massører", "/stempelkort-til-massoerer"],
 ];
 
 // Gamle danske adresser, der varigt sendes videre.

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
       "Se hvordan et digitalt stempelkort i Apple Wallet virker i netop din type forretning.",
     url: "/brancher",
     type: "website",
+    images: ["/opengraph-image"],
   },
 };
 
@@ -27,7 +28,7 @@ export default function BrancherPage() {
         <section className="relative overflow-hidden pt-16 pb-14 md:pt-24 md:pb-20">
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-8 h-[440px] w-[760px] max-w-[110vw] -translate-x-1/2 rounded-full bg-terracotta/[0.06] blur-[130px]"
+            className="pointer-events-none absolute left-1/2 top-8 h-[440px] w-[760px] max-w-[110vw] -translate-x-1/2 rounded-full bg-[#1B5EAE]/[0.08] blur-[130px]"
           />
           <Container className="relative">
             <div className="mx-auto flex max-w-3xl animate-fade-up flex-col items-center text-center">
