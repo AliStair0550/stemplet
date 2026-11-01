@@ -27,10 +27,49 @@ type Device = {
   lastSeenAt: string | null;
 };
 
-const ROLES: { value: Role; title: string; text: string }[] = [
-  { value: "STAFF", title: "Kun kassen", text: "Scanner kort og giver stempler. Ser ikke kunder eller indstillinger." },
-  { value: "OWNER", title: "Adgang til alt", text: "Kan se og ændre alt, ligesom dig." },
+const ROLES: { value: Role; title: string; text: string; icon: React.ReactNode }[] = [
+  {
+    value: "STAFF",
+    title: "Kun kassen",
+    text: "Scanner kort og giver stempler. Ser ikke kunder eller indstillinger.",
+    icon: <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M7 12h10" />,
+  },
+  {
+    value: "OWNER",
+    title: "Adgang til alt",
+    text: "Kan se og ændre alt, ligesom dig.",
+    icon: (
+      <>
+        <circle cx="8.5" cy="15.5" r="3.5" />
+        <path d="m11 13 8-8M16 8l2.5 2.5M14 10l2 2" />
+      </>
+    ),
+  },
 ];
+
+function RoleIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-[1.1rem] w-[1.1rem]" aria-hidden>
+      {children}
+    </svg>
+  );
+}
+
+/** Lille maerke i listen: rolle, "Dig" eller "Inviteret". */
+function Chip({ tone, children }: { tone: "blue" | "gray" | "amber"; children: React.ReactNode }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[0.74rem] font-[600]",
+        tone === "blue" && "bg-[#E8F0FB] text-[#1B5EAE]",
+        tone === "gray" && "bg-[#F2F5F9] text-[#5F6B7E]",
+        tone === "amber" && "bg-[#FDF3DC] text-[#8A5A00]",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
 
 // Listerne er kant-til-kant (Panel har fast indre luft, som cn ikke overskriver).
 const LIST = "overflow-hidden rounded-[18px] border border-fog bg-white shadow-card";
@@ -192,6 +231,17 @@ export function TeamManager({
       {/* Tilfoej */}
       <Panel className="md:p-8">
         <h2 className="text-[1.15rem] font-[600] tracking-[-0.01em] text-ink">Tilføj en medarbejder</h2>
+        {/* Saadan virker det: tre korte trin. */}
+        <ol className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.85rem] text-stone">
+          {["Skriv navn og mail", "De får en mail med login", "De logger ind på deres egen telefon"].map((t, i) => (
+            <li key={t} className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#E8F0FB] text-[0.72rem] font-[700] text-[#1B5EAE]">
+                {i + 1}
+              </span>
+              {t}
+            </li>
+          ))}
+        </ol>
         <form onSubmit={add} noValidate className="mt-5 flex flex-col gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <input
@@ -223,6 +273,7 @@ export function TeamManager({
                 className={cn(
                   "flex cursor-pointer gap-3 rounded-2xl border p-4 transition-colors",
                   role === r.value ? "border-ink bg-white shadow-card" : "border-clay bg-parchment hover:border-ink/40",
+                  "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#1B5EAE]/40",
                 )}
               >
                 <input
@@ -231,9 +282,17 @@ export function TeamManager({
                   value={r.value}
                   checked={role === r.value}
                   onChange={() => setRole(r.value)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-ink"
+                  className="sr-only"
                 />
-                <span>
+                <span
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+                    role === r.value ? "bg-ink text-white" : "bg-[#F2F5F9] text-stone",
+                  )}
+                >
+                  <RoleIcon>{r.icon}</RoleIcon>
+                </span>
+                <span className="min-w-0">
                   <span className="block text-[0.95rem] font-[600] text-ink">{r.title}</span>
                   <span className="mt-0.5 block text-[0.85rem] leading-snug text-stone">{r.text}</span>
                 </span>
@@ -241,16 +300,25 @@ export function TeamManager({
             ))}
           </fieldset>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <button type="submit" disabled={pending} aria-busy={pending} className={`${btnClass("primary")} sm:w-auto`}>
-              {pending ? "Et øjeblik..." : "Tilføj og send login"}
-            </button>
-            {addMsg ? (
-              <p role={addMsg.ok ? "status" : "alert"} className={cn("text-[0.88rem]", addMsg.ok ? "text-ink" : "text-rust")}>
+          <button type="submit" disabled={pending} aria-busy={pending} className={`${btnClass("primary")} sm:w-fit`}>
+            {pending ? "Et øjeblik..." : "Tilføj og send login"}
+          </button>
+          {addMsg ? (
+            addMsg.ok ? (
+              <p role="status" className="flex items-start gap-2.5 rounded-2xl bg-[#E8F0FB] px-4 py-3 text-[0.88rem] leading-snug text-ink">
+                <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1B5EAE] text-white" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                  </svg>
+                </span>
                 {addMsg.text}
               </p>
-            ) : null}
-          </div>
+            ) : (
+              <p role="alert" className="text-[0.88rem] text-rust">
+                {addMsg.text}
+              </p>
+            )
+          ) : null}
         </form>
       </Panel>
 
@@ -274,22 +342,20 @@ export function TeamManager({
                       {initial(m)}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                        <span className="truncate text-[0.98rem] font-[600] text-ink">{m.name ?? m.email}</span>
-                        {m.isYou ? <span className="text-[0.8rem] text-slate">(dig)</span> : null}
-                      </p>
-                      {m.name ? <p className="truncate text-[0.85rem] text-stone">{m.email}</p> : null}
-                      <p className="text-[0.85rem] text-stone">
-                        {m.role === "OWNER" ? "Adgang til alt" : "Kun kassen"}
-                        {!m.verified && !m.isYou ? " · har ikke logget ind endnu" : null}
-                      </p>
+                      <span className="block truncate text-[0.98rem] font-[600] text-ink">{m.name ?? m.email}</span>
+                      {m.name ? <span className="block truncate text-[0.85rem] text-stone">{m.email}</span> : null}
+                      <span className="mt-1.5 flex flex-wrap gap-1.5">
+                        <Chip tone={m.role === "OWNER" ? "blue" : "gray"}>{m.role === "OWNER" ? "Adgang til alt" : "Kun kassen"}</Chip>
+                        {m.isYou ? <Chip tone="gray">Dig</Chip> : null}
+                        {!m.verified && !m.isYou ? <Chip tone="amber">Inviteret</Chip> : null}
+                      </span>
                     </div>
                     {m.isYou ? null : (
                       <button
                         type="button"
                         onClick={() => toggleRow(m.id)}
                         aria-expanded={open}
-                        className={textBtn}
+                        className="shrink-0 rounded-full border border-clay px-3.5 py-1.5 text-[0.85rem] font-[500] text-ink transition-colors hover:border-ink"
                       >
                         {open ? "Luk" : "Ret"}
                       </button>
