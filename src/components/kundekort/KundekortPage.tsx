@@ -298,8 +298,8 @@ function Pricing() {
     "Stempler, henvisninger og beskeder",
     "Ubegrænset antal kortholdere",
     "Dit eget design, intet logo fra os",
-    "Tilbud, kampagner og statistik",
-    "Plakater, bordskilte og visitkort",
+    "Tilbud og kampagner",
+    "Statistik, uge for uge",
   ];
   return (
     <section id="pris" className="scroll-mt-4 bg-white py-24 sm:py-32">

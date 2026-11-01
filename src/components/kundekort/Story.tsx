@@ -105,7 +105,7 @@ function PhoneCard({ c }: { c: Chapter }) {
             <p className="text-[9px] font-semibold uppercase tracking-[.08em] text-white/70">{c.foot.label}</p>
             <p className="text-[14px] font-semibold leading-tight">{c.foot.value}</p>
           </div>
-          <div className="h-[78px] w-[78px] shrink-0 rounded-[11px] bg-white p-1.5">
+          <div className="h-[78px] w-[78px] shrink-0 overflow-hidden rounded-[11px] bg-white">
             <QrCode />
           </div>
         </div>
