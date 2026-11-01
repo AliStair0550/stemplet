@@ -1,11 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { StampCard } from "@/components/StampCard";
 import { ShareCard } from "@/components/ShareCard";
+import { WalletCardPreview, type WalletCardPreviewProps } from "@/components/WalletCardPreview";
 import { btnClass } from "@/components/ui";
 import type { CardDesign } from "@/components/CardDesigner";
-import type { StampIconKey } from "@/lib/brand";
 
 // "Del dit kort": kortet som et social-klar billede + native deling, download og
 // kopier-link. Kunderne henter kortet foer/ved naeste besoeg.
@@ -15,8 +14,11 @@ export function ShareCardSection({
   slug,
   cardUrl,
   qrDataUrl,
+  preview,
 }: {
   design: CardDesign;
+  /** Kortet som i kundernes Wallet (samme som Hjem), til forhaandsvisning og billeder. */
+  preview: Omit<WalletCardPreviewProps, "os">;
   businessName: string;
   slug: string;
   cardUrl: string;
@@ -141,17 +143,7 @@ export function ShareCardSection({
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,18rem)_1fr]">
         {/* Preview af kortet */}
         <div className="mx-auto w-full max-w-xs">
-          <StampCard
-            businessName={businessName}
-            logoUrl={design.logoUrl}
-            logoScale={design.logoScale ?? 1}
-            primaryColor={design.primaryColor}
-            textColor={design.textColor}
-            stampIcon={design.stampIcon as StampIconKey}
-            stamps={Math.min(3, design.stampsRequired)}
-            required={design.stampsRequired}
-            rewardText={design.rewardText}
-          />
+          <WalletCardPreview os="27" {...preview} actions={[]} hideQr />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -210,20 +202,12 @@ export function ShareCardSection({
             design={design}
             businessName={businessName}
             qrDataUrl={qrDataUrl}
+            card={<div className="w-[340px]"><WalletCardPreview os="27" {...preview} actions={[]} hideQr /></div>}
           />
         </div>
-        <div ref={cardRef} className="w-[440px]">
-          <StampCard
-            businessName={businessName}
-            logoUrl={design.logoUrl}
-            logoScale={design.logoScale ?? 1}
-            primaryColor={design.primaryColor}
-            textColor={design.textColor}
-            stampIcon={design.stampIcon as StampIconKey}
-            stamps={Math.min(3, design.stampsRequired)}
-            required={design.stampsRequired}
-            rewardText={design.rewardText}
-          />
+        {/* Luft rundt om, saa kortets skygge kommer med paa billedet. */}
+        <div ref={cardRef} className="w-[388px] p-6">
+          <WalletCardPreview os="27" {...preview} actions={[]} hideQr />
         </div>
       </div>
     </div>

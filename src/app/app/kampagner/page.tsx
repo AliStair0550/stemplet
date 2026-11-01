@@ -10,6 +10,7 @@ import { ShareCardSection } from "./ShareCardSection";
 import type { CardDesign } from "@/components/CardDesigner";
 import { cardTitle, type StampIconKey } from "@/lib/brand";
 import { optimizedLogoDataUri } from "@/lib/logo";
+import { loadCardPreview } from "@/lib/card-preview";
 
 export const metadata: Metadata = { title: "Kampagner" };
 export const dynamic = "force-dynamic";
@@ -58,6 +59,7 @@ export default async function KampagnerPage() {
         slug={business.slug}
         cardUrl={cardUrl}
         qrDataUrl={qr}
+        preview={await loadCardPreview(business)}
       />
       <div className="mt-8">
         <CampaignManager campaigns={campaigns} />
