@@ -4,7 +4,7 @@ import { getCardToken } from "./cookies";
 import {
   loadCardByToken,
   createCardholderAtomically,
-  hasActivePickupStamp,
+  stampsOnPickup,
   applyStamp,
 } from "./stamp";
 import { signupBlockReason } from "./billing";
@@ -123,11 +123,11 @@ export async function resolveOrCreateCard(
     return { ok: false, error: "mail_findes" };
   }
 
-  // Stempel ved afhentning: koerer der en aktiv PICKUP_STAMP-kampagne, faar det
-  // nye kort 1 stempel med det samme (kortet lander i Wallet med 1/x). MANUAL
+  // Foerste stempel med det samme (butikkens valg) eller en aktiv "stempel ved
+  // afhentning"-kampagne: det nye kort faar 1 stempel (lander i Wallet med 1/x). MANUAL
   // springer cooldown over og er system-givet. En fejl her maa ikke vaelte
   // afhentningen, saa vi sluger den (kortet er stadig oprettet).
-  if (created.isNew && (await hasActivePickupStamp(card.id))) {
+  if (created.isNew && (await stampsOnPickup(card.id))) {
     try {
       await applyStamp({
         customerCardId: created.id,

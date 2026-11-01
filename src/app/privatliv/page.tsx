@@ -6,10 +6,12 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privatlivspolitik",
-  description: "Sådan behandler Kundekort personoplysninger.",
+  description: "Hvad Folka Kort gemmer om dig, hvorfor, og hvad du selv bestemmer.",
 };
 
-// Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.
+// Skrevet til kunden foerst: kort og i almindeligt dansk. Lovhenvisningerne
+// staar samlet i een linje under "Hvorfor". Firmaoplysninger (CVR + adresse)
+// styres eet sted i src/lib/company.ts.
 // TODO (juridisk): faa politikken gennemgaaet af en advokat inden endelig brug.
 const CONTACT = COMPANY.contactEmail;
 
@@ -22,171 +24,125 @@ function Li({ children }: { children: React.ReactNode }) {
   );
 }
 
+const mail = (
+  <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
+    {CONTACT}
+  </a>
+);
+
 export default function PrivatlivPage() {
   return (
     <LegalLayout
       title="Privatlivspolitik"
-      updated="26. oktober 2026"
-      intro="Kundekort er et digitalt kundekort fra Folka med stempler og henvisninger, som butikker kan slå til. Vi behandler så få oplysninger som muligt, og vi sælger dem aldrig. Her kan du læse, hvad vi indsamler, hvorfor, og hvilke rettigheder du har."
+      updated="1. november 2026"
+      intro="Folka Kort er det digitale kundekort, du får hos din butik. Her står kort og klart, hvad der bliver gemt om dig, og hvad du selv bestemmer."
     >
-      <LegalSection title="1. Hvem er ansvarlig">
+      <LegalSection title="Kort fortalt">
+        <ul className="flex flex-col gap-2.5">
+          <Li>Butikken gemmer dit navn, din e-mail og dine stempler, så kortet virker.</Li>
+          <Li>Vi sælger aldrig dine oplysninger til nogen.</Li>
+          <Li>Du får kun mails fra butikken, hvis du selv har sagt ja.</Li>
+          <Li>
+            Vil du ikke have kortet mere, fjerner du det bare fra din telefon. Vil du også have slettet dine
+            oplysninger, så sig det i butikken.
+          </Li>
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="Hvem står bag">
         <p>
-          Kundekort drives af Folka. Har du spørgsmål om dine oplysninger, eller
-          vil du gøre brug af dine rettigheder, kan du skrive til os på{" "}
-          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
-            {CONTACT}
-          </a>
-          .
+          Folka Kort er lavet af Folka. Det er butikken, der har ansvaret for oplysningerne om dig som kunde. Vi passer på
+          dem for butikken og bruger dem kun, som butikken beder om (se{" "}
+          <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
+            databehandleraftalen
+          </Link>
+          ). Har du spørgsmål, kan du altid skrive til os på {mail}.
         </p>
         <LegalCompanyInfo />
-        <p>
-          For en butiks egne kunder er det <strong>butikken</strong>, der er
-          dataansvarlig for kundeoplysningerne. Kundekort er butikkens
-          databehandler og behandler kun oplysningerne efter butikkens
-          instruks. Se vores{" "}
-          <Link href="/databehandleraftale" className="text-terracotta underline underline-offset-2">
-            databehandleraftale
-          </Link>
-          .
-        </p>
       </LegalSection>
 
-      <LegalSection title="2. Hvilke oplysninger vi behandler">
-        <p>Afhængigt af, hvordan du bruger Kundekort:</p>
+      <LegalSection title="Hvad vi gemmer">
+        <p>Når du har et kort hos en butik:</p>
         <ul className="flex flex-col gap-2.5">
           <Li>
-            <strong>Virksomhedskonto:</strong> navn og e-mail, så du kan logge
-            ind og administrere din butik.
+            <strong>Navn og e-mail</strong>, som du selv skriver, når du henter kortet. Så kan butikken kende dig ved
+            kassen og hjælpe, hvis du mister kortet. Ældre kort kan være uden navn og e-mail.
           </Li>
           <Li>
-            <strong>Stempelkort (på butikkens vegne):</strong> dit navn og din
-            e-mail, som du selv oplyser, når du henter kortet, et serienummer og
-            din stempelhistorik (antal stempler over tid og tidspunkter). Navn og
-            e-mail knytter kortet til dig, så butikken kan kende dig og hjælpe,
-            hvis der er noget med kortet. Historikken bruges til at optjene
-            stempler og give dig belønninger og loyalitetsfordele. Kort, der
-            blev hentet før, kan være uden navn og e-mail.
+            <strong>Dine stempler</strong>: hvor mange du har, og hvornår du fik dem, så du får din belønning.
           </Li>
           <Li>
-            <strong>Henvisninger (på butikkens vegne, kun hvis butikken har
-            slået det til):</strong> dit navn og din e-mail, din personlige
-            henvisningskode, hvem der har henvist dig, og hvem du har henvist,
-            hvornår henvisningen blev oprettet og gennemført, og de
-            belønninger, du har optjent og indløst. Navn og e-mail oplyser du
-            selv, når du tilmelder dig. Navnet bruges til din kode og til, at
-            personalet kan finde dig ved kassen. E-mailen bruges til at finde
-            dig ved kassen og til at sikre, at hver kunde kun tilmeldes én gang
-            og ikke kan henvise sig selv. Tidligere tilmeldinger kan have et
-            mobilnummer i stedet. Når du deler din kode, vises dit fornavn for
-            den, der åbner dit link.
+            <strong>Henvisninger</strong>, hvis butikken bruger det: din kode, hvem du har henvist, og hvem der
+            henviste dig, og de belønninger, du har fået. Deler du din kode, ser vennen dit fornavn.
           </Li>
           <Li>
-            <strong>Mails fra butikken (kun med dit samtykke):</strong> sætter
-            du selv flueben ved &quot;må kontakte mig på mail&quot;, gemmer vi
-            dit samtykke og tidspunktet for det, så butikken senere kan skrive
-            til dig på mail, fx med tilbud. Uden flueben bruges din e-mail ikke
-            til markedsføring.
+            <strong>Dit ja til mails</strong>, hvis du har sat flueben, og hvornår du gjorde det.
           </Li>
           <Li>
-            <strong>Teknisk og sikkerhed:</strong> IP-adresse og en hændelseslog
-            over stempler og indløsninger. Det bruges kun til at forebygge
-            snyd og misbrug.
+            <strong>Beskeder på kortet</strong>: butikken kan sende korte beskeder til kortet, fx et tilbud. Du kan slå
+            dem fra på bagsiden af kortet.
           </Li>
           <Li>
-            <strong>Betaling:</strong> butikker betaler mod faktura. Vi gemmer
-            aldrig kortoplysninger.
+            <strong>Tekniske oplysninger</strong>: IP-adresse og en log over stempler og belønninger. Det bruges kun
+            til at forhindre snyd.
           </Li>
         </ul>
+        <p>
+          Har du en butik på Folka Kort, gemmer vi også dit navn og din e-mail, så du kan logge ind. Butikker betaler
+          mod faktura, så vi gemmer aldrig kortoplysninger.
+        </p>
       </LegalSection>
 
-      <LegalSection title="3. Formål og retsgrundlag">
+      <LegalSection title="Hvorfor">
         <ul className="flex flex-col gap-2.5">
-          <Li>
-            At levere tjenesten, herunder at give og indløse stempler
-            (opfyldelse af aftale, databeskyttelsesforordningens art. 6, stk. 1,
-            litra b).
-          </Li>
-          <Li>
-            At registrere henvisninger og give de belønninger, du har tilmeldt
-            dig, når du deltager i en butiks henvisninger (opfyldelse af aftale,
-            art. 6, stk. 1, litra b).
-          </Li>
-          <Li>
-            At butikken kan skrive til dig på mail, fx med tilbud, men kun hvis
-            du har sagt ja (samtykke, art. 6, stk. 1, litra a, og
-            markedsføringslovens § 10). Du kan altid trække samtykket tilbage.
-          </Li>
-          <Li>
-            At beskytte tjenesten mod snyd og misbrug (vores og butikkens
-            legitime interesse, art. 6, stk. 1, litra f).
-          </Li>
-          <Li>
-            At sende dig et login-link, når du beder om at logge ind (opfyldelse
-            af aftale).
-          </Li>
+          <Li>For at kortet virker: stempler, belønninger og henvisninger, som du selv har valgt at være med i.</Li>
+          <Li>For at butikken kan skrive til dig på mail, men kun hvis du har sagt ja. Du kan altid sige nej igen.</Li>
+          <Li>For at forhindre snyd og misbrug.</Li>
+          <Li>For at sende et login-link, når en butiksejer beder om det.</Li>
         </ul>
-      </LegalSection>
-
-      <LegalSection title="4. Cookies">
-        <p>
-          Vi bruger kun de cookies, der får tjenesten til at virke: en cookie,
-          der genkender kundens kort på telefonen, og en login-session
-          for butiksejere. Vi bruger ingen cookies til reklame eller sporing på
-          tværs af sider.
+        <p className="text-[0.85rem] text-stone">
+          Grundlaget i loven: aftale (GDPR art. 6, stk. 1, litra b), samtykke (litra a og markedsføringslovens § 10)
+          og legitim interesse i at forhindre snyd (litra f).
         </p>
       </LegalSection>
 
-      <LegalSection title="5. Hvor længe vi gemmer">
+      <LegalSection title="Cookies">
         <p>
-          Vi gemmer oplysningerne, så længe kontoen eller kortet er aktivt.
-          Henvisninger, der ikke bliver gennemført, og belønninger, der ikke
-          bliver indløst, udløber efter den periode, butikken har valgt, men
-          historikken gemmes sammen med kortet. Hændelseslog og tekniske oplysninger opbevares kun kortvarigt af
-          sikkerhedshensyn. Du kan altid bede os om at slette dine oplysninger.
+          Kun dem, der får kortet til at virke: én, der genkender dit kort på telefonen, og én, der holder butiksejere
+          logget ind. Ingen cookies til reklame eller sporing.
         </p>
       </LegalSection>
 
-      <LegalSection title="6. Databehandlere og opbevaringssted">
+      <LegalSection title="Hvor længe">
         <p>
-          Selve databasen ligger i EU (Frankfurt), og vores servere kører i
-          EU-regionen. Vi bruger enkelte betroede underleverandører:
+          Så længe kortet eller butikkens konto findes. Henvisninger og belønninger, der ikke bliver brugt, udløber
+          efter den tid, butikken har valgt. Tekniske logs gemmes kun kort.
         </p>
+      </LegalSection>
+
+      <LegalSection title="Hvor oplysningerne ligger">
+        <p>Databasen og vores servere ligger i EU (Frankfurt). Vi får hjælp af få, faste leverandører:</p>
         <ul className="flex flex-col gap-2.5">
-          <Li>Neon og Vercel, database og drift i EU.</Li>
-          <Li>Upstash, midlertidig cache og sikkerhed.</Li>
-          <Li>Resend, udsendelse af login-mails (USA).</Li>
+          <Li>Neon og Vercel: database og drift i EU.</Li>
+          <Li>Upstash: midlertidig lagring og sikkerhed.</Li>
+          <Li>Resend: udsendelse af mails (USA).</Li>
         </ul>
         <p>
-          Enkelte underleverandører behandler oplysninger i USA. Det sker på
-          grundlag af EU-Kommissionens standardkontraktbestemmelser (SCC), så
-          dine oplysninger er beskyttet på et niveau svarende til EU.
+          Når en leverandør er i USA, sker det efter EU-Kommissionens standardkontrakter, så dine oplysninger er lige så
+          godt beskyttet som i EU.
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Dine rettigheder">
-        <p>Efter databeskyttelsesreglerne har du ret til at:</p>
-        <ul className="flex flex-col gap-2.5">
-          <Li>få indsigt i de oplysninger, vi har om dig,</Li>
-          <Li>få rettet forkerte oplysninger,</Li>
-          <Li>få slettet dine oplysninger,</Li>
-          <Li>gøre indsigelse mod eller begrænse behandlingen,</Li>
-          <Li>få dine oplysninger udleveret (dataportabilitet).</Li>
-        </ul>
+      <LegalSection title="Det bestemmer du">
         <p>
-          Skriv til{" "}
-          <a href={`mailto:${CONTACT}`} className="text-terracotta underline underline-offset-2">
-            {CONTACT}
-          </a>
-          . Er du utilfreds med vores behandling, kan du klage til Datatilsynet
+          Du kan altid se, rette eller få slettet dine oplysninger, sige nej til, at de bliver brugt, eller få dem
+          udleveret. Sig det i butikken, eller skriv til {mail}. Er du utilfreds, kan du klage til Datatilsynet
           (datatilsynet.dk).
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Ændringer">
-        <p>
-          Vi opdaterer politikken, hvis tjenesten ændrer sig. Den nyeste version
-          ligger altid her med dato for seneste opdatering øverst.
-        </p>
+      <LegalSection title="Ændringer">
+        <p>Ændrer vi noget, står den nye version altid her med datoen øverst.</p>
       </LegalSection>
     </LegalLayout>
   );

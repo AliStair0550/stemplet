@@ -46,3 +46,16 @@ export async function saveCardNameAction(input: string): Promise<{ ok: true } | 
   refreshShop(business, { wallet: false });
   return { ok: true };
 }
+
+/**
+ * Foerste stempel med det samme: nye kunder faar 1 stempel, naar de henter
+ * kortet (ved kassen eller hjemme), saa de er i gang fra start.
+ */
+export async function setWelcomeStampAction(formData: FormData) {
+  const { business } = await requireBusiness();
+  const on = formData.get("on") === "1";
+  await prisma.business.update({ where: { id: business.id }, data: { welcomeStampEnabled: on } });
+  revalidatePath("/app/regler");
+  // Butikssiden (cachet) fortaeller kunden om det foerste stempel.
+  refreshShop(business, { wallet: false });
+}

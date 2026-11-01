@@ -563,6 +563,8 @@ function ScanPanel({
 // ── Delt: det scannede kort + giv stempel / indløs ────────────────────
 type CardState = {
   serial: string;
+  /** Kundens navn (null paa aeldre kort uden navn). */
+  name?: string | null;
   stamps: number;
   required: number;
   rewardReady: boolean;
@@ -902,6 +904,10 @@ function StaffCard({
       ) : card ? (
         <>
           <span data-kasse-kort hidden />
+          {/* Hvem det er: personalet kan se, at det er det rigtige kort. */}
+          {card.name ? (
+            <p className="-mb-1 truncate text-center text-[1.2rem] font-[600] tracking-[-0.01em] text-ink">{card.name}</p>
+          ) : null}
           {/* Uden stregkode: kortet er lige scannet, og pladsen skal bruges til
               knapperne, saa de kan ses uden at rulle. */}
           <div className="relative">

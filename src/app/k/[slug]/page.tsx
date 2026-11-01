@@ -142,6 +142,8 @@ export default async function ClaimPage({
   // farver faar den dybe tone med spotlight. Saa foeles siden altid flot.
   const primary = business.primaryColor;
   const text = business.textColor;
+  // Foerste stempel med det samme: kortet viser 1, og kunden faar det at vide.
+  const welcome = business.stampsEnabled && business.welcomeStampEnabled;
   const { r, g, b } = hexToRgb(primary);
   const isLight = (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62;
   const iconMarkup =
@@ -221,11 +223,17 @@ export default async function ClaimPage({
             />
           ) : null}
           <ClaimHeading slug={slug} shop={cardTitle(business)} gift={referral?.newCustomerReward ?? null} color={text} />
+          {welcome ? (
+            <p className="-mt-2 text-[0.98rem] leading-snug" style={{ color: rgba(text, 0.78) }}>
+              Dit første stempel får du med det samme.
+            </p>
+          ) : null}
         </div>
 
         {/* Kortet loeftes fra baggrunden med en blOd skygge, saa det svaever. */}
         {/* Lidt mindre paa telefonen, saa felterne og knappen kommer tidligere frem. */}
-        <div className="mx-auto w-full max-w-[250px] sm:max-w-none" style={{ filter: cardShadow }}>
+        {/* Med linjen om foerste stempel bliver kortet en anelse mindre paa telefonen, saa knappen stadig ses. */}
+        <div className={`mx-auto w-full ${welcome ? "max-w-[222px]" : "max-w-[250px]"} sm:max-w-none`} style={{ filter: cardShadow }}>
           <ClaimCardPreview
             gift={referral?.newCustomerReward ?? null}
             os="27"
@@ -235,7 +243,7 @@ export default async function ClaimPage({
             artwork={artworkUrl}
             logoUrl={logoSrc}
             actions={[]}
-            sampleStamps={0}
+            sampleStamps={welcome ? 1 : 0}
             fresh
             hideQr
           />

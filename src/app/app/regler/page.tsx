@@ -12,6 +12,7 @@ import type { CardDesign } from "@/components/CardDesigner";
 import { KortEditor } from "../kort/KortEditor";
 import { RuleForm } from "../henvisninger/RuleForm";
 import { FeatureSwitch } from "./FeatureSwitch";
+import { WelcomeStampSwitch } from "./WelcomeStampSwitch";
 import { KundekortShare } from "./KundekortShare";
 import { CardNameForm } from "./CardNameForm";
 import { autoCardName, cardShortName, claimCta } from "@/lib/card-name";
@@ -157,7 +158,12 @@ async function StampRules({ business }: { business: Biz }) {
     width: 320,
     color: { dark: "#1A1A1A", light: "#FFFFFF" },
   });
-  return <KortEditor initial={initial} businessName={business.name} slug={business.slug} qrDataUrl={qrDataUrl} />;
+  return (
+    <>
+      <WelcomeStampSwitch on={business.welcomeStampEnabled} />
+      <KortEditor initial={initial} businessName={business.name} slug={business.slug} qrDataUrl={qrDataUrl} />
+    </>
+  );
 }
 
 async function CardShare({ business, show }: { business: Biz; show: boolean }) {
