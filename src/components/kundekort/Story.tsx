@@ -127,14 +127,15 @@ function Phone({ c }: { c: Chapter }) {
           </div>
           <div className="absolute inset-0 px-3 pt-14">
             <PhoneCard c={c} />
+            {/* Kortets to knapper, som i Wallet: henvis til venstre, book til hoejre. */}
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="rounded-[16px] bg-white px-3 py-2.5 kk-shadow-1">
-                <p className="text-[12.5px] font-semibold leading-tight">{c.ready ? "Indløs" : "Fordele"}</p>
-                <p className="truncate text-[11px] text-[#5F6B7E]">{c.ready ? "Vis kortet ved kassen" : "Gratis 10. kop"}</p>
-              </div>
               <div className="rounded-[16px] bg-white px-3 py-2.5 kk-shadow-1">
                 <p className="text-[12.5px] font-semibold leading-tight">Henvis en ven</p>
                 <p className="truncate text-[11px] text-[#5F6B7E]">Kode EMMA-K7</p>
+              </div>
+              <div className="rounded-[16px] bg-white px-3 py-2.5 kk-shadow-1">
+                <p className="text-[12.5px] font-semibold leading-tight">Book tid</p>
+                <p className="truncate text-[11px] text-[#5F6B7E]">Find en ledig tid</p>
               </div>
             </div>
           </div>
@@ -160,13 +161,20 @@ function Phone({ c }: { c: Chapter }) {
 
 export function Story() {
   const [active, setActive] = useState(0);
+  // Stemplerne taelles op et ad gangen: fra 1, naar historien kommer i syne, og
+  // videre op (eller ned) til kapitlets antal, mens man scroller.
+  const [shown, setShown] = useState(1);
+  const [seen, setSeen] = useState(false);
   const refs = useRef<(HTMLLIElement | null)[]>([]);
 
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.i));
+          if (e.isIntersecting) {
+            setActive(Number((e.target as HTMLElement).dataset.i));
+            setSeen(true);
+          }
         }
       },
       // Et kapitel er aktivt, naar det krydser midten af skaermen. Paa mobil
@@ -177,7 +185,19 @@ export function Story() {
     return () => io.disconnect();
   }, []);
 
-  const c = CHAPTERS[active]!;
+  const target = CHAPTERS[active]!.stamps;
+  useEffect(() => {
+    if (!seen || shown === target) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(target);
+      return;
+    }
+    const t = window.setTimeout(() => setShown((n) => n + (target > n ? 1 : -1)), 320);
+    return () => window.clearTimeout(t);
+  }, [seen, shown, target]);
+
+  const chapter = CHAPTERS[active]!;
+  const c = { ...chapter, stamps: shown, ready: chapter.ready && shown === target };
 
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">

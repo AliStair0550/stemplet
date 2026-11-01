@@ -6,6 +6,8 @@ import { PLATFORM } from "@/lib/platform";
 import { CARDS, MemberCard, type MemberCardData } from "./MemberCard";
 import { Story } from "./Story";
 import { LiveStamps } from "./LiveStamps";
+import { HeroFan } from "./HeroFan";
+import { ReferralTicker } from "./ReferralTicker";
 import "./kundekort.css";
 
 // Folka Kort: forsiden paa kort.folka.dk. Navnet er "Folka Kort" (altid stort K);
@@ -14,20 +16,19 @@ import "./kundekort.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-kk", display: "swap" });
 
-const FAN: { card: MemberCardData; x: number; y: number; r: number; d: number; z: number; hideSm?: boolean }[] = [
-  { card: CARDS.museum!, x: -480, y: 92, r: -22, d: 1.8, z: 0, hideSm: true },
-  { card: CARDS.blomster!, x: -330, y: 46, r: -15, d: 0.6, z: 1, hideSm: true },
-  { card: CARDS.salon!, x: -168, y: 14, r: -7, d: 1.4, z: 2 },
-  { card: CARDS.cafe!, x: 0, y: 0, r: 0, d: 0, z: 5 },
-  { card: CARDS.havn!, x: 168, y: 14, r: 7, d: 2.1, z: 2 },
-  { card: CARDS.bar!, x: 330, y: 46, r: 15, d: 1, z: 1, hideSm: true },
-  { card: CARDS.bager!, x: 480, y: 92, r: 22, d: 2.6, z: 0, hideSm: true },
-];
+// Hjulet i hero: den kendte vifte i midten (Kaffestuen) og flere kort paa hver
+// side, som man kan swipe frem.
+const FAN = [
+  CARDS.kage, CARDS.yoga, CARDS.cykel, CARDS.vin,
+  CARDS.museum, CARDS.blomster, CARDS.salon, CARDS.cafe, CARDS.havn, CARDS.bar, CARDS.bager,
+  CARDS.juice, CARDS.sushi, CARDS.klinik, CARDS.grill, CARDS.mode,
+] as MemberCardData[];
+const FAN_START = FAN.indexOf(CARDS.cafe!);
 
 const ROW_A = [CARDS.cafe, CARDS.museum, CARDS.negle, CARDS.havn, CARDS.barber, CARDS.blomster, CARDS.pizza] as MemberCardData[];
 const ROW_B = [CARDS.bar, CARDS.bager, CARDS.salon, CARDS.is, CARDS.museum, CARDS.havn, CARDS.pizza] as MemberCardData[];
 
-const TRADES = ["Caféer", "Frisører", "Barberer", "Bagerier", "Pizzeriaer", "Blomsterbutikker", "Neglesaloner", "Isbutikker", "Ølbarer", "Kaffebarer", "Klinikker", "Butikker"];
+const TRADES = ["Caféer", "Frisører", "Barberer", "Bagerier", "Pizzeriaer", "Blomsterbutikker", "Neglesaloner", "Massører", "Isbutikker", "Ølbarer", "Kaffebarer", "Klinikker", "Butikker"];
 
 function Wordmark({ dark = false }: { dark?: boolean }) {
   return (
@@ -92,10 +93,6 @@ function Hero() {
     <section className="kk-dark pb-0 pt-32 sm:pt-36">
       <Lights />
       <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6">
-        {/* Hvad det er, foer sloganet: den, der soeger "kundekort", ved straks, hun er rigtigt. */}
-        <span className="kk-glass-pill mb-6 inline-block px-4 py-1.5 text-[13px] font-medium tracking-[0.01em] text-white/85">
-          Loyalitetskort
-        </span>
         <h1 className="mx-auto text-[clamp(2.5rem,6.6vw,5.2rem)] font-semibold leading-[1] tracking-[-0.045em]">
           Dit kort.
           <br />
@@ -105,8 +102,7 @@ function Hero() {
           </span>
         </h1>
         <p className="mx-auto mt-6 max-w-[34rem] text-[1.08rem] leading-relaxed text-white/70">
-          Dit eget digitale kundekort på kundernes telefon, iPhone som Android. De samler stempler, får dine tilbud og
-          tager vennerne med.
+          Dit eget digitale kundekort direkte i Apple Wallet. De samler stempler, får dine tilbud og tager vennerne med.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
@@ -126,31 +122,8 @@ function Hero() {
         <p className="mt-4 text-[13px] text-white/50">Tre måneder gratis. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.</p>
       </div>
 
-      {/* Viften af kort: forskellige butikker, samme kort. */}
-      <div className="relative mx-auto mt-10 h-[250px] max-w-[1200px] sm:mt-14 sm:h-[380px]" aria-hidden>
-        {FAN.map((f, i) => (
-          <div
-            key={f.card.shop}
-            className={`kk-fan-card ${f.hideSm ? "hidden md:block" : ""}`}
-            style={
-              {
-                "--x": `calc(${f.x} * max(0.55px, min(1px, 0.078vw)))`,
-                "--y": `${f.y + 70}px`,
-                "--r": `${f.r}deg`,
-                "--d": `${f.d}s`,
-                "--w": "clamp(168px, 22vw, 250px)",
-                zIndex: f.z,
-              } as React.CSSProperties
-            }
-          >
-            <div>
-              <div className="kk-fan-in" style={{ "--i": `${0.15 + Math.abs(i - 2) * 0.12}s` } as React.CSSProperties}>
-                <MemberCard card={f.card} priority={i === 2} sizes="250px" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Viften af kort: forskellige butikker, samme kort. Swipe for flere. */}
+      <HeroFan cards={FAN} start={FAN_START} />
       <div className="relative z-10 h-24 bg-gradient-to-b from-transparent to-[#020B1C]" aria-hidden />
     </section>
   );
@@ -276,18 +249,14 @@ function Features() {
           <LiveStamps />
         </Tile>
         <Tile icon="heart" title="Henvisninger" text="Vennen får rabat første gang. Kunden får en belønning. Du får en ny kunde." className="md:col-span-3">
-          <div className="flex flex-wrap items-center gap-2" aria-hidden>
-            <span className="rounded-full bg-[#061C3D] px-4 py-2 text-[14px] font-semibold text-white">Karoline</span>
-            <span className="text-[14px] text-[#8D98A8]">giver</span>
-            <span className="rounded-full bg-[#E8F0FB] px-4 py-2 text-[14px] font-semibold text-[#1B5EAE]">Louise 100 kr. rabat</span>
-          </div>
+          <ReferralTicker />
         </Tile>
         <Tile icon="sparkle" title="Direkte beskeder" text="Din besked direkte på kundens låseskærm." className="md:col-span-2" />
         <Tile icon="gift" title="Særlige rabatter" text="Tilbud kun for kortholdere og rabatter hos dine samarbejdspartnere." className="md:col-span-2" />
+        <Tile icon="brush" title="Plakater og visitkort" text="Dit eget design med din QR-kode. Klar til print, op på væggen i dag." className="md:col-span-2" />
         <Tile icon="hand" title="Ét scan ved kassen" text="Stempel, rabat og belønning på samme skærm. Klaret på få sekunder." className="md:col-span-2" />
-        <Tile icon="book" title="Plakater og visitkort" text="Din QR-kode klar til print. Hæng den op i dag." className="md:col-span-2" />
         <Tile icon="leaf" title="Tal, du kan bruge" text="Hvem kommer igen, og hvem tager andre med. Uge for uge." className="md:col-span-2" />
-        <Tile icon="drop" title="Kortet følger kunden" text="Ny telefon? Kortet kommer tilbage med alle stempler." className="md:col-span-2" />
+        <Tile icon="book" title="Fyld bogen" text="Et hul kl. 14? Skriv »Ledig tid kl. 14, 20 % rabat«. Beskeden lander hos dine kortholdere med det samme." className="md:col-span-2" />
       </div>
     </section>
   );
@@ -402,15 +371,13 @@ function Footer() {
       [
         ["/start", "Opret dit kort"],
         ["/login", "Log ind"],
-        ["/prøv", "Prøv kortet"],
         ["/brancher", "Brancher"],
-        ["/#historien", "Sådan virker det"],
       ],
     ],
     [
       "Om",
       [
-        [PLATFORM.url, "Folka"],
+        ["https://folka.dk/om", "Om Folka"],
         ["/handelsbetingelser", "Handelsbetingelser"],
         ["/privatliv", "Privatliv"],
         ["/databehandleraftale", "Databehandleraftale"],

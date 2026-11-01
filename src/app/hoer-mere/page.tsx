@@ -59,7 +59,10 @@ export default async function HoerMerePage() {
           </p>
 
           <div className="mt-6 flex flex-1 items-center gap-6">
-            <div className="w-[150px] shrink-0 -rotate-6 drop-shadow-[0_20px_40px_rgba(0,0,0,0.45)] sm:w-[170px]" aria-hidden>
+            {/* Ingen drop-shadow-filter: det tegner kortet som et billede i lav
+                opløsning paa telefonen, saa QR-koden bliver uskarp. Kortet har
+                sin egen skygge. */}
+            <div className="w-[150px] shrink-0 -rotate-6 sm:w-[170px]" aria-hidden>
               <MemberCard card={CARDS.cafe!} sizes="170px" hideShop />
             </div>
             {/* Computer: scan med telefonen. Mobil: knappen nedenfor. */}
