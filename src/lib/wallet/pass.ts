@@ -48,6 +48,8 @@ type PassInput = {
   lifetimeStamps: number;
   /** Antal fyldte kort / beloenninger optjent. */
   completedCount: number;
+  /** Kundens fornavn paa forsiden (rent stempelkort; henvisningskort har det i referral). */
+  holderName?: string | null;
   latitude: number | null;
   longitude: number | null;
   /** Henvisninger (kun naar butikken har modulet og kunden har en kode). Uden
@@ -349,17 +351,35 @@ export async function buildPass(raw: PassInput): Promise<Buffer> {
     // Henvisninger: kode og "til gode" i stedet for "Samlet i alt" (der staar
     // stadig paa bagsiden under "Din historik"), saa raekken ikke bliver trang.
     pass.secondaryFields.push(...referralFrontFields(input.referral));
-  } else if (input.lifetimeStamps > 0) {
-    pass.secondaryFields.push({
-      key: "lifetime",
-      label: "Samlet i alt",
-      value: `${input.lifetimeStamps}`,
-      textAlignment: "PKTextAlignmentRight",
-    });
+  } else {
+    // Kundens navn paa kortet: det er hendes kort, og personalet kan se, hvem det er.
+    if (input.holderName) {
+      pass.secondaryFields.push({
+        key: "holder",
+        label: "NAVN",
+        value: input.holderName,
+        textAlignment: input.lifetimeStamps > 0 ? "PKTextAlignmentCenter" : "PKTextAlignmentRight",
+      });
+    }
+    if (input.lifetimeStamps > 0) {
+      pass.secondaryFields.push({
+        key: "lifetime",
+        label: "Samlet i alt",
+        value: `${input.lifetimeStamps}`,
+        textAlignment: "PKTextAlignmentRight",
+      });
+    }
   }
 
   // Butikkens besked oeverst paa bagsiden; en ny tekst vises som notifikation.
   pass.backFields.push(...newsBackFields(input));
+  // Tilbud og henvis en ven: aeldre iPhones har ikke knappen under kortet, saa
+  // siden ligger som et link oeverst paa bagsiden.
+  pass.backFields.push({
+    key: "benefits",
+    label: "Tilbud og henvis en ven",
+    value: memberUrl(input.serial),
+  });
   pass.backFields.push(
     {
       key: "progress",
@@ -480,6 +500,7 @@ async function buildReferralOnlyPass(input: PassInput & { referral: ReferralPass
   pass.primaryFields.push(...front.primary);
   pass.secondaryFields.push(...front.secondary);
   pass.backFields.push(...newsBackFields(input));
+  pass.backFields.push({ key: "benefits", label: "Tilbud og henvis en ven", value: memberUrl(input.serial) });
   pass.backFields.push(...referralBackFields(input.referral));
   if (posterEnabled() && input.look) await addPoster(pass, input, logoBuf);
 

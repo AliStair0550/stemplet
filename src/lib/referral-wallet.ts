@@ -1,7 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { APP_URL } from "./env";
-import { referralShareUrl, rewardPhrase } from "./referral-text";
+import { firstName, referralShareUrl, rewardPhrase } from "./referral-text";
 import type { ReferralPassInfo } from "./wallet/referral-fields";
 import { assignReferralCode } from "./referral";
 
@@ -15,6 +15,7 @@ type Db = typeof prisma;
 export async function loadReferralPassInfo(
   cc: {
     id: string;
+    name?: string | null;
     referralCode: string | null;
     card: { business: { id: string; slug: string; referralsEnabled: boolean } };
   },
@@ -78,5 +79,6 @@ export async function loadReferralPassInfo(
     referralsMade,
     rewards: owed,
     announce: newest > redeemed,
+    holderName: firstName(cc.name),
   };
 }

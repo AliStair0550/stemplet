@@ -109,8 +109,19 @@ test("wallet: forsiden opfordrer til at dele og viser til gode, altid begge felt
   assert.deepEqual(f.map((x) => x.key), ["ref-code", "ref-owed"]);
   assert.equal(f[0]!.label, "DEL MED EN VEN");
   assert.equal(f[0]!.value, `Giv 100${NBSP}kr.`);
-  assert.equal(f[1]!.value, "Intet endnu");
+  // Intet til gode endnu: koden staar i feltet (kort uden navn) ...
+  assert.equal(f[1]!.label, "DIN KODE");
+  assert.equal(f[1]!.value, "SARA-K8");
   assert.equal(f[1]!.changeMessage, undefined);
+  // ... og ellers kundens navn, ikke "Intet endnu".
+  const named = referralFrontFields(info({ holderName: "Mette" }))[1]!;
+  assert.equal(named.label, "NAVN");
+  assert.equal(named.value, "Mette");
+  // Samme felt bliver til "TIL GODE", naar der kommer en belønning (saa iPhone viser beskeden).
+  const owed = referralFrontFields(info({ holderName: "Mette", rewards: [{ type: "AMOUNT", value: "100" }], announce: true }))[1]!;
+  assert.equal(owed.key, "ref-owed");
+  assert.equal(owed.label, "TIL GODE");
+  assert.ok(owed.changeMessage);
 });
 
 test("wallet: besked kun ved en ny belønning, og ambassadøren får 'din ven'-beskeden", () => {

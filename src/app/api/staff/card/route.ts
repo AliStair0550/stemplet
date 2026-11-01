@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     where: { serial, card: { businessId } },
     select: {
       serial: true,
+      name: true,
       stamps: true,
       completedCount: true,
       lifetimeStamps: true,
@@ -41,6 +42,7 @@ export async function GET(req: NextRequest) {
   return Response.json({
     ok: true,
     serial: cc.serial,
+    name: cc.name,
     stamps: cc.stamps,
     required: cc.card.stampsRequired,
     rewardReady: cc.stamps >= cc.card.stampsRequired,

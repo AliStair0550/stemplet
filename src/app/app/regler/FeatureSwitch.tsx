@@ -7,7 +7,7 @@ import { setFeatureAction, type Feature } from "./actions";
 // En funktion paa kortet med en til/fra-kontakt. Fra kraever en bekraeftelse,
 // fordi kunderne mister funktionen paa deres kort (intet slettes dog).
 
-function Toggle({ on, locked }: { on: boolean; locked: boolean }) {
+export function Toggle({ on, locked }: { on: boolean; locked: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button

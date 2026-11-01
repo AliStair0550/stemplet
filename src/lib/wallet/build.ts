@@ -2,6 +2,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "../prisma";
 import { cardTitle } from "../brand";
+import { firstName } from "../referral-text";
 import { APP_URL } from "../env";
 import { buildPass } from "./pass";
 import { loadReferralPassInfo } from "../referral-wallet";
@@ -44,6 +45,7 @@ export async function buildPkpass(cc: LoadedCC): Promise<Buffer> {
     required: cc.card.stampsRequired,
     lifetimeStamps: cc.lifetimeStamps,
     completedCount: cc.completedCount,
+    holderName: firstName(cc.name),
     latitude: b.latitude,
     longitude: b.longitude,
     referral,

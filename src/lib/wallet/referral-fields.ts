@@ -20,6 +20,8 @@ export type ReferralPassInfo = {
   rewards: { type: RewardType; value: string }[];
   /** Sidste aendring var en ny beloenning (ikke en indloesning): vis en besked. */
   announce: boolean;
+  /** Kundens fornavn: staar paa forsiden, saa laenge der intet er til gode. */
+  holderName?: string | null;
 };
 
 export type PassField = {
@@ -48,15 +50,18 @@ export function owedLabel(rewards: ReferralPassInfo["rewards"]): string {
 
 /**
  * Forsiden, under stempelgitteret og ved siden af Stemplets "BELØNNING": kundens
- * kode og hvad hun har til gode. "Til gode" staar der altid, saa iPhone kan
- * vise en besked, naar vaerdien stiger (en besked kraever et felt, der skifter
- * vaerdi). Beskeden saettes kun ved en ny beloenning, aldrig ved en indloesning.
+ * kode og hvad hun har til gode. Saa laenge der intet er til gode, staar kundens
+ * navn i feltet (eller koden, hvis kortet er uden navn) i stedet for "Intet
+ * endnu". Feltet har altid samme noegle, saa iPhone viser en besked, naar det
+ * skifter til en beloenning. Beskeden saettes kun ved en ny beloenning, aldrig
+ * ved en indloesning.
  */
 export function referralFrontFields(info: ReferralPassInfo): PassField[] {
+  const none = info.rewards.length === 0;
   const owed: PassField = {
     key: "ref-owed",
-    label: "TIL GODE",
-    value: owedLabel(info.rewards),
+    label: none ? (info.holderName ? "NAVN" : "DIN KODE") : "TIL GODE",
+    value: none ? (info.holderName ?? info.code) : owedLabel(info.rewards),
     textAlignment: "PKTextAlignmentRight",
   };
   if (info.announce && info.rewards.length > 0) {

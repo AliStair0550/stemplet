@@ -42,7 +42,16 @@ export type WalletCardPreviewProps = {
   hideQr?: boolean;
   /** "Til gode" i stedet for eksemplet (vennens rabat paa kundesiden). */
   owed?: string;
+  /** Kundens navn paa et nyt kort (ellers "Dit navn"), som i Wallet. */
+  holderName?: string | null;
 };
+
+/** Feltet til hoejre: det, kunden har til gode, eller navnet paa et nyt kort (som i Wallet). */
+function owedField(p: WalletCardPreviewProps): { label: string; value: string } {
+  if (p.owed) return { label: "Til gode", value: cap(p.owed) };
+  if (p.fresh) return { label: "Navn", value: p.holderName ?? "Dit navn" };
+  return { label: "Til gode", value: cap(p.referrerReward) };
+}
 
 const EXAMPLE_STAMPS = 3;
 
@@ -116,12 +125,10 @@ function Qr({ size }: { size: number }) {
 function Poster(p: WalletCardPreviewProps) {
   const fg = p.textColor;
   const n = p.sampleStamps ?? EXAMPLE_STAMPS;
-  const owed = p.owed ? cap(p.owed) : p.fresh ? "Intet endnu" : cap(p.referrerReward);
+  const owed = owedField(p);
   const stamps = p.product !== "henvisninger";
   const refs = p.product !== "stemplet";
-  const header = stamps
-    ? { label: "Stempler", value: `${n}/${p.stampsRequired}` }
-    : { label: "Til gode", value: owed };
+  const header = stamps ? { label: "Stempler", value: `${n}/${p.stampsRequired}` } : owed;
   const shows = headerShows(p.header, !!p.logoUrl);
   return (
     <div
@@ -164,7 +171,7 @@ function Poster(p: WalletCardPreviewProps) {
           ) : refs ? (
             <>
               <Field label="Del med en ven" value={`Giv ${p.friendReward}`} />
-              <Field label="Til gode" value={owed} />
+              <Field label={owed.label} value={owed.value} />
             </>
           ) : (
             <div className="col-span-2">
@@ -214,7 +221,7 @@ function Classic(p: WalletCardPreviewProps) {
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Field label="Du får" value={p.referrerReward} />
-        <Field label="Til gode" value={p.fresh ? "Intet endnu" : cap(p.referrerReward)} />
+        <Field label={owedField(p).label} value={owedField(p).value} />
       </div>
       <div className="mt-5 flex justify-center">
         {p.hideQr ? null : <Qr size={70} />}

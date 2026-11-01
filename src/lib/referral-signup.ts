@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
-import { createCardholderAtomically, hasActivePickupStamp, applyStamp } from "./stamp";
+import { createCardholderAtomically, stampsOnPickup, applyStamp } from "./stamp";
 import { maybeFireTrialMilestones, signupBlockReason } from "./billing";
 import { assignReferralCode, createReferral, ReferralError } from "./referral";
 import { referralCodeCandidates } from "./referral-code";
@@ -216,7 +216,7 @@ export async function signupForReferrals(
 
   // Samme som stempelkortets oprettelse: koerer "stempel ved afhentning", faar
   // det nye kort sit stempel. Best-effort; kortet er oprettet uanset.
-  if (await hasActivePickupStamp(activeCardId)) {
+  if (await stampsOnPickup(activeCardId)) {
     try {
       await applyStamp({ customerCardId: created.id, method: "MANUAL", skipCooldown: true, count: 1 });
     } catch {

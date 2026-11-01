@@ -195,6 +195,20 @@ export async function hasActivePickupStamp(
 }
 
 /**
+ * Faar et nyt kort 1 stempel, naar det hentes? Ja, naar butikken har slaaet
+ * "Første stempel med det samme" til, eller en "stempel ved afhentning"-kampagne
+ * koerer. Saa er kunden i gang, uanset om kortet hentes ved kassen eller hjemme.
+ */
+export async function stampsOnPickup(cardId: string, now: Date = new Date()): Promise<boolean> {
+  const card = await prisma.card.findUnique({
+    where: { id: cardId },
+    select: { business: { select: { welcomeStampEnabled: true } } },
+  });
+  if (card?.business.welcomeStampEnabled) return true;
+  return hasActivePickupStamp(cardId, now);
+}
+
+/**
  * Ren beregning af, hvor mange stempler EEN scanning giver: en aktiv
  * dobbeltstempel-kampagne fordobler, og personalet kan vaelge et antal (fx tre
  * kaffe = 3, klampet til 1..20). Uden I/O, saa multiplier-logikken kan

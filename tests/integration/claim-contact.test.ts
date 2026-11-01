@@ -163,3 +163,23 @@ test("dobbelttryk fra en ny telefon (to enheds-id'er): intet tomt kort tilbage",
     await cleanup(s.bizId);
   }
 });
+
+test("første stempel med det samme: nyt kort starter på 1, ellers 0", async () => {
+  const s = await makeShop();
+  try {
+    const off = await resolveOrCreateCard(s.slug, device(), { name: "Uden", email: "uden@test.dk", consent: false }, noCookie);
+    assert.ok(off.ok);
+    assert.equal((await prisma.customerCard.findUnique({ where: { serial: off.serial } }))!.stamps, 0);
+
+    await prisma.business.update({ where: { id: s.bizId }, data: { welcomeStampEnabled: true } });
+    const on = await resolveOrCreateCard(s.slug, device(), { name: "Mette", email: "mette@test.dk", consent: false }, noCookie);
+    assert.ok(on.ok && on.created);
+    assert.equal((await prisma.customerCard.findUnique({ where: { serial: on.serial } }))!.stamps, 1);
+
+    // Genfundet kort faar ikke et stempel til.
+    const again = await resolveOrCreateCard(s.slug, device(), { name: "Mette", email: "mette@test.dk", consent: false }, noCookie);
+    if (again.ok) assert.equal((await prisma.customerCard.findUnique({ where: { serial: on.serial } }))!.stamps, 1);
+  } finally {
+    await cleanup(s.bizId);
+  }
+});
