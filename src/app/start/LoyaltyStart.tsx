@@ -128,8 +128,6 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
   const [referrer, setReferrer] = useState("");
   const [reward, setReward] = useState("");
   const [stamps, setStamps] = useState(10);
-  // Foerste stempel, naar kunden henter kortet: saa er de i gang fra start.
-  const [welcomeStamp, setWelcomeStamp] = useState(true);
   const [icon, setIcon] = useState<StampIconKey>("coffee");
   const [allIcons, setAllIcons] = useState(false);
   const [email, setEmail] = useState("");
@@ -189,7 +187,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
         name: businessName,
         email,
         referral: useReferrals ? { friendReward: friend, referrerReward: referrer } : null,
-        stamps: useStamps ? { rewardText: reward, stampsRequired: stamps, stampIcon: icon, welcomeStamp } : null,
+        stamps: useStamps ? { rewardText: reward, stampsRequired: stamps, stampIcon: icon } : null,
         acceptedTerms,
       });
       if (res.ok) {
@@ -221,7 +219,6 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
       referrerReward={lower(referrer.trim()) || "en belønning"}
       actions={[]}
       fresh
-      sampleStamps={useStamps && welcomeStamp ? 1 : 0}
     />
   );
 
@@ -351,25 +348,6 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                       </button>
                     </span>
                   </div>
-
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={welcomeStamp}
-                    onClick={() => setWelcomeStamp((v) => !v)}
-                    className="mt-3 flex w-full items-center justify-between gap-4 rounded-[14px] bg-[#F2F5F9] px-4 py-3 text-left"
-                  >
-                    <span>
-                      <span className="block text-[17px]">Første stempel med det samme</span>
-                      <span className="block text-[14px] leading-snug text-[#0B1628]/60">Når kunden henter kortet, er de i gang.</span>
-                    </span>
-                    <span
-                      aria-hidden
-                      className={cn("relative h-7 w-12 shrink-0 rounded-full transition-colors", welcomeStamp ? "bg-[#061C3D]" : "bg-[#0B1628]/20")}
-                    >
-                      <span className={cn("absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-[left]", welcomeStamp ? "left-[1.375rem]" : "left-0.5")} />
-                    </span>
-                  </button>
 
                   <p className="mb-2 mt-5 text-[14px] font-medium text-[#0B1628]/60">Stempel</p>
                   <div className="grid grid-cols-6 gap-2">

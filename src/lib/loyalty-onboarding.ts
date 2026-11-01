@@ -22,7 +22,7 @@ export type LoyaltyInput = {
   name: string;
   email: string;
   /** Stempler paa kortet (null = fra; kan slaas til senere). */
-  stamps: { rewardText: string; stampsRequired: number; stampIcon: string; welcomeStamp?: boolean } | null;
+  stamps: { rewardText: string; stampsRequired: number; stampIcon: string } | null;
   /** Henvisninger paa kortet (null = fra; kan slaas til senere). */
   referral: { friendReward: string; referrerReward: string } | null;
 };
@@ -91,8 +91,8 @@ export async function createLoyaltyBusiness(
           // Branchen ud fra ikonet (saksen = frisør), saa den ikke skal vaelges igen.
           category: input.stamps ? categoryFromStampIcon(card.stampIcon) : null,
           termsAcceptedAt: new Date(),
-          // Foerste stempel med det samme, naar kunden henter kortet (valget paa /start).
-          welcomeStampEnabled: input.stamps?.welcomeStamp === true,
+          // Foerste stempel ved hentning besvares i Kom i gang paa Hjem (og under Regler).
+          welcomeStampEnabled: false,
           stampsEnabled: !!input.stamps,
           referralsEnabled: !!input.referral,
           users: { create: { email: input.email, name: input.name } },
