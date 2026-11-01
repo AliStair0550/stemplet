@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: { absolute: "Opret dit kort - Folka Kort" },
   description:
     "Lav dit loyalitetskort på et minut. Henvisninger og stempler i kundens Apple Wallet. Tre måneder gratis, derefter 49 kr. om måneden ekskl. moms.",
+  alternates: { canonical: "/start" },
 };
 
 // Een oprettelse for loyalitetskortet. ?produkt= vaelger, hvad der er slaaet til

@@ -6,7 +6,8 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Handelsbetingelser",
-  description: "Vilkårene for at bruge Kundekort.",
+  description: "Vilkårene for at bruge Folka Kort.",
+  alternates: { canonical: "/handelsbetingelser" },
 };
 
 // Firmaoplysninger (CVR + adresse) styres eet sted i src/lib/company.ts.

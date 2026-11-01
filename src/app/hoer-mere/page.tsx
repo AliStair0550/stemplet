@@ -14,6 +14,7 @@ import "@/components/kundekort/kundekort.css";
 export const metadata: Metadata = {
   title: { absolute: "Hør mere om Folka Kort" },
   description: "Skriv dig op og hør mere om Folka Kort, eller prøv kortet på din egen telefon. Ingen app.",
+  alternates: { canonical: "/hør-mere" },
 };
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-kk", display: "swap" });
