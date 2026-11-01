@@ -21,3 +21,10 @@ test("delebeskeden forklarer henvisningen, naar kortet kun har henvisninger", ()
 test("delebeskeden falder tilbage til en kort besked", () => {
   assert.equal(cardShareText(base), "Hent vores kundekort på telefonen. Det tager få sekunder:");
 });
+
+test("yesterdayLine: kun det, der skete, i almindeligt dansk", async () => {
+  const { yesterdayLine } = await import("../src/lib/overview-text");
+  assert.equal(yesterdayLine({ stamps: 0, newCustomers: 0, rewards: 0 }), null);
+  assert.equal(yesterdayLine({ stamps: 1, newCustomers: 0, rewards: 0 }), "I går: 1 stempel.");
+  assert.equal(yesterdayLine({ stamps: 3, newCustomers: 1, rewards: 2 }), "I går: 3 stempler, 1 ny kunde og 2 belønninger givet.");
+});

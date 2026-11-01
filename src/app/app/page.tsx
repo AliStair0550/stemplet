@@ -5,7 +5,7 @@ import { getBusinessStats, getOverviewPulse } from "@/lib/stats";
 import { getReadyCustomers } from "@/lib/ready-customers";
 import { getReferralOverview } from "@/lib/referral-desk";
 import { getRewardHistory } from "@/lib/reward-history";
-import { cardShareText, greetingFor, referralSummaryLine, summaryLine } from "@/lib/overview-text";
+import { cardShareText, greetingFor, referralSummaryLine, summaryLine, yesterdayLine } from "@/lib/overview-text";
 import { Panel, SectionHeader } from "@/components/dash";
 import { WalletCardPreview } from "@/components/WalletCardPreview";
 import { loadCardPreview } from "@/lib/card-preview";
@@ -106,6 +106,17 @@ export default async function HomePage() {
   const shareHref = `/k/${business.slug}`;
 
   const now = new Date();
+  // I gaar (dansk tid): stempler og nye kunder fra dagstallene, beloenninger fra
+  // "Givet for nylig". Vises, saa ejeren dagen efter kan se, hvad der skete.
+  const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Copenhagen" });
+  const yesterdayKey = stats.perDay.at(-2)?.date ?? null;
+  const yesterday = yesterdayKey
+    ? yesterdayLine({
+        stamps: stats.perDay.at(-2)?.count ?? 0,
+        newCustomers: stats.newPerDay.at(-2)?.count ?? 0,
+        rewards: history.filter((h) => dayKey.format(h.at) === yesterdayKey).length,
+      })
+    : null;
   const dateLabel = new Intl.DateTimeFormat("da-DK", {
     timeZone: "Europe/Copenhagen",
     weekday: "long",
@@ -161,6 +172,7 @@ export default async function HomePage() {
                 returningToday: pulse.returningToday,
               })}
         </p>
+        {yesterday ? <p className="mt-1 max-w-xl text-[0.9rem] text-stone">{yesterday}</p> : null}
       </header>
 
       {/* Ny butik (ingen kortholdere endnu): de tre skridt til det foerste kort. */}
@@ -266,7 +278,11 @@ export default async function HomePage() {
           )}
         </section>
       ) : stats.totalCustomers <= 3 ? (
-        <FirstCustomerCelebration businessId={business.id} customers={stats.totalCustomers} />
+        <FirstCustomerCelebration
+          businessId={business.id}
+          customers={stats.totalCustomers}
+          action={<ShareCardButton businessName={business.name} url={shareUrl} text={shareText} shared={!!business.sharedAt} tone="light" />}
+        />
       ) : null}
 
       {/* Klar til belønning: kunder, der venter paa noget ved kassen. Et tryk
@@ -384,7 +400,7 @@ export default async function HomePage() {
               logo={<span className="text-[1.15rem] font-semibold tracking-[-0.02em] text-ink">Henvisninger</span>}
             >
               <Stat value={formatDkNumber(referrals.open)} label="venter på besøg" />
-              <Stat value={formatDkNumber(referrals.doneThisMonth)} label="nye kunder i måneden" />
+              <Stat value={formatDkNumber(referrals.doneThisMonth)} label={referrals.doneThisMonth === 1 ? "ny kunde i måneden" : "nye kunder i måneden"} />
               <Stat
                 value={
                   referrals.pendingAmountKr > 0
@@ -446,7 +462,7 @@ export default async function HomePage() {
                 <li key={h.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
                   <span className="min-w-0">
                     <span className="block truncate text-[0.95rem] font-[600] text-ink">{h.name ?? "Kortholder"}</span>
-                    <span className="block truncate text-[0.8rem] text-stone">
+                    <span className="block text-[0.8rem] leading-snug text-stone">
                       {h.kind === "stamps" ? "Fuldt stempelkort" : h.kind === "visit" ? "Første besøg via en ven" : "Belønning fra henvisning"}
                       {" · "}
                       {h.what}

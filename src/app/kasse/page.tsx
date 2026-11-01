@@ -66,14 +66,15 @@ export default async function KasseRegisterPage({
 
   return (
     <main className="dash-theme min-h-screen bg-parchment">
-      <header className="flex items-center justify-between border-b border-fog px-6 py-4">
-        <span className="font-[400] text-[1.05rem] tracking-[0.02em] text-ink">
+      {/* Een linje paa telefonen: navnet afkortes hellere end at knapperne brydes. */}
+      <header className="flex items-center justify-between gap-3 border-b border-fog px-4 py-4 sm:px-6">
+        <span className="min-w-0 truncate font-[400] text-[1.05rem] tracking-[0.02em] text-ink">
           {business.name}
-          <span className="ml-2 text-[0.7rem] font-[300] uppercase tracking-[0.12em] text-slate">
+          <span className="ml-2 hidden text-[0.7rem] font-[300] uppercase tracking-[0.12em] text-slate sm:inline">
             Kasse
           </span>
         </span>
-        <div className="flex items-center gap-5">
+        <div className="flex shrink-0 items-center gap-4 whitespace-nowrap">
           <InstallHomeScreen />
           {access.source === "device" ? <UnpairButton /> : null}
         </div>

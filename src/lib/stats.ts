@@ -303,8 +303,10 @@ function buildPerDay(
   // Anker ved kl. 12 UTC og skridt hele doegn: saa lander 24-timers-skridtet
   // aldrig taet paa midnat i dansk tid, og ingen dag tabes/dubleres ved
   // sommertidsskift (hvor et raat 24-timers-skridt kan ramme samme dato to gange).
-  const noon = new Date();
-  noon.setUTCHours(12, 0, 0, 0);
+  // Middag paa DAGENS DANSKE dato (ikke UTC-datoen): ellers taeller den foerste
+  // time efter midnat i Danmark "i dag" som i gaar.
+  const [y, m, dd] = keyFmt.format(new Date()).split("-").map(Number);
+  const noon = new Date(Date.UTC(y!, m! - 1, dd!, 12));
   for (let i = 13; i >= 0; i--) {
     const d = new Date(noon.getTime() - i * 86_400_000);
     const key = keyFmt.format(d);

@@ -82,12 +82,12 @@ export default async function IndstillingerPage() {
         id="adgang"
         className="mb-4 mt-12 scroll-mt-24 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink"
       >
-        Adgang
+        Medarbejdere
       </h2>
       {/* Login-mails (fuld adgang) og kasse-enheder (kun stempel) samlet: vaelg
           type naar du tilfoejer adgang. */}
       <div>
-        <AccessManager emails={loginEmails} devices={deviceList} />
+        <AccessManager emails={loginEmails} devices={deviceList} businessName={business.name} />
       </div>
 
       <h2 className="mb-4 mt-12 text-[0.8rem] font-[500] uppercase tracking-[0.16em] text-ink">
