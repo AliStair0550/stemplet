@@ -47,9 +47,19 @@ const QR_PATH = QR_ROWS.flatMap((row, y) =>
   [...row.matchAll(/1+/g)].map((m) => `M${m.index} ${y - 0.01}h${m[0].length}v1.02h-${m[0].length}z`),
 ).join("");
 
+// Den hvide kant er en del af koden (halvanden prik paa hver side), saa luften
+// altid er lige stor hele vejen rundt og vokser med kortet. Kassen omkring har
+// derfor ingen padding. crispEdges: prikkerne tegnes skarpt, ogsaa i smaa stoerrelser.
+const QR_QUIET = 1.5;
+
 export function QrCode({ className }: { className?: string }) {
   return (
-    <svg viewBox={`0 0 ${QR_SIZE} ${QR_SIZE}`} className={cn("block h-full w-full fill-[#020B1C]", className)} aria-hidden>
+    <svg
+      viewBox={`${-QR_QUIET} ${-QR_QUIET} ${QR_SIZE + 2 * QR_QUIET} ${QR_SIZE + 2 * QR_QUIET}`}
+      shapeRendering="crispEdges"
+      className={cn("block h-full w-full fill-[#020B1C]", className)}
+      aria-hidden
+    >
       <path d={QR_PATH} />
     </svg>
   );
@@ -170,7 +180,7 @@ export function MemberCard({
             <p className="text-[9px] font-semibold uppercase tracking-[.08em] opacity-70">{card.foot.label}</p>
             <p className="text-[14px] font-semibold leading-tight">{card.foot.value}</p>
           </div>
-          <div className="aspect-square w-[30%] shrink-0 rounded-[4cqw] bg-white p-[2cqw]">
+          <div className="aspect-square w-[30%] shrink-0 overflow-hidden rounded-[4cqw] bg-white">
             <QrCode />
           </div>
         </div>
