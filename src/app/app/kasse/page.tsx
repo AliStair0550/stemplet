@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { requireBusiness } from "@/lib/session";
+import { businessImages, requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { optimizedLogoDataUri } from "@/lib/logo";
 import { PageHeading } from "@/components/dash";
 import { Kassemodus, type KioskCard } from "./Kassemodus";
 import type { StampIconKey } from "@/lib/brand";
@@ -31,6 +32,8 @@ export default async function KassePage({
     stampIcon: (card?.stampIcon ?? "coffee") as StampIconKey,
     rewardText: card?.rewardText ?? "din belønning",
     stampsRequired: card?.stampsRequired ?? 10,
+    // Kun et lille webp-logo til kortet efter scan, ikke det fulde billede.
+    logoSrc: await optimizedLogoDataUri((await businessImages(business.id)).logoUrl, 160),
   };
 
   return (
