@@ -5,6 +5,7 @@ import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { visitkortSchema } from "@/lib/visitkort-schema";
 import { captureServerError } from "@/lib/sentry";
+import { logoForSave } from "@/lib/logo";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -17,10 +18,13 @@ export async function setBusinessLogo(dataUrl: string | null): Promise<Result> {
       return { ok: false, error: "Ugyldigt billede." };
     }
   }
+  // Samme rensning som andre logo-uploads (format og stoerrelse via sharp).
+  const logo = await logoForSave(dataUrl, business.id);
+  if (!logo.ok) return { ok: false, error: logo.error };
   try {
     await prisma.business.update({
       where: { id: business.id },
-      data: { logoUrl: dataUrl },
+      data: { logoUrl: logo.value },
     });
   } catch (e) {
     captureServerError(e, { route: "visitkort:set-logo" });

@@ -7,6 +7,7 @@ import { ensureDeviceId } from "./cookies";
 import { apiError } from "./http";
 import { ReferralError } from "./referral";
 import { captureWalletError } from "./sentry";
+import { ipRateKey } from "./http";
 import { verifyPin, recordPinFail, reservePinAttempt, clearPinFails, pinLockRemaining } from "./security";
 import { PIN_LOCK_SECONDS } from "./system-config";
 
@@ -82,7 +83,8 @@ export async function checkStaffPin(
   detail: Record<string, string>,
 ): Promise<Response | null> {
   if (!kasse.staffPin) return null;
-  const lockId = ip ?? (await ensureDeviceId());
+  // IPv6 samles pr. /64, saa en tilslutning ikke kan skifte adresse for hvert gaet.
+  const lockId = ip ? ipRateKey(ip) : await ensureDeviceId();
   let locked = 0;
   try {
     locked = await pinLockRemaining(kasse.businessId, lockId);

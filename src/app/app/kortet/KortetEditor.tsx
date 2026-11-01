@@ -130,10 +130,10 @@ export function KortetEditor({
     () => JSON.stringify({ design, style, actions, artworkChanged, art, accent, bookingUrl }),
     [design, style, actions, artworkChanged, art, accent, bookingUrl],
   );
-  const savedRef = useRef(
+  const [saved, setSaved] = useState(() =>
     JSON.stringify({ design: initial, style: initialStyle, actions: initialActions, artworkChanged: false, art: initialArt, accent: initialAccent, bookingUrl: ctx.bookingUrl ?? "" }),
   );
-  const dirty = snapshot !== savedRef.current;
+  const dirty = snapshot !== saved;
 
   useEffect(() => {
     if (!dirty) return;
@@ -183,7 +183,7 @@ export function KortetEditor({
         bookingUrl,
       });
       if (res.ok) {
-        savedRef.current = JSON.stringify({ design, style, actions, artworkChanged: false, art, accent, bookingUrl });
+        setSaved(JSON.stringify({ design, style, actions, artworkChanged: false, art, accent, bookingUrl }));
         setArtworkChanged(false);
         setMsg({ ok: true, text: "Gemt" });
       } else {

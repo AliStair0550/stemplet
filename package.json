@@ -20,11 +20,11 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.10.0",
-    "@next/third-parties": "^16.2.11",
+    "@auth/prisma-adapter": "^2.11.3",
+    "@next/third-parties": "^16.4.3",
     "@prisma/client": "^6.19.3",
     "@react-pdf/renderer": "^4.3.1",
-    "@sentry/nextjs": "^10.66.0",
+    "@sentry/nextjs": "^10.78.0",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.6",
     "bcryptjs": "^3.0.2",
@@ -32,14 +32,14 @@
     "html-to-image": "^1.11.13",
     "jose": "^6.1.0",
     "jsqr": "^1.4.0",
-    "next": "16.2.10",
-    "next-auth": "^5.0.0-beta.29",
+    "next": "16.4.3",
+    "next-auth": "5.0.0-beta.32",
     "passkit-generator": "3.7.0",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "server-only": "^0.0.1",
-    "zod": "^4.1.13"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -48,10 +48,14 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.4.3",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "overrides": {
+    "node-forge": "^1.4.2",
+    "joi": "^18.3.1"
   }
 }

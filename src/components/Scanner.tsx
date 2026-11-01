@@ -52,7 +52,9 @@ export function Scanner({
   // onResult i en ref, saa kamera-effekten kan koere med [] og ALDRIG rives ned
   // igen af en re-render eller en ny callback-identitet (det lukkede kameraet).
   const onResultRef = useRef(onResult);
-  onResultRef.current = onResult;
+  useEffect(() => {
+    onResultRef.current = onResult;
+  }, [onResult]);
   const [status, setStatus] = useState<"starting" | "scanning" | "error">(
     "starting",
   );

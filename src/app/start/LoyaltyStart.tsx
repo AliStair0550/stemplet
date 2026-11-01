@@ -136,11 +136,12 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
   const [error, setError] = useState<string | null>(null);
   // Fejlen vises ved det felt, den handler om, og siden ruller dertil.
   const [errorField, setErrorField] = useState<Field | null>(null);
-  const fieldRefs = useRef<Partial<Record<Field, HTMLInputElement | null>>>({});
-  const fieldRef = (f: Field) => (el: HTMLInputElement | null) => {
-    fieldRefs.current[f] = el;
-  };
+  // Feltet findes via data-field, naar en fejl skal vises ved det.
+  const fieldRef = (f: Field) => ({ "data-field": f });
   const [loginToken, setLoginToken] = useState<string | null>(null);
+  // Mailen havde allerede et login (fx som medarbejder): butikken er oprettet,
+  // og der er sendt et login-link i stedet for at logge direkte ind.
+  const [linkSentTo, setLinkSentTo] = useState<string | null>(null);
   const loginForm = useRef<HTMLFormElement>(null);
 
   // Oprettet: log direkte ind paa Hjem.
@@ -151,7 +152,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
   function fail(field: Field | null, msg: string) {
     setError(msg);
     setErrorField(field);
-    const el = field ? fieldRefs.current[field] : null;
+    const el = field ? document.querySelector<HTMLInputElement>(`[data-field="${field}"]`) : null;
     if (el) {
       el.scrollIntoView({ block: "center", behavior: "smooth" });
       el.focus({ preventScroll: true });
@@ -191,7 +192,8 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
         acceptedTerms,
       });
       if (res.ok) {
-        setLoginToken(res.loginToken);
+        if (res.loginToken) setLoginToken(res.loginToken);
+        else setLinkSentTo(email.trim());
         return;
       }
       setError(res.error);
@@ -231,7 +233,15 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
         <span className="text-[13px] text-[#0B1628]/60">Tre måneder gratis.</span>
       </header>
 
-      {loginToken ? (
+      {linkSentTo ? (
+        <main className="mx-auto flex max-w-[560px] flex-col items-center px-4 py-24 text-center sm:px-6">
+          <FolkaLogo className="h-14" />
+          <h1 className="mt-8 text-[30px] font-bold leading-tight tracking-[-0.03em]">{businessName.trim()} er klar.</h1>
+          <p className="mt-3 text-[18px] text-[#0B1628]/60">
+            Du har allerede et login med {linkSentTo}. Vi har sendt et login-link til den mail. Åbn det, så kommer du ind i din nye butik.
+          </p>
+        </main>
+      ) : loginToken ? (
         <main className="mx-auto flex max-w-[560px] flex-col items-center px-4 py-24 text-center sm:px-6">
           <Confetti colors={["#061C3D", "#1B5EAE", "#7CC4FF", "#C8D8E8"]} />
           <FolkaLogo className="h-14" />
@@ -255,7 +265,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
               <label className="block">
                 <Label>Virksomhed</Label>
                 <input
-                  ref={fieldRef("name")}
+                  {...fieldRef("name")}
                   className={inputCls}
                   value={businessName}
                   maxLength={60}
@@ -300,13 +310,13 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                   <div className="flex flex-col gap-5">
                     <label className="block">
                       <Label>Vennen får ved første besøg</Label>
-                      <input ref={fieldRef("friend")} className={inputCls} value={friend} maxLength={40} onChange={(e) => { setFriend(e.target.value); clearError("friend"); }} />
+                      <input {...fieldRef("friend")} className={inputCls} value={friend} maxLength={40} onChange={(e) => { setFriend(e.target.value); clearError("friend"); }} />
                       {fieldError("friend")}
                       <Chips items={FRIEND_SUGGESTIONS} onPick={(v) => { setFriend(v); clearError("friend"); }} />
                     </label>
                     <label className="block">
                       <Label>Kunden får, når vennen har været der</Label>
-                      <input ref={fieldRef("referrer")} className={inputCls} value={referrer} maxLength={40} onChange={(e) => { setReferrer(e.target.value); clearError("referrer"); }} />
+                      <input {...fieldRef("referrer")} className={inputCls} value={referrer} maxLength={40} onChange={(e) => { setReferrer(e.target.value); clearError("referrer"); }} />
                       {fieldError("referrer")}
                       <Chips items={REFERRER_SUGGESTIONS} onPick={(v) => { setReferrer(v); clearError("referrer"); }} />
                     </label>
@@ -319,7 +329,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
                   <legend className="mb-3 text-[19px] font-bold tracking-[-0.02em]">Stempler</legend>
                   <label className="block">
                     <Label>Belønning, når kortet er fuldt</Label>
-                    <input ref={fieldRef("reward")} className={inputCls} value={reward} maxLength={REWARD_MAX} onChange={(e) => { setReward(e.target.value); clearError("reward"); }} />
+                    <input {...fieldRef("reward")} className={inputCls} value={reward} maxLength={REWARD_MAX} onChange={(e) => { setReward(e.target.value); clearError("reward"); }} />
                     {fieldError("reward")}
                     <Chips items={STAMP_SUGGESTIONS} onPick={(v) => { setReward(v); clearError("reward"); }} />
                   </label>
@@ -381,7 +391,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
               <label className="block">
                 <Label>Din e-mail</Label>
                 <input
-                  ref={fieldRef("email")}
+                  {...fieldRef("email")}
                   className={inputCls}
                   type="email"
                   value={email}
@@ -397,7 +407,7 @@ export function LoyaltyStart({ initial = "begge" }: { initial?: "begge" | "henvi
 
               <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-[#0B1628]/70">
                 <input
-                  ref={fieldRef("terms")}
+                  {...fieldRef("terms")}
                   type="checkbox"
                   checked={acceptedTerms}
                   onChange={(e) => {

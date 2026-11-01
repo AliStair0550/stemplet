@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { pairDevice, KASSE_COOKIE, kasseCookieOptions } from "@/lib/kasse";
 import { durableRateLimit } from "@/lib/rate-limit";
-import { clientIp } from "@/lib/http";
+import { clientIp, isCrossSite } from "@/lib/http";
 import { APP_URL } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -22,6 +22,9 @@ export async function POST(req: NextRequest) {
 
   const back = (query: string) =>
     NextResponse.redirect(new URL(`/kasse${query}`, APP_URL), { status: 303 });
+
+  // En fremmed side maa ikke kunne parre en besoegendes browser til sin kasse.
+  if (isCrossSite(req)) return back("");
 
   // Bremse mod gaetteri af parringskoder (pr. IP).
   if (!(await durableRateLimit("device-pair", clientIp(req) ?? "ukendt", 12, 600))) {

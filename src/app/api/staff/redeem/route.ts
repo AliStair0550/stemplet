@@ -11,7 +11,7 @@ import {
   pinLockRemaining,
 } from "@/lib/security";
 import { ensureDeviceId } from "@/lib/cookies";
-import { clientIp, apiError } from "@/lib/http";
+import { clientIp, apiError, ipRateKey } from "@/lib/http";
 import { captureServerError } from "@/lib/sentry";
 import { PIN_LOCK_SECONDS } from "@/lib/system-config";
 
@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
   // (kassen er allerede adgangsstyret via ejer-login eller en parret enhed).
   if (business.staffPin) {
     const deviceId = await ensureDeviceId();
-    // Laas paa IP (svaerere at rotere end en cookie), ellers enheds-id.
-    const lockId = ip ?? deviceId;
+    // Laas paa IP (svaerere at rotere end en cookie; IPv6 pr. /64), ellers enheds-id.
+    const lockId = ip ? ipRateKey(ip) : deviceId;
 
     let locked = 0;
     try {

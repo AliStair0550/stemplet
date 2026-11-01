@@ -208,6 +208,9 @@ function useKioskToken(active: boolean) {
     }
   };
 
+  // Timeren kalder den nyeste refresh via en ref (funktionen kan ikke pege paa
+  // sig selv, foer den er erklaeret).
+  const refreshRef = useRef<() => void>(() => {});
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/kiosk/token", { cache: "no-store" });
@@ -220,16 +223,19 @@ function useKioskToken(active: boolean) {
       backoffRef.current = 2000;
       const next = Math.max((data.expiresInSeconds ?? 60) - 5, 10) * 1000;
       clearTimer();
-      timeoutRef.current = setTimeout(() => refresh(), next);
+      timeoutRef.current = setTimeout(() => refreshRef.current(), next);
     } catch {
       if (!aliveRef.current) return;
       setOffline(true);
       const wait = backoffRef.current;
       backoffRef.current = Math.min(backoffRef.current * 2, 30000);
       clearTimer();
-      timeoutRef.current = setTimeout(() => refresh(), wait);
+      timeoutRef.current = setTimeout(() => refreshRef.current(), wait);
     }
   }, []);
+  useEffect(() => {
+    refreshRef.current = () => void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     aliveRef.current = active;
