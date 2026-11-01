@@ -37,7 +37,7 @@ export type LoyaltyInput = {
 export async function createLoyaltyBusiness(
   input: LoyaltyInput,
   db: Db = prisma,
-): Promise<{ businessId: string; userId: string; slug: string }> {
+): Promise<{ businessId: string; userId: string; slug: string; existingUser: boolean }> {
   if (!input.stamps && !input.referral) {
     throw new LoyaltyOnboardingError("NO_MODULE", "Vælg mindst én ting, kortet skal kunne.");
   }
@@ -66,7 +66,15 @@ export async function createLoyaltyBusiness(
     throw new LoyaltyOnboardingError("INVALID_REWARD", "Skriv hvad vennen og kunden får.");
   }
 
-  if (await db.user.findUnique({ where: { email: input.email }, select: { id: true } })) {
+  // Findes mailen allerede som ejer, skal man logge ind. Er den kun medarbejder
+  // (eller uden butik), maa den gerne faa sin egen butik: saa kan en anden butik
+  // ikke blokere en mail ved at tilfoeje den som medarbejder. Den eksisterende
+  // bruger logges IKKE direkte ind (det goer kaldet via et login-link).
+  const existing = await db.user.findUnique({
+    where: { email: input.email },
+    select: { id: true, memberships: { where: { role: "OWNER" }, select: { id: true }, take: 1 } },
+  });
+  if (existing && existing.memberships.length > 0) {
     throw new LoyaltyOnboardingError("EMAIL_TAKEN", "Der findes allerede en konto med den e-mail. Log ind i stedet.");
   }
 
@@ -95,11 +103,11 @@ export async function createLoyaltyBusiness(
           welcomeStampEnabled: false,
           stampsEnabled: !!input.stamps,
           referralsEnabled: !!input.referral,
-          users: { create: { email: input.email, name: input.name } },
+          ...(existing ? {} : { users: { create: { email: input.email, name: input.name } } }),
           cards: { create: { ...card, active: true } },
         },
       });
-      const userId = b.users[0]!.id;
+      const userId = existing ? existing.id : b.users[0]!.id;
       await tx.membership.create({ data: { userId, businessId: b.id } });
       if (friend && referrer) {
         await saveReferralRule(
@@ -116,7 +124,7 @@ export async function createLoyaltyBusiness(
           tx as unknown as Db,
         );
       }
-      return { businessId: b.id, userId, slug };
+      return { businessId: b.id, userId, slug, existingUser: !!existing };
     });
   } catch (e) {
     if (e && typeof e === "object" && (e as { code?: string }).code === "P2002") {

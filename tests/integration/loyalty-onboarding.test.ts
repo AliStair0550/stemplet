@@ -99,3 +99,40 @@ test("intet valgt, ugyldige felter og brugt e-mail afvises foer der oprettes nog
     await cleanup(r);
   }
 });
+
+test("medarbejder-mail kan oprette sin egen butik; en ejer-mail kan ikke", async () => {
+  const email = `it-staff-${randomUUID()}@test.local`;
+  const first = await createLoyaltyBusiness({
+    name: "IT Arbejdsgiver",
+    email: `it-boss-${randomUUID()}@test.local`,
+    stamps: { rewardText: "Gratis kaffe", stampsRequired: 10, stampIcon: "coffee" },
+    referral: null,
+  });
+  // Ejeren tilfoejer en medarbejder (kun kassen).
+  const staff = await prisma.user.create({ data: { email, businessId: first.businessId } });
+  await prisma.membership.create({ data: { userId: staff.id, businessId: first.businessId, role: "STAFF" } });
+
+  const own = await createLoyaltyBusiness({
+    name: "IT Egen Salon",
+    email,
+    stamps: { rewardText: "Gratis klip", stampsRequired: 10, stampIcon: "scissors" },
+    referral: null,
+  });
+  try {
+    assert.equal(own.existingUser, true, "ingen ny bruger: samme login");
+    assert.equal(own.userId, staff.id);
+    const m = await prisma.membership.findUniqueOrThrow({
+      where: { userId_businessId: { userId: staff.id, businessId: own.businessId } },
+    });
+    assert.equal(m.role, "OWNER");
+
+    // Nu er mailen ejer, og saa skal man logge ind i stedet.
+    await assert.rejects(
+      createLoyaltyBusiness({ name: "IT Tredje", email, stamps: { rewardText: "Gratis kaffe", stampsRequired: 10, stampIcon: "coffee" }, referral: null }),
+      (e: unknown) => e instanceof LoyaltyOnboardingError && e.code === "EMAIL_TAKEN",
+    );
+  } finally {
+    await prisma.business.delete({ where: { id: own.businessId } }).catch(() => {});
+    await cleanup(first);
+  }
+});

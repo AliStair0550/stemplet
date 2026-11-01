@@ -2,6 +2,15 @@ import "server-only";
 import { prisma } from "./prisma";
 import { redisConfigured, getRatelimit } from "./redis";
 
+/** En IPv6-adresse samles pr. /64, saa en enkelt tilslutning ikke kan skifte
+ *  adresse for hvert forsoeg og slippe uden om loftet. Andre noegler (IPv4,
+ *  e-mails, id'er) roeres ikke. */
+export function limitKey(key: string): string {
+  if (!key.includes(":") || !/^[0-9a-f:.]+$/i.test(key)) return key;
+  const groups = key.split(":");
+  return groups.slice(0, 4).join(":") + "::/64";
+}
+
 /**
  * DB-backet rate limit (fail-closed): virker ogsaa hvis Redis er nede, saa
  * fx magic-link-afsendelse aldrig kan email-bombes under et Redis-nedbrud.
@@ -14,6 +23,7 @@ export async function durableRateLimit(
   limit: number,
   windowSeconds: number,
 ): Promise<boolean> {
+  key = limitKey(key);
   const now = Date.now();
   const cutoff = new Date(now - windowSeconds * 1000);
 
@@ -50,7 +60,7 @@ export async function apiWriteRateLimit(
 ): Promise<boolean> {
   if (redisConfigured()) {
     try {
-      const { success } = await getRatelimit(prefix, tokens, window).limit(id);
+      const { success } = await getRatelimit(prefix, tokens, window).limit(limitKey(id));
       return success;
     } catch {
       // Redis-fejl: fald igennem til DB-backstoppet nedenfor (fail-closed).

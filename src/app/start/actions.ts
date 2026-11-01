@@ -24,6 +24,8 @@ async function requestIp(): Promise<string> {
 // Velkomstmail (uden login-kode) og besked til superadmin efter svaret, og et
 // kortlivet token til auto-login.
 async function finishSelfServeSignup(o: {
+  /** Mailen havde allerede et login: intet auto-login, men et login-link. */
+  existingUser?: boolean;
   name: string;
   email: string;
   userId: string;
@@ -31,13 +33,26 @@ async function finishSelfServeSignup(o: {
   category: string;
   pageUrl: string;
   dest: string;
-}): Promise<string> {
+}): Promise<string | null> {
+  if (o.existingUser) {
+    // Kun ejeren af mailen maa komme ind: send et login-link (ingen auto-login).
+    try {
+      await signIn("resend", { email: o.email, redirect: false, redirectTo: "/app" });
+    } catch (e) {
+      const digest = (e as { digest?: string })?.digest;
+      if (!(typeof digest === "string" && digest.startsWith("NEXT_REDIRECT"))) {
+        captureServerError(e, { route: "start:existing-user-link", extra: { slug: o.slug } });
+      }
+    }
+  }
   after(async () => {
     // Velkomstmail uden login-kode: ejeren er allerede logget ind.
-    try {
-      await sendEmail({ to: o.email, ...signupWelcomeEmail(`${APP_URL}/app`) });
-    } catch (e) {
-      captureServerError(e, { route: "start:welcome-mail", extra: { slug: o.slug } });
+    if (!o.existingUser) {
+      try {
+        await sendEmail({ to: o.email, ...signupWelcomeEmail(`${APP_URL}/app`) });
+      } catch (e) {
+        captureServerError(e, { route: "start:welcome-mail", extra: { slug: o.slug } });
+      }
     }
     const recipients = superadminRecipients();
     if (recipients.length === 0) return;
@@ -58,10 +73,12 @@ async function finishSelfServeSignup(o: {
       }
     }
   });
-  return createOnboardingToken(o.userId);
+  return o.existingUser ? null : createOnboardingToken(o.userId);
 }
 
-type SelfServeResult = { ok: true; loginToken: string } | { ok: false; error: string; field?: "email" };
+// loginToken = null: mailen havde allerede et login (fx som medarbejder). Saa
+// logges der ikke direkte ind; der er sendt et login-link til mailen i stedet.
+type SelfServeResult = { ok: true; loginToken: string | null } | { ok: false; error: string; field?: "email" };
 
 /**
  * Selvbetjent oprettelse af loyalitetskortet (/start): butikken vaelger, hvad
@@ -90,7 +107,7 @@ export async function createLoyaltyBusinessAction(input: {
   ) {
     return { ok: false, error: "For mange forsøg. Prøv igen om lidt." };
   }
-  let created: { businessId: string; userId: string; slug: string };
+  let created: Awaited<ReturnType<typeof createLoyaltyBusiness>>;
   try {
     created = await createLoyaltyBusiness({
       name: base.data.name,
@@ -105,6 +122,7 @@ export async function createLoyaltyBusinessAction(input: {
     throw e;
   }
   const loginToken = await finishSelfServeSignup({
+    existingUser: created.existingUser,
     name: base.data.name,
     email: base.data.email,
     userId: created.userId,

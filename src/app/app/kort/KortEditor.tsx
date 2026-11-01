@@ -24,8 +24,8 @@ export function KortEditor({
   const shareRef = useRef<HTMLDivElement>(null);
   // Sidst gemte design. Er der uafgemte aendringer, advarer vi foer siden
   // forlades (genindlaesning/luk/tilbage), saa arbejdet ikke tabes lydloest.
-  const savedRef = useRef(JSON.stringify(initial));
-  const dirty = JSON.stringify(design) !== savedRef.current;
+  const [saved, setSaved] = useState(() => JSON.stringify(initial));
+  const dirty = JSON.stringify(design) !== saved;
 
   useEffect(() => {
     if (!dirty) return;
@@ -43,7 +43,7 @@ export function KortEditor({
     start(async () => {
       const res = await saveCardDesign(design);
       if (res.ok) {
-        savedRef.current = snapshot;
+        setSaved(snapshot);
         setMsg({ ok: true, text: "Gemt" });
       } else {
         setMsg({ ok: false, text: res.error ?? "Noget gik galt." });

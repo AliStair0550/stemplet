@@ -1,5 +1,7 @@
 "use server";
 
+import { durableRateLimit } from "@/lib/rate-limit";
+
 import type { Plan } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { refreshShop } from "@/lib/shop-refresh";
@@ -42,6 +44,10 @@ export async function unlockAdmin(
 ): Promise<{ error: string | null }> {
   const admin = await getSuperadminEmail();
   if (!admin) return { error: "Ikke tilladt." };
+  // Loft paa forsoeg, saa koden (andet lag) ikke kan gaettes.
+  if (!(await durableRateLimit("admin-unlock", admin, 5, 3600))) {
+    return { error: "For mange forsøg. Prøv igen om en time." };
+  }
   // Mellemrum foer/efter (fx fra autoudfyld) skal ikke afvise en rigtig kode.
   const code = String(formData.get("code") ?? "").trim();
   if (!verifyAdminCode(code)) return { error: "Forkert kode." };
