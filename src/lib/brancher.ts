@@ -32,7 +32,8 @@ export type BrancheIcon =
   | "sparkle"
   | "flower"
   | "leaf"
-  | "crown";
+  | "crown"
+  | "lotus";
 
 export type BrancheContent = {
   /** Sti med dansk slug (aeoeaa), fx "/stempelkort-til-frisoerer". */
@@ -60,7 +61,12 @@ export type BrancheContent = {
   sections: BrancheSection[];
   /** FAQ (bliver ogsaa til FAQPage structured data). */
   faq: FaqItem[];
-  /** Valgfrit konkret kort-design-eksempel (rigtigt StampCard) til siden. */
+  /** Henvis en ven i branchen: hvad vennen faar foerste gang, og hvad kunden
+   *  faar. Kort, saa det passer i felterne paa Wallet-kortet. */
+  referral: { friend: string; reward: string };
+  /** Eksempel paa en besked, der lander paa kundens laaseskaerm. */
+  message: string;
+  /** Valgfrit konkret kort-design-eksempel (vist som Wallet-kortet) til siden. */
   cardExample?: {
     businessName: string;
     primaryColor: string;
@@ -142,6 +148,8 @@ export const FRISOERER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  referral: { friend: "100 kr.", reward: "en vask" },
+  message: "Ledig tid i morgen kl. 10. Book direkte fra kortet.",
   cardExample: {
     businessName: "Salon Nord",
     primaryColor: "#26403B",
@@ -227,6 +235,8 @@ export const KAFFEBARER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  referral: { friend: "en kop", reward: "en kage" },
+  message: "Ny bønne fra Etiopien i dag. Kom og smag.",
   cardExample: {
     businessName: "Kaffebar Syd",
     primaryColor: "#33241A",
@@ -307,6 +317,8 @@ export const NEGLESALONER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
     },
   ],
+  referral: { friend: "20 % rabat", reward: "en neglelak" },
+  message: "To ledige tider på lørdag. Book fra kortet.",
   cardExample: {
     businessName: "Neglestudiet",
     primaryColor: "#6D4550",
@@ -383,6 +395,8 @@ export const PIZZERIAER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "en sodavand", reward: "en pizza" },
+  message: "Dobbelt stempel i aften fra kl. 17.",
   cardExample: {
     businessName: "Pizzeria Napoli",
     primaryColor: "#7E322A",
@@ -463,6 +477,8 @@ export const BAGERIER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "en bolle", reward: "en kanelsnegl" },
+  message: "Varme kanelsnegle fra kl. 7 i morgen.",
   cardExample: {
     businessName: "Morgenbageren",
     primaryColor: "#7C5330",
@@ -538,6 +554,8 @@ export const BLOMSTERBUTIKKER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "10 % rabat", reward: "en buket" },
+  message: "Tulipanerne er kommet. To bundter for 100 kr. i dag.",
   cardExample: {
     businessName: "Blomsterhjørnet",
     primaryColor: "#3E5546",
@@ -633,6 +651,8 @@ export const CAFEER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "en kaffe", reward: "et glas vin" },
+  message: "Brunch hele søndagen. Vi ses.",
   cardExample: {
     businessName: "Café Lys",
     primaryColor: "#3A2C24",
@@ -730,6 +750,8 @@ export const ISBUTIKKER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "en kugle", reward: "en is" },
+  message: "Solen skinner. Dobbelt stempel i dag.",
   cardExample: {
     businessName: "Isboden",
     primaryColor: "#245E63",
@@ -838,6 +860,8 @@ export const BARER: BrancheContent = {
       a: "Ingenting de første tre måneder. Derefter 49 kr./md. ekskl. moms.",
     },
   ],
+  referral: { friend: "en fadøl", reward: "en drink" },
+  message: "Live musik i aften kl. 21. Vi ses.",
   cardExample: {
     businessName: "Baren",
     primaryColor: "#3A2230",
@@ -855,11 +879,92 @@ export const BARER: BrancheContent = {
   },
 };
 
+export const MASSOERER: BrancheContent = {
+  slug: "/stempelkort-til-massører",
+  shortName: "Massører",
+  cardTeaser: "Faste behandlinger i kalenderen.",
+  stampIcon: "lotus",
+  examples: [
+    { target: "Behandling", reward: "+1 stempel" },
+    { target: "5 stempler", reward: "15 minutter ekstra" },
+    { target: "10 stempler", reward: "En gratis massage" },
+  ],
+  title: "Stempelkort til massører. Faste kunder i kalenderen | Folka Kort",
+  metaDescription:
+    "Få flere faste kunder i massageklinikken. Et digitalt stempelkort i Apple Wallet belønner faste behandlinger, og henvisninger bringer nye kunder.",
+  eyebrow: "Stempelkort til massører",
+  h1: "Kunden har brug for dig hver måned. Men booker først, når det gør ondt.",
+  intro: [
+    "Efter en god behandling føler kunden sig som et nyt menneske. Skuldrene er nede, og nakken er fri. Men hverdagen tager over, og den næste tid bliver ikke booket.",
+    "Først når smerten er tilbage, ringer kunden. Og så måske til en anden klinik.",
+  ],
+  sections: [
+    {
+      heading: "Gør faste behandlinger til en vane",
+      paragraphs: [
+        "Et stempel efter hver behandling giver kunden en grund til at komme igen, før det gør ondt.",
+        "Et oplagt set-up er ti stempler, hvor den tiende behandling er gratis. Eller fem stempler, der giver 15 minutter ekstra. Kunden ser kortet fyldes i sin telefon og får lyst til at holde rytmen.",
+        "Belønningen bestemmer du selv, og den kan ændres, når du vil.",
+      ],
+    },
+    {
+      heading: "Fyld huller i kalenderen",
+      paragraphs: [
+        "Et afbud behøver ikke betyde en tom briks. Skriv en kort besked, fx »Afbud i dag kl. 14«, og den lander på låseskærmen hos alle med kortet.",
+        "Kunden trykker på kortet og booker direkte via dit eget booking-link.",
+      ],
+    },
+    {
+      heading: "Lad kunderne anbefale dig",
+      paragraphs: [
+        "De fleste nye kunder hos en massør kommer via en anbefaling. Med henvisninger på kortet deler kunden sin kode, vennen får rabat første gang, og kunden får en belønning, når vennen har været der.",
+      ],
+    },
+    {
+      heading: "Kom i gang på få minutter",
+      paragraphs: [
+        "Kunden scanner en QR-kode i klinikken og har kortet i Apple Wallet på under et minut. Ingen app. Kun navn og e-mail.",
+        "Du stempler med den telefon, du allerede har. Intet ekstra udstyr.",
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: "Skal mine kunder hente en app?",
+      a: "Nej. De scanner en QR-kode, og kortet ligger i Apple Wallet med det samme.",
+    },
+    {
+      q: "Bestemmer jeg selv belønningen?",
+      a: "Ja, både antal stempler og belønning er dit valg og kan ændres.",
+    },
+    {
+      q: "Kan kunden booke fra kortet?",
+      a: "Ja. Lægger du dit booking-link ind, får kortet en Book tid-knap.",
+    },
+    {
+      q: "Hvad koster det?",
+      a: "Ingenting de første tre måneder. Derefter 49 kr. om måneden ekskl. moms. Ingen binding.",
+    },
+  ],
+  referral: { friend: "100 kr.", reward: "15 min. ekstra" },
+  message: "Afbud i dag kl. 14. Book tiden direkte fra kortet.",
+  cardExample: {
+    businessName: "Klinik Ro",
+    primaryColor: "#2F3B35",
+    textColor: "#EDF1EC",
+    stampIcon: "lotus",
+    required: 10,
+    stamps: 4,
+    rewardText: "En gratis massage",
+  },
+};
+
 // Raekkefoelgen styrer visning paa /brancher og krydslinks.
-// Raekkefoelgen fylder 3x3-gitteret paa /brancher raekkevis:
+// Raekkefoelgen fylder gitteret paa /brancher raekkevis:
 //   Bagerier      Caféer         Kaffebarer
 //   Isbutikker    Pizzeriaer     Barer
-//   Frisører      Neglesaloner   Blomsterbutikker
+//   Frisører      Neglesaloner   Massører
+//   Blomsterbutikker
 export const BRANCHER: BrancheContent[] = [
   BAGERIER,
   CAFEER,
@@ -869,6 +974,7 @@ export const BRANCHER: BrancheContent[] = [
   BARER,
   FRISOERER,
   NEGLESALONER,
+  MASSOERER,
   BLOMSTERBUTIKKER,
 ];
 
@@ -879,11 +985,15 @@ export function brancheMetadata(b: BrancheContent): Metadata {
     title: { absolute: b.title },
     description: b.metaDescription,
     alternates: { canonical: b.slug },
+    // Delebilledet kommer fra sidens egen opengraph-image (branchens navn).
     openGraph: {
       title: b.title,
       description: b.metaDescription,
       url: b.slug,
       type: "website",
+      siteName: "Folka Kort",
+      locale: "da_DK",
     },
+    twitter: { card: "summary_large_image", title: b.title, description: b.metaDescription },
   };
 }
