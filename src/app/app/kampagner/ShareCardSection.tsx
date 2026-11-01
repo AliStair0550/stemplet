@@ -165,42 +165,26 @@ export function ShareCardSection({
             </p>
           </div>
 
+          {/* Én tydelig handling: del. Billederne er til den, der selv vil lægge dem op. */}
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={share}
               disabled={busy !== null}
               className={btnClass("terracotta")}
             >
-              {busy === "share" ? "Klargør..." : "Del"}
+              {busy === "share" ? "Klargør..." : "Del kortet"}
             </button>
-            <a
-              href={cardUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={btnClass("outline")}
-            >
-              Se kort
-            </a>
-            <button
-              onClick={downloadCard}
-              disabled={busy !== null}
-              className={btnClass("outline")}
-            >
-              {busy === "card" ? "Laver billede..." : "Download kort"}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.85rem]">
+            <span className="text-stone">Hent som billede:</span>
+            <button onClick={downloadCard} disabled={busy !== null} className="font-[500] text-ink underline underline-offset-4 disabled:opacity-50">
+              {busy === "card" ? "Laver billede..." : "Kortet"}
             </button>
-            <button
-              onClick={downloadPost}
-              disabled={busy !== null}
-              className={btnClass("outline")}
-            >
-              {busy === "post" ? "Laver billede..." : "Download billede til opslag"}
+            <button onClick={downloadPost} disabled={busy !== null} className="font-[500] text-ink underline underline-offset-4 disabled:opacity-50">
+              {busy === "post" ? "Laver billede..." : "Opslag"}
             </button>
-            <button
-              onClick={downloadQr}
-              disabled={busy !== null}
-              className={btnClass("outline")}
-            >
-              Download QR-kode
+            <button onClick={downloadQr} disabled={busy !== null} className="font-[500] text-ink underline underline-offset-4 disabled:opacity-50">
+              QR-kode
             </button>
             {msg ? (
               <span

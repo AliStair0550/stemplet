@@ -234,6 +234,27 @@ export function cardRecoveryEmail(shopName: string, url: string): Email {
   return { subject: `Gendan dit kort hos ${shopName}`, html: folkaShell(`Dit kort hos ${shop}.`, inner, shop), text };
 }
 
+/** Kvittering til kunden: butikken har slettet kortet og oplysningerne. */
+export function cardholderDeletedEmail(shopName: string): Email {
+  const shop = esc(shopName);
+  const inner = `
+    <h1 style="margin:0 0 10px;font-family:${FONT};font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.03em;color:${A.ink};">Dine oplysninger er slettet</h1>
+    <p style="margin:0 0 16px;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      ${shop} har slettet dit kort, dit navn, din e-mail og dine stempler.
+    </p>
+    <p style="margin:0;font-family:${FONT};font-size:16px;line-height:1.55;color:${A.muted};">
+      Ligger kortet stadig i Apple Wallet, kan du slette det dér: åbn kortet, tryk på de tre prikker og vælg Fjern kort.
+    </p>`;
+  const text = [
+    "Dine oplysninger er slettet",
+    "",
+    `${shopName} har slettet dit kort, dit navn, din e-mail og dine stempler.`,
+    "",
+    "Ligger kortet stadig i Apple Wallet, kan du slette det dér: åbn kortet, tryk på de tre prikker og vælg Fjern kort.",
+  ].join("\n");
+  return { subject: `Dine oplysninger hos ${shopName} er slettet`, html: folkaShell(`Dit kort hos ${shop} er slettet.`, inner, shop), text };
+}
+
 // ── Velkomst (foerste login efter oprettelse) ────────────────────────
 // Sendes i stedet for login-mailen ved kundens ALLERFOERSTE login-link (lige
 // efter oprettelsen, hvor emailVerified endnu er null). Samme magiske link.

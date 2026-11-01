@@ -10,7 +10,7 @@ import { clearNewsAction, sendNewsAction } from "./actions";
 const IDEAS = [
   "Dobbelt stempel hele weekenden. Vi glæder os til at se dig.",
   "Nye åbningstider fra mandag: 7 til 17.",
-  "Nyhed: prøv vores nye sæsonmenu. Kun i en kort periode.",
+  "Ledige tider i morgen. Skriv eller ring, så finder vi en tid.",
 ];
 
 type Sent = { id: string; text: string; recipients: number; sentAt: string };
