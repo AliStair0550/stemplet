@@ -82,6 +82,8 @@ export type KioskCard = {
   stampIcon: StampIconKey;
   rewardText: string;
   stampsRequired: number;
+  /** Lille webp-logo (data-URI), vist paa kundens kort efter scan. */
+  logoSrc?: string | null;
 };
 
 function rgba(hex: string, alpha: number): string {
@@ -317,7 +319,7 @@ export function Kassemodus({
   if (!selfScan) {
     return (
       <div className="flex flex-col gap-7">
-        <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} />
+        <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} logoSrc={card.logoSrc ?? null} />
       </div>
     );
   }
@@ -358,7 +360,7 @@ export function Kassemodus({
         </button>
       </div>
 
-      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} />}
+      {mode === "qr" ? <StampQrPanel card={card} /> : <ScanPanel hasPin={hasPin} referrals={referrals} initialSerial={initialSerial} logoSrc={card.logoSrc ?? null} />}
 
       {kioskOpen ? <KioskShell card={card} onClose={closeKiosk} /> : null}
     </div>
@@ -441,10 +443,12 @@ function ScanPanel({
   hasPin,
   referrals,
   initialSerial,
+  logoSrc,
 }: {
   hasPin: boolean;
   referrals: boolean;
   initialSerial: string | null;
+  logoSrc: string | null;
 }) {
   // Scanning er den eneste funktion ved kassen, saa kameraet aabner med det
   // samme: trykker man "Stempel", er man klar til at scanne uden et ekstra tryk.
@@ -469,6 +473,7 @@ function ScanPanel({
       <div className="flex justify-center">
         <StaffCard
           serial={serial}
+          logoSrc={logoSrc}
           hasPin={hasPin}
           referrals={referrals}
           onRescan={() => {
@@ -572,12 +577,14 @@ type CardState = {
 
 function StaffCard({
   serial,
+  logoSrc,
   hasPin,
   referrals,
   onRescan,
   onExit,
 }: {
   serial: string;
+  logoSrc: string | null;
   hasPin: boolean;
   referrals: boolean;
   onRescan: () => void;
@@ -911,6 +918,7 @@ function StaffCard({
             >
               <StampCard
                 businessName={card.businessName}
+                logoUrl={logoSrc}
                 primaryColor={card.primaryColor}
                 textColor={card.textColor}
                 stampIcon={card.stampIcon as StampIconKey}
