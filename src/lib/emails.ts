@@ -55,7 +55,7 @@ export function folkaSender(from: string | undefined): string | undefined {
 function folkaShell(preheader: string, inner: string, shopName?: string, footerExtra = ""): string {
   const header = shopName
     ? `<span style="font-family:${FONT};font-size:20px;font-weight:700;letter-spacing:-.02em;color:${A.ink};">${shopName}</span>`
-    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="50" height="28" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
+    : `<img src="cid:${FOLKA_MAIL_LOGO.content_id}" width="38" height="21" alt="${PLATFORM.name}" style="display:block;border:0;font-family:Georgia,serif;font-size:22px;font-style:italic;color:${PLATFORM.color};">`;
   return `<!doctype html>
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"></head>
 <body style="margin:0;padding:0;background:${A.bg};">
@@ -71,7 +71,7 @@ function folkaShell(preheader: string, inner: string, shopName?: string, footerE
       </td></tr>
       <tr><td align="center" style="padding:22px 16px 0;">
         <p style="margin:0;font-family:${FONT};font-size:12px;line-height:1.6;color:${A.muted};">
-          ${shopName ? `Sendt for ${shopName} af <a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>` : `Folka Kort &middot; <a href="https://kort.folka.dk" style="color:${A.muted};text-decoration:none;">kort.folka.dk</a>`}
+          ${shopName ? `Sendt for ${shopName} af <a href="${PLATFORM.url}" style="color:${A.muted};text-decoration:underline;">${PLATFORM.name}</a>` : `<a href="https://kort.folka.dk" style="color:${A.muted};text-decoration:none;">kort.folka.dk</a>`}
         </p>
         ${footerExtra}
       </td></tr>
@@ -173,8 +173,8 @@ function folkaCodeCompact(code: string): string {
 
 function folkaTip(tip: string): string {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 0;">
-      <tr><td style="border-left:3px solid ${C.terracotta};padding:2px 0 2px 14px;">
-        <p style="margin:0 0 4px;font-family:${FONT};font-size:13px;font-weight:600;color:${C.terracotta};">Dagens idé</p>
+      <tr><td>
+        <p style="margin:0 0 6px;font-family:${FONT};font-size:17px;font-weight:700;letter-spacing:-.01em;color:${C.terracotta};">Dagens idé</p>
         <p style="margin:0;font-family:${FONT};font-size:15px;line-height:1.55;color:${A.ink};">${tip}</p>
       </td></tr>
     </table>`;
