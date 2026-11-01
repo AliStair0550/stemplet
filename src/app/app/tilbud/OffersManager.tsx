@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { cn, formatDkDate } from "@/lib/utils";
-import { OFFER_TEXT_MAX, OFFER_TITLE_MAX, offerPushText, type OfferKind } from "@/lib/member-offers-shared";
+import { cn } from "@/lib/utils";
+import {
+  OFFER_TEXT_MAX,
+  OFFER_TITLE_MAX,
+  dkParts,
+  offerEndFields,
+  offerEndLabel,
+  offerPushText,
+  type OfferKind,
+} from "@/lib/member-offers-shared";
 import { createOfferAction, deleteOfferAction, setOfferActiveAction, updateOfferAction } from "./actions";
 
 export type OfferRow = {
@@ -55,14 +63,16 @@ function OfferForm({
   const [text, setText] = useState(offer?.text ?? "");
   const [partnerName, setPartnerName] = useState(offer?.partnerName ?? "");
   const [link, setLink] = useState(offer?.link ?? "");
-  const [endsOn, setEndsOn] = useState(offer?.endsAt ? offer.endsAt.slice(0, 10) : "");
+  const initialEnd = offerEndFields(offer?.endsAt ?? null);
+  const [endsOn, setEndsOn] = useState(initialEnd.endsOn);
+  const [endsTime, setEndsTime] = useState(initialEnd.endsTime);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   function save() {
     setError(null);
     start(async () => {
-      const input = { kind, title, text, partnerName, link, endsOn };
+      const input = { kind, title, text, partnerName, link, endsOn, endsTime };
       if (offer) {
         const res = await updateOfferAction(offer.id, input);
         if (res.ok) onDone();
@@ -104,11 +114,36 @@ function OfferForm({
             className={field}
           />
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[0.85rem] font-medium text-ink">Gælder til og med (valgfrit)</span>
-          <input type="date" value={endsOn} onChange={(e) => setEndsOn(e.target.value)} className={field} />
-        </label>
       </div>
+      {/* Tidsbegrænset tilbud: slutter af sig selv, og kunden ser en nedtælling. */}
+      <fieldset className="flex flex-col gap-1.5">
+        <legend className="mb-1.5 text-[0.85rem] font-medium text-ink">Slutter (valgfrit)</legend>
+        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-3">
+          <input
+            type="date"
+            value={endsOn}
+            onChange={(e) => setEndsOn(e.target.value)}
+            aria-label="Sidste dag"
+            className={field}
+          />
+          <input
+            type="time"
+            value={endsTime}
+            onChange={(e) => {
+              setEndsTime(e.target.value);
+              // Klokkeslaet uden dato: i dag.
+              if (e.target.value && !endsOn) setEndsOn(dkParts(new Date()).date);
+            }}
+            aria-label="Klokkeslæt"
+            className={field}
+          />
+        </div>
+        <span className="text-[0.8rem] leading-snug text-slate">
+          {endsOn
+            ? "Tilbuddet forsvinder af sig selv, og kunderne ser en nedtælling."
+            : "Uden slutning vises tilbuddet, til du skjuler det. Uden klokkeslæt gælder hele dagen."}
+        </span>
+      </fieldset>
       {error ? (
         <p role="alert" className="text-[0.85rem] text-rust">
           {error}
@@ -158,7 +193,7 @@ function OfferItem({ o, kind }: { o: OfferRow; kind: OfferKind }) {
           >
             {o.live ? "Vises" : expired ? "Udløbet" : "Skjult"}
           </span>
-          {o.endsAt ? <span>Til og med {formatDkDate(new Date(o.endsAt))}</span> : <span>Ingen slutdato</span>}
+          {o.endsAt ? <span>{offerEndLabel(new Date(o.endsAt))}</span> : <span>Ingen slutning</span>}
         </p>
         {o.live ? (
           <Link href={pushHref(kind, o.title, o.partnerName)} className="mt-2 inline-block text-[0.82rem] font-semibold text-[#1B5EAE] underline underline-offset-4">

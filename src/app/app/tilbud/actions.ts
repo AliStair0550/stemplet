@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireBusiness } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { MAX_OFFERS_PER_KIND, endOfDay, offerInputSchema, type OfferInput } from "@/lib/member-offers";
+import { MAX_OFFERS_PER_KIND, offerEndsAt, offerInputSchema, type OfferInput } from "@/lib/member-offers";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -26,7 +26,7 @@ export async function createOfferAction(input: OfferInput): Promise<Result & { i
       text: d.text ?? null,
       partnerName: d.kind === "PARTNER" ? (d.partnerName ?? null) : null,
       link: d.link ?? null,
-      endsAt: endOfDay(d.endsOn),
+      endsAt: offerEndsAt(d.endsOn, d.endsTime),
     },
   });
   revalidatePath("/app/tilbud");
@@ -46,7 +46,7 @@ export async function updateOfferAction(id: string, input: OfferInput): Promise<
       text: d.text ?? null,
       partnerName: d.kind === "PARTNER" ? (d.partnerName ?? null) : null,
       link: d.link ?? null,
-      endsAt: endOfDay(d.endsOn),
+      endsAt: offerEndsAt(d.endsOn, d.endsTime),
     },
   });
   if (res.count === 0) return { ok: false, error: "Tilbuddet findes ikke længere." };
